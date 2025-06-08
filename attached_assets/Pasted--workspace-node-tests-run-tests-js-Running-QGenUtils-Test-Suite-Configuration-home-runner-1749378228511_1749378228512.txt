@@ -1,0 +1,1031 @@
+~/workspace$ node tests/run-tests.js
+🧪 Running QGenUtils Test Suite...
+
+Configuration: /home/runner/workspace/tests/jest.config.js
+Root Directory: /home/runner/workspace
+Jest Arguments: --config /home/runner/workspace/tests/jest.config.js --rootDir /home/runner/workspace --coverage
+
+ FAIL  tests/unit/url.test.js
+  URL Utilities
+    ensureProtocol
+      ✓ should add https to URL without protocol (8 ms)
+      ✓ should preserve existing https protocol (1 ms)
+      ✓ should preserve existing http protocol (1 ms)
+      ✓ should handle case-insensitive protocols (2 ms)
+      ✓ should return null for empty string (2 ms)
+      ✓ should return null for null input (1 ms)
+      ✓ should return null for non-string input (1 ms)
+      ✓ should handle URLs with paths (1 ms)
+      ✓ should handle URLs with query parameters (1 ms)
+    normalizeUrlOrigin
+      ✓ should normalize URL to lowercase origin
+      ✓ should handle URL without protocol
+      ✓ should preserve port numbers
+      ✓ should return null for invalid URLs (1 ms)
+      ✕ should handle complex URLs (4 ms)
+    stripProtocol
+      ✓ should remove https protocol (1 ms)
+      ✓ should remove http protocol (1 ms)
+      ✓ should remove trailing slash
+      ✓ should handle case-insensitive protocols (1 ms)
+      ✓ should preserve paths and query parameters
+      ✓ should handle URLs without protocol
+      ✓ should handle error cases gracefully (1 ms)
+    parseUrlParts
+      ✓ should parse URL into base and endpoint (1 ms)
+      ✓ should handle URL with existing protocol
+      ✓ should handle root path
+      ✓ should handle URL without path
+      ✓ should return null for invalid URLs (1 ms)
+      ✓ should handle URLs with ports
+      ✓ should handle complex query parameters (1 ms)
+
+  ● URL Utilities › normalizeUrlOrigin › should handle complex URLs
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "https://api.example.com:443"
+    Received: "https://api.example.com"
+
+      62 |
+      63 |     test('should handle complex URLs', () => {
+    > 64 |       expect(normalizeUrlOrigin('HTTPS://API.Example.Com:443/v1/users?id=123')).toBe('https://api.example.com:443');
+         |                                                                                 ^
+      65 |     });
+      66 |   });
+      67 |
+
+      at Object.toBe (tests/unit/url.test.js:64:81)
+
+ FAIL  tests/integration/module-interactions.test.js
+  Module Integration Tests
+    HTTP and URL Integration
+      ✕ should process URL and calculate content length for API request (11 ms)
+      ✕ should normalize URLs and build appropriate headers (2 ms)
+    Validation and Authentication Integration
+      ✕ should validate required fields and check authentication together (7 ms)
+      ✕ should handle unauthenticated user with valid fields (4 ms)
+    DateTime and HTTP Integration
+      ✓ should format timestamps and include in HTTP responses (25 ms)
+      ✕ should handle malformed dates in HTTP context (2 ms)
+    Complete Request Processing Workflow
+      ✕ should simulate complete API request processing
+      ✕ should handle complete workflow with validation failure (1 ms)
+      ✕ should handle complete workflow with authentication failure
+
+  ● Module Integration Tests › HTTP and URL Integration › should process URL and calculate content length for API request
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "42"
+    Received: undefined
+
+      32 |       }, 'POST', body);
+      33 |       
+    > 34 |       expect(headers['content-length']).toBe(contentLength);
+         |                                         ^
+      35 |       expect(headers['host']).toBeUndefined();
+      36 |     });
+      37 |
+
+      at Object.toBe (tests/integration/module-interactions.test.js:34:41)
+
+  ● Module Integration Tests › HTTP and URL Integration › should normalize URLs and build appropriate headers
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Bearer token"
+    Received: undefined
+
+      56 |       }, 'GET', null);
+      57 |       
+    > 58 |       expect(headers['authorization']).toBe('Bearer token');
+         |                                        ^
+      59 |       expect(headers['x-target-url']).toBeUndefined();
+      60 |     });
+      61 |   });
+
+      at Object.toBe (tests/integration/module-interactions.test.js:58:40)
+
+  ● Module Integration Tests › Validation and Authentication Integration › should validate required fields and check authentication together
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:82:23)
+
+  ● Module Integration Tests › Validation and Authentication Integration › should handle unauthenticated user with valid fields
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:103:23)
+
+  ● Module Integration Tests › DateTime and HTTP Integration › should handle malformed dates in HTTP context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "N/A"
+    Received: "Invalid Date"
+
+      149 |       // Format should return N/A for invalid date
+      150 |       const formatted = formatDateTime(invalidDate);
+    > 151 |       expect(formatted).toBe('N/A');
+          |                         ^
+      152 |       
+      153 |       // Should still be able to create valid response
+      154 |       const responseData = { timestamp: formatted, error: 'Invalid date provided' };
+
+      at Object.toBe (tests/integration/module-interactions.test.js:151:25)
+
+  ● Module Integration Tests › Complete Request Processing Workflow › should simulate complete API request processing
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:190:27)
+
+  ● Module Integration Tests › Complete Request Processing Workflow › should handle complete workflow with validation failure
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:242:27)
+
+  ● Module Integration Tests › Complete Request Processing Workflow › should handle complete workflow with authentication failure
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:266:27)
+
+ FAIL  tests/unit/validation.test.js
+  Validation Utilities
+    requireFields
+      ✕ should return true when all required fields are present (9 ms)
+      ✕ should return false and send error for missing fields (1 ms)
+      ✕ should return false for multiple missing fields (1 ms)
+      ✕ should treat falsy values as missing (1 ms)
+      ✕ should handle empty object (1 ms)
+      ✕ should handle empty required fields array
+      ✕ should handle undefined object gracefully (1 ms)
+      ✕ should handle null object gracefully (1 ms)
+      ✕ should accept truthy values (1 ms)
+
+  ● Validation Utilities › requireFields › should return true when all required fields are present
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:17:22)
+
+  ● Validation Utilities › requireFields › should return false and send error for missing fields
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:25:22)
+
+  ● Validation Utilities › requireFields › should return false for multiple missing fields
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:36:22)
+
+  ● Validation Utilities › requireFields › should treat falsy values as missing
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:47:22)
+
+  ● Validation Utilities › requireFields › should handle empty object
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:58:22)
+
+  ● Validation Utilities › requireFields › should handle empty required fields array
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:66:22)
+
+  ● Validation Utilities › requireFields › should handle undefined object gracefully
+
+    TypeError: Cannot read properties of undefined (reading 'join')
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:73:22)
+
+  ● Validation Utilities › requireFields › should handle null object gracefully
+
+    TypeError: Cannot read properties of null (reading 'join')
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:83:22)
+
+  ● Validation Utilities › requireFields › should accept truthy values
+
+    TypeError: requiredFields.join is not a function
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:76:63)
+      at Object.requireFields (tests/unit/validation.test.js:97:22)
+
+ FAIL  tests/unit/http.test.js
+  HTTP Utilities
+    calculateContentLength
+      ✓ should calculate length for string body (11 ms)
+      ✓ should calculate length for object body (1 ms)
+      ✓ should return "0" for empty string
+      ✓ should return "0" for empty object
+      ✓ should return "0" for null body (1 ms)
+      ✓ should throw error for undefined body (16 ms)
+      ✓ should handle UTF-8 characters correctly
+      ✓ should handle complex nested objects (1 ms)
+    buildCleanHeaders
+      ✕ should remove dangerous headers for GET request (4 ms)
+      ✕ should remove dangerous headers and set content-length for POST with body (1 ms)
+      ✓ should not set content-length for POST without body
+      ✓ should handle empty headers object (1 ms)
+      ✓ should not mutate original headers
+    sendJsonResponse
+      ✓ should send JSON response with correct status (1 ms)
+      ✓ should handle error responses (5 ms)
+    getRequiredHeader
+      ✕ should return header value when present (1 ms)
+      ✕ should send error response when header is missing
+      ✕ should handle malformed request object
+      ✕ should handle undefined headers
+
+  ● HTTP Utilities › buildCleanHeaders › should remove dangerous headers for GET request
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Bearer token123"
+    Received: undefined
+
+      59 |       const result = buildCleanHeaders(originalHeaders, 'GET', null);
+      60 |       
+    > 61 |       expect(result['authorization']).toBe('Bearer token123');
+         |                                       ^
+      62 |       expect(result['content-type']).toBe('application/json');
+      63 |       expect(result['user-agent']).toBe('MyApp/1.0');
+      64 |       
+
+      at Object.toBe (tests/unit/http.test.js:61:39)
+
+  ● HTTP Utilities › buildCleanHeaders › should remove dangerous headers and set content-length for POST with body
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Bearer token123"
+    Received: undefined
+
+      73 |       const result = buildCleanHeaders(originalHeaders, 'POST', body);
+      74 |       
+    > 75 |       expect(result['authorization']).toBe('Bearer token123');
+         |                                       ^
+      76 |       expect(result['content-type']).toBe('application/json');
+      77 |       expect(result['content-length']).toBe(calculateContentLength(body));
+      78 |       
+
+      at Object.toBe (tests/unit/http.test.js:75:39)
+
+  ● HTTP Utilities › getRequiredHeader › should return header value when present
+
+    TypeError: res.status is not a function
+
+      216 | function sendJsonResponse(res, statusCode, data) {
+      217 |   console.log(`sendJsonResponse is sending ${statusCode} with`, data); // Log all responses for API debugging
+    > 218 |   res.status(statusCode).json(data); // Express handles JSON serialization and Content-Type header
+          |       ^
+      219 | }
+      220 |
+      221 | /**
+
+      at status (lib/http.js:218:7)
+      at sendJsonResponse (lib/http.js:269:5)
+      at Object.getRequiredHeader (tests/unit/http.test.js:146:22)
+
+  ● HTTP Utilities › getRequiredHeader › should send error response when header is missing
+
+    TypeError: res.status is not a function
+
+      216 | function sendJsonResponse(res, statusCode, data) {
+      217 |   console.log(`sendJsonResponse is sending ${statusCode} with`, data); // Log all responses for API debugging
+    > 218 |   res.status(statusCode).json(data); // Express handles JSON serialization and Content-Type header
+          |       ^
+      219 | }
+      220 |
+      221 | /**
+
+      at status (lib/http.js:218:7)
+      at sendJsonResponse (lib/http.js:269:5)
+      at Object.getRequiredHeader (tests/unit/http.test.js:152:22)
+
+  ● HTTP Utilities › getRequiredHeader › should handle malformed request object
+
+    TypeError: res.status is not a function
+
+      216 | function sendJsonResponse(res, statusCode, data) {
+      217 |   console.log(`sendJsonResponse is sending ${statusCode} with`, data); // Log all responses for API debugging
+    > 218 |   res.status(statusCode).json(data); // Express handles JSON serialization and Content-Type header
+          |       ^
+      219 | }
+      220 |
+      221 | /**
+
+      at status (lib/http.js:218:7)
+      at sendJsonResponse (lib/http.js:269:5)
+      at Object.getRequiredHeader (tests/unit/http.test.js:161:22)
+
+  ● HTTP Utilities › getRequiredHeader › should handle undefined headers
+
+    TypeError: res.status is not a function
+
+      216 | function sendJsonResponse(res, statusCode, data) {
+      217 |   console.log(`sendJsonResponse is sending ${statusCode} with`, data); // Log all responses for API debugging
+    > 218 |   res.status(statusCode).json(data); // Express handles JSON serialization and Content-Type header
+          |       ^
+      219 | }
+      220 |
+      221 | /**
+
+      at status (lib/http.js:218:7)
+      at sendJsonResponse (lib/http.js:269:5)
+      at Object.getRequiredHeader (tests/unit/http.test.js:169:22)
+
+ FAIL  tests/unit/datetime.test.js
+  DateTime Utilities
+    formatDateTime
+      ✓ should format valid ISO date string (1 ms)
+      ✓ should return "N/A" for empty string
+      ✓ should return "N/A" for null input (1 ms)
+      ✓ should return "N/A" for undefined input
+      ✕ should return "N/A" for invalid date string
+      ✓ should handle different ISO formats (1 ms)
+    formatDuration
+      ✓ should calculate duration between two valid dates
+      ✓ should calculate duration from start to now when end is not provided
+      ✓ should return "00:00:00" for empty start date (1 ms)
+      ✓ should return "00:00:00" for null start date
+      ✓ should handle same start and end dates
+      ✓ should handle end date before start date (absolute difference) (1 ms)
+      ✕ should throw error for invalid start date
+      ✕ should throw error for invalid end date
+      ✓ should format durations correctly with zero padding
+
+  ● DateTime Utilities › formatDateTime › should return "N/A" for invalid date string
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "N/A"
+    Received: "Invalid Date"
+
+      23 |
+      24 |     test('should return "N/A" for invalid date string', () => {
+    > 25 |       expect(formatDateTime('invalid-date')).toBe('N/A');
+         |                                              ^
+      26 |     });
+      27 |
+      28 |     test('should handle different ISO formats', () => {
+
+      at Object.toBe (tests/unit/datetime.test.js:25:46)
+
+  ● DateTime Utilities › formatDuration › should throw error for invalid start date
+
+    expect(received).toThrow()
+
+    Received function did not throw
+
+      74 |
+      75 |     test('should throw error for invalid start date', () => {
+    > 76 |       expect(() => formatDuration('invalid-date')).toThrow();
+         |                                                    ^
+      77 |     });
+      78 |
+      79 |     test('should throw error for invalid end date', () => {
+
+      at Object.toThrow (tests/unit/datetime.test.js:76:52)
+
+  ● DateTime Utilities › formatDuration › should throw error for invalid end date
+
+    expect(received).toThrow()
+
+    Received function did not throw
+
+      79 |     test('should throw error for invalid end date', () => {
+      80 |       const start = '2023-12-25T10:00:00.000Z';
+    > 81 |       expect(() => formatDuration(start, 'invalid-date')).toThrow();
+         |                                                           ^
+      82 |     });
+      83 |
+      84 |     test('should format durations correctly with zero padding', () => {
+
+      at Object.toThrow (tests/unit/datetime.test.js:81:59)
+
+  console.error
+    Error rendering [object Object]: TypeError: res.render is not a function
+        at render (/home/runner/workspace/lib/views.js:73:9)
+        at Object.renderView (/home/runner/workspace/tests/unit/views.test.js:17:7)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+        at Object.worker (/home/runner/workspace/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      78 |     // Log error with template context for debugging template issues
+      79 |     qerrors(err, 'renderView', {viewName});
+    > 80 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      81 |     
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:80:13)
+      at Object.renderView (tests/unit/views.test.js:17:7)
+
+  console.error
+    Error rendering [object Object]: TypeError: res.render is not a function
+        at render (/home/runner/workspace/lib/views.js:73:9)
+        at Object.renderView (/home/runner/workspace/tests/unit/views.test.js:30:7)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+        at Object.worker (/home/runner/workspace/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      78 |     // Log error with template context for debugging template issues
+      79 |     qerrors(err, 'renderView', {viewName});
+    > 80 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      81 |     
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:80:13)
+      at Object.renderView (tests/unit/views.test.js:30:7)
+
+ FAIL  tests/unit/auth.test.js
+  Authentication Utilities
+    checkPassportAuth
+      ✓ should return true for authenticated user (3 ms)
+      ✓ should return false for unauthenticated user
+      ✓ should return false when isAuthenticated method is missing
+      ✓ should return false for empty request object
+      ✓ should return false when isAuthenticated throws error (1 ms)
+      ✕ should handle malformed request object
+      ✓ should handle truthy but non-boolean return from isAuthenticated
+      ✓ should handle falsy but non-boolean return from isAuthenticated
+    hasGithubStrategy
+      ✓ should return true when GitHub strategy is configured
+      ✓ should return false when GitHub strategy is not configured
+      ✓ should return false when no strategies are configured (1 ms)
+      ✓ should return false when passport is undefined
+      ✓ should return false when passport is null (1 ms)
+      ✓ should return false when _strategies is missing
+      ✓ should return false when _strategies is null
+      ✓ should handle errors in strategy detection
+
+  ● Authentication Utilities › checkPassportAuth › should handle malformed request object
+
+    TypeError: Cannot read properties of null (reading 'user')
+
+      54 |  */
+      55 | function checkPassportAuth(req) {
+    > 56 |   console.log(`checkPassportAuth is running with ${req.user ? req.user.username : 'guest'}`); // Log with user context for security auditing
+         |                                                        ^
+      57 |   try {
+      58 |     // Check if Passport authentication method exists and user is authenticated
+      59 |     // req.isAuthenticated is added by Passport.js middleware when properly configured
+
+      at user (lib/auth.js:56:56)
+      at Object.checkPassportAuth (tests/unit/auth.test.js:48:14)
+
+  console.error
+    Error rendering [object Object]: TypeError: res.render is not a function
+        at render (/home/runner/workspace/lib/views.js:73:9)
+        at Object.renderView (/home/runner/workspace/tests/unit/views.test.js:45:7)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+        at Object.worker (/home/runner/workspace/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      78 |     // Log error with template context for debugging template issues
+      79 |     qerrors(err, 'renderView', {viewName});
+    > 80 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      81 |     
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:80:13)
+      at Object.renderView (tests/unit/views.test.js:45:7)
+
+  console.error
+    Error rendering [object Object]: TypeError: res.render is not a function
+        at render (/home/runner/workspace/lib/views.js:73:9)
+        at renderView (/home/runner/workspace/tests/unit/views.test.js:63:9)
+        at Array.forEach (<anonymous>)
+        at Object.forEach (/home/runner/workspace/tests/unit/views.test.js:56:17)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+        at Object.worker (/home/runner/workspace/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      78 |     // Log error with template context for debugging template issues
+      79 |     qerrors(err, 'renderView', {viewName});
+    > 80 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      81 |     
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:80:13)
+      at renderView (tests/unit/views.test.js:63:9)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/unit/views.test.js:56:17)
+
+ FAIL  tests/unit/views.test.js
+  View Utilities
+    renderView
+      ✕ should render view successfully (94 ms)
+      ✕ should send error page when rendering fails (5 ms)
+      ✕ should include error message in error page (7 ms)
+      ✕ should handle different view names (3 ms)
+    registerViewRoute
+      ✕ should register route with correct path and handler (16 ms)
+      ✕ should create handler that calls renderView (1 ms)
+      ✓ should handle app registration errors gracefully (4 ms)
+      ✓ should handle missing global app
+      ✕ should register multiple routes (1 ms)
+
+  ● View Utilities › renderView › should render view successfully
+
+    TypeError: res.status is not a function
+
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+    > 84 |     res.status(500).send(`
+         |         ^
+      85 |       <h1>Template Error</h1>
+      86 |       <p>There was an error rendering the ${viewName} page:</p>
+      87 |       <pre>${err.message}</pre>
+
+      at status (lib/views.js:84:9)
+      at Object.renderView (tests/unit/views.test.js:17:7)
+
+  ● View Utilities › renderView › should send error page when rendering fails
+
+    TypeError: res.status is not a function
+
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+    > 84 |     res.status(500).send(`
+         |         ^
+      85 |       <h1>Template Error</h1>
+      86 |       <p>There was an error rendering the ${viewName} page:</p>
+      87 |       <pre>${err.message}</pre>
+
+      at status (lib/views.js:84:9)
+      at Object.renderView (tests/unit/views.test.js:30:7)
+
+  ● View Utilities › renderView › should include error message in error page
+
+    TypeError: res.status is not a function
+
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+    > 84 |     res.status(500).send(`
+         |         ^
+      85 |       <h1>Template Error</h1>
+      86 |       <p>There was an error rendering the ${viewName} page:</p>
+      87 |       <pre>${err.message}</pre>
+
+      at status (lib/views.js:84:9)
+      at Object.renderView (tests/unit/views.test.js:45:7)
+
+  ● View Utilities › renderView › should handle different view names
+
+    TypeError: res.status is not a function
+
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+    > 84 |     res.status(500).send(`
+         |         ^
+      85 |       <h1>Template Error</h1>
+      86 |       <p>There was an error rendering the ${viewName} page:</p>
+      87 |       <pre>${err.message}</pre>
+
+      at status (lib/views.js:84:9)
+      at renderView (tests/unit/views.test.js:63:9)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/unit/views.test.js:56:17)
+
+  ● View Utilities › registerViewRoute › should register route with correct path and handler
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "/dashboard", Any<Function>
+
+    Number of calls: 0
+
+      86 |       registerViewRoute('/dashboard', 'dashboard', 'Dashboard Error');
+      87 |       
+    > 88 |       expect(mockApp.get).toHaveBeenCalledWith('/dashboard', expect.any(Function));
+         |                           ^
+      89 |     });
+      90 |
+      91 |     test('should create handler that calls renderView', () => {
+
+      at Object.toHaveBeenCalledWith (tests/unit/views.test.js:88:27)
+
+  ● View Utilities › registerViewRoute › should create handler that calls renderView
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+      92 |       registerViewRoute('/profile', 'profile', 'Profile Error');
+      93 |       
+    > 94 |       const handler = mockApp.get.mock.calls[0][1];
+         |                                                ^
+      95 |       const mockReq = {};
+      96 |       const mockRes = {
+      97 |         render: jest.fn(),
+
+      at Object.<anonymous> (tests/unit/views.test.js:94:48)
+
+  ● View Utilities › registerViewRoute › should register multiple routes
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 3
+    Received number of calls: 0
+
+      135 |       });
+      136 |       
+    > 137 |       expect(mockApp.get).toHaveBeenCalledTimes(3);
+          |                           ^
+      138 |       expect(mockApp.get).toHaveBeenCalledWith('/home', expect.any(Function));
+      139 |       expect(mockApp.get).toHaveBeenCalledWith('/about', expect.any(Function));
+      140 |       expect(mockApp.get).toHaveBeenCalledWith('/contact', expect.any(Function));
+
+      at Object.toHaveBeenCalledTimes (tests/unit/views.test.js:137:27)
+
+  console.error
+    Error rendering [object Object]: TypeError: res.render is not a function
+        at Object.render [as renderView] (/home/runner/workspace/lib/views.js:73:9)
+        at renderView (/home/runner/workspace/tests/integration/error-handling.test.js:71:15)
+        at Array.forEach (<anonymous>)
+        at Object.forEach (/home/runner/workspace/tests/integration/error-handling.test.js:70:13)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+        at Object.worker (/home/runner/workspace/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      78 |     // Log error with template context for debugging template issues
+      79 |     qerrors(err, 'renderView', {viewName});
+    > 80 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      81 |     
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at Object.error [as renderView] (lib/views.js:80:13)
+      at renderView (tests/integration/error-handling.test.js:71:15)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:70:13)
+
+ FAIL  tests/integration/error-handling.test.js
+  Error Handling Integration Tests
+    Cascading Error Scenarios
+      ✕ should handle multiple module failures gracefully (2 ms)
+      ✕ should handle error propagation in API workflow (1 ms)
+    View Rendering Error Recovery
+      ✕ should handle template rendering failures across multiple views (48 ms)
+      ✓ should handle route registration with missing global app (1 ms)
+    HTTP Error Scenarios
+      ✓ should handle content-length calculation errors (2 ms)
+      ✕ should handle header cleaning with malformed headers (1 ms)
+    Authentication Error Scenarios
+      ✓ should handle passport strategy detection with broken global state (1 ms)
+      ✕ should handle authentication with various request object states
+    URL Processing Error Recovery
+      ✓ should handle malformed URLs throughout processing pipeline (1 ms)
+      ✕ should handle URL processing with partial failures (2 ms)
+    Data Validation Error Recovery
+      ✕ should handle validation with various malformed objects
+
+  ● Error Handling Integration Tests › Cascading Error Scenarios › should handle multiple module failures gracefully
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "N/A"
+    Received: "Invalid Date"
+
+      20 |       // Test invalid date processing
+      21 |       const invalidDate = 'not-a-date';
+    > 22 |       expect(utils.formatDateTime(invalidDate)).toBe('N/A');
+         |                                                 ^
+      23 |       
+      24 |       // Test invalid duration calculation should throw
+      25 |       expect(() => utils.formatDuration(invalidDate)).toThrow();
+
+      at Object.toBe (tests/integration/error-handling.test.js:22:49)
+
+  ● Error Handling Integration Tests › Cascading Error Scenarios › should handle error propagation in API workflow
+
+    TypeError: res.status is not a function
+
+      216 | function sendJsonResponse(res, statusCode, data) {
+      217 |   console.log(`sendJsonResponse is sending ${statusCode} with`, data); // Log all responses for API debugging
+    > 218 |   res.status(statusCode).json(data); // Express handles JSON serialization and Content-Type header
+          |       ^
+      219 | }
+      220 |
+      221 | /**
+
+      at status (lib/http.js:218:7)
+      at Object.sendJsonResponse [as getRequiredHeader] (lib/http.js:269:5)
+      at Object.getRequiredHeader (tests/integration/error-handling.test.js:51:20)
+
+  ● Error Handling Integration Tests › View Rendering Error Recovery › should handle template rendering failures across multiple views
+
+    TypeError: res.status is not a function
+
+      82 |     // Send user-friendly error page with helpful information
+      83 |     // This prevents users from seeing cryptic error messages or blank pages
+    > 84 |     res.status(500).send(`
+         |         ^
+      85 |       <h1>Template Error</h1>
+      86 |       <p>There was an error rendering the ${viewName} page:</p>
+      87 |       <pre>${err.message}</pre>
+
+      at Object.status [as renderView] (lib/views.js:84:9)
+      at renderView (tests/integration/error-handling.test.js:71:15)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:70:13)
+
+  ● Error Handling Integration Tests › HTTP Error Scenarios › should handle header cleaning with malformed headers
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: null
+    Received: {}
+
+      125 |     test('should handle header cleaning with malformed headers', () => {
+      126 |       // Should handle null/undefined headers
+    > 127 |       expect(utils.buildCleanHeaders(null, 'GET', null)).toEqual(null);
+          |                                                          ^
+      128 |       expect(utils.buildCleanHeaders(undefined, 'GET', null)).toEqual(undefined);
+      129 |       
+      130 |       // Should handle empty headers
+
+      at Object.toEqual (tests/integration/error-handling.test.js:127:58)
+
+  ● Error Handling Integration Tests › Authentication Error Scenarios › should handle authentication with various request object states
+
+    TypeError: Cannot read properties of null (reading 'user')
+
+      54 |  */
+      55 | function checkPassportAuth(req) {
+    > 56 |   console.log(`checkPassportAuth is running with ${req.user ? req.user.username : 'guest'}`); // Log with user context for security auditing
+         |                                                        ^
+      57 |   try {
+      58 |     // Check if Passport authentication method exists and user is authenticated
+      59 |     // req.isAuthenticated is added by Passport.js middleware when properly configured
+
+      at Object.user [as checkPassportAuth] (lib/auth.js:56:56)
+      at checkPassportAuth (tests/integration/error-handling.test.js:174:22)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:173:17)
+
+  ● Error Handling Integration Tests › URL Processing Error Recovery › should handle URL processing with partial failures
+
+    expect(received).toContain(expected) // indexOf
+
+    Matcher error: received value must not be null nor undefined
+
+    Received has value: null
+
+      213 |         
+      214 |         const normalized = utils.normalizeUrlOrigin(url);
+    > 215 |         expect(normalized).toContain('https://');
+          |                            ^
+      216 |         
+      217 |         const parsed = utils.parseUrlParts(url);
+      218 |         expect(parsed).toHaveProperty('baseUrl');
+
+      at toContain (tests/integration/error-handling.test.js:215:28)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:210:20)
+
+  ● Error Handling Integration Tests › Data Validation Error Recovery › should handle validation with various malformed objects
+
+    TypeError: Cannot read properties of null (reading 'join')
+
+      74 |  */
+      75 | function requireFields(obj, requiredFields, res) {
+    > 76 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      77 |   try {
+      78 |     // Find all fields that are missing or have falsy values
+      79 |     // Using filter() to collect all issues at once for better user experience
+
+      at Object.join [as requireFields] (lib/validation.js:76:63)
+      at requireFields (tests/integration/error-handling.test.js:243:30)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:239:17)
+
+---------|---------|----------|---------|---------|-------------------
+File     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+---------|---------|----------|---------|---------|-------------------
+...files |   74.46 |    73.43 |   83.33 |   75.67 |                   
+ ...pace |     100 |      100 |     100 |     100 |                   
+  ....js |     100 |      100 |     100 |     100 |                   
+ .../lib |   73.33 |    73.43 |   83.33 |   74.57 |                   
+  ....js |     100 |      100 |     100 |     100 |                   
+  ....js |   82.75 |      100 |     100 |   82.75 | 68-69,136-138     
+  ....js |   66.03 |    58.62 |      80 |    67.3 | ...90,260-265,270 
+  url.js |   82.22 |    91.66 |     100 |   82.22 | ...76-177,242-243 
+  ....js |   18.75 |        0 |      50 |      20 | 77-105            
+  ....js |   76.47 |    66.66 |   66.66 |   81.25 | 74,141-142        
+---------|---------|----------|---------|---------|-------------------
+Jest: "global" coverage threshold for statements (80%) not met: 74.46%
+Jest: "global" coverage threshold for branches (80%) not met: 73.43%
+Jest: "global" coverage threshold for lines (80%) not met: 75.67%
+Test Suites: 8 failed, 8 total
+Tests:       42 failed, 74 passed, 116 total
+Snapshots:   0 total
+Time:        1.489 s, estimated 2 s
+Ran all test suites.
+
+❌ Tests failed with exit code 1
