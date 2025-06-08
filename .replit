@@ -24,3 +24,21 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node test.js"
+
+[[workflows.workflow]]
+name = "Run Tests"
+author = 3706638
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm test"
+
+[[workflows.workflow]]
+name = "Test with Coverage"
+author = 3706638
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run test:coverage"

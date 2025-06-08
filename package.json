@@ -4,7 +4,12 @@
   "description": "A comprehensive utility library providing datetime formatting, HTTP helpers, URL manipulation, authentication checks, field validation, and view rendering with robust error handling",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/run-tests.js",
+    "test:watch": "node tests/run-tests.js --watch",
+    "test:coverage": "node tests/run-tests.js --coverage",
+    "test:unit": "node tests/run-tests.js tests/unit",
+    "test:integration": "node tests/run-tests.js tests/integration",
+    "test:verbose": "node tests/run-tests.js --verbose"
   },
   "keywords": [
     "utilities",
