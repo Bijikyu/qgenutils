@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -74,5 +74,20 @@ const invalidObj = { name: 'Jane', age: '' }; // missing email, falsy age
 
 console.log('Valid object:', requireFields(mockRes, validObj, ['name', 'email', 'age']));
 console.log('Invalid object:', requireFields(mockRes, invalidObj, ['name', 'email', 'age']));
+
+// Test checkPassportAuth function
+console.log('\nPassport authentication checker:');
+const mockAuthenticatedReq = {
+  user: { username: 'john_doe' },
+  isAuthenticated: () => true
+};
+const mockUnauthenticatedReq = {
+  isAuthenticated: () => false
+};
+const mockGuestReq = {};
+
+console.log('Authenticated user:', checkPassportAuth(mockAuthenticatedReq));
+console.log('Unauthenticated user:', checkPassportAuth(mockUnauthenticatedReq));
+console.log('Guest user (no passport):', checkPassportAuth(mockGuestReq));
 
 console.log('\nAll tests completed!');

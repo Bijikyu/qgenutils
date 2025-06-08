@@ -94,6 +94,27 @@ function requireFields(res, obj, fieldNames) {
 }
 
 /**
+ * Check Passport authentication status
+ * @param {object} req - Express request object
+ * @returns {boolean} True if user is authenticated, false otherwise
+ */
+function checkPassportAuth(req) {
+  console.log(`checkPassportAuth is running with ${req.user ? req.user.username : 'guest'}`); // Log authentication check with user context
+  try {
+    // Check if Passport authentication method exists and user is authenticated
+    // req.isAuthenticated is added by Passport.js middleware
+    const isAuthenticated = !!(req.isAuthenticated && req.isAuthenticated()); // convert to strict boolean using !! (description of change & current functionality)
+    console.log(`checkPassportAuth is returning ${isAuthenticated}`); // Log authentication result for debugging
+    return isAuthenticated;
+  } catch (error) {
+    // Handle any errors in authentication checking gracefully
+    // This prevents authentication errors from breaking the entire request
+    logError(error, 'checkPassportAuth', req); // Log error with request context
+    return false; // Default to unauthenticated state for security (fail-closed)
+  }
+}
+
+/**
  * Extract and validate required HTTP headers
  * @param {object} req - Express request object
  * @param {object} res - Express response object
@@ -253,7 +274,8 @@ module.exports = {
   parseUrlParts,
   getRequiredHeader,
   sendJsonResponse,
-  requireFields
+  requireFields,
+  checkPassportAuth
 };
 
 // Export functions for ES modules (if needed)
