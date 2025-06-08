@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -66,5 +66,13 @@ const mockRes = {
 
 console.log('Get required header (exists):', getRequiredHeader(mockReq, mockRes, 'authorization', 401, 'Missing authorization'));
 console.log('Get required header (missing):', getRequiredHeader(mockReq, mockRes, 'x-api-key', 401, 'Missing API key'));
+
+// Test requireFields function
+console.log('\nField validation function:');
+const validObj = { name: 'John', email: 'john@example.com', age: 30 };
+const invalidObj = { name: 'Jane', age: '' }; // missing email, falsy age
+
+console.log('Valid object:', requireFields(mockRes, validObj, ['name', 'email', 'age']));
+console.log('Invalid object:', requireFields(mockRes, invalidObj, ['name', 'email', 'age']));
 
 console.log('\nAll tests completed!');
