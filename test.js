@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth, hasGithubStrategy, buildCleanHeaders } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth, hasGithubStrategy, buildCleanHeaders, renderView, registerViewRoute } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -123,5 +123,54 @@ const testHeaders = {
 console.log('Clean headers for GET:', buildCleanHeaders(testHeaders, 'GET', null));
 console.log('Clean headers for POST with body:', buildCleanHeaders(testHeaders, 'POST', { name: 'test' }));
 console.log('Clean headers for POST without body:', buildCleanHeaders(testHeaders, 'POST', null));
+
+// Test renderView function
+console.log('\nTemplate rendering function:');
+const mockResForRender = {
+  render: function(viewName) {
+    console.log(`Successfully rendered template: ${viewName}`);
+  },
+  status: function(code) {
+    console.log(`Response status set to: ${code}`);
+    return this;
+  },
+  send: function(html) {
+    console.log(`Response HTML sent (truncated):`, html.substring(0, 100) + '...');
+    return this;
+  }
+};
+
+// Test successful rendering
+renderView(mockResForRender, 'dashboard', 'Dashboard Error');
+
+// Test error handling with mock that throws
+const mockResWithError = {
+  render: function(viewName) {
+    throw new Error('Template not found');
+  },
+  status: function(code) {
+    console.log(`Error response status set to: ${code}`);
+    return this;
+  },
+  send: function(html) {
+    console.log(`Error page sent (truncated):`, html.substring(0, 100) + '...');
+    return this;
+  }
+};
+
+renderView(mockResWithError, 'nonexistent', 'Template Error');
+
+// Test registerViewRoute function
+console.log('\nRoute registration function:');
+// Mock app object for testing
+global.app = {
+  get: function(path, handler) {
+    console.log(`Route registered: GET ${path}`);
+    // Test the handler
+    handler(mockReq, mockResForRender);
+  }
+};
+
+registerViewRoute('/dashboard', 'dashboard', 'Dashboard Error');
 
 console.log('\nAll tests completed!');
