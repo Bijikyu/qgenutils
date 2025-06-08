@@ -42,10 +42,49 @@ function formatDuration(startDate, endDate = null) {
   }
 }
 
+const { qerrors } = require('./utils/offline'); // import offline-aware qerrors
+
+/**
+ * Calculate the content length of a body in bytes
+ * @param {*} body - The body to calculate length for
+ * @returns {string} The content length as a string
+ */
+function calculateContentLength(body) {
+  console.log(`calculateContentLength is running with ${body}`); // start log
+  try {
+    if (body === undefined) throw new TypeError('Body is undefined'); // throw on undefined
+    const emptyObj = typeof body === 'object' && Object.keys(body).length === 0; // check empty object
+    if (body === null || body === '' || emptyObj) { // return zero only for valid empty bodies
+      console.log(`calculateContentLength is returning 0`); // return log
+      return '0'; // return zero as string
+    }
+
+    if (typeof body === 'string') { // handle string bodies
+      const len = Buffer.byteLength(body, 'utf8'); // compute byte size
+      console.log(`calculateContentLength is returning ${len}`); // return log
+      return len.toString(); // return length string
+    }
+
+    if (typeof body === 'object') { // handle object bodies
+      const jsonString = JSON.stringify(body); // stringify for count
+      const len = Buffer.byteLength(jsonString, 'utf8'); // compute bytes
+      console.log(`calculateContentLength is returning ${len}`); // return log
+      return len.toString(); // return length string
+    }
+
+    console.log(`calculateContentLength is returning 0`); // fallback log
+    return '0'; // fallback for unknown types
+  } catch (error) {
+    qerrors(error, 'calculateContentLength', { body }); // log errors via qerrors
+    throw error; // rethrow so caller handles invalid input
+  }
+}
+
 // Export functions for CommonJS
 module.exports = {
   formatDateTime,
-  formatDuration
+  formatDuration,
+  calculateContentLength
 };
 
 // Export functions for ES modules (if needed)
