@@ -1,21 +1,25 @@
+// Global test setup for Jest
+// This file runs before all tests to configure the testing environment
 
-// Test setup and global configuration
-const { jest } = require('@jest/globals');
-
-// Mock console methods to reduce noise during testing
+// Mock console methods to prevent test output pollution
 global.console = {
   ...console,
+  // Keep error and warn for debugging failed tests
   log: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
+  debug: jest.fn(),
   info: jest.fn(),
-  debug: jest.fn()
 };
 
 // Mock qerrors to prevent actual error logging during tests
 jest.mock('qerrors', () => ({
-  qerrors: jest.fn()
+  qerrors: jest.fn((error, context, data) => {
+    // Log the mock call for debugging if needed
+    // console.error(`Mock qerrors called: ${error.message || error}`);
+  })
 }));
+
+// Set up global test environment
+global.mockConsole = global.console;
 
 // Global test helpers
 global.createMockRequest = (overrides = {}) => ({
@@ -40,15 +44,9 @@ global.createMockResponse = (overrides = {}) => ({
 // Set up global test timeout
 jest.setTimeout(10000);
 
-// Clean up global state after each test
+// Clean up after each test
 afterEach(() => {
-  // Clear all mocks
   jest.clearAllMocks();
-  
-  // Reset console mocks
-  global.console.log.mockClear();
-  global.console.error.mockClear();
-  global.console.warn.mockClear();
 });
 
 // Set up test environment
