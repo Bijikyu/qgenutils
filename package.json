@@ -1,12 +1,31 @@
 {
   "name": "qgenutils",
   "version": "1.0.0",
-  "description": "",
+  "description": "A comprehensive utility library providing datetime formatting, HTTP helpers, URL manipulation, authentication checks, field validation, and view rendering with robust error handling",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "utilities",
+    "datetime",
+    "http",
+    "url",
+    "validation",
+    "authentication",
+    "passport",
+    "express",
+    "nodejs",
+    "formatting",
+    "duration",
+    "headers",
+    "content-length",
+    "error-handling",
+    "templates",
+    "ejs",
+    "api",
+    "web-development"
+  ],
   "author": "Q",
   "license": "ISC",
   "dependencies": {
