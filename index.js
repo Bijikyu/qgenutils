@@ -42,10 +42,7 @@ function formatDuration(startDate, endDate = null) {
   }
 }
 
-// Simple error logging function to replace qerrors
-function logError(error, functionName, context) {
-  console.error(`Error in ${functionName}:`, error.message, 'Context:', context);
-}
+const qerrors = require('qerrors');
 
 /**
  * Send a consistent JSON response
@@ -109,7 +106,7 @@ function checkPassportAuth(req) {
   } catch (error) {
     // Handle any errors in authentication checking gracefully
     // This prevents authentication errors from breaking the entire request
-    logError(error, 'checkPassportAuth', req); // Log error with request context
+    qerrors(error, 'checkPassportAuth', req); // Log error with request context
     return false; // Default to unauthenticated state for security (fail-closed)
   }
 }
@@ -125,7 +122,7 @@ function hasGithubStrategy() {
     console.log(`hasGithubStrategy is returning ${configured}`); // log boolean result
     return configured; // return evaluation
   } catch (error) {
-    logError(error, 'hasGithubStrategy'); // log unexpected error context
+    qerrors(error, 'hasGithubStrategy'); // log unexpected error context
     return false; // default absence on error
   }
 }
@@ -151,7 +148,7 @@ function getRequiredHeader(req, res, headerName, statusCode, errorMessage) {
     console.log(`getRequiredHeader is returning ${headerValue}`); // Log successful header extraction
     return headerValue; // Return found header value
   } catch (error) {
-    logError(error, 'getRequiredHeader', { headerName, statusCode, errorMessage }); // Log unexpected error
+    qerrors(error, 'getRequiredHeader', { headerName, statusCode, errorMessage }); // Log unexpected error
     sendJsonResponse(res, 500, { error: 'Internal server error' }); // use sendJsonResponse for fallback error
     return null; // Signal failure to calling code
   }
@@ -166,7 +163,7 @@ function ensureProtocol(url) {
   console.log(`ensureProtocol is running with ${url}`); // start log for incoming value
   try {
     if (typeof url !== 'string' || !url) { // validate url is usable string
-      logError(new Error('invalid url input'), 'ensureProtocol', url); // record bad input with context
+      qerrors(new Error('invalid url input'), 'ensureProtocol', url); // record bad input with context
       console.log(`ensureProtocol is returning null`); // log early return path
       return null; // gracefully exit when invalid
     }
@@ -176,7 +173,7 @@ function ensureProtocol(url) {
     console.log(`ensureProtocol is returning ${finalUrl}`); // log return
     return finalUrl; // Return unchanged if protocol already present
   } catch (error) {
-    logError(error, 'ensureProtocol', url); // error path logs context
+    qerrors(error, 'ensureProtocol', url); // error path logs context
     return url; // fallback return original
   }
 }
@@ -193,7 +190,7 @@ function normalizeUrlOrigin(url) {
     console.log(`normalizeUrlOrigin is returning ${origin}`); // log return
     return origin;
   } catch (error) {
-    logError(error, 'normalizeUrlOrigin', url); // log error with context
+    qerrors(error, 'normalizeUrlOrigin', url); // log error with context
     return null; // graceful failure
   }
 }
@@ -212,7 +209,7 @@ function stripProtocol(url) {
     console.log(`stripProtocol is returning ${processed}`); // log return
     return processed;
   } catch (error) {
-    logError(error, 'stripProtocol', url); // log error
+    qerrors(error, 'stripProtocol', url); // log error
     return url; // fallback to original
   }
 }
@@ -238,7 +235,7 @@ function parseUrlParts(url) {
     console.log(`parseUrlParts is returning ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
-    logError(error, 'parseUrlParts', url);
+    qerrors(error, 'parseUrlParts', url);
     return null;
   }
 }
@@ -274,7 +271,7 @@ function calculateContentLength(body) {
     console.log(`calculateContentLength is returning 0`); // fallback log
     return '0'; // fallback for unknown types
   } catch (error) {
-    logError(error, 'calculateContentLength', { body }); // log errors via logError
+    qerrors(error, 'calculateContentLength', { body }); // log errors via qerrors
     throw error; // rethrow so caller handles invalid input
   }
 }
