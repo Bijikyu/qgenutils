@@ -42,7 +42,7 @@ function formatDuration(startDate, endDate = null) {
   }
 }
 
-const { qerrors } = require('./utils/offline'); // import offline-aware qerrors
+const { qerrors } = require('qerrors'); // import offline-aware qerrors
 
 /**
  * Calculate the content length of a body in bytes
@@ -53,7 +53,7 @@ function calculateContentLength(body) {
   console.log(`calculateContentLength is running with ${body}`); // start log
   try {
     if (body === undefined) throw new TypeError('Body is undefined'); // throw on undefined
-    const emptyObj = typeof body === 'object' && Object.keys(body).length === 0; // check empty object
+    const emptyObj = typeof body === 'object' && body !== null && Object.keys(body).length === 0; // check empty object
     if (body === null || body === '' || emptyObj) { // return zero only for valid empty bodies
       console.log(`calculateContentLength is returning 0`); // return log
       return '0'; // return zero as string
