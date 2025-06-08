@@ -1,0 +1,783 @@
+~/workspace$ node tests/run-tests.js
+🧪 Running QGenUtils Test Suite...
+
+Configuration: /home/runner/workspace/tests/jest.config.js
+Root Directory: /home/runner/workspace
+Jest Arguments: --config /home/runner/workspace/tests/jest.config.js --rootDir /home/runner/workspace --coverage
+
+  console.error
+    Error rendering [object Object]: Error: res.render is not a function
+        at renderView (/home/runner/workspace/lib/views.js:75:13)
+        at Object.renderView (/home/runner/workspace/tests/unit/views.test.js:17:7)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+
+      81 |     // Log error with template context for debugging template issues
+      82 |     qerrors(err, 'renderView', {viewName});
+    > 83 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      84 |
+      85 |     // Send user-friendly error page with helpful information if res is available
+      86 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:83:13)
+      at Object.renderView (tests/unit/views.test.js:17:7)
+
+  console.error
+    Error rendering [object Object]: Error: res.render is not a function
+        at renderView (/home/runner/workspace/lib/views.js:75:13)
+        at Object.renderView (/home/runner/workspace/tests/unit/views.test.js:30:7)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+
+      81 |     // Log error with template context for debugging template issues
+      82 |     qerrors(err, 'renderView', {viewName});
+    > 83 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      84 |
+      85 |     // Send user-friendly error page with helpful information if res is available
+      86 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:83:13)
+      at Object.renderView (tests/unit/views.test.js:30:7)
+
+  console.error
+    Error rendering [object Object]: Error: res.render is not a function
+        at renderView (/home/runner/workspace/lib/views.js:75:13)
+        at Object.renderView (/home/runner/workspace/tests/unit/views.test.js:45:7)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+
+      81 |     // Log error with template context for debugging template issues
+      82 |     qerrors(err, 'renderView', {viewName});
+    > 83 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      84 |
+      85 |     // Send user-friendly error page with helpful information if res is available
+      86 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:83:13)
+      at Object.renderView (tests/unit/views.test.js:45:7)
+
+  console.error
+    Error rendering [object Object]: Error: res.render is not a function
+        at renderView (/home/runner/workspace/lib/views.js:75:13)
+        at renderView (/home/runner/workspace/tests/unit/views.test.js:63:9)
+        at Array.forEach (<anonymous>)
+        at Object.forEach (/home/runner/workspace/tests/unit/views.test.js:56:17)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+
+      81 |     // Log error with template context for debugging template issues
+      82 |     qerrors(err, 'renderView', {viewName});
+    > 83 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      84 |
+      85 |     // Send user-friendly error page with helpful information if res is available
+      86 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at error (lib/views.js:83:13)
+      at renderView (tests/unit/views.test.js:63:9)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/unit/views.test.js:56:17)
+
+ FAIL  tests/unit/views.test.js
+  View Utilities
+    renderView
+      ✕ should render view successfully (41 ms)
+      ✕ should send error page when rendering fails (4 ms)
+      ✕ should include error message in error page (4 ms)
+      ✕ should handle different view names (9 ms)
+    registerViewRoute
+      ✕ should register route with correct path and handler (1 ms)
+      ✕ should create handler that calls renderView (1 ms)
+      ✓ should handle app registration errors gracefully (1 ms)
+      ✓ should handle missing global app (1 ms)
+      ✕ should register multiple routes (2 ms)
+
+  ● View Utilities › renderView › should render view successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "dashboard"
+
+    Number of calls: 0
+
+      17 |       renderView(mockRes, 'dashboard', 'Dashboard Error');
+      18 |       
+    > 19 |       expect(mockRes.render).toHaveBeenCalledWith('dashboard');
+         |                              ^
+      20 |       expect(mockRes.status).not.toHaveBeenCalled();
+      21 |       expect(mockRes.send).not.toHaveBeenCalled();
+      22 |     });
+
+      at Object.toHaveBeenCalledWith (tests/unit/views.test.js:19:30)
+
+  ● View Utilities › renderView › should send error page when rendering fails
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "nonexistent"
+
+    Number of calls: 0
+
+      30 |       renderView(mockRes, 'nonexistent', 'Template Error');
+      31 |       
+    > 32 |       expect(mockRes.render).toHaveBeenCalledWith('nonexistent');
+         |                              ^
+      33 |       expect(mockRes.status).toHaveBeenCalledWith(500);
+      34 |       expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template Error'));
+      35 |       expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template not found'));
+
+      at Object.toHaveBeenCalledWith (tests/unit/views.test.js:32:30)
+
+  ● View Utilities › renderView › should include error message in error page
+
+    TypeError: Cannot read properties of undefined (reading '0')
+
+      45 |       renderView(mockRes, 'failing-view', 'Custom Error Title');
+      46 |       
+    > 47 |       const sentContent = mockRes.send.mock.calls[0][0];
+         |                                                     ^
+      48 |       expect(sentContent).toContain('Custom Error Title');
+      49 |       expect(sentContent).toContain('Custom error message');
+      50 |       expect(sentContent).toContain('failing-view');
+
+      at Object.<anonymous> (tests/unit/views.test.js:47:53)
+
+  ● View Utilities › renderView › should handle different view names
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "dashboard"
+
+    Number of calls: 0
+
+      62 |         
+      63 |         renderView(freshMockRes, viewName, 'Error');
+    > 64 |         expect(freshMockRes.render).toHaveBeenCalledWith(viewName);
+         |                                     ^
+      65 |       });
+      66 |     });
+      67 |   });
+
+      at toHaveBeenCalledWith (tests/unit/views.test.js:64:37)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/unit/views.test.js:56:17)
+
+  ● View Utilities › registerViewRoute › should register route with correct path and handler
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "/dashboard", Any<Function>
+
+    Number of calls: 0
+
+      86 |       registerViewRoute('/dashboard', 'dashboard', 'Dashboard Error');
+      87 |       
+    > 88 |       expect(mockApp.get).toHaveBeenCalledWith('/dashboard', expect.any(Function));
+         |                           ^
+      89 |     });
+      90 |
+      91 |     test('should create handler that calls renderView', () => {
+
+      at Object.toHaveBeenCalledWith (tests/unit/views.test.js:88:27)
+
+  ● View Utilities › registerViewRoute › should create handler that calls renderView
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+      92 |       registerViewRoute('/profile', 'profile', 'Profile Error');
+      93 |       
+    > 94 |       const handler = mockApp.get.mock.calls[0][1];
+         |                                                ^
+      95 |       const mockReq = {};
+      96 |       const mockRes = {
+      97 |         render: jest.fn(),
+
+      at Object.<anonymous> (tests/unit/views.test.js:94:48)
+
+  ● View Utilities › registerViewRoute › should register multiple routes
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 3
+    Received number of calls: 0
+
+      135 |       });
+      136 |       
+    > 137 |       expect(mockApp.get).toHaveBeenCalledTimes(3);
+          |                           ^
+      138 |       expect(mockApp.get).toHaveBeenCalledWith('/home', expect.any(Function));
+      139 |       expect(mockApp.get).toHaveBeenCalledWith('/about', expect.any(Function));
+      140 |       expect(mockApp.get).toHaveBeenCalledWith('/contact', expect.any(Function));
+
+      at Object.toHaveBeenCalledTimes (tests/unit/views.test.js:137:27)
+
+ PASS  tests/unit/http.test.js
+  HTTP Utilities
+    calculateContentLength
+      ✓ should calculate length for string body (2 ms)
+      ✓ should calculate length for object body (1 ms)
+      ✓ should return "0" for empty string
+      ✓ should return "0" for empty object
+      ✓ should return "0" for null body (1 ms)
+      ✓ should throw error for undefined body (36 ms)
+      ✓ should handle UTF-8 characters correctly (1 ms)
+      ✓ should handle complex nested objects
+    buildCleanHeaders
+      ✓ should remove dangerous headers for GET request (1 ms)
+      ✓ should remove dangerous headers and set content-length for POST with body (1 ms)
+      ✓ should not set content-length for POST without body (1 ms)
+      ✓ should handle empty headers object
+      ✓ should not mutate original headers (2 ms)
+    sendJsonResponse
+      ✓ should send JSON response with correct status (1 ms)
+      ✓ should handle error responses (2 ms)
+    getRequiredHeader
+      ✓ should return header value when present (1 ms)
+      ✓ should send error response when header is missing (1 ms)
+      ✓ should handle malformed request object (1 ms)
+      ✓ should handle undefined headers (1 ms)
+
+ FAIL  tests/unit/validation.test.js
+  Validation Utilities
+    requireFields
+      ✕ should return true when all required fields are present (1 ms)
+      ✕ should return false and send error for missing fields (1 ms)
+      ✕ should return false for multiple missing fields
+      ✕ should treat falsy values as missing
+      ✕ should handle empty object (1 ms)
+      ✕ should handle empty required fields array
+      ✕ should handle undefined object gracefully (1 ms)
+      ✕ should handle null object gracefully
+      ✕ should accept truthy values
+
+  ● Validation Utilities › requireFields › should return true when all required fields are present
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:17:22)
+
+  ● Validation Utilities › requireFields › should return false and send error for missing fields
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:25:22)
+
+  ● Validation Utilities › requireFields › should return false for multiple missing fields
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:36:22)
+
+  ● Validation Utilities › requireFields › should treat falsy values as missing
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:47:22)
+
+  ● Validation Utilities › requireFields › should handle empty object
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:58:22)
+
+  ● Validation Utilities › requireFields › should handle empty required fields array
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:66:22)
+
+  ● Validation Utilities › requireFields › should handle undefined object gracefully
+
+    TypeError: Cannot read properties of undefined (reading 'join')
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:73:22)
+
+  ● Validation Utilities › requireFields › should handle null object gracefully
+
+    TypeError: Cannot read properties of null (reading 'join')
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:83:22)
+
+  ● Validation Utilities › requireFields › should accept truthy values
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/unit/validation.test.js:97:22)
+
+ FAIL  tests/integration/module-interactions.test.js
+  Module Integration Tests
+    HTTP and URL Integration
+      ✓ should process URL and calculate content length for API request (1 ms)
+      ✓ should normalize URLs and build appropriate headers
+    Validation and Authentication Integration
+      ✕ should validate required fields and check authentication together
+      ✕ should handle unauthenticated user with valid fields
+    DateTime and HTTP Integration
+      ✓ should format timestamps and include in HTTP responses (15 ms)
+      ✓ should handle malformed dates in HTTP context
+    Complete Request Processing Workflow
+      ✕ should simulate complete API request processing (1 ms)
+      ✕ should handle complete workflow with validation failure (1 ms)
+      ✕ should handle complete workflow with authentication failure
+
+  ● Module Integration Tests › Validation and Authentication Integration › should validate required fields and check authentication together
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:82:23)
+
+  ● Module Integration Tests › Validation and Authentication Integration › should handle unauthenticated user with valid fields
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:103:23)
+
+  ● Module Integration Tests › Complete Request Processing Workflow › should simulate complete API request processing
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:190:27)
+
+  ● Module Integration Tests › Complete Request Processing Workflow › should handle complete workflow with validation failure
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:242:27)
+
+  ● Module Integration Tests › Complete Request Processing Workflow › should handle complete workflow with authentication failure
+
+    TypeError: requiredFields.join is not a function
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at join (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/module-interactions.test.js:266:27)
+
+ FAIL  tests/unit/url.test.js
+  URL Utilities
+    ensureProtocol
+      ✓ should add https to URL without protocol (1 ms)
+      ✓ should preserve existing https protocol
+      ✓ should preserve existing http protocol
+      ✓ should handle case-insensitive protocols
+      ✓ should return null for empty string (1 ms)
+      ✓ should return null for null input
+      ✓ should return null for non-string input
+      ✓ should handle URLs with paths (1 ms)
+      ✓ should handle URLs with query parameters
+    normalizeUrlOrigin
+      ✓ should normalize URL to lowercase origin (1 ms)
+      ✓ should handle URL without protocol
+      ✓ should preserve port numbers
+      ✓ should return null for invalid URLs (1 ms)
+      ✕ should handle complex URLs (2 ms)
+    stripProtocol
+      ✓ should remove https protocol
+      ✓ should remove http protocol
+      ✓ should remove trailing slash (1 ms)
+      ✓ should handle case-insensitive protocols
+      ✓ should preserve paths and query parameters (1 ms)
+      ✓ should handle URLs without protocol
+      ✓ should handle error cases gracefully (1 ms)
+    parseUrlParts
+      ✓ should parse URL into base and endpoint
+      ✓ should handle URL with existing protocol (1 ms)
+      ✓ should handle root path
+      ✓ should handle URL without path
+      ✓ should return null for invalid URLs (1 ms)
+      ✓ should handle URLs with ports
+      ✓ should handle complex query parameters (1 ms)
+
+  ● URL Utilities › normalizeUrlOrigin › should handle complex URLs
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "https://api.example.com:443"
+    Received: "https://api.example.com"
+
+      62 |
+      63 |     test('should handle complex URLs', () => {
+    > 64 |       expect(normalizeUrlOrigin('HTTPS://API.Example.Com:443/v1/users?id=123')).toBe('https://api.example.com:443');
+         |                                                                                 ^
+      65 |     });
+      66 |   });
+      67 |
+
+      at Object.toBe (tests/unit/url.test.js:64:81)
+
+  console.error
+    Error rendering [object Object]: Error: res.render is not a function
+        at Object.renderView (/home/runner/workspace/lib/views.js:75:13)
+        at renderView (/home/runner/workspace/tests/integration/error-handling.test.js:71:15)
+        at Array.forEach (<anonymous>)
+        at Object.forEach (/home/runner/workspace/tests/integration/error-handling.test.js:70:13)
+        at Promise.then.completed (/home/runner/workspace/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:316:40)
+        at _runTest (/home/runner/workspace/node_modules/jest-circus/build/run.js:252:3)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/run.js:121:9)
+        at run (/home/runner/workspace/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/home/runner/workspace/node_modules/jest-runner/build/runTest.js:444:34)
+
+      81 |     // Log error with template context for debugging template issues
+      82 |     qerrors(err, 'renderView', {viewName});
+    > 83 |     console.error(`Error rendering ${viewName}:`, err); // Additional console logging for immediate debugging
+         |             ^
+      84 |
+      85 |     // Send user-friendly error page with helpful information if res is available
+      86 |     // This prevents users from seeing cryptic error messages or blank pages
+
+      at Object.error [as renderView] (lib/views.js:83:13)
+      at renderView (tests/integration/error-handling.test.js:71:15)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:70:13)
+
+ FAIL  tests/integration/error-handling.test.js
+  Error Handling Integration Tests
+    Cascading Error Scenarios
+      ✕ should handle multiple module failures gracefully (9 ms)
+      ✕ should handle error propagation in API workflow (1 ms)
+    View Rendering Error Recovery
+      ✕ should handle template rendering failures across multiple views (6 ms)
+      ✓ should handle route registration with missing global app (1 ms)
+    HTTP Error Scenarios
+      ✓ should handle content-length calculation errors (3 ms)
+      ✓ should handle header cleaning with malformed headers (1 ms)
+    Authentication Error Scenarios
+      ✓ should handle passport strategy detection with broken global state
+      ✓ should handle authentication with various request object states
+    URL Processing Error Recovery
+      ✓ should handle malformed URLs throughout processing pipeline (2 ms)
+      ✕ should handle URL processing with partial failures (2 ms)
+    Data Validation Error Recovery
+      ✕ should handle validation with various malformed objects (1 ms)
+
+  ● Error Handling Integration Tests › Cascading Error Scenarios › should handle multiple module failures gracefully
+
+    TypeError: Cannot read properties of null (reading 'join')
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at Object.join [as requireFields] (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/error-handling.test.js:28:20)
+
+  ● Error Handling Integration Tests › Cascading Error Scenarios › should handle error propagation in API workflow
+
+    TypeError: Cannot read properties of undefined (reading 'join')
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at Object.join [as requireFields] (lib/validation.js:75:63)
+      at Object.requireFields (tests/integration/error-handling.test.js:54:20)
+
+  ● Error Handling Integration Tests › View Rendering Error Recovery › should handle template rendering failures across multiple views
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: 500
+
+    Number of calls: 0
+
+      71 |         utils.renderView(mockRes, view, `${view} Error`);
+      72 |         
+    > 73 |         expect(mockRes.status).toHaveBeenCalledWith(500);
+         |                                ^
+      74 |         expect(mockRes.send).toHaveBeenCalledWith(
+      75 |           expect.stringContaining(`${view} Error`)
+      76 |         );
+
+      at toHaveBeenCalledWith (tests/integration/error-handling.test.js:73:32)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:70:13)
+
+  ● Error Handling Integration Tests › URL Processing Error Recovery › should handle URL processing with partial failures
+
+    expect(received).toContain(expected) // indexOf
+
+    Matcher error: received value must not be null nor undefined
+
+    Received has value: null
+
+      213 |         
+      214 |         const normalized = utils.normalizeUrlOrigin(url);
+    > 215 |         expect(normalized).toContain('https://');
+          |                            ^
+      216 |         
+      217 |         const parsed = utils.parseUrlParts(url);
+      218 |         expect(parsed).toHaveProperty('baseUrl');
+
+      at toContain (tests/integration/error-handling.test.js:215:28)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:210:20)
+
+  ● Error Handling Integration Tests › Data Validation Error Recovery › should handle validation with various malformed objects
+
+    TypeError: Cannot read properties of null (reading 'join')
+
+      73 |  */
+      74 | function requireFields(obj, requiredFields, res) {
+    > 75 |   console.log(`requireFields is running with ${requiredFields.join(',')}`); // Log validation attempt with field list
+         |                                                               ^
+      76 |   try {
+      77 |     // Find all fields that are missing or have falsy values
+      78 |     // Using filter() to collect all issues at once for better user experience
+
+      at Object.join [as requireFields] (lib/validation.js:75:63)
+      at requireFields (tests/integration/error-handling.test.js:243:30)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (tests/integration/error-handling.test.js:239:17)
+
+ PASS  tests/unit/datetime.test.js
+  DateTime Utilities
+    formatDateTime
+      ✓ should format valid ISO date string (1 ms)
+      ✓ should return "N/A" for empty string
+      ✓ should return "N/A" for null input (1 ms)
+      ✓ should return "N/A" for undefined input
+      ✓ should return "N/A" for invalid date string (1 ms)
+      ✓ should handle different ISO formats (1 ms)
+    formatDuration
+      ✓ should calculate duration between two valid dates
+      ✓ should calculate duration from start to now when end is not provided (1 ms)
+      ✓ should return "00:00:00" for empty start date
+      ✓ should return "00:00:00" for null start date (1 ms)
+      ✓ should handle same start and end dates
+      ✓ should handle end date before start date (absolute difference) (1 ms)
+      ✓ should throw error for invalid start date (9 ms)
+      ✓ should throw error for invalid end date (1 ms)
+      ✓ should format durations correctly with zero padding
+
+ PASS  tests/unit/auth.test.js
+  Authentication Utilities
+    checkPassportAuth
+      ✓ should return true for authenticated user (1 ms)
+      ✓ should return false for unauthenticated user (1 ms)
+      ✓ should return false when isAuthenticated method is missing
+      ✓ should return false for empty request object (1 ms)
+      ✓ should return false when isAuthenticated throws error
+      ✓ should handle malformed request object (1 ms)
+      ✓ should handle truthy but non-boolean return from isAuthenticated
+      ✓ should handle falsy but non-boolean return from isAuthenticated (1 ms)
+    hasGithubStrategy
+      ✓ should return true when GitHub strategy is configured
+      ✓ should return false when GitHub strategy is not configured
+      ✓ should return false when no strategies are configured
+      ✓ should return false when passport is undefined
+      ✓ should return false when passport is null
+      ✓ should return false when _strategies is missing
+      ✓ should return false when _strategies is null
+      ✓ should handle errors in strategy detection
+
+---------|---------|----------|---------|---------|-------------------
+File     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+---------|---------|----------|---------|---------|-------------------
+...files |   82.03 |    83.49 |   88.88 |   82.35 |                   
+ ...pace |     100 |      100 |     100 |     100 |                   
+  ....js |     100 |      100 |     100 |     100 |                   
+ .../lib |   81.31 |    83.49 |   88.88 |   81.63 |                   
+  ....js |     100 |      100 |     100 |     100 |                   
+  ....js |   94.59 |      100 |     100 |   94.59 | 75-76             
+  ....js |   85.96 |    93.54 |     100 |   85.71 | ...95-196,274-276 
+  url.js |   83.33 |       90 |     100 |   83.33 | ...86-187,252-253 
+  ....js |   18.75 |        0 |      50 |      20 | 76-105            
+  ....js |      70 |    56.25 |   66.66 |      70 | 73,77,88,146-150  
+---------|---------|----------|---------|---------|-------------------
+Test Suites: 5 failed, 3 passed, 8 total
+Tests:       27 failed, 89 passed, 116 total
+Snapshots:   0 total
+Time:        1.674 s
+Ran all test suites.
+
+❌ Tests failed with exit code 1
