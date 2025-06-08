@@ -1,28 +1,17 @@
+# Date/Time Utility Module
 
-# My Utility Module
-
-A simple utility module with common helper functions for JavaScript projects.
+A simple utility module for date and time formatting in JavaScript projects.
 
 ## Installation
 
 ```bash
-npm install my-utility-module
+npm install
 ```
 
 ## Usage
 
 ```javascript
-const { greet, capitalize, randomBetween, formatDateTime, formatDuration } = require('my-utility-module');
-
-// Greeting function
-console.log(greet('John')); // "Hello, John!"
-console.log(greet('Jane', 'Hi')); // "Hi, Jane!"
-
-// Capitalize function
-console.log(capitalize('hello world')); // "Hello World"
-
-// Random number generator
-console.log(randomBetween(1, 10)); // Random number between 1 and 10
+const { formatDateTime, formatDuration } = require('./index.js');
 
 // Date/time formatting
 const isoDate = '2023-12-25T10:30:00.000Z';
@@ -32,32 +21,12 @@ console.log(formatDateTime(isoDate)); // "12/25/2023, 10:30:00 AM" (locale-depen
 const startDate = '2023-12-25T10:00:00.000Z';
 const endDate = '2023-12-25T11:30:45.000Z';
 console.log(formatDuration(startDate, endDate)); // "01:30:45"
+
+// Duration from a start time to now
+console.log(formatDuration(startDate)); // Duration from startDate to current time
 ```
 
 ## API
-
-### greet(name, greeting?)
-
-Greets a person with a custom message.
-
-- `name` (string): The name of the person to greet
-- `greeting` (string, optional): The greeting to use (defaults to "Hello")
-- Returns: string - The greeting message
-
-### capitalize(str)
-
-Capitalizes the first letter of each word in a string.
-
-- `str` (string): The string to capitalize
-- Returns: string - The capitalized string
-
-### randomBetween(min, max)
-
-Generates a random number between min and max (inclusive).
-
-- `min` (number): The minimum value
-- `max` (number): The maximum value
-- Returns: number - A random number between min and max
 
 ### formatDateTime(dateString)
 
@@ -65,6 +34,7 @@ Converts an ISO date string to a locale-specific display format.
 
 - `dateString` (string): The ISO date string to format
 - Returns: string - The formatted date string or "N/A" if input is empty
+- Throws: Error if the date string is invalid
 
 ### formatDuration(startDate, endDate?)
 
@@ -73,6 +43,21 @@ Shows elapsed time between two dates in hh:mm:ss format.
 - `startDate` (string): The start date ISO string
 - `endDate` (string, optional): The end date ISO string (defaults to current time)
 - Returns: string - The formatted duration string or "00:00:00" if start date is empty
+- Throws: Error if either date string is invalid
+
+## Testing
+
+Run the test suite to see the functions in action:
+
+```bash
+npm test
+```
+
+Or run the test file directly:
+
+```bash
+node test.js
+```
 
 ## License
 
