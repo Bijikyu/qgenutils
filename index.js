@@ -42,7 +42,48 @@ function formatDuration(startDate, endDate = null) {
   }
 }
 
-const { qerrors } = require('qerrors'); // import offline-aware qerrors
+// Simple error logging function to replace qerrors
+function logError(error, functionName, context) {
+  console.error(`Error in ${functionName}:`, error.message, 'Context:', context);
+}
+
+/**
+ * Send a consistent JSON response
+ * @param {object} res - Express response object
+ * @param {number} statusCode - HTTP status code
+ * @param {object} data - Response data
+ */
+function sendJsonResponse(res, statusCode, data) {
+  console.log(`sendJsonResponse is sending ${statusCode} with`, data);
+  res.status(statusCode).json(data);
+}
+
+/**
+ * Extract and validate required HTTP headers
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @param {string} headerName - Name of the required header
+ * @param {number} statusCode - Status code to send if header is missing
+ * @param {string} errorMessage - Error message to send if header is missing
+ * @returns {string|null} The header value or null if missing/error
+ */
+function getRequiredHeader(req, res, headerName, statusCode, errorMessage) {
+  console.log(`getRequiredHeader is running with ${headerName}`); // Log header extraction attempt
+  try {
+    const headerValue = req?.headers?.[headerName]; // Safely access header value even if headers undefined
+    if (!headerValue) {
+      sendJsonResponse(res, statusCode, { error: errorMessage }); // use sendJsonResponse for consistent error output
+      console.log(`getRequiredHeader is returning null due to missing header`); // Log validation failure
+      return null; // Inform caller that header was missing
+    }
+    console.log(`getRequiredHeader is returning ${headerValue}`); // Log successful header extraction
+    return headerValue; // Return found header value
+  } catch (error) {
+    logError(error, 'getRequiredHeader', { headerName, statusCode, errorMessage }); // Log unexpected error
+    sendJsonResponse(res, 500, { error: 'Internal server error' }); // use sendJsonResponse for fallback error
+    return null; // Signal failure to calling code
+  }
+}
 
 /**
  * Ensure a URL has a protocol (defaults to HTTPS)
@@ -53,7 +94,7 @@ function ensureProtocol(url) {
   console.log(`ensureProtocol is running with ${url}`); // start log for incoming value
   try {
     if (typeof url !== 'string' || !url) { // validate url is usable string
-      qerrors(new Error('invalid url input'), 'ensureProtocol', url); // record bad input with context
+      logError(new Error('invalid url input'), 'ensureProtocol', url); // record bad input with context
       console.log(`ensureProtocol is returning null`); // log early return path
       return null; // gracefully exit when invalid
     }
@@ -63,7 +104,7 @@ function ensureProtocol(url) {
     console.log(`ensureProtocol is returning ${finalUrl}`); // log return
     return finalUrl; // Return unchanged if protocol already present
   } catch (error) {
-    qerrors(error, 'ensureProtocol', url); // error path logs context
+    logError(error, 'ensureProtocol', url); // error path logs context
     return url; // fallback return original
   }
 }
@@ -80,7 +121,7 @@ function normalizeUrlOrigin(url) {
     console.log(`normalizeUrlOrigin is returning ${origin}`); // log return
     return origin;
   } catch (error) {
-    qerrors(error, 'normalizeUrlOrigin', url); // log error with context
+    logError(error, 'normalizeUrlOrigin', url); // log error with context
     return null; // graceful failure
   }
 }
@@ -99,7 +140,7 @@ function stripProtocol(url) {
     console.log(`stripProtocol is returning ${processed}`); // log return
     return processed;
   } catch (error) {
-    qerrors(error, 'stripProtocol', url); // log error
+    logError(error, 'stripProtocol', url); // log error
     return url; // fallback to original
   }
 }
@@ -125,7 +166,7 @@ function parseUrlParts(url) {
     console.log(`parseUrlParts is returning ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
-    qerrors(error, 'parseUrlParts', url);
+    logError(error, 'parseUrlParts', url);
     return null;
   }
 }
@@ -161,7 +202,7 @@ function calculateContentLength(body) {
     console.log(`calculateContentLength is returning 0`); // fallback log
     return '0'; // fallback for unknown types
   } catch (error) {
-    qerrors(error, 'calculateContentLength', { body }); // log errors via qerrors
+    logError(error, 'calculateContentLength', { body }); // log errors via logError
     throw error; // rethrow so caller handles invalid input
   }
 }
@@ -174,7 +215,9 @@ module.exports = {
   ensureProtocol,
   normalizeUrlOrigin,
   stripProtocol,
-  parseUrlParts
+  parseUrlParts,
+  getRequiredHeader,
+  sendJsonResponse
 };
 
 // Export functions for ES modules (if needed)

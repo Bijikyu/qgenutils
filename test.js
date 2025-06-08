@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -42,5 +42,29 @@ console.log('Ensure protocol - invalid input:', ensureProtocol(''));
 console.log('\nNormalize URL origin:', normalizeUrlOrigin('HTTPS://Example.Com/path'));
 console.log('Strip protocol:', stripProtocol('https://example.com/'));
 console.log('Parse URL parts:', parseUrlParts('example.com/api/users?id=123'));
+
+// Test HTTP utility functions
+console.log('\nHTTP utility functions:');
+// Mock request and response objects for testing
+const mockReq = {
+  headers: {
+    'authorization': 'Bearer token123',
+    'content-type': 'application/json'
+  }
+};
+
+const mockRes = {
+  status: function(code) {
+    console.log(`Response status set to: ${code}`);
+    return this;
+  },
+  json: function(data) {
+    console.log(`Response JSON:`, data);
+    return this;
+  }
+};
+
+console.log('Get required header (exists):', getRequiredHeader(mockReq, mockRes, 'authorization', 401, 'Missing authorization'));
+console.log('Get required header (missing):', getRequiredHeader(mockReq, mockRes, 'x-api-key', 401, 'Missing API key'));
 
 console.log('\nAll tests completed!');
