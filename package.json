@@ -1,6 +1,6 @@
 {
   "name": "qgenutils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A comprehensive utility library providing datetime formatting, HTTP helpers, URL manipulation, authentication checks, field validation, and view rendering with robust error handling",
   "main": "index.js",
   "scripts": {
