@@ -72,8 +72,8 @@ console.log('\nField validation function:');
 const validObj = { name: 'John', email: 'john@example.com', age: 30 };
 const invalidObj = { name: 'Jane', age: '' }; // missing email, falsy age
 
-console.log('Valid object:', requireFields(mockRes, validObj, ['name', 'email', 'age']));
-console.log('Invalid object:', requireFields(mockRes, invalidObj, ['name', 'email', 'age']));
+console.log('Valid object:', requireFields(validObj, ['name', 'email', 'age'], mockRes));
+console.log('Invalid object:', requireFields(invalidObj, ['name', 'email', 'age'], mockRes));
 
 // Test checkPassportAuth function
 console.log('\nPassport authentication checker:');
