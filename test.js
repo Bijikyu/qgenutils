@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth, hasGithubStrategy } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -89,5 +89,23 @@ const mockGuestReq = {};
 console.log('Authenticated user:', checkPassportAuth(mockAuthenticatedReq));
 console.log('Unauthenticated user:', checkPassportAuth(mockUnauthenticatedReq));
 console.log('Guest user (no passport):', checkPassportAuth(mockGuestReq));
+
+// Test hasGithubStrategy function
+console.log('\nGitHub strategy checker:');
+// Mock passport object for testing
+global.passport = {
+  _strategies: {
+    github: { name: 'github' }
+  }
+};
+console.log('With GitHub strategy configured:', hasGithubStrategy());
+
+// Test without GitHub strategy
+global.passport = { _strategies: {} };
+console.log('Without GitHub strategy:', hasGithubStrategy());
+
+// Test with no passport object
+delete global.passport;
+console.log('With no passport object:', hasGithubStrategy());
 
 console.log('\nAll tests completed!');

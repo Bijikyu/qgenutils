@@ -115,6 +115,22 @@ function checkPassportAuth(req) {
 }
 
 /**
+ * Detect presence of GitHub OAuth strategy
+ * @returns {boolean} True if GitHub strategy is configured, false otherwise
+ */
+function hasGithubStrategy() {
+  console.log(`hasGithubStrategy is running with none`); // start log for strategy check
+  try {
+    const configured = Boolean(passport._strategies && passport._strategies.github); // convert to strict boolean (description of change & current functionality)
+    console.log(`hasGithubStrategy is returning ${configured}`); // log boolean result
+    return configured; // return evaluation
+  } catch (error) {
+    logError(error, 'hasGithubStrategy'); // log unexpected error context
+    return false; // default absence on error
+  }
+}
+
+/**
  * Extract and validate required HTTP headers
  * @param {object} req - Express request object
  * @param {object} res - Express response object
@@ -275,7 +291,8 @@ module.exports = {
   getRequiredHeader,
   sendJsonResponse,
   requireFields,
-  checkPassportAuth
+  checkPassportAuth,
+  hasGithubStrategy
 };
 
 // Export functions for ES modules (if needed)
