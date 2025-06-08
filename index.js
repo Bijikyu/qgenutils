@@ -20,7 +20,8 @@
 // Import all utility functions from organized modules
 // Each require() statement pulls in a focused set of related functionality
 const { formatDateTime, formatDuration } = require('./lib/datetime');
-const { calculateContentLength, buildCleanHeaders, sendJsonResponse, getRequiredHeader } = require('./lib/http');
+const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http');
+const { sendJsonResponse } = require('./lib/response-utils');
 const { requireFields } = require('./lib/validation');
 const { checkPassportAuth, hasGithubStrategy } = require('./lib/auth');
 const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./lib/url');
