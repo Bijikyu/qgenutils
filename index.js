@@ -42,7 +42,7 @@ function formatDuration(startDate, endDate = null) {
   }
 }
 
-const qerrors = require('qerrors');
+const qerrors = require('qerrors').qerror || require('qerrors');
 
 // Headers removed in all proxied requests for reuse
 const HEADERS_TO_REMOVE = [
