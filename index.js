@@ -44,6 +44,44 @@ function formatDuration(startDate, endDate = null) {
 
 const qerrors = require('qerrors');
 
+// Headers removed in all proxied requests for reuse
+const HEADERS_TO_REMOVE = [
+    'host',
+    'x-target-url',
+    'x-api-key',
+    'cdn-loop',
+    'cf-connecting-ip',
+    'cf-ipcountry',
+    'cf-ray',
+    'cf-visitor',
+    'render-proxy-ttl',
+    'connection'
+];
+
+/**
+ * Build clean headers by removing unwanted headers and managing content-length
+ * @param {object} headers - Original headers object
+ * @param {string} method - HTTP method
+ * @param {*} body - Request body
+ * @returns {object} Cleaned headers object
+ */
+function buildCleanHeaders(headers, method, body) {
+    console.log(`buildCleanHeaders is running with ${method}`); // start log
+    try {
+        const cleanHeaders = { ...headers }; // clone incoming headers
+        HEADERS_TO_REMOVE.forEach(header => { delete cleanHeaders[header]; }); // strip banned headers
+        if (!body || method.toLowerCase() === 'get') delete cleanHeaders['content-length']; // remove length when none
+        if (method.toLowerCase() !== 'get' && body && Object.keys(body).length > 0) {
+            cleanHeaders['content-length'] = calculateContentLength(body); // set recalculated length
+        }
+        console.log(`buildCleanHeaders is returning ${JSON.stringify(cleanHeaders)}`); // return log
+        return cleanHeaders;
+    } catch (error) {
+        qerrors(error, 'buildCleanHeaders', { method }); // error log
+        return headers; // fallback when error
+    }
+}
+
 /**
  * Send a consistent JSON response
  * @param {object} res - Express response object
@@ -289,7 +327,8 @@ module.exports = {
   sendJsonResponse,
   requireFields,
   checkPassportAuth,
-  hasGithubStrategy
+  hasGithubStrategy,
+  buildCleanHeaders
 };
 
 // Export functions for ES modules (if needed)

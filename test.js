@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth, hasGithubStrategy } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth, hasGithubStrategy, buildCleanHeaders } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -107,5 +107,21 @@ console.log('Without GitHub strategy:', hasGithubStrategy());
 // Test with no passport object
 delete global.passport;
 console.log('With no passport object:', hasGithubStrategy());
+
+// Test buildCleanHeaders function
+console.log('\nHeader cleaning function:');
+const testHeaders = {
+  'host': 'example.com',
+  'x-target-url': 'https://api.example.com',
+  'authorization': 'Bearer token123',
+  'content-type': 'application/json',
+  'content-length': '50',
+  'cf-ray': '12345',
+  'user-agent': 'MyApp/1.0'
+};
+
+console.log('Clean headers for GET:', buildCleanHeaders(testHeaders, 'GET', null));
+console.log('Clean headers for POST with body:', buildCleanHeaders(testHeaders, 'POST', { name: 'test' }));
+console.log('Clean headers for POST without body:', buildCleanHeaders(testHeaders, 'POST', null));
 
 console.log('\nAll tests completed!');
