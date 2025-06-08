@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^22.13.11",
-    "qerrors": "^1.2.2",
+    "qerrors": "^1.2.3",
     "qtests": "^1.0.4",
     "winston-daily-rotate-file": "^5.0.0"
   }
