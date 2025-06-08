@@ -1,5 +1,5 @@
 
-const { formatDateTime, formatDuration, calculateContentLength } = require('./index.js');
+const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./index.js');
 
 console.log('Testing npm module functions:\n');
 
@@ -32,5 +32,15 @@ try {
 } catch (error) {
   console.log('Caught expected error for undefined body');
 }
+
+// Test URL utility functions
+console.log('\nURL utility functions:');
+console.log('Ensure protocol - no protocol:', ensureProtocol('example.com'));
+console.log('Ensure protocol - with https:', ensureProtocol('https://example.com'));
+console.log('Ensure protocol - invalid input:', ensureProtocol(''));
+
+console.log('\nNormalize URL origin:', normalizeUrlOrigin('HTTPS://Example.Com/path'));
+console.log('Strip protocol:', stripProtocol('https://example.com/'));
+console.log('Parse URL parts:', parseUrlParts('example.com/api/users?id=123'));
 
 console.log('\nAll tests completed!');

@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/node": "^22.13.11",
     "qerrors": "^1.2.2",
-    "qtests": "^1.0.2"
+    "qtests": "^1.0.2",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }
