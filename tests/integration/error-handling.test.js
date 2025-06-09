@@ -3,6 +3,7 @@ const utils = require('../../index');
 
 describe('Error Handling Integration Tests', () => {
   describe('Cascading Error Scenarios', () => {
+    // verifies should handle multiple module failures gracefully
     test('should handle multiple module failures gracefully', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),
@@ -32,6 +33,7 @@ describe('Error Handling Integration Tests', () => {
       expect(utils.checkPassportAuth(null)).toBe(false);
     });
 
+    // verifies should handle error propagation in API workflow
     test('should handle error propagation in API workflow', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),
@@ -56,6 +58,7 @@ describe('Error Handling Integration Tests', () => {
   });
 
   describe('View Rendering Error Recovery', () => {
+    // verifies should handle template rendering failures across multiple views
     test('should handle template rendering failures across multiple views', () => {
       const mockRes = {
         render: jest.fn().mockImplementation(() => {
@@ -82,6 +85,7 @@ describe('Error Handling Integration Tests', () => {
       expect(mockRes.send).toHaveBeenCalledTimes(3);
     });
 
+    // verifies should handle route registration with missing global app
     test('should handle route registration with missing global app', () => {
       const originalApp = global.app;
       
@@ -106,6 +110,7 @@ describe('Error Handling Integration Tests', () => {
   });
 
   describe('HTTP Error Scenarios', () => {
+    // verifies should handle content-length calculation errors
     test('should handle content-length calculation errors', () => {
       // These should handle gracefully without throwing
       expect(utils.calculateContentLength(null)).toBe('0');
@@ -122,6 +127,7 @@ describe('Error Handling Integration Tests', () => {
       expect(parseInt(result)).toBeGreaterThan(0);
     });
 
+    // verifies should handle header cleaning with malformed headers
     test('should handle header cleaning with malformed headers', () => {
       // Should handle null/undefined headers
       expect(utils.buildCleanHeaders(null, 'GET', null)).toEqual(null);
@@ -134,6 +140,7 @@ describe('Error Handling Integration Tests', () => {
   });
 
   describe('Authentication Error Scenarios', () => {
+    // verifies should handle passport strategy detection with broken global state
     test('should handle passport strategy detection with broken global state', () => {
       const originalPassport = global.passport;
       
@@ -159,6 +166,7 @@ describe('Error Handling Integration Tests', () => {
       }
     });
 
+    // verifies should handle authentication with various request object states
     test('should handle authentication with various request object states', () => {
       const testCases = [
         null,
@@ -177,6 +185,7 @@ describe('Error Handling Integration Tests', () => {
   });
 
   describe('URL Processing Error Recovery', () => {
+    // verifies should handle malformed URLs throughout processing pipeline
     test('should handle malformed URLs throughout processing pipeline', () => {
       const malformedUrls = [
         '',
@@ -198,6 +207,7 @@ describe('Error Handling Integration Tests', () => {
       });
     });
 
+    // verifies should handle URL processing with partial failures
     test('should handle URL processing with partial failures', () => {
       // Valid URL that might cause issues in some contexts
       const edgeCaseUrls = [
@@ -222,6 +232,7 @@ describe('Error Handling Integration Tests', () => {
   });
 
   describe('Data Validation Error Recovery', () => {
+    // verifies should handle validation with various malformed objects
     test('should handle validation with various malformed objects', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),

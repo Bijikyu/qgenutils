@@ -12,6 +12,7 @@ describe('Validation Utilities', () => {
       };
     });
 
+    // verifies should return true when all required fields are present
     test('should return true when all required fields are present', () => {
       const obj = { name: 'John', email: 'john@example.com', age: 30 };
       const result = requireFields(mockRes, obj, ['name', 'email', 'age']);
@@ -20,6 +21,7 @@ describe('Validation Utilities', () => {
       expect(mockRes.status).not.toHaveBeenCalled();
     });
 
+    // verifies should return false and send error for missing fields
     test('should return false and send error for missing fields', () => {
       const obj = { name: 'John', age: 30 };
       const result = requireFields(mockRes, obj, ['name', 'email', 'age']);
@@ -31,6 +33,7 @@ describe('Validation Utilities', () => {
       });
     });
 
+    // verifies should return false for multiple missing fields
     test('should return false for multiple missing fields', () => {
       const obj = { name: 'John' };
       const result = requireFields(mockRes, obj, ['name', 'email', 'age']);
@@ -42,6 +45,7 @@ describe('Validation Utilities', () => {
       });
     });
 
+    // verifies should treat falsy values as missing
     test('should treat falsy values as missing', () => {
       const obj = { name: '', email: null, age: 0, active: false };
       const result = requireFields(mockRes, obj, ['name', 'email', 'age', 'active']);
@@ -53,6 +57,7 @@ describe('Validation Utilities', () => {
       });
     });
 
+    // verifies should handle empty object
     test('should handle empty object', () => {
       const obj = {};
       const result = requireFields(mockRes, obj, ['name']);
@@ -61,6 +66,7 @@ describe('Validation Utilities', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400);
     });
 
+    // verifies should handle empty required fields array
     test('should handle empty required fields array', () => {
       const obj = { name: 'John' };
       const result = requireFields(mockRes, obj, []);
@@ -69,6 +75,7 @@ describe('Validation Utilities', () => {
       expect(mockRes.status).not.toHaveBeenCalled();
     });
 
+    // verifies should handle undefined object gracefully
     test('should handle undefined object gracefully', () => {
       const result = requireFields(mockRes, undefined, ['name']);
       
@@ -79,6 +86,7 @@ describe('Validation Utilities', () => {
       });
     });
 
+    // verifies should handle null object gracefully
     test('should handle null object gracefully', () => {
       const result = requireFields(mockRes, null, ['name']);
       
@@ -86,6 +94,7 @@ describe('Validation Utilities', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500);
     });
 
+    // verifies should accept truthy values
     test('should accept truthy values', () => {
       const obj = { 
         name: 'John', 
