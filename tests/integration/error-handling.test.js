@@ -26,7 +26,7 @@ describe('Error Handling Integration Tests', () => {
       expect(() => utils.formatDuration(invalidDate)).toThrow();
       
       // Test validation with malformed object
-      expect(utils.requireFields(mockRes, null, ['field'])).toBe(false);
+      expect(utils.requireFields(null, ['field'], mockRes)).toBe(false); // (reordered parameters to match obj, fields, res)
       expect(mockRes.status).toHaveBeenCalledWith(500);
       
       // Test auth with malformed request
@@ -53,7 +53,7 @@ describe('Error Handling Integration Tests', () => {
       expect(utils.getRequiredHeader(malformedReq, mockRes, 'auth', 401, 'Missing')).toBeNull();
       expect(mockRes.status).toHaveBeenCalledWith(401);
       
-      expect(utils.requireFields(mockRes, malformedReq.body, ['field'])).toBe(false);
+      expect(utils.requireFields(malformedReq.body, ['field'], mockRes)).toBe(false); // (reordered parameters to match obj, fields, res)
     });
   });
 
@@ -251,7 +251,7 @@ describe('Error Handling Integration Tests', () => {
         mockRes.status.mockClear();
         mockRes.json.mockClear();
         
-        const result = utils.requireFields(mockRes, obj, fields);
+        const result = utils.requireFields(obj, fields, mockRes); // (reordered parameters to match obj, fields, res)
         expect(result).toBe(false);
         expect(mockRes.status).toHaveBeenCalledWith(expectedStatus);
       });
