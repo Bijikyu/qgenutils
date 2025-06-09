@@ -3,6 +3,7 @@ const { checkPassportAuth, hasGithubStrategy } = require('../../lib/auth');
 
 describe('Authentication Utilities', () => {
   describe('checkPassportAuth', () => {
+    // verifies should return true for authenticated user
     test('should return true for authenticated user', () => {
       const mockReq = {
         user: { username: 'john_doe' },
@@ -13,6 +14,7 @@ describe('Authentication Utilities', () => {
       expect(mockReq.isAuthenticated).toHaveBeenCalled();
     });
 
+    // verifies should return false for unauthenticated user
     test('should return false for unauthenticated user', () => {
       const mockReq = {
         isAuthenticated: jest.fn().mockReturnValue(false)
@@ -22,6 +24,7 @@ describe('Authentication Utilities', () => {
       expect(mockReq.isAuthenticated).toHaveBeenCalled();
     });
 
+    // verifies should return false when isAuthenticated method is missing
     test('should return false when isAuthenticated method is missing', () => {
       const mockReq = {
         user: { username: 'john_doe' }
@@ -30,10 +33,12 @@ describe('Authentication Utilities', () => {
       expect(checkPassportAuth(mockReq)).toBe(false);
     });
 
+    // verifies should return false for empty request object
     test('should return false for empty request object', () => {
       expect(checkPassportAuth({})).toBe(false);
     });
 
+    // verifies should return false when isAuthenticated throws error
     test('should return false when isAuthenticated throws error', () => {
       const mockReq = {
         isAuthenticated: jest.fn().mockImplementation(() => {
@@ -44,11 +49,13 @@ describe('Authentication Utilities', () => {
       expect(checkPassportAuth(mockReq)).toBe(false);
     });
 
+    // verifies should handle malformed request object
     test('should handle malformed request object', () => {
       expect(checkPassportAuth(null)).toBe(false);
       expect(checkPassportAuth(undefined)).toBe(false);
     });
 
+    // verifies should handle truthy but non-boolean return from isAuthenticated
     test('should handle truthy but non-boolean return from isAuthenticated', () => {
       const mockReq = {
         isAuthenticated: jest.fn().mockReturnValue('truthy-string')
@@ -57,6 +64,7 @@ describe('Authentication Utilities', () => {
       expect(checkPassportAuth(mockReq)).toBe(true);
     });
 
+    // verifies should handle falsy but non-boolean return from isAuthenticated
     test('should handle falsy but non-boolean return from isAuthenticated', () => {
       const mockReq = {
         isAuthenticated: jest.fn().mockReturnValue(0)
@@ -77,6 +85,7 @@ describe('Authentication Utilities', () => {
       global.passport = originalPassport;
     });
 
+    // verifies should return true when GitHub strategy is configured
     test('should return true when GitHub strategy is configured', () => {
       global.passport = {
         _strategies: {
@@ -87,6 +96,7 @@ describe('Authentication Utilities', () => {
       expect(hasGithubStrategy()).toBe(true);
     });
 
+    // verifies should return false when GitHub strategy is not configured
     test('should return false when GitHub strategy is not configured', () => {
       global.passport = {
         _strategies: {
@@ -97,6 +107,7 @@ describe('Authentication Utilities', () => {
       expect(hasGithubStrategy()).toBe(false);
     });
 
+    // verifies should return false when no strategies are configured
     test('should return false when no strategies are configured', () => {
       global.passport = {
         _strategies: {}
@@ -105,21 +116,25 @@ describe('Authentication Utilities', () => {
       expect(hasGithubStrategy()).toBe(false);
     });
 
+    // verifies should return false when passport is undefined
     test('should return false when passport is undefined', () => {
       global.passport = undefined;
       expect(hasGithubStrategy()).toBe(false);
     });
 
+    // verifies should return false when passport is null
     test('should return false when passport is null', () => {
       global.passport = null;
       expect(hasGithubStrategy()).toBe(false);
     });
 
+    // verifies should return false when _strategies is missing
     test('should return false when _strategies is missing', () => {
       global.passport = {};
       expect(hasGithubStrategy()).toBe(false);
     });
 
+    // verifies should return false when _strategies is null
     test('should return false when _strategies is null', () => {
       global.passport = {
         _strategies: null
@@ -128,6 +143,7 @@ describe('Authentication Utilities', () => {
       expect(hasGithubStrategy()).toBe(false);
     });
 
+    // verifies should handle errors in strategy detection
     test('should handle errors in strategy detection', () => {
       global.passport = {
         get _strategies() {
