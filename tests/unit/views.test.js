@@ -13,6 +13,7 @@ describe('View Utilities', () => {
       };
     });
 
+    // verifies should render view successfully
     test('should render view successfully', () => {
       renderView(mockRes, 'dashboard', 'Dashboard Error');
       
@@ -21,6 +22,7 @@ describe('View Utilities', () => {
       expect(mockRes.send).not.toHaveBeenCalled();
     });
 
+    // verifies should send error page when rendering fails
     test('should send error page when rendering fails', () => {
       const error = new Error('Template not found');
       mockRes.render.mockImplementation(() => {
@@ -36,6 +38,7 @@ describe('View Utilities', () => {
       expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Return to Home'));
     });
 
+    // verifies should include error message in error page
     test('should include error message in error page', () => {
       const error = new Error('Custom error message');
       mockRes.render.mockImplementation(() => {
@@ -50,6 +53,7 @@ describe('View Utilities', () => {
       expect(sentContent).toContain('failing-view');
     });
 
+    // verifies should handle different view names
     test('should handle different view names', () => {
       const viewNames = ['dashboard', 'login', 'profile', 'admin'];
       
@@ -82,12 +86,14 @@ describe('View Utilities', () => {
       global.app = originalApp;
     });
 
+    // verifies should register route with correct path and handler
     test('should register route with correct path and handler', () => {
       registerViewRoute('/dashboard', 'dashboard', 'Dashboard Error');
       
       expect(mockApp.get).toHaveBeenCalledWith('/dashboard', expect.any(Function));
     });
 
+    // verifies should create handler that calls renderView
     test('should create handler that calls renderView', () => {
       registerViewRoute('/profile', 'profile', 'Profile Error');
       
@@ -103,6 +109,7 @@ describe('View Utilities', () => {
       expect(mockRes.render).toHaveBeenCalledWith('profile');
     });
 
+    // verifies should handle app registration errors gracefully
     test('should handle app registration errors gracefully', () => {
       mockApp.get.mockImplementation(() => {
         throw new Error('Route registration failed');
@@ -114,6 +121,7 @@ describe('View Utilities', () => {
       }).not.toThrow();
     });
 
+    // verifies should handle missing global app
     test('should handle missing global app', () => {
       global.app = undefined;
       
@@ -123,6 +131,7 @@ describe('View Utilities', () => {
       }).not.toThrow();
     });
 
+    // verifies should register multiple routes
     test('should register multiple routes', () => {
       const routes = [
         ['/home', 'home', 'Home Error'],

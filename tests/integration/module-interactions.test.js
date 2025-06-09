@@ -13,6 +13,7 @@ const {
 
 describe('Module Integration Tests', () => {
   describe('HTTP and URL Integration', () => {
+    // verifies should process URL and calculate content length for API request
     test('should process URL and calculate content length for API request', () => {
       const url = 'api.example.com/users';
       const body = { name: 'John', email: 'john@example.com' };
@@ -35,6 +36,7 @@ describe('Module Integration Tests', () => {
       expect(headers['host']).toBeUndefined();
     });
 
+    // verifies should normalize URLs and build appropriate headers
     test('should normalize URLs and build appropriate headers', () => {
       const urls = [
         'HTTPS://API.Example.com/v1',
@@ -61,6 +63,7 @@ describe('Module Integration Tests', () => {
   });
 
   describe('Validation and Authentication Integration', () => {
+    // verifies should validate required fields and check authentication together
     test('should validate required fields and check authentication together', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),
@@ -84,6 +87,7 @@ describe('Module Integration Tests', () => {
       expect(mockRes.status).not.toHaveBeenCalled();
     });
 
+    // verifies should handle unauthenticated user with valid fields
     test('should handle unauthenticated user with valid fields', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),
@@ -106,6 +110,7 @@ describe('Module Integration Tests', () => {
   });
 
   describe('DateTime and HTTP Integration', () => {
+    // verifies should format timestamps and include in HTTP responses
     test('should format timestamps and include in HTTP responses', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),
@@ -138,6 +143,7 @@ describe('Module Integration Tests', () => {
       expect(duration).toBe('01:30:45');
     });
 
+    // verifies should handle malformed dates in HTTP context
     test('should handle malformed dates in HTTP context', () => {
       const mockRes = {
         status: jest.fn().mockReturnThis(),
@@ -160,6 +166,7 @@ describe('Module Integration Tests', () => {
   });
 
   describe('Complete Request Processing Workflow', () => {
+    // verifies should simulate complete API request processing
     test('should simulate complete API request processing', () => {
       const mockReq = {
         headers: {
@@ -222,6 +229,7 @@ describe('Module Integration Tests', () => {
       expect(mockRes.json).toHaveBeenCalledWith(responseData);
     });
 
+    // verifies should handle complete workflow with validation failure
     test('should handle complete workflow with validation failure', () => {
       const mockReq = {
         headers: { 'authorization': 'Bearer token' },
@@ -247,6 +255,7 @@ describe('Module Integration Tests', () => {
       });
     });
 
+    // verifies should handle complete workflow with authentication failure
     test('should handle complete workflow with authentication failure', () => {
       const mockReq = {
         headers: { 'content-type': 'application/json' },
