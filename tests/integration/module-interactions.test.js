@@ -82,7 +82,7 @@ describe('Module Integration Tests', () => {
       expect(isAuth).toBe(true);
       
       // Then validate required fields
-      const isValid = requireFields(mockRes, mockAuthReq.body, ['title', 'content']);
+      const isValid = requireFields(mockAuthReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
       expect(isValid).toBe(true);
       expect(mockRes.status).not.toHaveBeenCalled();
     });
@@ -104,7 +104,7 @@ describe('Module Integration Tests', () => {
       expect(isAuth).toBe(false);
       
       // Fields are valid but auth failed
-      const isValid = requireFields(mockRes, mockUnauthReq.body, ['title', 'content']);
+      const isValid = requireFields(mockUnauthReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
       expect(isValid).toBe(true);
     });
   });
@@ -194,7 +194,7 @@ describe('Module Integration Tests', () => {
       expect(isAuthenticated).toBe(true);
       
       // Step 2: Validate required fields
-      const fieldsValid = requireFields(mockRes, mockReq.body, ['title', 'content']);
+      const fieldsValid = requireFields(mockReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
       expect(fieldsValid).toBe(true);
       
       // Step 3: Extract and validate required headers
@@ -247,7 +247,7 @@ describe('Module Integration Tests', () => {
       expect(checkPassportAuth(mockReq)).toBe(true);
       
       // Validation fails
-      const fieldsValid = requireFields(mockRes, mockReq.body, ['title', 'content']);
+      const fieldsValid = requireFields(mockReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
       expect(fieldsValid).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -272,7 +272,7 @@ describe('Module Integration Tests', () => {
       expect(checkPassportAuth(mockReq)).toBe(false);
       
       // Even though fields are valid, auth failed
-      const fieldsValid = requireFields(mockRes, mockReq.body, ['title', 'content']);
+      const fieldsValid = requireFields(mockReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
       expect(fieldsValid).toBe(true);
       
       // In a real app, we'd return 401 for auth failure before validating fields
