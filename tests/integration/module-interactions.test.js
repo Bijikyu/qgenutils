@@ -15,15 +15,15 @@ describe('Module Integration Tests', () => {
   describe('HTTP and URL Integration', () => {
     // verifies should process URL and calculate content length for API request
     test('should process URL and calculate content length for API request', () => {
-      const url = 'api.example.com/users';
-      const body = { name: 'John', email: 'john@example.com' };
+      const url = 'api.example.com/users'; // target API endpoint
+      const body = { name: 'John', email: 'john@example.com' }; // request body
       
       // Process URL
-      const processedUrl = ensureProtocol(url);
+      const processedUrl = ensureProtocol(url); // add https
       expect(processedUrl).toBe('https://api.example.com/users');
       
       // Calculate content length for request body
-      const contentLength = calculateContentLength(body);
+      const contentLength = calculateContentLength(body); // measure payload size
       expect(contentLength).toBe(Buffer.byteLength(JSON.stringify(body), 'utf8').toString());
       
       // Build clean headers
@@ -44,7 +44,7 @@ describe('Module Integration Tests', () => {
         'HTTP://api.example.com/v1'
       ];
       
-      const normalizedOrigins = urls.map(normalizeUrlOrigin);
+      const normalizedOrigins = urls.map(normalizeUrlOrigin); // normalize each url
       
       // All should normalize to the same origin
       expect(normalizedOrigins[0]).toBe('https://api.example.com');
@@ -190,30 +190,30 @@ describe('Module Integration Tests', () => {
       };
       
       // Step 1: Check authentication
-      const isAuthenticated = checkPassportAuth(mockReq);
+      const isAuthenticated = checkPassportAuth(mockReq); // authenticate request
       expect(isAuthenticated).toBe(true);
       
       // Step 2: Validate required fields
-      const fieldsValid = requireFields(mockRes, mockReq.body, ['title', 'content']);
+      const fieldsValid = requireFields(mockRes, mockReq.body, ['title', 'content']); // validate body
       expect(fieldsValid).toBe(true);
       
       // Step 3: Extract and validate required headers
-      const authHeader = utils.getRequiredHeader(mockReq, mockRes, 'authorization', 401, 'Missing auth');
+      const authHeader = utils.getRequiredHeader(mockReq, mockRes, 'authorization', 401, 'Missing auth'); // extract header
       expect(authHeader).toBe('Bearer valid-token');
       
       // Step 4: Process target URL
       const targetUrl = mockReq.headers['x-target-url'];
-      const processedUrl = ensureProtocol(targetUrl);
+      const processedUrl = ensureProtocol(targetUrl); // ensure protocol
       expect(processedUrl).toBe('https://api.service.com/posts');
       
       // Step 5: Build clean headers for proxying
-      const cleanHeaders = buildCleanHeaders(mockReq.headers, 'POST', mockReq.body);
+      const cleanHeaders = buildCleanHeaders(mockReq.headers, 'POST', mockReq.body); // sanitize headers
       expect(cleanHeaders['authorization']).toBe('Bearer valid-token');
       expect(cleanHeaders['host']).toBeUndefined();
       expect(cleanHeaders['x-target-url']).toBeUndefined();
       
       // Step 6: Format timestamps in response
-      const formattedDate = formatDateTime(mockReq.body.published_at);
+      const formattedDate = formatDateTime(mockReq.body.published_at); // format timestamp
       
       // Step 7: Send successful response
       const responseData = {
@@ -223,7 +223,7 @@ describe('Module Integration Tests', () => {
         status: 'created'
       };
       
-      utils.sendJsonResponse(mockRes, 201, responseData);
+      utils.sendJsonResponse(mockRes, 201, responseData); // send final response
       
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith(responseData);

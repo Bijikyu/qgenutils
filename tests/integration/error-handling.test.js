@@ -10,16 +10,16 @@ describe('Error Handling Integration Tests', () => {
         json: jest.fn().mockReturnThis(),
         render: jest.fn(),
         send: jest.fn().mockReturnThis()
-      };
+      }; // mock Express response
       
       // Test invalid URL processing
-      const invalidUrl = null;
+      const invalidUrl = null; // invalid URL input
       expect(utils.ensureProtocol(invalidUrl)).toBeNull();
       expect(utils.normalizeUrlOrigin(invalidUrl)).toBeNull();
       expect(utils.parseUrlParts(invalidUrl)).toBeNull();
       
       // Test invalid date processing
-      const invalidDate = 'not-a-date';
+      const invalidDate = 'not-a-date'; // bad date string
       expect(utils.formatDateTime(invalidDate)).toBe('N/A');
       
       // Test invalid duration calculation should throw
@@ -218,13 +218,13 @@ describe('Error Handling Integration Tests', () => {
       ];
       
       edgeCaseUrls.forEach(url => {
-        const withProtocol = utils.ensureProtocol(url);
-        expect(withProtocol).toContain('https://');
+        const withProtocol = utils.ensureProtocol(url); // ensureProtocol should add scheme
+        expect(withProtocol).toContain('https://'); // check protocol added
         
-        const normalized = utils.normalizeUrlOrigin(url);
-        expect(normalized).toContain('https://');
+        const normalized = utils.normalizeUrlOrigin(url); // normalize origin
+        expect(normalized).toContain('https://'); // still https
         
-        const parsed = utils.parseUrlParts(url);
+        const parsed = utils.parseUrlParts(url); // parse into parts
         expect(parsed).toHaveProperty('baseUrl');
         expect(parsed).toHaveProperty('endpoint');
       });
