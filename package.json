@@ -38,5 +38,8 @@
     "qerrors": "^1.2.3",
     "qtests": "^1.0.4",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

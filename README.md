@@ -225,6 +225,8 @@ The library is organized into focused modules:
 
 ## Testing
 
+Install dependencies with `npm install` before running tests.
+
 Run the comprehensive test suite:
 
 ```bash
