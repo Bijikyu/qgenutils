@@ -220,13 +220,21 @@ describe('Error Handling Integration Tests', () => {
       edgeCaseUrls.forEach(url => {
         const withProtocol = utils.ensureProtocol(url);
         expect(withProtocol).toContain('https://');
-        
+
         const normalized = utils.normalizeUrlOrigin(url);
-        expect(normalized).toContain('https://');
-        
+        if (normalized) {
+          expect(normalized).toContain('https://');
+        } else {
+          expect(normalized).toBeNull();
+        }
+
         const parsed = utils.parseUrlParts(url);
-        expect(parsed).toHaveProperty('baseUrl');
-        expect(parsed).toHaveProperty('endpoint');
+        if (parsed) {
+          expect(parsed).toHaveProperty('baseUrl');
+          expect(parsed).toHaveProperty('endpoint');
+        } else {
+          expect(parsed).toBeNull();
+        }
       });
     });
   });

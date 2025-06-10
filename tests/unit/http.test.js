@@ -1,5 +1,6 @@
 
-const { calculateContentLength, buildCleanHeaders, sendJsonResponse, getRequiredHeader } = require('../../lib/http');
+const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('../../lib/http');
+const { sendJsonResponse } = require('../../lib/response-utils');
 
 describe('HTTP Utilities', () => {
   describe('calculateContentLength', () => {
