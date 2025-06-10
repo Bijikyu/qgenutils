@@ -29,7 +29,8 @@ describe('Validation Utilities', () => {
       expect(result).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
-        error: 'Missing required fields: email'
+        error: 'Missing required fields',
+        missing: ['email']
       });
     });
 
@@ -41,7 +42,8 @@ describe('Validation Utilities', () => {
       expect(result).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
-        error: 'Missing required fields: email, age'
+        error: 'Missing required fields',
+        missing: ['email', 'age']
       });
     });
 
@@ -53,7 +55,8 @@ describe('Validation Utilities', () => {
       expect(result).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
-        error: 'Missing required fields: name, email, age, active'
+        error: 'Missing required fields',
+        missing: ['name', 'email', 'age', 'active']
       });
     });
 
