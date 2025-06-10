@@ -251,7 +251,8 @@ describe('Module Integration Tests', () => {
       expect(fieldsValid).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
-        error: 'Missing required fields: content'
+        error: 'Missing required fields',
+        missing: ['content']
       });
     });
 

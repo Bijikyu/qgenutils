@@ -80,8 +80,8 @@ describe('Input Validation Utilities', () => {
       expect(isValidExpressResponse(res)).toBe(false); //verify missing method rejected
     });
 
-    test('should return null for null input', () => {
-      expect(isValidExpressResponse(null)).toBeNull(); //verify null result
+    test('should return false for null input', () => {
+      expect(isValidExpressResponse(null)).toBe(false); //verify null now returns false
     });
 
     test('should return false when methods not functions', () => {
