@@ -191,5 +191,21 @@ describe('HTTP Utilities', () => {
       expect(result).toBeNull();
       expect(mockRes.status).toHaveBeenCalledWith(401);
     });
+
+    // verifies should handle errors during header processing
+    test('should handle errors during header processing', () => {
+      const req = { 
+        get headers() { 
+          throw new Error('Header access error'); 
+        } 
+      };
+      const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      
+      const result = getRequiredHeader(req, res, 'authorization', 401, 'Missing auth');
+      
+      expect(result).toBeNull();
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    });
   });
 });
