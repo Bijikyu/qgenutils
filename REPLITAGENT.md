@@ -1,7 +1,7 @@
 # CONSTRAINTS:
 
 Module System Restrictions
-I don't want to use any ES Modules. Do not try to implement p-limit.
+I don't want to use any ES Modules. Do not try to implement p-limit; do not use it.
 
 Binary Files & Images
 Do not create binary files, or attempt to optimize images.
@@ -9,7 +9,8 @@ Do not create binary files, or attempt to optimize images.
 You will not ever use JQuery.
 
 
-#POLICY:
+# POLICY:
+
 Source of Truth & Code Alignment
 The sources or truth go as follows external API docs > back end code > front end code > readmes and native documentation. This means you change back end code to fit external APIs if we use them since we can't change someone else's API. It also means we change front end code to fit the backend, NOT changing back end code to fit the front end. It also means we change readmes and documentation about our app to fit the front end and back end, NOT the other way around.
 
