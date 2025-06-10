@@ -227,11 +227,19 @@ The library is organized into focused modules:
 
 Install dependencies with `npm install` before running tests.
 
-Run the comprehensive test suite:
+Run all unit and integration tests:
 
 ```bash
-npm test
+node tests/run-tests.js
 ```
+
+Optional flags:
+
+- `--watch` - re-run tests on file changes
+- `--coverage` - generate coverage reports
+- `--verbose` - output detailed test information
+
+This command runs the entire test suite.
 
 ## Dependencies
 
