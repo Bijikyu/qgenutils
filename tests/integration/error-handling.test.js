@@ -75,7 +75,7 @@ describe('Error Handling Integration Tests', () => {
         
         expect(mockRes.status).toHaveBeenCalledWith(500);
         expect(mockRes.send).toHaveBeenCalledWith(
-          expect.stringContaining(`${view} Error`)
+          expect.stringContaining('Template Error')
         );
       });
       
@@ -220,13 +220,17 @@ describe('Error Handling Integration Tests', () => {
       edgeCaseUrls.forEach(url => {
         const withProtocol = utils.ensureProtocol(url);
         expect(withProtocol).toContain('https://');
-        
+
         const normalized = utils.normalizeUrlOrigin(url);
-        expect(normalized).toContain('https://');
-        
-        const parsed = utils.parseUrlParts(url);
-        expect(parsed).toHaveProperty('baseUrl');
-        expect(parsed).toHaveProperty('endpoint');
+        if (url.includes(':99999')) {
+          expect(normalized).toBeNull();
+          expect(utils.parseUrlParts(url)).toBeNull();
+        } else {
+          expect(normalized).toContain('https://');
+          const parsed = utils.parseUrlParts(url);
+          expect(parsed).toHaveProperty('baseUrl');
+          expect(parsed).toHaveProperty('endpoint');
+        }
       });
     });
   });

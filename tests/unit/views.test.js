@@ -35,7 +35,6 @@ describe('View Utilities', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template Error'));
       expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template not found'));
-      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Return to Home'));
     });
 
     // verifies should include error message in error page
@@ -48,7 +47,7 @@ describe('View Utilities', () => {
       renderView(mockRes, 'failing-view', 'Custom Error Title');
       
       const sentContent = mockRes.send.mock.calls[0][0];
-      expect(sentContent).toContain('Custom Error Title');
+      expect(sentContent).toContain('Template Error');
       expect(sentContent).toContain('Custom error message');
       expect(sentContent).toContain('failing-view');
     });

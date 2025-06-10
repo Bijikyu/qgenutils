@@ -75,7 +75,8 @@ describe('URL Utilities', () => {
 
     // verifies should handle complex URLs
     test('should handle complex URLs', () => {
-      expect(normalizeUrlOrigin('HTTPS://API.Example.Com:443/v1/users?id=123')).toBe('https://api.example.com:443');
+      // normalizeUrlOrigin drops default port 443 so we only expect the origin
+      expect(normalizeUrlOrigin('HTTPS://API.Example.Com:443/v1/users?id=123')).toBe('https://api.example.com');
     });
   });
 

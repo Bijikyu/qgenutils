@@ -1,5 +1,6 @@
 
-const { calculateContentLength, buildCleanHeaders, sendJsonResponse, getRequiredHeader } = require('../../lib/http');
+const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('../../lib/http');
+const { sendJsonResponse } = require('../../lib/response-utils');
 
 describe('HTTP Utilities', () => {
   describe('calculateContentLength', () => {
@@ -189,6 +190,27 @@ describe('HTTP Utilities', () => {
       
       expect(result).toBeNull();
       expect(mockRes.status).toHaveBeenCalledWith(401);
+    });
+  });
+
+  describe('HEADERS_TO_REMOVE constant', () => {
+    // verifies should contain expected header names
+    test('should contain expected header names', () => {
+      const { HEADERS_TO_REMOVE } = require('../../lib/http');
+      const expected = [
+        'host',
+        'x-target-url',
+        'x-api-key',
+        'cdn-loop',
+        'cf-connecting-ip',
+        'cf-ipcountry',
+        'cf-ray',
+        'cf-visitor',
+        'render-proxy-ttl',
+        'connection'
+      ];
+      expect(Array.isArray(HEADERS_TO_REMOVE)).toBe(true);
+      expect(HEADERS_TO_REMOVE.sort()).toEqual(expected.sort());
     });
   });
 });
