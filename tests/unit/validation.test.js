@@ -111,5 +111,34 @@ describe('Validation Utilities', () => {
       expect(result).toBe(true);
       expect(mockRes.status).not.toHaveBeenCalled();
     });
+
+    // verifies should handle invalid requiredFields parameter
+    test('should handle invalid requiredFields parameter', () => {
+      const obj = { name: 'John' };
+      const result = requireFields(obj, null, mockRes);
+      
+      expect(result).toBe(false);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    });
+
+    // verifies should handle non-array requiredFields parameter
+    test('should handle non-array requiredFields parameter', () => {
+      const obj = { name: 'John' };
+      const result = requireFields(obj, 'name', mockRes);
+      
+      expect(result).toBe(false);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    });
+
+    // verifies should handle invalid obj parameter
+    test('should handle invalid obj parameter', () => {
+      const result = requireFields(null, ['name'], mockRes);
+      
+      expect(result).toBe(false);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    });
   });
 });

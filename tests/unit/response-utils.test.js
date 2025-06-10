@@ -97,5 +97,38 @@ describe('Response Utilities', () => {
       sendServerError(null, 'bad');
       expect(qerrors).toHaveBeenCalled();
     });
+
+    // verifies should handle JSON serialization failures
+    test('should handle JSON serialization failures', () => {
+      const res = { 
+        status: jest.fn().mockReturnThis(), 
+        json: jest.fn()
+          .mockImplementationOnce(() => { throw new Error('JSON error'); })
+          .mockImplementationOnce(() => { throw new Error('Fallback error'); })
+      };
+      
+      sendJsonResponse(res, 200, { circular: {} });
+      
+      // Should attempt fallback after first failure
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(qerrors).toHaveBeenCalledTimes(2); // Original error + fallback error
+    });
+
+    // verifies should handle successful JSON serialization
+    test('should handle successful JSON serialization after retry', () => {
+      const res = { 
+        status: jest.fn().mockReturnThis(), 
+        json: jest.fn()
+          .mockImplementationOnce(() => { throw new Error('JSON error'); })
+          .mockImplementationOnce(() => 'success')
+      };
+      
+      sendJsonResponse(res, 200, { data: 'test' });
+      
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Response serialization failed' });
+    });
   });
 });
