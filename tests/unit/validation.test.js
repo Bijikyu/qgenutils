@@ -119,7 +119,7 @@ describe('Validation Utilities', () => {
       
       expect(result).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(500);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal validation error' });
     });
 
     // verifies should handle non-array requiredFields parameter
@@ -129,7 +129,7 @@ describe('Validation Utilities', () => {
       
       expect(result).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(500);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal validation error' });
     });
 
     // verifies should handle invalid obj parameter
@@ -138,7 +138,7 @@ describe('Validation Utilities', () => {
       
       expect(result).toBe(false);
       expect(mockRes.status).toHaveBeenCalledWith(500);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Internal validation error' });
     });
   });
 });
