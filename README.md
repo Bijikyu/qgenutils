@@ -67,6 +67,7 @@ const { calculateContentLength } = require('qgenutils');
 console.log(calculateContentLength('Hello World')); // 11
 console.log(calculateContentLength({ name: 'John' })); // JSON string length
 console.log(calculateContentLength(null)); // 0
+console.log(calculateContentLength(Buffer.from('Hi'))); // 2 // Buffer example
 ```
 
 #### `buildCleanHeaders(headers, method, body)`

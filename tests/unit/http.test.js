@@ -55,6 +55,12 @@ describe('HTTP Utilities', () => {
       const expected = Buffer.byteLength(JSON.stringify(complexObj), 'utf8').toString();
       expect(calculateContentLength(complexObj)).toBe(expected);
     });
+
+    // verifies should calculate length for Buffer body
+    test('should calculate length for Buffer body', () => {
+      const buf = Buffer.from('abc');
+      expect(calculateContentLength(buf)).toBe(buf.length.toString());
+    });
   });
 
   describe('buildCleanHeaders', () => {
