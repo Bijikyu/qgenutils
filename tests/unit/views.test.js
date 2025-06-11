@@ -1,4 +1,7 @@
 
+// Unit tests focused on the view utilities responsible for EJS rendering and
+// route registration. These tests confirm error pages render correctly and that
+// routes hook into the global Express app as expected.
 const { renderView, registerViewRoute } = require('../../lib/views');
 
 describe('View Utilities', () => {

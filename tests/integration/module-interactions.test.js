@@ -1,4 +1,7 @@
 
+// Integration tests covering how individual utilities interact when combined in
+// typical request workflows. The focus here is cross-module cooperation rather
+// than isolated unit behavior.
 const utils = require('../../index');
 const { 
   formatDateTime, 

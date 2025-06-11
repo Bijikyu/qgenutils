@@ -1,4 +1,7 @@
 
+// Integration tests validating error recovery across modules. These tests
+// simulate multiple failure scenarios to ensure utilities cooperate under
+// error conditions without crashing the process.
 const utils = require('../../index');
 
 describe('Error Handling Integration Tests', () => {

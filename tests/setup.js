@@ -1,5 +1,6 @@
-// Global test setup for Jest
-// This file runs before all tests to configure the testing environment
+// Global test setup for Jest. The utilities defined here mock console and
+// qerrors so unit tests remain clean and deterministic while exercising the
+// library code.
 
 // Mock console methods to prevent test output pollution
 global.console = {
