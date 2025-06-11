@@ -19,13 +19,13 @@
 
 // Import all utility functions from organized modules
 // Each require() statement pulls in a focused set of related functionality
-const { formatDateTime, formatDuration } = require('./lib/datetime');
-const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http');
-const { sendJsonResponse } = require('./lib/response-utils');
-const { requireFields } = require('./lib/validation');
-const { checkPassportAuth, hasGithubStrategy } = require('./lib/auth');
-const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./lib/url');
-const { renderView, registerViewRoute } = require('./lib/views');
+const { formatDateTime, formatDuration } = require('./lib/datetime'); // date formatting helpers
+const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http'); // HTTP header and length utilities
+const { sendJsonResponse } = require('./lib/response-utils'); // standardized JSON responses
+const { requireFields } = require('./lib/validation'); // request field validation
+const { checkPassportAuth, hasGithubStrategy } = require('./lib/auth'); // Passport.js helpers
+const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./lib/url'); // URL normalization helpers
+const { renderView, registerViewRoute } = require('./lib/views'); // view rendering utilities
 
 /*
  * Export Strategy Explanation:
@@ -44,31 +44,31 @@ const { renderView, registerViewRoute } = require('./lib/views');
 // This ensures existing code using require('./index.js') continues to work
 module.exports = {
   // DateTime utilities - handle date formatting and duration calculations
-  formatDateTime,
-  formatDuration,
+  formatDateTime, // expose formatDateTime for locale display
+  formatDuration, // expose formatDuration for elapsed time
   
   // HTTP utilities - manage content length, headers, responses, and validation
-  calculateContentLength,
-  buildCleanHeaders,
-  sendJsonResponse,
-  getRequiredHeader,
+  calculateContentLength, // expose content-length calculation
+  buildCleanHeaders, // expose header sanitization logic
+  sendJsonResponse, // expose JSON response helper
+  getRequiredHeader, // expose header validation helper
   
   // URL utilities - handle protocol normalization and URL parsing
-  ensureProtocol,
-  normalizeUrlOrigin,
-  stripProtocol,
-  parseUrlParts,
+  ensureProtocol, // expose protocol enforcement
+  normalizeUrlOrigin, // expose origin normalization
+  stripProtocol, // expose protocol removal
+  parseUrlParts, // expose URL decomposition
   
   // Validation utilities - field presence and format checking
-  requireFields,
+  requireFields, // expose field presence check
   
   // Authentication utilities - Passport.js integration helpers
-  checkPassportAuth,
-  hasGithubStrategy,
+  checkPassportAuth, // expose runtime auth check
+  hasGithubStrategy, // expose GitHub strategy detection
   
   // View utilities - template rendering and route registration
-  renderView,
-  registerViewRoute
+  renderView, // expose EJS view rendering
+  registerViewRoute // expose route helper for views
 };
 
 /*
@@ -84,4 +84,4 @@ module.exports = {
  */
 
 // Export functions for ES modules (if needed)
-module.exports.default = module.exports;
+module.exports.default = module.exports; // provide default export for import syntax
