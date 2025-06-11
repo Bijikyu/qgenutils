@@ -52,6 +52,11 @@ describe('URL Utilities', () => {
     test('should handle URLs with query parameters', () => {
       expect(ensureProtocol('example.com/path?q=test')).toBe('https://example.com/path?q=test');
     });
+
+    // verifies should trim whitespace and add https
+    test('should trim whitespace and add https', () => {
+      expect(ensureProtocol('  example.com  ')).toBe('https://example.com');
+    });
   });
 
   describe('normalizeUrlOrigin', () => {
