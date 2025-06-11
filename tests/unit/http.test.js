@@ -1,4 +1,7 @@
 
+// Unit tests for HTTP helpers covering header sanitization, content-length
+// calculations, and generic response handling to guarantee consistent behavior
+// for API proxying scenarios.
 const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('../../lib/http');
 const { sendJsonResponse } = require('../../lib/response-utils');
 

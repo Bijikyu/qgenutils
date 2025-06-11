@@ -1,4 +1,7 @@
 
+// Manual demonstration script showcasing how each exported utility can be used
+// outside of the automated test suite. This file logs example outputs to the
+// console for quick exploration when running `node test.js`.
 const { formatDateTime, formatDuration, calculateContentLength, ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts, getRequiredHeader, sendJsonResponse, requireFields, checkPassportAuth, hasGithubStrategy, buildCleanHeaders, renderView, registerViewRoute } = require('./index.js'); // imports utility functions for tests
 
 console.log('Testing npm module functions:\n'); //(starting demo output)
