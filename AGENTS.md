@@ -60,7 +60,6 @@ AI agents working with this codebase should understand these behavioral expectat
 - qerrors integration pattern - all error logging must use this mechanism for consistent error tracking
 
 **Special Processes**:
-- New utility functions require REPLITAGENT.md compliance verification including proper commenting and test coverage
 - Error handling patterns must be consistent with existing response-utils module - use sendJsonResponse, sendValidationError, sendAuthError, and sendServerError
 - All code changes require comprehensive commenting explaining both functionality and rationale following the established pattern
 - Console.log statements must include context information and be paired with qerrors for production scenarios
