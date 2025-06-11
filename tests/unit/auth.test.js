@@ -1,4 +1,6 @@
 
+// Unit tests for authentication helpers. Each test ensures the auth utilities
+// behave predictably with varied request objects and Passport.js configurations.
 const { checkPassportAuth, hasGithubStrategy } = require('../../lib/auth');
 
 describe('Authentication Utilities', () => {

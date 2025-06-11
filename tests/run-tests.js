@@ -1,4 +1,7 @@
 
+// Custom Node script used to launch Jest with optional flags. It acts as a
+// simple wrapper so developers can run tests via `node tests/run-tests.js`
+// without remembering complex CLI arguments.
 const { spawn } = require('child_process');
 const path = require('path');
 
