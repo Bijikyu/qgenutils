@@ -69,17 +69,17 @@ console.log(calculateContentLength({ name: 'John' })); // JSON string length
 console.log(calculateContentLength(null)); // 0
 ```
 
-#### `buildCleanHeaders(method, originalHeaders, body?)`
+#### `buildCleanHeaders(headers, method, body)`
 Builds clean headers for HTTP requests, removing dangerous headers.
 
 ```javascript
 const { buildCleanHeaders } = require('qgenutils');
 
-const headers = buildCleanHeaders('POST', {
+const headers = buildCleanHeaders({
   'authorization': 'Bearer token',
   'host': 'evil.com', // Will be removed
   'content-type': 'application/json'
-}, { data: 'test' });
+}, 'POST', { data: 'test' });
 ```
 
 #### `sendJsonResponse(res, statusCode, data)`
@@ -92,14 +92,14 @@ sendJsonResponse(res, 200, { message: 'Success' });
 sendJsonResponse(res, 400, { error: 'Invalid input' });
 ```
 
-#### `getRequiredHeader(req, headerName, res?)`
+#### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
 Extracts required headers with automatic error handling.
 
 ```javascript
 const { getRequiredHeader } = require('qgenutils');
 
-const auth = getRequiredHeader(req, 'authorization', res);
-if (!auth) return; // Response already sent with 401 error
+const auth = getRequiredHeader(req, res, 'authorization', 401, 'Auth header missing');
+if (!auth) return; // Response already sent with error
 ```
 
 ### URL Utilities
@@ -172,36 +172,36 @@ if (!checkPassportAuth(req)) {
 }
 ```
 
-#### `hasGithubStrategy(passport)`
+#### `hasGithubStrategy()`
 Checks if GitHub OAuth strategy is configured.
 
 ```javascript
 const { hasGithubStrategy } = require('qgenutils');
 
-if (hasGithubStrategy(passport)) {
+if (hasGithubStrategy()) {
   // Show GitHub login button
 }
 ```
 
 ### View Utilities
 
-#### `renderView(viewName, data, res?)`
+#### `renderView(res, viewName, errorTitle)`
 Renders EJS templates with error handling.
 
 ```javascript
 const { renderView } = require('qgenutils');
 
-const html = renderView('dashboard', { user: userData }, res);
-// If template fails, automatically sends error page
+renderView(res, 'dashboard', 'Error Rendering Dashboard');
+// If template fails, an error page is automatically sent
 ```
 
-#### `registerViewRoute(app, route, viewName, data?)`
-Registers Express routes for view rendering.
+#### `registerViewRoute(routePath, viewName, errorTitle)`
+Registers Express routes for view rendering using the global `app` object.
 
 ```javascript
 const { registerViewRoute } = require('qgenutils');
 
-registerViewRoute(app, '/dashboard', 'dashboard', { title: 'Dashboard' });
+registerViewRoute('/dashboard', 'dashboard', 'Error Rendering Dashboard');
 ```
 
 ## Error Handling
