@@ -18,6 +18,13 @@ describe('Logging Utilities', () => {
       logFunctionStart('testStart', obj);
       expect(mockConsole.log).toHaveBeenCalledWith(`testStart is running with ${JSON.stringify(obj)}`);
     });
+
+    test('should handle circular reference input', () => {
+      const circ = {}; circ.self = circ; // create circular object for test
+      logFunctionStart('testStart', circ); // call with circular object
+      expect(mockConsole.log).toHaveBeenCalledWith('testStart is running with [unserializable]');
+      expect(qerrors).toHaveBeenCalledWith(expect.any(Error), 'logFunctionStart', { input: circ });
+    });
   });
 
   describe('logFunctionResult', () => {
@@ -30,6 +37,13 @@ describe('Logging Utilities', () => {
       const obj = { b: 2 };
       logFunctionResult('testResult', obj);
       expect(mockConsole.log).toHaveBeenCalledWith(`testResult is returning ${JSON.stringify(obj)}`);
+    });
+
+    test('should handle circular reference result', () => {
+      const circ = {}; circ.self = circ; // create circular object result
+      logFunctionResult('testResult', circ); // call with circular object
+      expect(mockConsole.log).toHaveBeenCalledWith('testResult is returning [unserializable]');
+      expect(qerrors).toHaveBeenCalledWith(expect.any(Error), 'logFunctionResult', { result: circ });
     });
   });
 
