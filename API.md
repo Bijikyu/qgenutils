@@ -120,6 +120,7 @@ Calculate accurate byte length for HTTP bodies with UTF-8 support.
 - `string`: Uses `Buffer.byteLength()` for UTF-8 accuracy
 - `object`: JSON stringifies then calculates bytes
 - Empty objects/strings: Returns "0"
+- `Buffer`: Uses body.length directly for binary payloads // Buffer bullet
 
 **Example:**
 ```javascript
@@ -128,6 +129,7 @@ const { calculateContentLength } = require('qgenutils');
 calculateContentLength("Hello, 世界!"); // "13" (UTF-8 bytes)
 calculateContentLength({ msg: "hi" }); // "12" (JSON bytes)
 calculateContentLength(null); // "0"
+calculateContentLength(Buffer.from('Hi')); // "2" (binary bytes) // Buffer example
 ```
 
 ### `buildCleanHeaders(headers, method, body)`
