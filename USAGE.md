@@ -116,6 +116,10 @@ const length = calculateContentLength(textBody);
 const jsonBody = { message: "Hello" };
 const jsonLength = calculateContentLength(jsonBody);
 // Returns: "20" (JSON.stringify byte length)
+
+const buf = Buffer.from('Hi');
+const bufLength = calculateContentLength(buf);
+// Returns: "2" (binary length) // Buffer example
 ```
 
 ### `buildCleanHeaders(headers, method, body)`
