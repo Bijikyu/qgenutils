@@ -1,3 +1,6 @@
+// Unit tests for standardized response helpers. These tests mock Express
+// responses to verify that each helper produces consistent output and logs
+// errors through qerrors when appropriate.
 require('qtests/setup'); // ensure stub modules during tests
 const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('../../lib/response-utils');
 const { qerrors } = require('qerrors');

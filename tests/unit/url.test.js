@@ -1,4 +1,7 @@
 
+// Unit tests for URL utilities covering protocol enforcement, origin
+// normalization, protocol stripping, and structured parsing. Each case asserts
+// reliable output for both valid and malformed input.
 const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('../../lib/url');
 
 describe('URL Utilities', () => {

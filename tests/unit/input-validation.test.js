@@ -1,3 +1,6 @@
+// Unit tests ensuring core input validation helpers return accurate boolean
+// results for a variety of argument types. These tests guard against regressions
+// in basic sanity checks used throughout the library.
 const { isValidObject, isValidString, hasMethod, isValidExpressResponse } = require('../../lib/input-validation');
 
 describe('Input Validation Utilities', () => {

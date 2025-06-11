@@ -1,4 +1,7 @@
 
+// Unit tests for field presence validation helper. These checks ensure the
+// function correctly identifies missing fields and generates standardized error
+// responses via the mocked Express response object.
 const { requireFields } = require('../../lib/validation');
 
 describe('Validation Utilities', () => {

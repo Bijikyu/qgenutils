@@ -1,4 +1,6 @@
 
+// Unit tests verifying date/time formatting helpers handle diverse inputs and
+// edge cases without throwing unexpected errors.
 const { formatDateTime, formatDuration } = require('../../lib/datetime');
 
 describe('DateTime Utilities', () => {
