@@ -9,10 +9,7 @@ npm install qgenutils
 ## Quick Start
 
 ```javascript
-const QGenUtils = require('qgenutils');
-
-// Or import specific modules
-const { auth, validation, datetime } = require('qgenutils');
+const QGenUtils = require('qgenutils'); // import all utilities
 
 // Or import individual functions
 const { checkPassportAuth, requireFields, formatDateTime } = require('qgenutils');
