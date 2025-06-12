@@ -179,6 +179,7 @@ Checks if GitHub OAuth strategy is configured.
 ```javascript
 const { hasGithubStrategy } = require('qgenutils');
 
+// hasGithubStrategy reads global.passport to detect configuration
 if (hasGithubStrategy()) {
   // Show GitHub login button
 }
