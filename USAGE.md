@@ -122,20 +122,20 @@ const bufLength = calculateContentLength(buf);
 
 ### `buildCleanHeaders(headers, method, body)`
 
-Remove dangerous headers and recalculate content-length for proxy security.
+Remove dangerous headers (for example `host` and `x-target-url`) and recalculate content-length for proxy security.
 
 ```javascript
 const { buildCleanHeaders } = require('qgenutils');
 
 const originalHeaders = {
   'host': 'example.com',
-  'x-forwarded-for': '192.168.1.1',
+  'x-target-url': 'https://backend.internal', // will be removed
   'content-length': '100',
   'authorization': 'Bearer token123'
 };
 
 const cleanHeaders = buildCleanHeaders(originalHeaders, 'POST', { data: 'test' });
-// Returns headers without 'host' and 'x-forwarded-for', with recalculated content-length
+// Returns headers without 'host' and 'x-target-url', with recalculated content-length
 ```
 
 **Security Features:**
