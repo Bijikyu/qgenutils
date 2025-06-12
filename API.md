@@ -146,8 +146,8 @@ Remove dangerous headers and recalculate content-length for proxy security.
 - `Object`: Cleaned headers safe for forwarding
 
 **Header Cleaning:**
-- Removes `host`, `x-forwarded-for`, `x-real-ip`, `x-forwarded-proto`
-- Removes `connection`, `upgrade`, `proxy-authorization`
+- Removes `host`, `x-target-url`, `x-api-key`, `cdn-loop`, `cf-connecting-ip`
+- Removes `cf-ipcountry`, `cf-ray`, `cf-visitor`, `render-proxy-ttl`, `connection`
 - Recalculates `content-length` for non-GET requests with bodies
 - Removes `content-length` from GET requests (HTTP spec compliance)
 
