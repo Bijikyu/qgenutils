@@ -152,7 +152,22 @@ describe('Authentication Utilities', () => {
           throw new Error('Access error');
         }
       };
-      
+
+      expect(hasGithubStrategy()).toBe(false);
+    });
+
+    // verifies should ignore local passport variable when global.passport is undefined
+    test('should ignore local passport variable when global.passport is undefined', () => {
+      const passport = { _strategies: { github: {} } }; // local variable with strategy
+      global.passport = undefined; // global remains undefined
+
+      expect(hasGithubStrategy()).toBe(false);
+    });
+
+    // verifies should return false when _strategies is not an object
+    test('should return false when _strategies is not an object', () => {
+      global.passport = { _strategies: 'invalid' };
+
       expect(hasGithubStrategy()).toBe(false);
     });
   });

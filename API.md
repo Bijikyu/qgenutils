@@ -48,6 +48,7 @@ Detect if GitHub OAuth strategy is configured in Passport.js.
 ```javascript
 const { hasGithubStrategy } = require('qgenutils');
 
+// hasGithubStrategy checks global.passport for configured strategies
 const showGithubLogin = hasGithubStrategy();
 ```
 
