@@ -48,6 +48,7 @@ const { hasGithubStrategy } = require('qgenutils');
 app.get('/login-options', (req, res) => {
   const loginMethods = {
     local: true,
+    // hasGithubStrategy reads global.passport to detect GitHub OAuth setup
     github: hasGithubStrategy()
   };
   
