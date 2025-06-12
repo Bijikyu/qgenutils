@@ -41,6 +41,22 @@ describe('View Utilities', () => {
       expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Return to Home'));
     });
 
+    // verifies should handle missing send method gracefully
+    test('should handle missing send method gracefully', () => {
+      const error = new Error('Render fails');
+      mockRes.render.mockImplementation(() => {
+        throw error;
+      });
+
+      delete mockRes.send; // simulate missing send method
+
+      expect(() => {
+        renderView(mockRes, 'view', 'Error Title');
+      }).not.toThrow();
+
+      expect(mockRes.status).not.toHaveBeenCalled();
+    });
+
     // verifies should include error message in error page
     test('should include error message in error page', () => {
       const error = new Error('Custom error message');
