@@ -119,6 +119,13 @@ describe('HTTP Utilities', () => {
       buildCleanHeaders(originalHeaders, 'GET', null);
       expect(originalHeaders).toEqual(original);
     });
+
+    // verifies should default to GET when method is invalid
+    test('should default to GET when method is invalid', () => {
+      const result = buildCleanHeaders(originalHeaders, 123, null);
+      expect(result['content-length']).toBeUndefined();
+      expect(result['host']).toBeUndefined();
+    });
   });
 
   describe('sendJsonResponse', () => {
@@ -196,9 +203,15 @@ describe('HTTP Utilities', () => {
     test('should handle undefined headers', () => {
       const reqWithoutHeaders = { headers: undefined };
       const result = getRequiredHeader(reqWithoutHeaders, mockRes, 'authorization', 401, 'Missing auth');
-      
+
       expect(result).toBeNull();
       expect(mockRes.status).toHaveBeenCalledWith(401);
+    });
+
+    // verifies should retrieve header regardless of case
+    test('should retrieve header regardless of case', () => {
+      const result = getRequiredHeader(mockReq, mockRes, 'Authorization', 401, 'Missing auth');
+      expect(result).toBe('Bearer token123');
     });
 
     // verifies should handle errors during header processing
