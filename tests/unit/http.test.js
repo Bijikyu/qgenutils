@@ -2,7 +2,7 @@
 // Unit tests for HTTP helpers covering header sanitization, content-length
 // calculations, and generic response handling to guarantee consistent behavior
 // for API proxying scenarios.
-const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('../../lib/http');
+const { calculateContentLength, buildCleanHeaders, getRequiredHeader, HEADERS_TO_REMOVE } = require('../../lib/http'); // include constant for immutability tests
 const { sendJsonResponse } = require('../../lib/response-utils');
 
 describe('HTTP Utilities', () => {
@@ -242,6 +242,15 @@ describe('HTTP Utilities', () => {
       expect(result).toBeNull();
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    });
+  });
+
+  describe('HEADERS_TO_REMOVE', () => {
+    // verifies should not change when modification is attempted
+    test('should not change when modification is attempted', () => {
+      const original = [...HEADERS_TO_REMOVE]; // capture original list for comparison
+      expect(() => { HEADERS_TO_REMOVE.push('new-header'); }).toThrow(TypeError); // frozen array should throw on push
+      expect(HEADERS_TO_REMOVE).toEqual(original); // array should remain unchanged
     });
   });
 });
