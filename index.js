@@ -21,7 +21,7 @@
 // Each require() statement pulls in a focused set of related functionality
 const { formatDateTime, formatDuration } = require('./lib/datetime'); // date formatting helpers
 const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http'); // HTTP header and length utilities
-const { sendJsonResponse } = require('./lib/response-utils'); // standardized JSON responses
+const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('./lib/response-utils'); // import additional response helpers for centralized error handling
 const { requireFields } = require('./lib/validation'); // request field validation
 const { checkPassportAuth, hasGithubStrategy } = require('./lib/auth'); // Passport.js helpers
 const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./lib/url'); // URL normalization helpers
@@ -51,6 +51,9 @@ module.exports = {
   calculateContentLength, // expose content-length calculation
   buildCleanHeaders, // expose header sanitization logic
   sendJsonResponse, // expose JSON response helper
+  sendValidationError, // expose validation error helper for consistency
+  sendAuthError, // expose auth error helper to centralize 401 responses
+  sendServerError, // expose server error helper for unified 500 handling
   getRequiredHeader, // expose header validation helper
   
   // URL utilities - handle protocol normalization and URL parsing
