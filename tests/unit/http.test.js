@@ -107,6 +107,20 @@ describe('HTTP Utilities', () => {
       expect(result['content-length']).toBeUndefined();
     });
 
+    // verifies should remove content-length when body is empty object
+    test('should remove content-length when body is empty object', () => {
+      const input = { 'content-length': '10' };
+      const result = buildCleanHeaders(input, 'POST', {});
+      expect(result['content-length']).toBeUndefined();
+    });
+
+    // verifies should remove content-length when body is empty buffer
+    test('should remove content-length when body is empty buffer', () => {
+      const input = { 'content-length': '5' };
+      const result = buildCleanHeaders(input, 'POST', Buffer.alloc(0));
+      expect(result['content-length']).toBeUndefined();
+    });
+
     // verifies should handle empty headers object
     test('should handle empty headers object', () => {
       const result = buildCleanHeaders({}, 'GET', null);
