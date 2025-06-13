@@ -32,6 +32,15 @@ describe('Response Utilities', () => {
 
       expect(qerrors).toHaveBeenCalled();
     });
+
+    // verifies should work when status does not chain
+    test('should send JSON even if status does not return this', () => {
+      const nonChainRes = { status: jest.fn(), json: jest.fn().mockReturnThis() };
+      sendJsonResponse(nonChainRes, 202, { done: true });
+
+      expect(nonChainRes.status).toHaveBeenCalledWith(202);
+      expect(nonChainRes.json).toHaveBeenCalledWith({ done: true });
+    });
   });
 
   describe('sendValidationError', () => {
