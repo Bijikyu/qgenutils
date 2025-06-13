@@ -72,6 +72,19 @@ describe('View Utilities', () => {
       expect(sentContent).toContain('failing-view');
     });
 
+    // verifies should escape error message for safe HTML
+    test('should escape error message containing HTML', () => {
+      const error = new Error('<script>alert("x")</script>');
+      mockRes.render.mockImplementation(() => {
+        throw error;
+      });
+
+      renderView(mockRes, 'script-view', 'Script Error');
+
+      const sentContent = mockRes.send.mock.calls[0][0];
+      expect(sentContent).toContain('&lt;script&gt;alert("x")&lt;/script&gt;');
+    });
+
     // verifies should handle different view names
     test('should handle different view names', () => {
       const viewNames = ['dashboard', 'login', 'profile', 'admin'];
