@@ -222,7 +222,6 @@ tests/
 
 ### Planned Enhancements
 - **TypeScript Support**: Type definitions for better developer experience
-- **ESM Support**: Native ES module exports alongside CommonJS
 - **Plugin Architecture**: Extensible validation and formatting plugins
 - **Caching Layer**: Optional caching for expensive operations
 
