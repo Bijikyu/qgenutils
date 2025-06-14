@@ -1,3 +1,9 @@
+/*
+ * Additional edge case tests for lower-level utilities. These scenarios cover
+ * unusual or malformed inputs that might appear in real usage. The goal is to
+ * confirm each utility remains resilient and logs errors through qerrors rather
+ * than throwing, ensuring the rest of the application can continue running.
+ */
 const httpUtils = require('../../lib/http');
 const urlUtils = require('../../lib/url');
 const { qerrors } = require('qerrors');
