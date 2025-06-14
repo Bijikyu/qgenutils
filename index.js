@@ -14,6 +14,9 @@
  * 5. Tree Shaking: Bundlers can optimize imports by including only needed modules
  * 
  * The dual export strategy (CommonJS + ES modules) ensures compatibility with
+ * both legacy require() callers and modern import syntax.  // clarify support for dual module systems
+ * It exposes a CommonJS module.exports object and sets module.exports.default
+ * for ES module consumers.  // explain parallel exports for broad usage
  */
 
 // Import all utility functions from organized modules
@@ -29,15 +32,19 @@ const { renderView, registerViewRoute } = require('./lib/views'); // view render
 
 /*
  * Export Strategy Explanation:
- * 
- * We export all functions in a single object to maintain backward compatibility
- * with any existing code that imports from this main module. This allows users
- * to either import specific functions or the entire module without breaking
- * existing implementations.
- * 
- * The flat export structure (rather than nested objects) makes the API simpler
- * and more intuitive for developers who don't need to understand the internal
- * module organization.
+ *
+ * All utilities are re-exported from this file so consumers can access them
+ * through one entry point, ensuring older codebases continue to `require('qgenutils')`
+ * without modification. This backward compatible approach lets developers
+ * cherry-pick imports while still benefiting from a single aggregated module.
+ *
+ * Exposing every utility here keeps the API surface small, allowing bundlers to
+ * tree shake unused members and include only what is required. The simplified
+ * surface also makes discovery easier for new developers.
+ *
+ * We attach `module.exports.default` below so ES module loaders expecting a
+ * default export can import the same object. This maintains parity between
+ * `require()` and `import` usage without forcing consumers to change syntax.
  */
 
 // Export all functions for backward compatibility
@@ -87,5 +94,5 @@ module.exports = {
  * This ensures maximum compatibility across different JavaScript environments.
  */
 
-// Export functions for ES modules (if needed)
+// Mirror exports under 'default' to support import statements  // clarify ESM usage
 module.exports.default = module.exports; // provide default export for import syntax
