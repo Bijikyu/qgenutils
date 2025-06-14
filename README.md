@@ -268,6 +268,8 @@ The library is organized into focused modules:
 - `lib/auth.js` - Authentication helpers
 - `lib/logger.js` - Winston logger configuration
 - `lib/views.js` - Template rendering utilities
+- `lib/input-validation.js` - Common input sanity checks
+- `lib/response-utils.js` - Standardized HTTP response helpers
 
 ## Testing
 
