@@ -17,10 +17,6 @@ const utils = require('qgenutils');
 const { formatDateTime, calculateContentLength, ensureProtocol } = require('qgenutils');
 ```
 
-```javascript
-import utils from 'qgenutils'; // ESM default import example
-import { formatDateTime as fmtDate } from 'qgenutils'; // or named imports
-```
 
 ```javascript
 const { logger } = require('qgenutils'); // Winston logger instance
@@ -358,6 +354,7 @@ This command runs the entire test suite.
 - `winston-daily-rotate-file` - Logging support
 - `@types/node` - TypeScript definitions
 - `qtests` - Test utilities
+
 
 ## License
 
