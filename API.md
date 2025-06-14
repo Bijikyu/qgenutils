@@ -4,6 +4,14 @@
 
 QGenUtils provides utilities organized into focused modules. Each function follows consistent patterns for error handling, logging, and security.
 
+### Importing
+
+```javascript
+const utils = require('qgenutils');
+// or
+import utils from 'qgenutils';
+```
+
 ## Authentication Module (`auth`)
 
 ### `checkPassportAuth(req)`
