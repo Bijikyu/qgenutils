@@ -163,6 +163,15 @@ const cleaned = buildCleanHeaders(
 // Returns: { 'authorization': 'Bearer token', 'content-length': '15' }
 ```
 
+### `HEADERS_TO_REMOVE`
+
+Constant listing headers removed by `buildCleanHeaders`.
+
+```javascript
+const { HEADERS_TO_REMOVE } = require('qgenutils/lib/http');
+// ['host', 'x-target-url', 'x-api-key', ...]
+```
+
 ### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
 
 Extract required headers with automatic error responses.
@@ -490,7 +499,7 @@ Check if value is a plain object (not array or null).
 
 **Example:**
 ```javascript
-const { isValidObject } = require('qgenutils');
+const { isValidObject } = require('qgenutils/lib/input-validation');
 
 isValidObject({ key: 'value' }); // true
 isValidObject([1, 2, 3]); // false
@@ -514,7 +523,7 @@ Check if value is a non-empty string after trimming.
 
 **Example:**
 ```javascript
-const { isValidString } = require('qgenutils');
+const { isValidString } = require('qgenutils/lib/input-validation');
 
 isValidString('hello'); // true
 isValidString('  '); // false (whitespace only)
@@ -539,7 +548,7 @@ Check if object has a specific method.
 
 **Example:**
 ```javascript
-const { hasMethod } = require('qgenutils');
+const { hasMethod } = require('qgenutils/lib/input-validation');
 
 hasMethod(res, 'json'); // true for Express response
 hasMethod({}, 'toString'); // true (inherited)
@@ -563,7 +572,7 @@ Check if object is a valid Express response object.
 
 **Example:**
 ```javascript
-const { isValidExpressResponse } = require('qgenutils');
+const { isValidExpressResponse } = require('qgenutils/lib/input-validation');
 
 if (!isValidExpressResponse(res)) {
   throw new Error('Invalid response object');
