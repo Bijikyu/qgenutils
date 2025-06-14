@@ -9,7 +9,8 @@
     "test:coverage": "node tests/run-tests.js --coverage",
     "test:unit": "node tests/run-tests.js tests/unit",
     "test:integration": "node tests/run-tests.js tests/integration",
-    "test:verbose": "node tests/run-tests.js --verbose"
+    "test:verbose": "node tests/run-tests.js --verbose",
+    "log:test": "node -e \"require(\\\"./lib/logger\\\").info(\\\"logger ready\\\")\""
   },
   "keywords": [
     "utilities",
