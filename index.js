@@ -14,6 +14,9 @@
  * 5. Tree Shaking: Bundlers can optimize imports by including only needed modules
  * 
  * The dual export strategy (CommonJS + ES modules) ensures compatibility with
+ * both legacy require() callers and modern import syntax.  // clarify support for dual module systems
+ * It exposes a CommonJS module.exports object and sets module.exports.default
+ * for ES module consumers.  // explain parallel exports for broad usage
  */
 
 // Import all utility functions from organized modules
@@ -87,5 +90,5 @@ module.exports = {
  * This ensures maximum compatibility across different JavaScript environments.
  */
 
-// Export functions for ES modules (if needed)
+// Mirror exports under 'default' to support import statements  // clarify ESM usage
 module.exports.default = module.exports; // provide default export for import syntax
