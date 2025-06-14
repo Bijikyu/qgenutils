@@ -9,7 +9,7 @@ function reload() {
   return require('../../lib/logger');
 }
 
-describe('Logger Utility', () => {
+describe('Logger Utility', () => { // ensures log rotation stays configured
   test('verifies should configure DailyRotateFile transport', () => {
     let captured; // store config
     const restore = qtests.stubMethod(winston, 'createLogger', cfg => { captured = cfg; return { transports: cfg.transports, debug(){}, info(){}, error(){} }; });

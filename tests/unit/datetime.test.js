@@ -3,8 +3,8 @@
 // edge cases without throwing unexpected errors.
 const { formatDateTime, formatDuration } = require('../../lib/datetime');
 
-describe('DateTime Utilities', () => {
-  describe('formatDateTime', () => {
+describe('DateTime Utilities', () => { // ensures date helpers handle real-world formats
+  describe('formatDateTime', () => { // validates fallback when dates are invalid
     // verifies should format valid ISO date string
     test('should format valid ISO date string', () => {
       const isoDate = '2023-12-25T10:30:00.000Z';
@@ -48,7 +48,7 @@ describe('DateTime Utilities', () => {
     });
   });
 
-  describe('formatDuration', () => {
+  describe('formatDuration', () => { // checks duration math across scenarios
     // verifies should calculate duration between two valid dates
     test('should calculate duration between two valid dates', () => {
       const start = '2023-12-25T10:00:00.000Z';
