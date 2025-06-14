@@ -8,8 +8,6 @@ QGenUtils provides utilities organized into focused modules. Each function follo
 
 ```javascript
 const utils = require('qgenutils');
-// or
-import utils from 'qgenutils';
 ```
 
 ## Authentication Module (`auth`)
