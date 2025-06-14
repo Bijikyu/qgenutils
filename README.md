@@ -18,6 +18,11 @@ const { formatDateTime, calculateContentLength, ensureProtocol } = require('qgen
 ```
 
 ```javascript
+import utils from 'qgenutils'; // ESM default import example
+import { formatDateTime as fmtDate } from 'qgenutils'; // or named imports
+```
+
+```javascript
 const { logger } = require('qgenutils'); // Winston logger instance
 ```
 
