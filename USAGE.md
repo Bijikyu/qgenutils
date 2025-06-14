@@ -15,11 +15,6 @@ const QGenUtils = require('qgenutils'); // import all utilities
 const { checkPassportAuth, requireFields, formatDateTime } = require('qgenutils');
 ```
 
-```javascript
-import QGenUtils from 'qgenutils'; // ESM style import for all utilities
-import { checkPassportAuth as checkAuth } from 'qgenutils'; // or named imports
-```
-
 ## Authentication Utilities
 
 ### `checkPassportAuth(req)`
