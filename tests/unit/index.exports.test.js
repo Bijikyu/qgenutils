@@ -6,8 +6,8 @@ const indexExports = require('../index');
 describe('Index Exports', () => {
   // verifies should include new response utility exports
   test('should include new response utility exports', () => {
-    expect(indexExports.sendValidationError).toBeDefined();
-    expect(indexExports.sendAuthError).toBeDefined();
-    expect(indexExports.sendServerError).toBeDefined();
+    expect(indexExports.sendValidationError).toBeDefined(); // verify export exists
+    expect(indexExports.sendAuthError).toBeDefined(); // verify export exists
+    expect(indexExports.sendServerError).toBeDefined(); // verify export exists
   });
 });

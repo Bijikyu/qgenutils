@@ -20,9 +20,9 @@ describe('View Utilities', () => {
     test('should render view successfully', () => {
       renderView(mockRes, 'dashboard', 'Dashboard Error');
       
-      expect(mockRes.render).toHaveBeenCalledWith('dashboard');
-      expect(mockRes.status).not.toHaveBeenCalled();
-      expect(mockRes.send).not.toHaveBeenCalled();
+      expect(mockRes.render).toHaveBeenCalledWith('dashboard'); // view rendered successfully
+      expect(mockRes.status).not.toHaveBeenCalled(); // no error status
+      expect(mockRes.send).not.toHaveBeenCalled(); // no html fallback sent
     });
 
     // verifies should send error page when rendering fails
@@ -34,11 +34,11 @@ describe('View Utilities', () => {
       
       renderView(mockRes, 'nonexistent', 'Template Error');
       
-      expect(mockRes.render).toHaveBeenCalledWith('nonexistent');
-      expect(mockRes.status).toHaveBeenCalledWith(500);
-      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template Error'));
-      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template not found'));
-      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Return to Home'));
+      expect(mockRes.render).toHaveBeenCalledWith('nonexistent'); // attempted render of missing template
+      expect(mockRes.status).toHaveBeenCalledWith(500); // send server error
+      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template Error')); // error title included
+      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Template not found')); // original message included
+      expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('Return to Home')); // navigation hint included
     });
 
     // verifies should handle missing send method gracefully
@@ -52,9 +52,9 @@ describe('View Utilities', () => {
 
       expect(() => {
         renderView(mockRes, 'view', 'Error Title');
-      }).not.toThrow();
+      }).not.toThrow(); // should handle missing send gracefully
 
-      expect(mockRes.status).not.toHaveBeenCalled();
+      expect(mockRes.status).not.toHaveBeenCalled(); // status not modified
     });
 
     // verifies should include error message in error page
@@ -67,9 +67,9 @@ describe('View Utilities', () => {
       renderView(mockRes, 'failing-view', 'Custom Error Title');
       
       const sentContent = mockRes.send.mock.calls[0][0];
-      expect(sentContent).toContain('Custom Error Title');
-      expect(sentContent).toContain('Custom error message');
-      expect(sentContent).toContain('failing-view');
+      expect(sentContent).toContain('Custom Error Title'); // title appears in output
+      expect(sentContent).toContain('Custom error message'); // message sanitized
+      expect(sentContent).toContain('failing-view'); // view name included
     });
 
     // verifies should escape error message for safe HTML
@@ -82,7 +82,7 @@ describe('View Utilities', () => {
       renderView(mockRes, 'script-view', 'Script Error');
 
       const sentContent = mockRes.send.mock.calls[0][0];
-      expect(sentContent).toContain('&lt;script&gt;alert("x")&lt;/script&gt;');
+      expect(sentContent).toContain('&lt;script&gt;alert("x")&lt;/script&gt;'); // script tags escaped
     });
 
     // verifies should handle different view names
@@ -97,7 +97,7 @@ describe('View Utilities', () => {
         };
         
         renderView(freshMockRes, viewName, 'Error');
-        expect(freshMockRes.render).toHaveBeenCalledWith(viewName);
+        expect(freshMockRes.render).toHaveBeenCalledWith(viewName); // each view renders once
       });
     });
   });
@@ -122,7 +122,7 @@ describe('View Utilities', () => {
     test('should register route with correct path and handler', () => {
       registerViewRoute('/dashboard', 'dashboard', 'Dashboard Error');
       
-      expect(mockApp.get).toHaveBeenCalledWith('/dashboard', expect.any(Function));
+      expect(mockApp.get).toHaveBeenCalledWith('/dashboard', expect.any(Function)); // route registered
     });
 
     // verifies should create handler that calls renderView
@@ -138,7 +138,7 @@ describe('View Utilities', () => {
       };
       
       handler(mockReq, mockRes);
-      expect(mockRes.render).toHaveBeenCalledWith('profile');
+      expect(mockRes.render).toHaveBeenCalledWith('profile'); // handler triggers render
     });
 
     // verifies should handle app registration errors gracefully
@@ -150,7 +150,7 @@ describe('View Utilities', () => {
       // Should not throw error
       expect(() => {
         registerViewRoute('/failing-route', 'view', 'Error');
-      }).not.toThrow();
+      }).not.toThrow(); // registration error swallowed
     });
 
     // verifies should handle missing global app
@@ -160,7 +160,7 @@ describe('View Utilities', () => {
       // Should not throw error
       expect(() => {
         registerViewRoute('/test', 'test', 'Test Error');
-      }).not.toThrow();
+      }).not.toThrow(); // missing global.app handled
     });
 
     // verifies should register multiple routes
@@ -175,10 +175,10 @@ describe('View Utilities', () => {
         registerViewRoute(path, view, title);
       });
       
-      expect(mockApp.get).toHaveBeenCalledTimes(3);
-      expect(mockApp.get).toHaveBeenCalledWith('/home', expect.any(Function));
-      expect(mockApp.get).toHaveBeenCalledWith('/about', expect.any(Function));
-      expect(mockApp.get).toHaveBeenCalledWith('/contact', expect.any(Function));
+      expect(mockApp.get).toHaveBeenCalledTimes(3); // three routes registered
+      expect(mockApp.get).toHaveBeenCalledWith('/home', expect.any(Function)); // home route
+      expect(mockApp.get).toHaveBeenCalledWith('/about', expect.any(Function)); // about route
+      expect(mockApp.get).toHaveBeenCalledWith('/contact', expect.any(Function)); // contact route
     });
   });
 });
