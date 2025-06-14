@@ -1,3 +1,10 @@
+/*
+ * Unit tests targeting the logging helper functions. These tests verify that
+ * logFunctionStart, logFunctionResult, and logFunctionError handle typical and
+ * edge case values without unexpected crashes. By exercising circular objects
+ * and undefined results we ensure qerrors is called and console output remains
+ * consistent when developers log complex data.
+ */
 const { logFunctionStart, logFunctionResult, logFunctionError } = require('../../lib/logging-utils');
 const { qerrors } = require('qerrors');
 
