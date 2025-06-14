@@ -44,34 +44,34 @@ const { renderView, registerViewRoute } = require('./lib/views'); // view render
 // This ensures existing code using require('./index.js') continues to work
 module.exports = {
   // DateTime utilities - handle date formatting and duration calculations
-  formatDateTime, // expose formatDateTime for locale display
-  formatDuration, // expose formatDuration for elapsed time
+  formatDateTime, // convert a Date to a locale string for UIs
+  formatDuration, // return human readable elapsed time
   
   // HTTP utilities - manage content length, headers, responses, and validation
-  calculateContentLength, // expose content-length calculation
-  buildCleanHeaders, // expose header sanitization logic
-  sendJsonResponse, // expose JSON response helper
-  sendValidationError, // expose validation error helper for consistency
-  sendAuthError, // expose auth error helper to centralize 401 responses
-  sendServerError, // expose server error helper for unified 500 handling
-  getRequiredHeader, // expose header validation helper
+  calculateContentLength, // compute body byte length for header
+  buildCleanHeaders, // remove dangerous headers from requests
+  sendJsonResponse, // send JSON payload with proper status
+  sendValidationError, // issue 400 when fields fail validation
+  sendAuthError, // issue standard 401 response when unauthorized
+  sendServerError, // issue generic 500 and log details
+  getRequiredHeader, // fetch mandatory header or error
   
   // URL utilities - handle protocol normalization and URL parsing
-  ensureProtocol, // expose protocol enforcement
-  normalizeUrlOrigin, // expose origin normalization
-  stripProtocol, // expose protocol removal
-  parseUrlParts, // expose URL decomposition
+  ensureProtocol, // prefix http/https when missing
+  normalizeUrlOrigin, // normalize origin for comparisons
+  stripProtocol, // remove http/https scheme from URL
+  parseUrlParts, // split URL into host and path
   
   // Validation utilities - field presence and format checking
-  requireFields, // expose field presence check
+  requireFields, // confirm required request fields exist
   
   // Authentication utilities - Passport.js integration helpers
-  checkPassportAuth, // expose runtime auth check
-  hasGithubStrategy, // expose GitHub strategy detection
+  checkPassportAuth, // verify request authenticated via Passport
+  hasGithubStrategy, // detect configured GitHub strategy
   
   // View utilities - template rendering and route registration
-  renderView, // expose EJS view rendering
-  registerViewRoute // expose route helper for views
+  renderView, // render EJS template with data
+  registerViewRoute // register Express route for view
 };
 
 /*
