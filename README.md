@@ -25,6 +25,7 @@ const { formatDateTime, calculateContentLength, ensureProtocol } = require('qgen
 - ✅ **Validation** - Field presence and format checking
 - 🔐 **Authentication** - Passport.js integration helpers
 - 📄 **View Rendering** - EJS template rendering with error handling
+- 📜 **Logging** - Winston logger with daily rotation
 
 ## API Reference
 
@@ -223,6 +224,7 @@ The library is organized into focused modules:
 - `lib/url.js` - URL manipulation functions
 - `lib/validation.js` - Input validation utilities
 - `lib/auth.js` - Authentication helpers
+- `lib/logger.js` - Winston logger configuration
 - `lib/views.js` - Template rendering utilities
 
 ## Testing

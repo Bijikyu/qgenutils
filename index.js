@@ -14,11 +14,11 @@
  * 5. Tree Shaking: Bundlers can optimize imports by including only needed modules
  * 
  * The dual export strategy (CommonJS + ES modules) ensures compatibility with
- * both older Node.js projects and modern JavaScript environments.
  */
 
 // Import all utility functions from organized modules
 // Each require() statement pulls in a focused set of related functionality
+const logger = require('./lib/logger'); // winston logger
 const { formatDateTime, formatDuration } = require('./lib/datetime'); // date formatting helpers
 const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http'); // HTTP header and length utilities
 const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('./lib/response-utils'); // import additional response helpers for centralized error handling
@@ -71,7 +71,8 @@ module.exports = {
   
   // View utilities - template rendering and route registration
   renderView, // render EJS template with data
-  registerViewRoute // register Express route for view
+  registerViewRoute, // register Express route for view
+  logger, // winston logger instance
 };
 
 /*
