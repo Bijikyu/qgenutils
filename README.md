@@ -25,6 +25,7 @@ const { logger } = require('qgenutils'); // Winston logger instance
 
 - 🕐 **DateTime Utilities** - Format dates and calculate durations
 - 🌐 **HTTP Utilities** - Content-length calculation, header management, response helpers
+- 📮 **Response Utilities** - Standardized JSON and error responses
 - 🔗 **URL Utilities** - Protocol handling, URL parsing and normalization
 - ✅ **Validation** - Field presence and format checking
 - 🔐 **Authentication** - Passport.js integration helpers
@@ -88,6 +89,16 @@ const headers = buildCleanHeaders({
 }, 'POST', { data: 'test' });
 ```
 
+#### `HEADERS_TO_REMOVE` constant
+List of headers stripped by `buildCleanHeaders` to prevent proxy leaks.
+
+```javascript
+const { HEADERS_TO_REMOVE } = require('qgenutils');
+
+console.log(HEADERS_TO_REMOVE.includes('host')); // true
+
+```
+
 #### `sendJsonResponse(res, statusCode, data)`
 Sends standardized JSON responses.
 
@@ -99,7 +110,9 @@ sendJsonResponse(res, 400, { error: 'Invalid input' });
 ```
 
 #### `sendValidationError(res, message, additionalData?, statusCode?)`
+
 Sends a 400 error response when validation fails.
+
 
 ```javascript
 const { sendValidationError } = require('qgenutils');
@@ -111,8 +124,10 @@ sendValidationError(res, 'Invalid email', { field: 'email' }, 422);
 #### `sendAuthError(res, message?)`
 Sends a 401 response for authentication failures.
 
+
 ```javascript
 const { sendAuthError } = require('qgenutils');
+
 
 if (!req.user) {
   sendAuthError(res);
@@ -122,6 +137,7 @@ if (!req.user) {
 #### `sendServerError(res, message?, error?, context?)`
 Sends a 500 response and logs the error internally.
 
+
 ```javascript
 const { sendServerError } = require('qgenutils');
 
@@ -129,6 +145,7 @@ try {
   // risky operation
 } catch (err) {
   sendServerError(res, 'Processing failed', err, 'createUser');
+
 }
 ```
 
@@ -307,6 +324,8 @@ The library is organized into focused modules:
 - `lib/auth.js` - Authentication helpers
 - `lib/logger.js` - Winston logger configuration
 - `lib/views.js` - Template rendering utilities
+- `lib/input-validation.js` - Common input sanity checks
+- `lib/response-utils.js` - Standardized HTTP response helpers
 
 ## Testing
 
