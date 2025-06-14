@@ -85,14 +85,14 @@ const headers = buildCleanHeaders({
 }, 'POST', { data: 'test' });
 ```
 
-#### `HEADERS_TO_REMOVE`
-Array of headers automatically stripped by `buildCleanHeaders`.
+#### `HEADERS_TO_REMOVE` constant
+List of headers stripped by `buildCleanHeaders` to prevent proxy leaks.
 
 ```javascript
-const { HEADERS_TO_REMOVE } = require('qgenutils/lib/http');
+const { HEADERS_TO_REMOVE } = require('qgenutils');
 
-console.log(HEADERS_TO_REMOVE);
-// [ 'host', 'x-target-url', 'x-api-key', ... ]
+console.log(HEADERS_TO_REMOVE.includes('host')); // true
+
 ```
 
 #### `sendJsonResponse(res, statusCode, data)`
