@@ -47,12 +47,12 @@ console.log(`Root Directory: ${testConfig.rootDir}`);
 console.log(`Jest Arguments: ${jestArgs.join(' ')}\n`);
 
 // Run Jest
-const jest = spawn('npx', ['jest', ...jestArgs], {
+const jest = spawn('npx', ['jest', ...jestArgs], { // spawn Jest child process
   stdio: 'inherit',
   cwd: testConfig.rootDir
 });
 
-jest.on('close', (code) => {
+jest.on('close', (code) => { // handle jest exit
   if (code === 0) {
     console.log('\n✅ All tests passed!');
   } else {
@@ -61,19 +61,19 @@ jest.on('close', (code) => {
   }
 });
 
-jest.on('error', (error) => {
+jest.on('error', (error) => { // spawn error handling
   console.error('❌ Failed to start test runner:', error);
   process.exit(1);
 });
 
 // Handle process termination
-process.on('SIGINT', () => {
+process.on('SIGINT', () => { // allow Ctrl+C to stop tests
   console.log('\n⚠️  Test runner interrupted');
   jest.kill('SIGINT');
   process.exit(130);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', () => { // handle termination signal
   console.log('\n⚠️  Test runner terminated');
   jest.kill('SIGTERM');
   process.exit(143);

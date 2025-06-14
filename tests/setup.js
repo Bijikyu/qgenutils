@@ -12,7 +12,7 @@ global.console = {
 };
 
 // Mock qerrors to prevent actual error logging during tests
-jest.mock('qerrors', () => ({
+jest.mock('qerrors', () => ({ // stub qerrors during tests
   qerrors: jest.fn((error, context, data) => {
     // Log the mock call for debugging if needed
     // console.error(`Mock qerrors called: ${error.message || error}`);
@@ -20,10 +20,10 @@ jest.mock('qerrors', () => ({
 }));
 
 // Set up global test environment
-global.mockConsole = global.console;
+global.mockConsole = global.console; // expose mocked console for assertions
 
 // Global test helpers
-global.createMockRequest = (overrides = {}) => ({
+global.createMockRequest = (overrides = {}) => ({ // helper builds fake req
   headers: {},
   body: {},
   query: {},
@@ -33,7 +33,7 @@ global.createMockRequest = (overrides = {}) => ({
   ...overrides
 });
 
-global.createMockResponse = (overrides = {}) => ({
+global.createMockResponse = (overrides = {}) => ({ // helper builds fake res
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
   send: jest.fn().mockReturnThis(),
@@ -43,11 +43,11 @@ global.createMockResponse = (overrides = {}) => ({
 });
 
 // Set up global test timeout
-jest.setTimeout(10000);
+jest.setTimeout(10000); // allow async tests up to 10s
 
 // Clean up after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  jest.clearAllMocks(); // reset spies between tests
 });
 
 // Set up test environment

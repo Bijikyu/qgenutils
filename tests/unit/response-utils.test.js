@@ -21,8 +21,8 @@ describe('Response Utilities', () => {
       const payload = { success: true };
       sendJsonResponse(mockRes, 201, payload);
 
-      expect(mockRes.status).toHaveBeenCalledWith(201);
-      expect(mockRes.json).toHaveBeenCalledWith(payload);
+      expect(mockRes.status).toHaveBeenCalledWith(201); // status should match argument
+      expect(mockRes.json).toHaveBeenCalledWith(payload); // json payload returned
     });
 
     // verifies should handle invalid response objects gracefully
@@ -30,7 +30,7 @@ describe('Response Utilities', () => {
       const badRes = {}; // missing status/json
       sendJsonResponse(badRes, 200, { ok: true });
 
-      expect(qerrors).toHaveBeenCalled();
+      expect(qerrors).toHaveBeenCalled(); // error logged for bad response object
     });
 
     // verifies should work when status does not chain
@@ -38,8 +38,8 @@ describe('Response Utilities', () => {
       const nonChainRes = { status: jest.fn(), json: jest.fn().mockReturnThis() };
       sendJsonResponse(nonChainRes, 202, { done: true });
 
-      expect(nonChainRes.status).toHaveBeenCalledWith(202);
-      expect(nonChainRes.json).toHaveBeenCalledWith({ done: true });
+      expect(nonChainRes.status).toHaveBeenCalledWith(202); // still sets status
+      expect(nonChainRes.json).toHaveBeenCalledWith({ done: true }); // response data
     });
   });
 
@@ -57,21 +57,21 @@ describe('Response Utilities', () => {
     test('should send validation error with default 400 code', () => {
       sendValidationError(mockRes, 'Invalid field', { field: 'name' });
 
-      expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid field', field: 'name' });
+      expect(mockRes.status).toHaveBeenCalledWith(400); // default status
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid field', field: 'name' }); // payload includes field data
     });
 
     // verifies should allow custom status code
     test('should allow custom status code', () => {
       sendValidationError(mockRes, 'Too many', {}, 429);
 
-      expect(mockRes.status).toHaveBeenCalledWith(429);
+      expect(mockRes.status).toHaveBeenCalledWith(429); // custom code respected
     });
 
     // verifies should handle invalid response objects gracefully
     test('should handle invalid response objects gracefully', () => {
       sendValidationError({}, 'bad');
-      expect(qerrors).toHaveBeenCalled();
+      expect(qerrors).toHaveBeenCalled(); // invalid res triggers logging
     });
   });
 
@@ -81,14 +81,14 @@ describe('Response Utilities', () => {
       const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
       sendAuthError(res);
 
-      expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Authentication required' });
+      expect(res.status).toHaveBeenCalledWith(401); // 401 for auth error
+      expect(res.json).toHaveBeenCalledWith({ error: 'Authentication required' }); // default message output
     });
 
     // verifies should handle invalid response objects gracefully
     test('should handle invalid response objects gracefully', () => {
       sendAuthError(undefined, 'nope');
-      expect(qerrors).toHaveBeenCalled();
+      expect(qerrors).toHaveBeenCalled(); // invalid response object logged
     });
   });
 
@@ -99,15 +99,15 @@ describe('Response Utilities', () => {
       const err = new Error('fail');
       sendServerError(res, 'Oops', err, 'context');
 
-      expect(qerrors).toHaveBeenCalledWith(err, 'sendServerError', { message: 'Oops', context: 'context' });
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Oops' });
+      expect(qerrors).toHaveBeenCalledWith(err, 'sendServerError', { message: 'Oops', context: 'context' }); // original error forwarded
+      expect(res.status).toHaveBeenCalledWith(500); // sets status code to 500
+      expect(res.json).toHaveBeenCalledWith({ error: 'Oops' }); // send sanitized message
     });
 
     // verifies should handle invalid response objects gracefully
     test('should handle invalid response objects gracefully', () => {
       sendServerError(null, 'bad');
-      expect(qerrors).toHaveBeenCalled();
+      expect(qerrors).toHaveBeenCalled(); // invalid res logged
     });
 
     // verifies should handle JSON serialization failures
@@ -122,8 +122,8 @@ describe('Response Utilities', () => {
       sendJsonResponse(res, 200, { circular: {} });
       
       // Should attempt fallback after first failure
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.status).toHaveBeenCalledWith(200); // first attempt uses requested status
+      expect(res.status).toHaveBeenCalledWith(500); // retry uses error status
       expect(qerrors).toHaveBeenCalled(); // Verify error logging occurred
     });
 
@@ -138,9 +138,9 @@ describe('Response Utilities', () => {
       
       sendJsonResponse(res, 200, { data: 'test' });
       
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Response serialization failed' });
+      expect(res.status).toHaveBeenCalledWith(200); // normal response status first
+      expect(res.status).toHaveBeenCalledWith(500); // fallback on serialization error
+      expect(res.json).toHaveBeenCalledWith({ error: 'Response serialization failed' }); // send generic error JSON
     });
   });
 });
