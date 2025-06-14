@@ -4,9 +4,10 @@ const fs = require('fs'); // fs for directory check
 const winston = require('winston'); // stubbed winston
 const DailyRotateFile = require('winston-daily-rotate-file'); // rotate transport
 
+// Helper reloads the logger module so each test starts with a fresh instance.
 function reload() {
-  delete require.cache[require.resolve('../../lib/logger')];
-  return require('../../lib/logger');
+  delete require.cache[require.resolve('../../lib/logger')]; // remove previous module from cache
+  return require('../../lib/logger'); // load new instance to capture config
 }
 
 describe('Logger Utility', () => {
