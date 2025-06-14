@@ -222,7 +222,7 @@ const isValid = requireFields(
 Checks if the value is a plain object.
 
 ```javascript
-const { isValidObject } = require('qgenutils');
+const { isValidObject } = require('qgenutils/lib/input-validation');
 
 console.log(isValidObject({ foo: 'bar' })); // true
 console.log(isValidObject(null)); // false
@@ -232,7 +232,7 @@ console.log(isValidObject(null)); // false
 Checks if the value is a non-empty string.
 
 ```javascript
-const { isValidString } = require('qgenutils');
+const { isValidString } = require('qgenutils/lib/input-validation');
 
 console.log(isValidString('Hello')); // true
 console.log(isValidString('   ')); // false
@@ -242,7 +242,7 @@ console.log(isValidString('   ')); // false
 Determines whether an object exposes the given method.
 
 ```javascript
-const { hasMethod } = require('qgenutils');
+const { hasMethod } = require('qgenutils/lib/input-validation');
 
 console.log(hasMethod(console, 'log')); // true
 console.log(hasMethod({}, 'push')); // false
@@ -252,7 +252,7 @@ console.log(hasMethod({}, 'push')); // false
 Validates that an object looks like an Express response.
 
 ```javascript
-const { isValidExpressResponse } = require('qgenutils');
+const { isValidExpressResponse } = require('qgenutils/lib/input-validation');
 
 if (!isValidExpressResponse(res)) {
   // handle invalid response object
