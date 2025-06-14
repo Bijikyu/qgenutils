@@ -138,6 +138,13 @@ const cleanHeaders = buildCleanHeaders(originalHeaders, 'POST', { data: 'test' }
 // Returns headers without 'host' and 'x-target-url', with recalculated content-length
 ```
 
+You can inspect the list of stripped headers via the exported constant:
+
+```javascript
+const { HEADERS_TO_REMOVE } = require('qgenutils/lib/http');
+console.log(HEADERS_TO_REMOVE);
+```
+
 **Security Features:**
 - Removes proxy-related headers that could cause issues
 - Recalculates content-length to prevent HTTP smuggling
@@ -356,7 +363,7 @@ registerViewRoute(app, '/contact', 'contact', 'Contact Page Error');
 Check if value is a plain object (not array or null).
 
 ```javascript
-const { isValidObject } = require('qgenutils');
+const { isValidObject } = require('qgenutils/lib/input-validation');
 
 isValidObject({ name: 'John' }); // true
 isValidObject([1, 2, 3]); // false
@@ -369,7 +376,7 @@ isValidObject('string'); // false
 Check if value is a non-empty string after trimming.
 
 ```javascript
-const { isValidString } = require('qgenutils');
+const { isValidString } = require('qgenutils/lib/input-validation');
 
 isValidString('hello'); // true
 isValidString('  '); // false (only whitespace)
@@ -382,7 +389,7 @@ isValidString(null); // false
 Check if object has a specific method.
 
 ```javascript
-const { hasMethod } = require('qgenutils');
+const { hasMethod } = require('qgenutils/lib/input-validation');
 
 hasMethod(res, 'json'); // true for Express response
 hasMethod({}, 'toString'); // true (inherited method)
@@ -394,7 +401,7 @@ hasMethod(null, 'method'); // false
 Check if object is a valid Express response object.
 
 ```javascript
-const { isValidExpressResponse } = require('qgenutils');
+const { isValidExpressResponse } = require('qgenutils/lib/input-validation');
 
 app.use((req, res, next) => {
   if (!isValidExpressResponse(res)) {
@@ -429,7 +436,8 @@ app.get('/protected', (req, res) => {
 ### Validation Chain Pattern
 
 ```javascript
-const { requireFields, isValidString, sendValidationError } = require('qgenutils');
+const { requireFields, sendValidationError } = require('qgenutils');
+const { isValidString } = require('qgenutils/lib/input-validation');
 
 app.post('/api/users', (req, res) => {
   // Step 1: Check required fields

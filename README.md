@@ -21,6 +21,7 @@ const { formatDateTime, calculateContentLength, ensureProtocol } = require('qgen
 
 - 🕐 **DateTime Utilities** - Format dates and calculate durations
 - 🌐 **HTTP Utilities** - Content-length calculation, header management, response helpers
+- 📮 **Response Utilities** - Standardized JSON and error responses
 - 🔗 **URL Utilities** - Protocol handling, URL parsing and normalization
 - ✅ **Validation** - Field presence and format checking
 - 🔐 **Authentication** - Passport.js integration helpers
@@ -91,6 +92,7 @@ List of headers stripped by `buildCleanHeaders` to prevent proxy leaks.
 const { HEADERS_TO_REMOVE } = require('qgenutils');
 
 console.log(HEADERS_TO_REMOVE.includes('host')); // true
+
 ```
 
 #### `sendJsonResponse(res, statusCode, data)`
@@ -101,6 +103,37 @@ const { sendJsonResponse } = require('qgenutils');
 
 sendJsonResponse(res, 200, { message: 'Success' });
 sendJsonResponse(res, 400, { error: 'Invalid input' });
+```
+
+#### `sendValidationError(res, message, additionalData?, statusCode?)`
+Sends a 400 validation error with optional details.
+
+```javascript
+const { sendValidationError } = require('qgenutils');
+
+sendValidationError(res, 'Missing fields', { field: 'email' });
+```
+
+#### `sendAuthError(res, message?)`
+Sends a 401 authentication error response.
+
+```javascript
+const { sendAuthError } = require('qgenutils');
+
+sendAuthError(res, 'Invalid token');
+```
+
+#### `sendServerError(res, message?, error?, context?)`
+Sends a 500 server error response and logs the error.
+
+```javascript
+const { sendServerError } = require('qgenutils');
+
+try {
+  // risky operation
+} catch (err) {
+  sendServerError(res, 'Failed to process', err, 'controller');
+}
 ```
 
 #### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
