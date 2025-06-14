@@ -17,6 +17,10 @@ const utils = require('qgenutils');
 const { formatDateTime, calculateContentLength, ensureProtocol } = require('qgenutils');
 ```
 
+```javascript
+const { logger } = require('qgenutils'); // Winston logger instance
+```
+
 ## Features
 
 - 🕐 **DateTime Utilities** - Format dates and calculate durations
@@ -94,6 +98,40 @@ sendJsonResponse(res, 200, { message: 'Success' });
 sendJsonResponse(res, 400, { error: 'Invalid input' });
 ```
 
+#### `sendValidationError(res, message, additionalData?, statusCode?)`
+Sends a 400 error response when validation fails.
+
+```javascript
+const { sendValidationError } = require('qgenutils');
+
+sendValidationError(res, 'Missing name field');
+sendValidationError(res, 'Invalid email', { field: 'email' }, 422);
+```
+
+#### `sendAuthError(res, message?)`
+Sends a 401 response for authentication failures.
+
+```javascript
+const { sendAuthError } = require('qgenutils');
+
+if (!req.user) {
+  sendAuthError(res);
+}
+```
+
+#### `sendServerError(res, message?, error?, context?)`
+Sends a 500 response and logs the error internally.
+
+```javascript
+const { sendServerError } = require('qgenutils');
+
+try {
+  // risky operation
+} catch (err) {
+  sendServerError(res, 'Processing failed', err, 'createUser');
+}
+```
+
 #### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
 Extracts required headers with automatic error handling.
 
@@ -159,6 +197,49 @@ const isValid = requireFields(
   res
 );
 // If invalid, automatically sends 400 response with missing fields
+```
+
+### Input Validation Utilities
+
+#### `isValidObject(obj)`
+Checks if the value is a plain object.
+
+```javascript
+const { isValidObject } = require('qgenutils');
+
+console.log(isValidObject({ foo: 'bar' })); // true
+console.log(isValidObject(null)); // false
+```
+
+#### `isValidString(str)`
+Checks if the value is a non-empty string.
+
+```javascript
+const { isValidString } = require('qgenutils');
+
+console.log(isValidString('Hello')); // true
+console.log(isValidString('   ')); // false
+```
+
+#### `hasMethod(obj, methodName)`
+Determines whether an object exposes the given method.
+
+```javascript
+const { hasMethod } = require('qgenutils');
+
+console.log(hasMethod(console, 'log')); // true
+console.log(hasMethod({}, 'push')); // false
+```
+
+#### `isValidExpressResponse(res)`
+Validates that an object looks like an Express response.
+
+```javascript
+const { isValidExpressResponse } = require('qgenutils');
+
+if (!isValidExpressResponse(res)) {
+  // handle invalid response object
+}
 ```
 
 ### Authentication Utilities
