@@ -3,8 +3,8 @@
 // behave predictably with varied request objects and Passport.js configurations.
 const { checkPassportAuth, hasGithubStrategy } = require('../../lib/auth');
 
-describe('Authentication Utilities', () => {
-  describe('checkPassportAuth', () => {
+describe('Authentication Utilities', () => { // ensures login helpers behave consistently
+  describe('checkPassportAuth', () => { // validates session checks across requests
     // verifies should return true for authenticated user
     test('should return true for authenticated user', () => {
       const mockReq = {
@@ -76,7 +76,7 @@ describe('Authentication Utilities', () => {
     });
   });
 
-  describe('hasGithubStrategy', () => {
+  describe('hasGithubStrategy', () => { // confirms passport strategy detection
     let originalPassport;
 
     beforeEach(() => {

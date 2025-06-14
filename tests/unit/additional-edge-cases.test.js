@@ -8,14 +8,14 @@ const httpUtils = require('../../lib/http');
 const urlUtils = require('../../lib/url');
 const { qerrors } = require('qerrors');
 
-describe('Additional Edge Cases', () => {
-  describe('calculateContentLength', () => {
+describe('Additional Edge Cases', () => { // ensures resilience for uncommon inputs
+  describe('calculateContentLength', () => { // validates length logic with odd types
     test('should return 0 for boolean body', () => {
       expect(httpUtils.calculateContentLength(true)).toBe('0'); // boolean coerces to empty payload length
     });
   });
 
-  describe('buildCleanHeaders', () => {
+  describe('buildCleanHeaders', () => { // checks header sanitization on malformed data
     test('should return empty object when headers not object', () => {
       const result = httpUtils.buildCleanHeaders('bad', 'GET', null);
       expect(result).toEqual({}); // invalid headers should yield empty object
@@ -31,7 +31,7 @@ describe('Additional Edge Cases', () => {
     });
   });
 
-  describe('stripProtocol', () => {
+  describe('stripProtocol', () => { // confirms protocol removal handles errors
     test('should return input when not string and log error', () => {
       const result = urlUtils.stripProtocol(null);
       expect(qerrors).toHaveBeenCalled(); // confirm error logged for bad input
@@ -39,7 +39,7 @@ describe('Additional Edge Cases', () => {
     });
   });
 
-  describe('parseUrlParts', () => {
+  describe('parseUrlParts', () => { // verifies parsing fails safely on bad URLs
     test('should return null for malformed url with protocol only', () => {
       const result = urlUtils.parseUrlParts('http://');
       expect(qerrors).toHaveBeenCalled(); // invalid url should trigger logging

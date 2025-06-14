@@ -3,8 +3,8 @@
 // in basic sanity checks used throughout the library.
 const { isValidObject, isValidString, hasMethod, isValidExpressResponse } = require('../../lib/input-validation');
 
-describe('Input Validation Utilities', () => {
-  describe('isValidObject', () => {
+describe('Input Validation Utilities', () => { // ensures sanity checks remain strict
+  describe('isValidObject', () => { // verifies plain objects are recognized
     test('should return true for plain object', () => {
       expect(isValidObject({ a: 1 })).toBe(true); //verify true for normal object
     });
@@ -26,7 +26,7 @@ describe('Input Validation Utilities', () => {
     });
   });
 
-  describe('isValidString', () => {
+  describe('isValidString', () => { // prevents empty or non-string values
     test('should return true for typical string', () => {
       expect(isValidString('hello')).toBe(true); //verify typical string works
     });
@@ -48,7 +48,7 @@ describe('Input Validation Utilities', () => {
     });
   });
 
-  describe('hasMethod', () => {
+  describe('hasMethod', () => { // confirms method detection reliability
     test('should return true when method exists', () => {
       const obj = { run: () => {} };
       expect(hasMethod(obj, 'run')).toBe(true); //verify detection of method
@@ -72,7 +72,7 @@ describe('Input Validation Utilities', () => {
     });
   });
 
-  describe('isValidExpressResponse', () => {
+  describe('isValidExpressResponse', () => { // asserts Express response shape
     test('should return true for object with status and json', () => {
       const res = { status: function(){ return this; }, json: function(){ return this; } };
       expect(isValidExpressResponse(res)).toBe(true); //verify proper response accepted

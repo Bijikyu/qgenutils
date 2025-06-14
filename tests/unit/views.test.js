@@ -4,8 +4,8 @@
 // routes hook into the global Express app as expected.
 const { renderView, registerViewRoute } = require('../../lib/views');
 
-describe('View Utilities', () => {
-  describe('renderView', () => {
+describe('View Utilities', () => { // ensures server-side views handle failures
+  describe('renderView', () => { // tests EJS rendering and fallback logic
     let mockRes;
 
     beforeEach(() => {
@@ -102,7 +102,7 @@ describe('View Utilities', () => {
     });
   });
 
-  describe('registerViewRoute', () => {
+  describe('registerViewRoute', () => { // confirms route setup integrates with app
     let mockApp;
     let originalApp;
 

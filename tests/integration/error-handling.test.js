@@ -4,8 +4,8 @@
 // error conditions without crashing the process.
 const utils = require('../../index');
 
-describe('Error Handling Integration Tests', () => {
-  describe('Cascading Error Scenarios', () => {
+describe('Error Handling Integration Tests', () => { // verifies utilities interact safely under failure
+  describe('Cascading Error Scenarios', () => { // simulates multiple failures at once
     // verifies should handle multiple module failures gracefully
     test('should handle multiple module failures gracefully', () => {
       const mockRes = {
@@ -60,7 +60,7 @@ describe('Error Handling Integration Tests', () => {
     });
   });
 
-  describe('View Rendering Error Recovery', () => {
+  describe('View Rendering Error Recovery', () => { // ensures rendering issues propagate correctly
     // verifies should handle template rendering failures across multiple views
     test('should handle template rendering failures across multiple views', () => {
       const mockRes = {
@@ -112,7 +112,7 @@ describe('Error Handling Integration Tests', () => {
     });
   });
 
-  describe('HTTP Error Scenarios', () => {
+  describe('HTTP Error Scenarios', () => { // checks network helper resilience
     // verifies should handle content-length calculation errors
     test('should handle content-length calculation errors', () => {
       // These should handle gracefully without throwing
@@ -142,7 +142,7 @@ describe('Error Handling Integration Tests', () => {
     });
   });
 
-  describe('Authentication Error Scenarios', () => {
+  describe('Authentication Error Scenarios', () => { // tests auth faults across modules
     // verifies should handle passport strategy detection with broken global state
     test('should handle passport strategy detection with broken global state', () => {
       const originalPassport = global.passport;
@@ -187,7 +187,7 @@ describe('Error Handling Integration Tests', () => {
     });
   });
 
-  describe('URL Processing Error Recovery', () => {
+  describe('URL Processing Error Recovery', () => { // validates robust URL handling
     // verifies should handle malformed URLs throughout processing pipeline
     test('should handle malformed URLs throughout processing pipeline', () => {
       const malformedUrls = [
@@ -242,7 +242,7 @@ describe('Error Handling Integration Tests', () => {
     });
   });
 
-  describe('Data Validation Error Recovery', () => {
+  describe('Data Validation Error Recovery', () => { // confirms input validation fails gracefully
     // verifies should handle validation with various malformed objects
     test('should handle validation with various malformed objects', () => {
       const mockRes = {

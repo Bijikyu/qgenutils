@@ -4,8 +4,8 @@
 // reliable output for both valid and malformed input.
 const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('../../lib/url');
 
-describe('URL Utilities', () => {
-  describe('ensureProtocol', () => {
+describe('URL Utilities', () => { // ensures robust URL transformations
+  describe('ensureProtocol', () => { // adds protocols when missing
     // verifies should add https to URL without protocol
     test('should add https to URL without protocol', () => {
       expect(ensureProtocol('example.com')).toBe('https://example.com'); // default to https
@@ -59,7 +59,7 @@ describe('URL Utilities', () => {
     });
   });
 
-  describe('normalizeUrlOrigin', () => {
+  describe('normalizeUrlOrigin', () => { // standardizes hostnames
     // verifies should normalize URL to lowercase origin
     test('should normalize URL to lowercase origin', () => {
       expect(normalizeUrlOrigin('HTTPS://Example.Com/path')).toBe('https://example.com'); // converts host to lowercase
@@ -87,7 +87,7 @@ describe('URL Utilities', () => {
     });
   });
 
-  describe('stripProtocol', () => {
+  describe('stripProtocol', () => { // removes schemes without breaking paths
     // verifies should remove https protocol
     test('should remove https protocol', () => {
       expect(stripProtocol('https://example.com')).toBe('example.com'); // remove https scheme
@@ -126,7 +126,7 @@ describe('URL Utilities', () => {
     });
   });
 
-  describe('parseUrlParts', () => {
+  describe('parseUrlParts', () => { // parses URLs into base and endpoint
     // verifies should parse URL into base and endpoint
     test('should parse URL into base and endpoint', () => {
       const result = parseUrlParts('example.com/api/users?id=123');
