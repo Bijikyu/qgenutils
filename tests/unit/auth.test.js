@@ -12,8 +12,8 @@ describe('Authentication Utilities', () => {
         isAuthenticated: jest.fn().mockReturnValue(true)
       };
       
-      expect(checkPassportAuth(mockReq)).toBe(true);
-      expect(mockReq.isAuthenticated).toHaveBeenCalled();
+      expect(checkPassportAuth(mockReq)).toBe(true); // should succeed for logged-in user
+      expect(mockReq.isAuthenticated).toHaveBeenCalled(); // verify auth check invoked
     });
 
     // verifies should return false for unauthenticated user
@@ -22,8 +22,8 @@ describe('Authentication Utilities', () => {
         isAuthenticated: jest.fn().mockReturnValue(false)
       };
       
-      expect(checkPassportAuth(mockReq)).toBe(false);
-      expect(mockReq.isAuthenticated).toHaveBeenCalled();
+      expect(checkPassportAuth(mockReq)).toBe(false); // expected failure for guest
+      expect(mockReq.isAuthenticated).toHaveBeenCalled(); // ensure method called
     });
 
     // verifies should return false when isAuthenticated method is missing
@@ -32,12 +32,12 @@ describe('Authentication Utilities', () => {
         user: { username: 'john_doe' }
       };
       
-      expect(checkPassportAuth(mockReq)).toBe(false);
+      expect(checkPassportAuth(mockReq)).toBe(false); // missing method means unauthenticated
     });
 
     // verifies should return false for empty request object
     test('should return false for empty request object', () => {
-      expect(checkPassportAuth({})).toBe(false);
+      expect(checkPassportAuth({})).toBe(false); // empty object should fail auth
     });
 
     // verifies should return false when isAuthenticated throws error
@@ -48,13 +48,13 @@ describe('Authentication Utilities', () => {
         })
       };
       
-      expect(checkPassportAuth(mockReq)).toBe(false);
+      expect(checkPassportAuth(mockReq)).toBe(false); // error thrown should result in false
     });
 
     // verifies should handle malformed request object
     test('should handle malformed request object', () => {
-      expect(checkPassportAuth(null)).toBe(false);
-      expect(checkPassportAuth(undefined)).toBe(false);
+      expect(checkPassportAuth(null)).toBe(false); // null request fails auth
+      expect(checkPassportAuth(undefined)).toBe(false); // undefined request fails auth
     });
 
     // verifies should handle truthy but non-boolean return from isAuthenticated
@@ -63,7 +63,7 @@ describe('Authentication Utilities', () => {
         isAuthenticated: jest.fn().mockReturnValue('truthy-string')
       };
       
-      expect(checkPassportAuth(mockReq)).toBe(true);
+      expect(checkPassportAuth(mockReq)).toBe(true); // non-boolean truthy counts as authenticated
     });
 
     // verifies should handle falsy but non-boolean return from isAuthenticated
@@ -72,7 +72,7 @@ describe('Authentication Utilities', () => {
         isAuthenticated: jest.fn().mockReturnValue(0)
       };
       
-      expect(checkPassportAuth(mockReq)).toBe(false);
+      expect(checkPassportAuth(mockReq)).toBe(false); // non-boolean falsy treated as unauthenticated
     });
   });
 
@@ -95,7 +95,7 @@ describe('Authentication Utilities', () => {
         }
       };
       
-      expect(hasGithubStrategy()).toBe(true);
+      expect(hasGithubStrategy()).toBe(true); // function should detect github strategy
     });
 
     // verifies should return false when GitHub strategy is not configured
@@ -106,7 +106,7 @@ describe('Authentication Utilities', () => {
         }
       };
       
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // should fail when only local strategy exists
     });
 
     // verifies should return false when no strategies are configured
@@ -115,25 +115,25 @@ describe('Authentication Utilities', () => {
         _strategies: {}
       };
       
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // no strategies returns false
     });
 
     // verifies should return false when passport is undefined
     test('should return false when passport is undefined', () => {
       global.passport = undefined;
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // undefined passport should be handled
     });
 
     // verifies should return false when passport is null
     test('should return false when passport is null', () => {
       global.passport = null;
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // null passport should be handled
     });
 
     // verifies should return false when _strategies is missing
     test('should return false when _strategies is missing', () => {
       global.passport = {};
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // missing strategies property returns false
     });
 
     // verifies should return false when _strategies is null
@@ -142,7 +142,7 @@ describe('Authentication Utilities', () => {
         _strategies: null
       };
       
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // null strategies property handled
     });
 
     // verifies should handle errors in strategy detection
@@ -153,7 +153,7 @@ describe('Authentication Utilities', () => {
         }
       };
 
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // catching error should result in false
     });
 
     // verifies should ignore local passport variable when global.passport is undefined
@@ -161,14 +161,14 @@ describe('Authentication Utilities', () => {
       const passport = { _strategies: { github: {} } }; // local variable with strategy
       global.passport = undefined; // global remains undefined
 
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // global undefined should override local variable
     });
 
     // verifies should return false when _strategies is not an object
     test('should return false when _strategies is not an object', () => {
       global.passport = { _strategies: 'invalid' };
 
-      expect(hasGithubStrategy()).toBe(false);
+      expect(hasGithubStrategy()).toBe(false); // non-object strategies results in false
     });
   });
 });

@@ -23,11 +23,11 @@ describe('Module Integration Tests', () => {
       
       // Process URL
       const processedUrl = ensureProtocol(url);
-      expect(processedUrl).toBe('https://api.example.com/users');
+      expect(processedUrl).toBe('https://api.example.com/users'); // ensure protocol added
       
       // Calculate content length for request body
       const contentLength = calculateContentLength(body);
-      expect(contentLength).toBe(Buffer.byteLength(JSON.stringify(body), 'utf8').toString());
+      expect(contentLength).toBe(Buffer.byteLength(JSON.stringify(body), 'utf8').toString()); // compare calculated length
       
       // Build clean headers
       const headers = buildCleanHeaders({
@@ -35,8 +35,8 @@ describe('Module Integration Tests', () => {
         'host': 'evil.com'
       }, 'POST', body);
       
-      expect(headers['content-length']).toBe(contentLength);
-      expect(headers['host']).toBeUndefined();
+      expect(headers['content-length']).toBe(contentLength); // header set correctly
+      expect(headers['host']).toBeUndefined(); // host stripped
     });
 
     // verifies should normalize URLs and build appropriate headers
@@ -50,9 +50,9 @@ describe('Module Integration Tests', () => {
       const normalizedOrigins = urls.map(normalizeUrlOrigin);
       
       // All should normalize to the same origin
-      expect(normalizedOrigins[0]).toBe('https://api.example.com');
-      expect(normalizedOrigins[1]).toBe('https://api.example.com');
-      expect(normalizedOrigins[2]).toBe('http://api.example.com');
+      expect(normalizedOrigins[0]).toBe('https://api.example.com'); // https url normalized
+      expect(normalizedOrigins[1]).toBe('https://api.example.com'); // missing protocol normalized
+      expect(normalizedOrigins[2]).toBe('http://api.example.com'); // http kept
       
       // Headers should be clean for any method
       const headers = buildCleanHeaders({
@@ -60,8 +60,8 @@ describe('Module Integration Tests', () => {
         'x-target-url': normalizedOrigins[0]
       }, 'GET', null);
       
-      expect(headers['authorization']).toBe('Bearer token');
-      expect(headers['x-target-url']).toBeUndefined();
+      expect(headers['authorization']).toBe('Bearer token'); // auth header kept
+      expect(headers['x-target-url']).toBeUndefined(); // target url stripped
     });
   });
 
@@ -82,12 +82,12 @@ describe('Module Integration Tests', () => {
       
       // Check authentication first
       const isAuth = checkPassportAuth(mockAuthReq);
-      expect(isAuth).toBe(true);
+      expect(isAuth).toBe(true); // authentication succeeded
       
       // Then validate required fields
       const isValid = requireFields(mockAuthReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
-      expect(isValid).toBe(true);
-      expect(mockRes.status).not.toHaveBeenCalled();
+      expect(isValid).toBe(true); // fields valid
+      expect(mockRes.status).not.toHaveBeenCalled(); // no error status
     });
 
     // verifies should handle unauthenticated user with valid fields
@@ -104,11 +104,11 @@ describe('Module Integration Tests', () => {
       
       // Authentication fails
       const isAuth = checkPassportAuth(mockUnauthReq);
-      expect(isAuth).toBe(false);
+      expect(isAuth).toBe(false); // authentication fails
       
       // Fields are valid but auth failed
       const isValid = requireFields(mockUnauthReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
-      expect(isValid).toBe(true);
+      expect(isValid).toBe(true); // fields still valid
     });
   });
 
@@ -140,10 +140,10 @@ describe('Module Integration Tests', () => {
       // Send response
       utils.sendJsonResponse(mockRes, 200, responseData);
       
-      expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith(responseData);
-      expect(formattedStart).not.toBe('N/A');
-      expect(duration).toBe('01:30:45');
+      expect(mockRes.status).toHaveBeenCalledWith(200); // success status returned
+      expect(mockRes.json).toHaveBeenCalledWith(responseData); // response payload returned
+      expect(formattedStart).not.toBe('N/A'); // date formatted
+      expect(duration).toBe('01:30:45'); // duration calculation
     });
 
     // verifies should handle malformed dates in HTTP context
@@ -211,9 +211,9 @@ describe('Module Integration Tests', () => {
       
       // Step 5: Build clean headers for proxying
       const cleanHeaders = buildCleanHeaders(mockReq.headers, 'POST', mockReq.body);
-      expect(cleanHeaders['authorization']).toBe('Bearer valid-token');
-      expect(cleanHeaders['host']).toBeUndefined();
-      expect(cleanHeaders['x-target-url']).toBeUndefined();
+      expect(cleanHeaders['authorization']).toBe('Bearer valid-token'); // auth header kept
+      expect(cleanHeaders['host']).toBeUndefined(); // host removed for proxying
+      expect(cleanHeaders['x-target-url']).toBeUndefined(); // internal header removed
       
       // Step 6: Format timestamps in response
       const formattedDate = formatDateTime(mockReq.body.published_at);
@@ -228,8 +228,8 @@ describe('Module Integration Tests', () => {
       
       utils.sendJsonResponse(mockRes, 201, responseData);
       
-      expect(mockRes.status).toHaveBeenCalledWith(201);
-      expect(mockRes.json).toHaveBeenCalledWith(responseData);
+      expect(mockRes.status).toHaveBeenCalledWith(201); // return created status
+      expect(mockRes.json).toHaveBeenCalledWith(responseData); // send data
     });
 
     // verifies should handle complete workflow with validation failure
@@ -247,13 +247,13 @@ describe('Module Integration Tests', () => {
       };
       
       // Authentication passes
-      expect(checkPassportAuth(mockReq)).toBe(true);
+      expect(checkPassportAuth(mockReq)).toBe(true); // auth check passes
       
       // Validation fails
       const fieldsValid = requireFields(mockReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
-      expect(fieldsValid).toBe(false);
-      expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(fieldsValid).toBe(false); // validation fails
+      expect(mockRes.status).toHaveBeenCalledWith(400); // 400 returned
+      expect(mockRes.json).toHaveBeenCalledWith({ // error payload returned
         error: 'Missing required fields',
         missing: ['content']
       });
@@ -273,11 +273,11 @@ describe('Module Integration Tests', () => {
       };
       
       // Authentication fails early
-      expect(checkPassportAuth(mockReq)).toBe(false);
+      expect(checkPassportAuth(mockReq)).toBe(false); // authentication failure
       
       // Even though fields are valid, auth failed
       const fieldsValid = requireFields(mockReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
-      expect(fieldsValid).toBe(true);
+      expect(fieldsValid).toBe(true); // fields still valid despite auth failure
       
       // In a real app, we'd return 401 for auth failure before validating fields
     });
