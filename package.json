@@ -4,13 +4,14 @@
   "description": "A comprehensive utility library providing datetime formatting, HTTP helpers, URL manipulation, authentication checks, field validation, and view rendering with robust error handling",
   "main": "index.js",
   "scripts": {
-    "test": "node tests/run-tests.js",
-    "test:watch": "node tests/run-tests.js --watch",
-    "test:coverage": "node tests/run-tests.js --coverage",
-    "test:unit": "node tests/run-tests.js tests/unit",
-    "test:integration": "node tests/run-tests.js tests/integration",
-    "test:verbose": "node tests/run-tests.js --verbose",
-    "log:test": "node -e \"require(\\\"./lib/logger\\\").info(\\\"logger ready\\\")\""
+
+    "test": "jest --config tests/jest.config.js --rootDir .",
+    "test:watch": "jest --watch --config tests/jest.config.js --rootDir .",
+    "test:coverage": "jest --coverage --config tests/jest.config.js --rootDir .",
+    "test:unit": "jest tests/unit --config tests/jest.config.js --rootDir .",
+    "test:integration": "jest tests/integration --config tests/jest.config.js --rootDir .",
+    "test:verbose": "jest --verbose --config tests/jest.config.js --rootDir ."
+
   },
   "keywords": [
     "utilities",
