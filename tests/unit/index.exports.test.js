@@ -3,7 +3,7 @@
 // via the main entry point so external consumers do not break.
 const indexExports = require('../index');
 
-describe('Index Exports', () => {
+describe('Index Exports', () => { // guards against accidental export removal
   // verifies should include new response utility exports
   test('should include new response utility exports', () => {
     expect(indexExports.sendValidationError).toBeDefined(); // verify export exists

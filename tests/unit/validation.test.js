@@ -4,8 +4,8 @@
 // responses via the mocked Express response object.
 const { requireFields } = require('../../lib/validation');
 
-describe('Validation Utilities', () => {
-  describe('requireFields', () => {
+describe('Validation Utilities', () => { // validates object fields before processing
+  describe('requireFields', () => { // ensures missing data triggers helpful errors
     let mockRes;
 
     beforeEach(() => {
