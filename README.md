@@ -353,7 +353,8 @@ This command runs the entire test suite.
 - `qerrors` - Error tracking and analysis
 - `winston-daily-rotate-file` - Logging support
 - `@types/node` - TypeScript definitions
-- `qtests` - Testing helpers used by the Jest suite
+- `qtests` - Test utilities
+
 
 ## License
 
