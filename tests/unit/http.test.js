@@ -5,8 +5,8 @@
 const { calculateContentLength, buildCleanHeaders, getRequiredHeader, HEADERS_TO_REMOVE } = require('../../lib/http'); // include constant for immutability tests
 const { sendJsonResponse } = require('../../lib/response-utils');
 
-describe('HTTP Utilities', () => {
-  describe('calculateContentLength', () => {
+describe('HTTP Utilities', () => { // confirms consistent proxy behavior
+  describe('calculateContentLength', () => { // ensures payload sizes computed predictably
     // verifies should calculate length for string body
     test('should calculate length for string body', () => {
       expect(calculateContentLength('Hello World')).toBe('11'); // bytes count for string body
@@ -63,7 +63,7 @@ describe('HTTP Utilities', () => {
     });
   });
 
-  describe('buildCleanHeaders', () => {
+  describe('buildCleanHeaders', () => { // guards against unsafe headers leaking
     const originalHeaders = {
       'authorization': 'Bearer token123',
       'content-type': 'application/json',
@@ -142,7 +142,7 @@ describe('HTTP Utilities', () => {
     });
   });
 
-  describe('sendJsonResponse', () => {
+  describe('sendJsonResponse', () => { // checks generic JSON response helper
     let mockRes;
 
     beforeEach(() => {
@@ -171,7 +171,7 @@ describe('HTTP Utilities', () => {
     });
   });
 
-  describe('getRequiredHeader', () => {
+  describe('getRequiredHeader', () => { // verifies header retrieval with fallback
     let mockReq, mockRes;
 
     beforeEach(() => {
@@ -245,7 +245,7 @@ describe('HTTP Utilities', () => {
     });
   });
 
-  describe('HEADERS_TO_REMOVE', () => {
+  describe('HEADERS_TO_REMOVE', () => { // ensures security list remains immutable
     // verifies should not change when modification is attempted
     test('should not change when modification is attempted', () => {
       const original = [...HEADERS_TO_REMOVE]; // capture original list for comparison

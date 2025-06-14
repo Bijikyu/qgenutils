@@ -14,8 +14,8 @@ const {
   checkPassportAuth
 } = utils;
 
-describe('Module Integration Tests', () => {
-  describe('HTTP and URL Integration', () => {
+describe('Module Integration Tests', () => { // verifies utilities work together
+  describe('HTTP and URL Integration', () => { // checks proxy flow from URL to headers
     // verifies should process URL and calculate content length for API request
     test('should process URL and calculate content length for API request', () => {
       const url = 'api.example.com/users';
@@ -65,7 +65,7 @@ describe('Module Integration Tests', () => {
     });
   });
 
-  describe('Validation and Authentication Integration', () => {
+  describe('Validation and Authentication Integration', () => { // confirms auth and validation interplay
     // verifies should validate required fields and check authentication together
     test('should validate required fields and check authentication together', () => {
       const mockRes = {
@@ -112,7 +112,7 @@ describe('Module Integration Tests', () => {
     });
   });
 
-  describe('DateTime and HTTP Integration', () => {
+  describe('DateTime and HTTP Integration', () => { // ensures date helpers feed HTTP responses
     // verifies should format timestamps and include in HTTP responses
     test('should format timestamps and include in HTTP responses', () => {
       const mockRes = {
@@ -168,7 +168,7 @@ describe('Module Integration Tests', () => {
     });
   });
 
-  describe('Complete Request Processing Workflow', () => {
+  describe('Complete Request Processing Workflow', () => { // simulates real API request lifecycle
     // verifies should simulate complete API request processing
     test('should simulate complete API request processing', () => {
       const mockReq = {

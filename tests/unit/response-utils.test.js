@@ -5,8 +5,8 @@ require('qtests/setup'); // ensure stub modules during tests
 const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('../../lib/response-utils');
 const { qerrors } = require('qerrors');
 
-describe('Response Utilities', () => {
-  describe('sendJsonResponse', () => {
+describe('Response Utilities', () => { // ensures standard responses remain uniform
+  describe('sendJsonResponse', () => { // verifies JSON helper reliability
     let mockRes;
 
     beforeEach(() => {
@@ -43,7 +43,7 @@ describe('Response Utilities', () => {
     });
   });
 
-  describe('sendValidationError', () => {
+  describe('sendValidationError', () => { // checks validation error structure
     let mockRes;
 
     beforeEach(() => {
@@ -75,7 +75,7 @@ describe('Response Utilities', () => {
     });
   });
 
-  describe('sendAuthError', () => {
+  describe('sendAuthError', () => { // confirms default auth error behavior
     // verifies should send 401 auth error with default message
     test('should send 401 auth error with default message', () => {
       const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
@@ -92,7 +92,7 @@ describe('Response Utilities', () => {
     });
   });
 
-  describe('sendServerError', () => {
+  describe('sendServerError', () => { // ensures server error reporting stays consistent
     // verifies should send 500 error and log original error
     test('should send 500 error and log original error', () => {
       const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
