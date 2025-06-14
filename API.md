@@ -163,6 +163,16 @@ const cleaned = buildCleanHeaders(
 // Returns: { 'authorization': 'Bearer token', 'content-length': '15' }
 ```
 
+### `HEADERS_TO_REMOVE` constant
+
+Immutable array of headers removed by `buildCleanHeaders` for safer proxies. Exported from `lib/http.js`.
+
+```javascript
+const { HEADERS_TO_REMOVE } = require('qgenutils');
+
+console.log(HEADERS_TO_REMOVE);
+```
+
 ### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
 
 Extract required headers with automatic error responses.

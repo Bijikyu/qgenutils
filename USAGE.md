@@ -143,6 +143,15 @@ const cleanHeaders = buildCleanHeaders(originalHeaders, 'POST', { data: 'test' }
 - Recalculates content-length to prevent HTTP smuggling
 - Handles GET requests specially (removes content-length)
 
+### `HEADERS_TO_REMOVE` constant
+Array of headers automatically stripped when building clean headers.
+
+```javascript
+const { HEADERS_TO_REMOVE } = require('qgenutils');
+
+console.log(HEADERS_TO_REMOVE); // [ 'host', 'x-target-url', ... ]
+```
+
 ### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
 
 Extract required headers with automatic error responses.
