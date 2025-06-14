@@ -620,4 +620,14 @@ try {
 }
 ```
 
+## Logger
+
+The library exports a configured Winston logger instance. It rotates files daily using `winston-daily-rotate-file` and retains logs for two weeks. Use this logger to record application events or debugging details.
+
+```javascript
+const { logger } = require('qgenutils');
+
+logger.info('Utility initialized');
+```
+
 All functions include comprehensive logging and follow the fail-closed security model for production reliability.

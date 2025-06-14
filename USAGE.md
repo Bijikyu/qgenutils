@@ -500,6 +500,14 @@ const duration = formatDuration(start, end);
 // Logs: "formatDuration is returning 02:00:00"
 ```
 
+You can also log your own messages using the provided logger instance. Logs rotate daily via `winston-daily-rotate-file`.
+
+```javascript
+const { logger } = require('qgenutils');
+
+logger.info('Server started');
+```
+
 ## Common Use Cases
 
 ### API Endpoint Template
