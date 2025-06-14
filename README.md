@@ -234,14 +234,16 @@ Install dependencies with `npm install` before running tests.
 Run all unit and integration tests:
 
 ```bash
-node tests/run-tests.js
+npm test
 ```
 
-Optional flags:
+Common Jest flags:
 
 - `--watch` - re-run tests on file changes
 - `--coverage` - generate coverage reports
 - `--verbose` - output detailed test information
+
+Pass flags after `--` when using npm, for example `npm test -- --watch`.
 
 This command runs the entire test suite.
 
