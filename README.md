@@ -338,6 +338,16 @@ Run all unit and integration tests:
 npm test
 ```
 
+For targeted runs, additional scripts are available:
+
+```bash
+npm run test:unit       # run only unit tests
+npm run test:integration # run only integration tests
+npm run test:watch      # re-run tests on file changes
+npm run test:coverage   # generate coverage reports
+npm run test:verbose    # output detailed test information
+```
+
 Common Jest flags:
 
 - `--watch` - re-run tests on file changes
