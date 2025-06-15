@@ -345,15 +345,16 @@ app.get('/dashboard', (req, res) => {
 - Provides navigation back to home page
 - Prevents application crashes from template errors
 
-### `registerViewRoute(app, path, viewName, errorTitle)`
+### `registerViewRoute(routePath, viewName, errorTitle)`
 
-Register simple view routes with built-in error handling.
+Register simple view routes with built-in error handling. The function uses the
+global `app` object, so you only provide the route path and view name.
 
 ```javascript
 const { registerViewRoute } = require('qgenutils');
 
-registerViewRoute(app, '/about', 'about', 'About Page Error');
-registerViewRoute(app, '/contact', 'contact', 'Contact Page Error');
+registerViewRoute('/about', 'about', 'About Page Error');
+registerViewRoute('/contact', 'contact', 'Contact Page Error');
 ```
 
 ## Input Validation Utilities
