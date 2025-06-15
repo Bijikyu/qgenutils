@@ -1,7 +1,7 @@
 
 # QGenUtils - Comprehensive Utility Library
 
-A modular utility library providing datetime formatting, HTTP helpers, URL manipulation, authentication checks, field validation, and view rendering with robust error handling.
+A security-first Node.js utility library providing authentication, HTTP operations, URL processing, validation, datetime formatting, and template rendering. Designed as a lightweight alternative to heavy npm packages with comprehensive error handling and fail-closed security patterns.
 
 ## Installation
 
