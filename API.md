@@ -466,13 +466,13 @@ const { renderView } = require('qgenutils');
 renderView(res, 'dashboard', 'Dashboard Error');
 ```
 
-### `registerViewRoute(app, path, viewName, errorTitle)`
+### `registerViewRoute(routePath, viewName, errorTitle)`
 
-Register simple view routes with built-in error handling.
+Register simple view routes with built-in error handling. The global `app` object
+is used internally, so no `app` parameter is required.
 
 **Parameters:**
-- `app` (Object): Express application object
-- `path` (string): Route path
+- `routePath` (string): Route path
 - `viewName` (string): Template to render
 - `errorTitle` (string): Error page title
 
@@ -485,7 +485,7 @@ Register simple view routes with built-in error handling.
 ```javascript
 const { registerViewRoute } = require('qgenutils');
 
-registerViewRoute(app, '/about', 'about', 'About Page Error');
+registerViewRoute('/about', 'about', 'About Page Error');
 ```
 
 ## Input Validation Module (`inputValidation`)
