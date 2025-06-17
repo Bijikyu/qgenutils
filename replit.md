@@ -19,6 +19,7 @@ QGenUtils/
 ├── lib/                     # Core utility modules
 │   ├── auth.js             # Passport.js authentication helpers
 │   ├── datetime.js         # Date/time formatting and validation
+│   ├── env.js              # Environment variable validation and access
 │   ├── http.js             # HTTP request/response utilities
 │   ├── input-validation.js # Type checking and object validation
 │   ├── logger.js           # Winston logger configuration
@@ -60,6 +61,11 @@ QGenUtils/
 - **Fallback Strategy**: Returns "N/A" for invalid dates instead of throwing
 - **Key Functions**: `formatDateTime()`, `formatDuration()`
 
+### Environment Utilities (`lib/env.js`)
+- **Purpose**: Environment variable validation and configuration checking
+- **Security Model**: Fail-fast - detect configuration issues at startup
+- **Key Functions**: `requireEnvVars()`, `hasEnvVar()`, `getEnvVar()`
+
 ### Response Utilities (`lib/response-utils.js`)
 - **Purpose**: Centralized HTTP response handling
 - **Consistency**: Standardized JSON responses and error formats
@@ -68,11 +74,12 @@ QGenUtils/
 ## Data Flow
 
 ### Typical API Request Flow
-1. **URL Processing**: `ensureProtocol()` → `normalizeUrlOrigin()`
-2. **Authentication**: `checkPassportAuth()` validates user session
-3. **Validation**: `requireFields()` checks required parameters
-4. **Processing**: Business logic with error handling via qerrors
-5. **Response**: Standardized JSON via `sendJsonResponse()`
+1. **Environment Validation**: `requireEnvVars()` checks startup configuration
+2. **URL Processing**: `ensureProtocol()` → `normalizeUrlOrigin()`
+3. **Authentication**: `checkPassportAuth()` validates user session
+4. **Validation**: `requireFields()` checks required parameters
+5. **Processing**: Business logic with error handling via qerrors
+6. **Response**: Standardized JSON via `sendJsonResponse()`
 
 ### Error Handling Pipeline
 1. **Error Occurrence**: Any module encounters an error
@@ -117,6 +124,7 @@ QGenUtils/
 
 ## Changelog
 
+- June 17, 2025. Added environment variable utilities module (`lib/env.js`) with `requireEnvVars()`, `hasEnvVar()`, and `getEnvVar()` functions. Includes comprehensive unit tests and integration tests. Follows existing codebase patterns for error handling, logging, and fail-safe behavior.
 - June 15, 2025. Initial setup
 
 ## User Preferences
