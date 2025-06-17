@@ -63,6 +63,12 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.createSocketBroadcastRegistry).toBeDefined();
     expect(indexExports.validateBroadcastData).toBeDefined();
     
+    // ID generation utilities
+    expect(indexExports.generateExecutionId).toBeDefined();
+    expect(indexExports.generateTaskId).toBeDefined();
+    expect(indexExports.generateSecureId).toBeDefined();
+    expect(indexExports.generateSimpleId).toBeDefined();
+    
     // Logger
     expect(indexExports.logger).toBeDefined();
   });
@@ -85,6 +91,15 @@ describe('Index Exports', () => { // guards against accidental export removal
   test('should have correct function signatures for real-time utilities', () => {
     expect(typeof indexExports.createBroadcastRegistry).toBe('function');
     expect(typeof indexExports.createPaymentBroadcastRegistry).toBe('function');
+    expect(typeof indexExports.createSocketBroadcastRegistry).toBe('function');
     expect(typeof indexExports.validateBroadcastData).toBe('function');
+  });
+
+  // verifies ID generation utilities have correct function signatures
+  test('should have correct function signatures for ID generation utilities', () => {
+    expect(typeof indexExports.generateExecutionId).toBe('function');
+    expect(typeof indexExports.generateTaskId).toBe('function');
+    expect(typeof indexExports.generateSecureId).toBe('function');
+    expect(typeof indexExports.generateSimpleId).toBe('function');
   });
 });

@@ -32,6 +32,7 @@ const { renderView, registerViewRoute } = require('./lib/views'); // view render
 const { requireEnvVars, hasEnvVar, getEnvVar } = require('./lib/env'); // environment variable utilities
 const { makeCopyFn, isClipboardSupported, isBrowser } = require('./lib/browser'); // browser utilities
 const { createBroadcastRegistry, createPaymentBroadcastRegistry, createSocketBroadcastRegistry, validateBroadcastData } = require('./lib/realtime'); // real-time communication utilities
+const { generateExecutionId, generateTaskId, generateSecureId, generateSimpleId } = require('./lib/id-generation'); // secure ID generation utilities
 
 /*
  * Export Strategy Explanation:
@@ -99,6 +100,12 @@ module.exports = {
   createPaymentBroadcastRegistry, // pre-configured registry for payment/usage broadcasts
   createSocketBroadcastRegistry, // static interface registry with fixed broadcast functions
   validateBroadcastData, // validate data before real-time transmission
+  
+  // ID generation utilities - secure identifier creation for tracking and data integrity
+  generateExecutionId, // create unique execution IDs with timestamp and random component
+  generateTaskId, // create unique task IDs for workflow tracking
+  generateSecureId, // core secure ID generator with configurable prefix
+  generateSimpleId, // generate simple random IDs without timestamp
   
   logger, // winston logger instance
 };

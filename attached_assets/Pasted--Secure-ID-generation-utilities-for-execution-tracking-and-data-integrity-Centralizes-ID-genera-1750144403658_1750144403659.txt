@@ -1,0 +1,61 @@
+// Secure ID generation utilities for execution tracking and data integrity
+// Centralizes ID generation logic to ensure consistency and prevent collisions across the application
+// Uses nanoid for cryptographically secure random components //(replace Math.random with nanoid for better randomness)
+const { nanoid } = require("nanoid"); //(import nanoid for secure id generation)
+
+/**
+ * Generates a unique execution ID with timestamp and secure random component
+ * Format: exec_[timestamp]_[11-char-random] for easy sorting and collision resistance
+ * Used for tracking automation workflow executions across the system
+ */
+function generateExecutionId(): string { //exported via module.exports
+  console.log(`generateExecutionId is running`); //(log start of execution id generation)
+  const result = generateSecureId('exec'); //(create execution id using secure generator)
+  console.log(`generateExecutionId is returning ${result}`); //(log generated id)
+  return result; //(return execution id)
+}
+
+/**
+ * Generates a unique task ID with timestamp and secure random component  
+ * Format: task_[timestamp]_[11-char-random] for easy sorting and collision resistance
+ * Used for tracking individual tasks within execution workflows
+ */
+function generateTaskId(): string { //exported via module.exports
+  console.log(`generateTaskId is running`); //(log start of task id generation)
+  const result = generateSecureId('task'); //(create task id using secure generator)
+  console.log(`generateTaskId is returning ${result}`); //(log generated id)
+  return result; //(return task id)
+}
+
+/**
+ * Core secure ID generation function with configurable prefix
+ * Combines timestamp for natural ordering with 11-character random suffix for collision resistance
+ * 11 characters provides 36^11 ≈ 131 trillion possibilities, sufficient for high-frequency generation
+ * 
+ * @param prefix - Identifies the entity type (exec, task, etc.)
+ * @returns Formatted ID string with guaranteed uniqueness
+ */
+function generateSecureId(prefix: string): string { //exported via module.exports
+  console.log(`generateSecureId is running with ${prefix}`); //(log start with prefix)
+  const timestamp = Date.now(); //(capture timestamp for sortability)
+  const randomSuffix = nanoid(11); //(generate 11 char secure random id)
+  const id = `${prefix}_${timestamp}_${randomSuffix}`; //(compose final id)
+  console.log(`generateSecureId is returning ${id}`); //(log id before return)
+  return id; //(return composed id)
+}
+
+/**
+ * Generates a simple random ID without timestamp for non-temporal entities
+ * Used when chronological ordering is not required (user IDs, etc.)
+ * 
+ * @param prefix - Identifies the entity type
+ * @param length - Length of random component (default: 8)
+ * @returns Formatted ID string
+ */
+function generateSimpleId(prefix: string, length: number = 8): string { //exported via module.exports
+  console.log(`generateSimpleId is running with ${prefix} and ${length}`); //(log start with parameters)
+  const randomComponent = nanoid(length); //(generate random component)
+  const id = `${prefix}_${randomComponent}`; //(compose id)
+  console.log(`generateSimpleId is returning ${id}`); //(log id before return)
+  return id; //(return composed id)
+}
