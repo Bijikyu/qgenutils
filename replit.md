@@ -24,6 +24,7 @@ QGenUtils/
 │   ├── http.js             # HTTP request/response utilities
 │   ├── input-validation.js # Type checking and object validation
 │   ├── logger.js           # Winston logger configuration
+│   ├── realtime.js         # Socket.io broadcast registries and real-time communication
 │   ├── response-utils.js   # Standardized HTTP response patterns
 │   ├── url.js              # URL manipulation and parsing
 │   ├── validation.js       # Field validation and requirement checking
@@ -71,6 +72,11 @@ QGenUtils/
 - **Purpose**: Environment variable validation and configuration checking
 - **Security Model**: Fail-fast - detect configuration issues at startup
 - **Key Functions**: `requireEnvVars()`, `hasEnvVar()`, `getEnvVar()`
+
+### Real-time Communication (`lib/realtime.js`)
+- **Purpose**: Socket.io broadcast registries and real-time event management
+- **Architecture Model**: Dependency injection pattern to prevent circular dependencies
+- **Key Functions**: `createBroadcastRegistry()`, `createPaymentBroadcastRegistry()`, `validateBroadcastData()`
 
 ### Response Utilities (`lib/response-utils.js`)
 - **Purpose**: Centralized HTTP response handling

@@ -17,7 +17,10 @@ const {
   getEnvVar,
   makeCopyFn,
   isClipboardSupported,
-  isBrowser
+  isBrowser,
+  createBroadcastRegistry,
+  createPaymentBroadcastRegistry,
+  validateBroadcastData
 } = utils;
 
 describe('Module Integration Tests', () => { // verifies utilities work together
@@ -635,6 +638,263 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       
       expect(availableFeatures.clipboard).toBe(true); // clipboard available
       expect(availableFeatures.browser).toBe(true); // browser available
+    });
+  });
+
+  describe('Real-time and Environment Integration', () => { // checks real-time utilities with other modules
+    let originalEnv;
+
+    beforeEach(() => {
+      originalEnv = { ...process.env };
+      delete process.env.SOCKET_ENABLED;
+      delete process.env.BROADCAST_VALIDATION;
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    // verifies should integrate environment config with broadcast registry
+    test('should integrate environment config with broadcast registry', () => {
+      process.env.SOCKET_ENABLED = 'true';
+      process.env.BROADCAST_VALIDATION = 'strict';
+      
+      const socketEnabled = hasEnvVar('SOCKET_ENABLED');
+      const validationLevel = getEnvVar('BROADCAST_VALIDATION', 'basic');
+      
+      expect(socketEnabled).toBe(true); // socket feature enabled
+      expect(validationLevel).toBe('strict'); // strict validation configured
+      
+      // Create registry based on environment configuration
+      if (socketEnabled) {
+        const registry = createPaymentBroadcastRegistry();
+        
+        expect(registry.broadcastOutcome).toBeNull(); // registry created
+        expect(registry.broadcastUsageUpdate).toBeNull(); // standard functions available
+        expect(registry.allFunctionsReady()).toBe(false); // not yet initialized
+        
+        // Simulate configuration-aware broadcast function
+        registry.broadcastOutcome = (data) => {
+          if (validationLevel === 'strict') {
+            const validation = validateBroadcastData(data, { maxSize: 32768 }); // smaller limit for strict
+            if (!validation.isValid) {
+              throw new Error(`Strict validation failed: ${validation.errors.join(', ')}`);
+            }
+          }
+          return { broadcast: 'sent', data };
+        };
+        
+        // Test strict validation
+        expect(() => {
+          registry.broadcastOutcome({ content: 'x'.repeat(40000) }); // exceeds strict limit
+        }).toThrow('Strict validation failed');
+        
+        // Test valid data
+        const result = registry.broadcastOutcome({ status: 'success' });
+        expect(result.broadcast).toBe('sent');
+      }
+    });
+
+    // verifies should integrate broadcast validation with response utilities
+    test('should integrate broadcast validation with response utilities', () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      const mockReq = {
+        body: {
+          eventType: 'payment_success',
+          data: { amount: 100, currency: 'USD' }
+        }
+      };
+      
+      // Validate required fields for broadcast request
+      const fieldsValid = requireFields(mockReq.body, ['eventType', 'data'], mockRes);
+      expect(fieldsValid).toBe(true); // validation passes
+      
+      // Validate broadcast data
+      const broadcastValidation = validateBroadcastData(mockReq.body.data);
+      expect(broadcastValidation.isValid).toBe(true); // broadcast data valid
+      
+      // Create registry and simulate broadcast
+      const registry = createBroadcastRegistry({
+        functions: ['broadcastEvent']
+      });
+      
+      let broadcastResult = null;
+      registry.broadcastEvent = (data) => {
+        broadcastResult = { timestamp: formatDateTime(new Date().toISOString()), ...data };
+        return broadcastResult;
+      };
+      
+      if (registry.broadcastEvent && broadcastValidation.isValid) {
+        const result = registry.broadcastEvent(mockReq.body.data);
+        
+        utils.sendJsonResponse(mockRes, 200, {
+          success: true,
+          broadcast: result,
+          validation: 'passed'
+        });
+      } else {
+        utils.sendValidationError(mockRes, 'Broadcast validation failed', {
+          errors: broadcastValidation.errors
+        });
+      }
+      
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        broadcast: expect.objectContaining({
+          amount: 100,
+          currency: 'USD',
+          timestamp: expect.any(String)
+        }),
+        validation: 'passed'
+      });
+    });
+
+    // verifies should handle URL-based broadcast targets
+    test('should handle URL-based broadcast targets', () => {
+      const rawUrls = [
+        'websocket.example.com/events',
+        'https://socket.service.com/broadcast',
+        'wss://realtime.app.com:8080/live'
+      ];
+      
+      // Process URLs for broadcast targets
+      const processedTargets = rawUrls.map(url => {
+        const withProtocol = ensureProtocol(url);
+        const normalized = normalizeUrlOrigin(withProtocol);
+        return {
+          original: url,
+          processed: withProtocol,
+          origin: normalized
+        };
+      });
+      
+      expect(processedTargets[0].processed).toBe('https://websocket.example.com/events');
+      expect(processedTargets[1].processed).toBe('https://socket.service.com/broadcast');
+      expect(processedTargets[2].processed).toBe('wss://realtime.app.com:8080/live');
+      
+      // Create registry with URL-aware broadcast functions
+      const registry = createBroadcastRegistry({
+        functions: ['broadcastToTarget']
+      });
+      
+      const broadcastHistory = [];
+      registry.broadcastToTarget = (data, targetUrl) => {
+        const validation = validateBroadcastData(data);
+        if (validation.isValid) {
+          const target = processedTargets.find(t => t.processed === targetUrl);
+          broadcastHistory.push({
+            data,
+            target: target ? target.origin : targetUrl,
+            timestamp: formatDateTime(new Date().toISOString())
+          });
+        }
+      };
+      
+      // Test broadcasts to different targets
+      registry.broadcastToTarget(
+        { event: 'update' }, 
+        'https://websocket.example.com/events'
+      );
+      
+      expect(broadcastHistory).toHaveLength(1);
+      expect(broadcastHistory[0].target).toBe('https://websocket.example.com');
+    });
+
+    // verifies should support authentication-aware broadcasts
+    test('should support authentication-aware broadcasts', () => {
+      const mockReq = {
+        user: { id: '123', role: 'user' },
+        isAuthenticated: jest.fn().mockReturnValue(true),
+        body: { message: 'Hello World', channel: 'general' }
+      };
+      
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      // Check authentication
+      const isAuthenticated = checkPassportAuth(mockReq);
+      expect(isAuthenticated).toBe(true); // user authenticated
+      
+      if (isAuthenticated) {
+        // Validate message fields
+        const fieldsValid = requireFields(mockReq.body, ['message', 'channel'], mockRes);
+        expect(fieldsValid).toBe(true);
+        
+        // Create authenticated broadcast data
+        const broadcastData = {
+          ...mockReq.body,
+          userId: mockReq.user.id,
+          userRole: mockReq.user.role,
+          timestamp: formatDateTime(new Date().toISOString())
+        };
+        
+        // Validate broadcast data
+        const validation = validateBroadcastData(broadcastData);
+        expect(validation.isValid).toBe(true);
+        
+        // Create registry and broadcast
+        const registry = createBroadcastRegistry({
+          functions: ['broadcastMessage']
+        });
+        
+        const messageHistory = [];
+        registry.broadcastMessage = (data) => {
+          messageHistory.push(data);
+        };
+        
+        if (registry.broadcastMessage && validation.isValid) {
+          registry.broadcastMessage(broadcastData);
+          
+          utils.sendJsonResponse(mockRes, 200, {
+            success: true,
+            messageId: Date.now(),
+            broadcast: 'sent'
+          });
+        }
+        
+        expect(messageHistory).toHaveLength(1);
+        expect(messageHistory[0]).toEqual(expect.objectContaining({
+          message: 'Hello World',
+          channel: 'general',
+          userId: '123',
+          userRole: 'user'
+        }));
+      }
+    });
+
+    // verifies should handle broadcast errors gracefully
+    test('should handle broadcast errors gracefully', () => {
+      const registry = createPaymentBroadcastRegistry();
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      // Simulate failing broadcast function
+      registry.broadcastOutcome = (data) => {
+        throw new Error('Socket connection lost');
+      };
+      
+      const paymentData = { status: 'success', amount: 100 };
+      
+      try {
+        registry.broadcastOutcome(paymentData);
+      } catch (error) {
+        // Handle broadcast failure gracefully
+        utils.sendServerError(mockRes, 'Broadcast failed', error, 'payment-broadcast');
+      }
+      
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Broadcast failed'
+      });
     });
   });
 });

@@ -1,0 +1,87 @@
+/**
+ * Socket Broadcast Function Registry
+ * 
+ * This module provides a centralized registry for socket.io broadcast functions
+ * without creating circular dependencies between the socket server and service modules.
+ * It acts as a communication bridge that allows services to broadcast events without
+ * directly importing the socket.io server instance.
+ * 
+ * Architecture rationale:
+ * - Dependency injection pattern prevents circular imports between socket config and services
+ * - Getter/setter approach provides controlled access to broadcast functions
+ * - Centralized registry enables consistent event broadcasting across all service modules
+ * - Late binding allows socket server initialization to complete before services use broadcasts
+ * - Simple interface reduces complexity while maintaining loose coupling
+ * 
+ * Usage pattern:
+ * 1. config/sockets.js initializes socket server and assigns broadcast functions
+ * 2. Service modules import this registry to access broadcast capabilities
+ * 3. Functions remain null until socket server completes initialization
+ * 4. Services can safely call broadcasts after server startup
+ * 
+ * Design benefits:
+ * - Eliminates circular dependency issues between socket and service layers
+ * - Provides type-safe access to broadcast functions through getters/setters
+ * - Enables testability by allowing mock function injection
+ * - Supports graceful degradation when socket server is not available
+ */
+
+// Internal storage for socket broadcast functions
+// These remain null until assigned by the socket server during initialization
+let _broadcastOutcome = null;        // Broadcasts payment outcome events to connected clients
+let _broadcastUsageUpdate = null;    // Broadcasts usage statistics updates to user dashboards
+
+/**
+ * Socket Broadcast Function Registry Interface
+ * 
+ * Purpose: Provides controlled access to socket broadcast functions through getter/setter pattern
+ * This approach enables dependency injection while maintaining simple function call syntax
+ * for service modules that need to broadcast events to connected clients.
+ * 
+ * Implementation rationale:
+ * - Getters provide safe access even when functions haven't been initialized yet
+ * - Setters allow socket server to inject real broadcast functions during startup
+ * - Property syntax maintains clean calling interface for service modules
+ * - Null checks in getters prevent errors during early application startup
+ */
+module.exports = {
+        /**
+         * Payment Outcome Broadcast Function
+         * 
+         * Purpose: Provides access to the function that broadcasts payment results to clients
+         * This enables real-time notifications for payment success/failure across the application.
+         * 
+         * @returns {Function|null} The broadcast function or null if not yet initialized
+         */
+        get broadcastOutcome() { return _broadcastOutcome; },
+        
+        /**
+         * Payment Outcome Broadcast Function Setter
+         * 
+         * Purpose: Allows socket server to inject the actual broadcast function
+         * Called by config/sockets.js after socket server initialization completes.
+         * 
+         * @param {Function} val - The broadcast function from socket server
+         */
+        set broadcastOutcome(val) { _broadcastOutcome = val; },
+        
+        /**
+         * Usage Update Broadcast Function
+         * 
+         * Purpose: Provides access to the function that broadcasts usage statistics to user dashboards
+         * This enables real-time usage monitoring and credit balance updates for users.
+         * 
+         * @returns {Function|null} The broadcast function or null if not yet initialized
+         */
+        get broadcastUsageUpdate() { return _broadcastUsageUpdate; },
+        
+        /**
+         * Usage Update Broadcast Function Setter
+         * 
+         * Purpose: Allows socket server to inject the actual usage broadcast function
+         * Called by config/sockets.js after socket server initialization completes.
+         * 
+         * @param {Function} val - The usage broadcast function from socket server
+         */
+        set broadcastUsageUpdate(val) { _broadcastUsageUpdate = val; }
+};
