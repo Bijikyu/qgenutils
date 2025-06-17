@@ -60,6 +60,7 @@ describe('Index Exports', () => { // guards against accidental export removal
     // Real-time communication utilities
     expect(indexExports.createBroadcastRegistry).toBeDefined();
     expect(indexExports.createPaymentBroadcastRegistry).toBeDefined();
+    expect(indexExports.createSocketBroadcastRegistry).toBeDefined();
     expect(indexExports.validateBroadcastData).toBeDefined();
     
     // Logger

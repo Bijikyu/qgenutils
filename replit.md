@@ -76,7 +76,7 @@ QGenUtils/
 ### Real-time Communication (`lib/realtime.js`)
 - **Purpose**: Socket.io broadcast registries and real-time event management
 - **Architecture Model**: Dependency injection pattern to prevent circular dependencies
-- **Key Functions**: `createBroadcastRegistry()`, `createPaymentBroadcastRegistry()`, `validateBroadcastData()`
+- **Key Functions**: `createBroadcastRegistry()`, `createPaymentBroadcastRegistry()`, `createSocketBroadcastRegistry()`, `validateBroadcastData()`
 
 ### Response Utilities (`lib/response-utils.js`)
 - **Purpose**: Centralized HTTP response handling
