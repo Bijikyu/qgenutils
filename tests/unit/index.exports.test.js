@@ -1,13 +1,64 @@
 // Unit tests verifying top-level exports from index.js are accessible. Keeping
 // this coverage ensures that when new utilities are added they remain exposed
 // via the main entry point so external consumers do not break.
-const indexExports = require('../index');
+const indexExports = require('../../index');
 
 describe('Index Exports', () => { // guards against accidental export removal
-  // verifies should include new response utility exports
-  test('should include new response utility exports', () => {
+  // verifies should include response utility exports
+  test('should include response utility exports', () => {
     expect(indexExports.sendValidationError).toBeDefined(); // verify export exists
     expect(indexExports.sendAuthError).toBeDefined(); // verify export exists
     expect(indexExports.sendServerError).toBeDefined(); // verify export exists
+  });
+
+  // verifies should include environment utility exports
+  test('should include environment utility exports', () => {
+    expect(indexExports.requireEnvVars).toBeDefined(); // verify export exists
+    expect(indexExports.hasEnvVar).toBeDefined(); // verify export exists
+    expect(indexExports.getEnvVar).toBeDefined(); // verify export exists
+  });
+
+  // verifies all expected utility categories are exported
+  test('should include all expected utility categories', () => {
+    // DateTime utilities
+    expect(indexExports.formatDateTime).toBeDefined();
+    expect(indexExports.formatDuration).toBeDefined();
+    
+    // HTTP utilities
+    expect(indexExports.calculateContentLength).toBeDefined();
+    expect(indexExports.buildCleanHeaders).toBeDefined();
+    expect(indexExports.getRequiredHeader).toBeDefined();
+    
+    // URL utilities
+    expect(indexExports.ensureProtocol).toBeDefined();
+    expect(indexExports.normalizeUrlOrigin).toBeDefined();
+    expect(indexExports.stripProtocol).toBeDefined();
+    expect(indexExports.parseUrlParts).toBeDefined();
+    
+    // Validation utilities
+    expect(indexExports.requireFields).toBeDefined();
+    
+    // Authentication utilities
+    expect(indexExports.checkPassportAuth).toBeDefined();
+    expect(indexExports.hasGithubStrategy).toBeDefined();
+    
+    // View utilities
+    expect(indexExports.renderView).toBeDefined();
+    expect(indexExports.registerViewRoute).toBeDefined();
+    
+    // Environment utilities
+    expect(indexExports.requireEnvVars).toBeDefined();
+    expect(indexExports.hasEnvVar).toBeDefined();
+    expect(indexExports.getEnvVar).toBeDefined();
+    
+    // Logger
+    expect(indexExports.logger).toBeDefined();
+  });
+
+  // verifies environment utilities have correct function signatures
+  test('should have correct function signatures for environment utilities', () => {
+    expect(typeof indexExports.requireEnvVars).toBe('function');
+    expect(typeof indexExports.hasEnvVar).toBe('function'); 
+    expect(typeof indexExports.getEnvVar).toBe('function');
   });
 });

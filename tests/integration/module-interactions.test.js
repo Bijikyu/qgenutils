@@ -11,7 +11,10 @@ const {
   ensureProtocol,
   normalizeUrlOrigin,
   requireFields,
-  checkPassportAuth
+  checkPassportAuth,
+  requireEnvVars,
+  hasEnvVar,
+  getEnvVar
 } = utils;
 
 describe('Module Integration Tests', () => { // verifies utilities work together
@@ -280,6 +283,140 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       expect(fieldsValid).toBe(true); // fields still valid despite auth failure
       
       // In a real app, we'd return 401 for auth failure before validating fields
+    });
+  });
+
+  describe('Environment and Configuration Integration', () => { // checks env utilities with other modules
+    let originalEnv;
+
+    beforeEach(() => {
+      originalEnv = { ...process.env };
+      delete process.env.TEST_API_URL;
+      delete process.env.TEST_TIMEOUT;
+      delete process.env.FEATURE_ENABLED;
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    // verifies should integrate environment validation with URL processing
+    test('should integrate environment validation with URL processing', () => {
+      process.env.TEST_API_URL = 'api.example.com/v1';
+      process.env.TEST_TIMEOUT = '5000';
+      
+      // Check required environment variables
+      const missing = requireEnvVars(['TEST_API_URL', 'TEST_TIMEOUT', 'MISSING_VAR']);
+      expect(missing).toEqual(['MISSING_VAR']); // only one missing
+      
+      // Process environment URL with URL utilities
+      const apiUrl = getEnvVar('TEST_API_URL', 'localhost:3000');
+      const processedUrl = ensureProtocol(apiUrl);
+      const normalizedUrl = normalizeUrlOrigin(processedUrl);
+      
+      expect(processedUrl).toBe('https://api.example.com/v1'); // protocol added
+      expect(normalizedUrl).toBe('https://api.example.com'); // normalized origin
+    });
+
+    // verifies should use environment variables for HTTP configuration
+    test('should use environment variables for HTTP configuration', () => {
+      process.env.API_TIMEOUT = '10000';
+      process.env.MAX_RETRIES = '3';
+      
+      const timeout = getEnvVar('API_TIMEOUT', '5000');
+      const retries = getEnvVar('MAX_RETRIES', '1');
+      const debugMode = hasEnvVar('DEBUG_MODE'); // not set
+      
+      expect(timeout).toBe('10000'); // environment value used
+      expect(retries).toBe('3'); // environment value used
+      expect(debugMode).toBe(false); // feature disabled
+      
+      // Use configuration values in HTTP context
+      const headers = buildCleanHeaders({
+        'x-timeout': timeout,
+        'x-max-retries': retries,
+        'x-debug': debugMode.toString()
+      }, 'GET');
+      
+      expect(headers['x-timeout']).toBe('10000');
+      expect(headers['x-max-retries']).toBe('3');
+      expect(headers['x-debug']).toBe('false');
+    });
+
+    // verifies should handle startup validation with response utilities
+    test('should handle startup validation with response utilities', () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      // Simulate startup validation
+      const requiredVars = ['DATABASE_URL', 'API_KEY', 'SECRET_KEY'];
+      const missing = requireEnvVars(requiredVars);
+      
+      expect(missing).toEqual(requiredVars); // all missing in test
+      
+      // Send startup error using response utilities
+      if (missing.length > 0) {
+        utils.sendServerError(mockRes, 'Configuration error: missing environment variables', 
+          new Error(`Missing: ${missing.join(', ')}`), 'startup-validation');
+      }
+      
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Configuration error: missing environment variables'
+      });
+    });
+
+    // verifies should support feature flags with conditional logic
+    test('should support feature flags with conditional logic', () => {
+      process.env.FEATURE_ANALYTICS = 'enabled';
+      process.env.FEATURE_CACHE = ''; // empty string = disabled
+      
+      const analyticsEnabled = hasEnvVar('FEATURE_ANALYTICS');
+      const cacheEnabled = hasEnvVar('FEATURE_CACHE');
+      const debugEnabled = hasEnvVar('FEATURE_DEBUG'); // missing
+      
+      expect(analyticsEnabled).toBe(true); // feature enabled
+      expect(cacheEnabled).toBe(false); // empty string disabled
+      expect(debugEnabled).toBe(false); // missing disabled
+      
+      // Use feature flags in request processing
+      const mockReq = {
+        headers: { 'user-agent': 'test-client' },
+        body: { action: 'track-event' }
+      };
+      
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      // Conditional processing based on feature flags
+      let responseData = { success: true };
+      
+      if (analyticsEnabled) {
+        responseData.analytics = { event: 'tracked', timestamp: formatDateTime(new Date().toISOString()) };
+      }
+      
+      if (cacheEnabled) {
+        responseData.cached = true;
+      }
+      
+      if (debugEnabled) {
+        responseData.debug = { headers: mockReq.headers };
+      }
+      
+      utils.sendJsonResponse(mockRes, 200, responseData);
+      
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        analytics: expect.objectContaining({
+          event: 'tracked',
+          timestamp: expect.any(String)
+        })
+        // cached and debug should not be present
+      });
     });
   });
 });
