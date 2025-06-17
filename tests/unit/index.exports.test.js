@@ -56,6 +56,11 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.isClipboardSupported).toBeDefined();
     expect(indexExports.isBrowser).toBeDefined();
     
+    // Real-time communication utilities
+    expect(indexExports.createBroadcastRegistry).toBeDefined();
+    expect(indexExports.createPaymentBroadcastRegistry).toBeDefined();
+    expect(indexExports.validateBroadcastData).toBeDefined();
+    
     // Logger
     expect(indexExports.logger).toBeDefined();
   });
@@ -72,5 +77,12 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(typeof indexExports.makeCopyFn).toBe('function');
     expect(typeof indexExports.isClipboardSupported).toBe('function');
     expect(typeof indexExports.isBrowser).toBe('function');
+  });
+
+  // verifies real-time utilities have correct function signatures
+  test('should have correct function signatures for real-time utilities', () => {
+    expect(typeof indexExports.createBroadcastRegistry).toBe('function');
+    expect(typeof indexExports.createPaymentBroadcastRegistry).toBe('function');
+    expect(typeof indexExports.validateBroadcastData).toBe('function');
   });
 });
