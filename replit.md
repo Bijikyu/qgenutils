@@ -83,6 +83,11 @@ QGenUtils/
 - **Consistency**: Standardized JSON responses and error formats
 - **Key Functions**: `sendJsonResponse()`, `sendValidationError()`, `sendAuthError()`
 
+### ID Generation Utilities (`lib/id-generation.js`)
+- **Purpose**: Cryptographically secure identifier creation for tracking and data integrity
+- **Security Model**: Uses nanoid for collision-resistant random generation with timestamp ordering
+- **Key Functions**: `generateExecutionId()`, `generateTaskId()`, `generateSecureId()`, `generateSimpleId()`
+
 ## Data Flow
 
 ### Typical API Request Flow
@@ -136,6 +141,7 @@ QGenUtils/
 
 ## Changelog
 
+- June 17, 2025. Added secure ID generation utilities module (`lib/id-generation.js`) with `generateExecutionId()`, `generateTaskId()`, `generateSecureId()`, and `generateSimpleId()` functions. Provides cryptographically secure identifier creation using nanoid for execution tracking, task management, and data integrity. Includes timestamp-based natural ordering, collision resistance, comprehensive input validation, and extensive test coverage with 400 unique IDs generated without conflicts.
 - June 17, 2025. Enhanced datetime utilities module (`lib/datetime.js`) with `addDays()` function for business date arithmetic. Added comprehensive date calculation functionality for credit expiration, billing cycles, and scheduling operations. Includes immutable date patterns, robust error handling, and support for month/year boundary calculations. Maintains 90-day default for credit systems while supporting flexible timeframes.
 - June 17, 2025. Added real-time communication utilities module (`lib/realtime.js`) with `createBroadcastRegistry()`, `createPaymentBroadcastRegistry()`, and `validateBroadcastData()` functions. Implements dependency injection pattern for socket.io broadcast function registries to prevent circular dependencies. Includes comprehensive data validation, security checking, and late binding support for real-time applications.
 - June 17, 2025. Added browser utilities module (`lib/browser.js`) with `makeCopyFn()`, `isClipboardSupported()`, and `isBrowser()` functions. Factory pattern for clipboard operations with customizable feedback callbacks. Includes environment detection and graceful degradation for server-side compatibility. Enhanced existing clipboard functionality with comprehensive error handling, security validation, and cross-environment support.
