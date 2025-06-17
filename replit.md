@@ -64,9 +64,9 @@ QGenUtils/
 - **Key Functions**: `requireFields()`
 
 ### DateTime Utilities (`lib/datetime.js`)
-- **Purpose**: Locale-aware date formatting and duration calculations
+- **Purpose**: Locale-aware date formatting, duration calculations, and business date arithmetic
 - **Fallback Strategy**: Returns "N/A" for invalid dates instead of throwing
-- **Key Functions**: `formatDateTime()`, `formatDuration()`
+- **Key Functions**: `formatDateTime()`, `formatDuration()`, `addDays()`
 
 ### Environment Utilities (`lib/env.js`)
 - **Purpose**: Environment variable validation and configuration checking
@@ -136,6 +136,7 @@ QGenUtils/
 
 ## Changelog
 
+- June 17, 2025. Enhanced datetime utilities module (`lib/datetime.js`) with `addDays()` function for business date arithmetic. Added comprehensive date calculation functionality for credit expiration, billing cycles, and scheduling operations. Includes immutable date patterns, robust error handling, and support for month/year boundary calculations. Maintains 90-day default for credit systems while supporting flexible timeframes.
 - June 17, 2025. Added real-time communication utilities module (`lib/realtime.js`) with `createBroadcastRegistry()`, `createPaymentBroadcastRegistry()`, and `validateBroadcastData()` functions. Implements dependency injection pattern for socket.io broadcast function registries to prevent circular dependencies. Includes comprehensive data validation, security checking, and late binding support for real-time applications.
 - June 17, 2025. Added browser utilities module (`lib/browser.js`) with `makeCopyFn()`, `isClipboardSupported()`, and `isBrowser()` functions. Factory pattern for clipboard operations with customizable feedback callbacks. Includes environment detection and graceful degradation for server-side compatibility. Enhanced existing clipboard functionality with comprehensive error handling, security validation, and cross-environment support.
 - June 17, 2025. Added environment variable utilities module (`lib/env.js`) with `requireEnvVars()`, `hasEnvVar()`, and `getEnvVar()` functions. Includes comprehensive unit tests and integration tests. Follows existing codebase patterns for error handling, logging, and fail-safe behavior.

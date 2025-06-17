@@ -23,6 +23,7 @@ describe('Index Exports', () => { // guards against accidental export removal
     // DateTime utilities
     expect(indexExports.formatDateTime).toBeDefined();
     expect(indexExports.formatDuration).toBeDefined();
+    expect(indexExports.addDays).toBeDefined();
     
     // HTTP utilities
     expect(indexExports.calculateContentLength).toBeDefined();
