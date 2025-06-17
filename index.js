@@ -29,6 +29,7 @@ const { requireFields } = require('./lib/validation'); // request field validati
 const { checkPassportAuth, hasGithubStrategy } = require('./lib/auth'); // Passport.js helpers
 const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./lib/url'); // URL normalization helpers
 const { renderView, registerViewRoute } = require('./lib/views'); // view rendering utilities
+const { requireEnvVars, hasEnvVar, getEnvVar } = require('./lib/env'); // environment variable utilities
 
 /*
  * Export Strategy Explanation:
@@ -79,6 +80,12 @@ module.exports = {
   // View utilities - template rendering and route registration
   renderView, // render EJS template with data
   registerViewRoute, // register Express route for view
+  
+  // Environment utilities - configuration validation and access
+  requireEnvVars, // validate presence of required environment variables
+  hasEnvVar, // check if single environment variable exists
+  getEnvVar, // get environment variable value with optional default
+  
   logger, // winston logger instance
 };
 
