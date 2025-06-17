@@ -51,6 +51,11 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.hasEnvVar).toBeDefined();
     expect(indexExports.getEnvVar).toBeDefined();
     
+    // Browser utilities
+    expect(indexExports.makeCopyFn).toBeDefined();
+    expect(indexExports.isClipboardSupported).toBeDefined();
+    expect(indexExports.isBrowser).toBeDefined();
+    
     // Logger
     expect(indexExports.logger).toBeDefined();
   });
@@ -60,5 +65,12 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(typeof indexExports.requireEnvVars).toBe('function');
     expect(typeof indexExports.hasEnvVar).toBe('function'); 
     expect(typeof indexExports.getEnvVar).toBe('function');
+  });
+
+  // verifies browser utilities have correct function signatures
+  test('should have correct function signatures for browser utilities', () => {
+    expect(typeof indexExports.makeCopyFn).toBe('function');
+    expect(typeof indexExports.isClipboardSupported).toBe('function');
+    expect(typeof indexExports.isBrowser).toBe('function');
   });
 });

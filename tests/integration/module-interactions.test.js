@@ -14,7 +14,10 @@ const {
   checkPassportAuth,
   requireEnvVars,
   hasEnvVar,
-  getEnvVar
+  getEnvVar,
+  makeCopyFn,
+  isClipboardSupported,
+  isBrowser
 } = utils;
 
 describe('Module Integration Tests', () => { // verifies utilities work together
@@ -417,6 +420,221 @@ describe('Module Integration Tests', () => { // verifies utilities work together
         })
         // cached and debug should not be present
       });
+    });
+  });
+
+  describe('Browser and Environment Integration', () => { // checks browser utilities with other modules
+    let originalWindow, originalNavigator, originalDocument, originalEnv;
+
+    beforeEach(() => {
+      originalWindow = global.window;
+      originalNavigator = global.navigator;
+      originalDocument = global.document;
+      originalEnv = { ...process.env };
+      
+      // Clear test environment variables
+      delete process.env.ENABLE_CLIPBOARD;
+      delete process.env.CLIENT_FEATURES;
+    });
+
+    afterEach(() => {
+      global.window = originalWindow;
+      global.navigator = originalNavigator;
+      global.document = originalDocument;
+      process.env = originalEnv;
+    });
+
+    // verifies should integrate environment variables with browser feature detection
+    test('should integrate environment variables with browser feature detection', () => {
+      process.env.ENABLE_CLIPBOARD = 'true';
+      process.env.CLIENT_FEATURES = 'copy,paste,share';
+      
+      // Check environment configuration
+      const clipboardEnabled = hasEnvVar('ENABLE_CLIPBOARD');
+      const clientFeatures = getEnvVar('CLIENT_FEATURES', '');
+      
+      expect(clipboardEnabled).toBe(true); // clipboard enabled via env
+      expect(clientFeatures).toBe('copy,paste,share'); // features configured
+      
+      // Setup browser environment
+      global.window = { isSecureContext: true };
+      global.document = {};
+      global.navigator = {
+        clipboard: {
+          writeText: jest.fn().mockResolvedValue()
+        }
+      };
+      
+      // Check browser capabilities
+      const browserDetected = isBrowser();
+      const clipboardSupported = isClipboardSupported();
+      
+      expect(browserDetected).toBe(true); // browser environment
+      expect(clipboardSupported).toBe(true); // clipboard API available
+      
+      // Enable features based on both environment config and browser support
+      const enableClipboardFeature = clipboardEnabled && browserDetected && clipboardSupported;
+      expect(enableClipboardFeature).toBe(true); // all conditions met
+    });
+
+    // verifies should handle browser utilities in server environment with env config
+    test('should handle browser utilities in server environment with env config', () => {
+      process.env.CLIENT_FEATURES = 'clipboard,notifications';
+      
+      // Server environment (no browser globals)
+      global.window = undefined;
+      global.document = undefined;
+      global.navigator = undefined;
+      
+      const clientFeatures = getEnvVar('CLIENT_FEATURES', '');
+      const browserDetected = isBrowser();
+      const clipboardSupported = isClipboardSupported();
+      
+      expect(clientFeatures).toBe('clipboard,notifications'); // env config available
+      expect(browserDetected).toBe(false); // server environment
+      expect(clipboardSupported).toBe(false); // no browser APIs
+      
+      // Should still be able to create copy function for potential client use
+      const mockSetMsg = jest.fn();
+      const mockSetCode = jest.fn();
+      const copyFn = makeCopyFn(mockSetMsg, mockSetCode);
+      
+      expect(typeof copyFn).toBe('function'); // function created
+      
+      // But it would fail gracefully when called in server context
+      // This enables code that works in both environments
+    });
+
+    // verifies should integrate browser detection with response utilities
+    test('should integrate browser detection with response utilities', () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      // Simulate API endpoint that returns client capabilities
+      const browserDetected = isBrowser();
+      const clipboardSupported = isClipboardSupported();
+      
+      const clientCapabilities = {
+        environment: browserDetected ? 'browser' : 'server',
+        clipboard: clipboardSupported,
+        features: {
+          copy: clipboardSupported,
+          environmentVariables: hasEnvVar('NODE_ENV')
+        }
+      };
+      
+      utils.sendJsonResponse(mockRes, 200, {
+        capabilities: clientCapabilities,
+        timestamp: formatDateTime(new Date().toISOString())
+      });
+      
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        capabilities: expect.objectContaining({
+          environment: expect.any(String),
+          clipboard: expect.any(Boolean),
+          features: expect.any(Object)
+        }),
+        timestamp: expect.any(String)
+      });
+    });
+
+    // verifies should handle clipboard operations with validation and logging
+    test('should handle clipboard operations with validation and logging', async () => {
+      // Setup browser environment
+      global.window = { isSecureContext: true };
+      global.document = {};
+      global.navigator = {
+        clipboard: {
+          writeText: jest.fn().mockResolvedValue()
+        }
+      };
+      
+      const mockReq = {
+        body: {
+          text: 'Hello, World!',
+          target: 'button-1'
+        }
+      };
+      
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis()
+      };
+      
+      // Validate required fields
+      const fieldsValid = requireFields(mockReq.body, ['text', 'target'], mockRes);
+      expect(fieldsValid).toBe(true); // validation passes
+      
+      // Check browser and clipboard support
+      const browserSupported = isBrowser();
+      const clipboardSupported = isClipboardSupported();
+      
+      if (browserSupported && clipboardSupported) {
+        // Create copy function and simulate usage
+        const messages = [];
+        const codes = [];
+        
+        const copyFn = makeCopyFn(
+          (msg) => messages.push(msg),
+          (code) => codes.push(code)
+        );
+        
+        await copyFn(mockReq.body.text, mockReq.body.target);
+        
+        expect(global.navigator.clipboard.writeText).toHaveBeenCalledWith('Hello, World!');
+        expect(messages).toContain('Copied to clipboard');
+        expect(codes).toContain('button-1');
+        
+        // Send success response
+        utils.sendJsonResponse(mockRes, 200, {
+          success: true,
+          operation: 'clipboard-copy',
+          timestamp: formatDateTime(new Date().toISOString())
+        });
+      } else {
+        // Send error response for unsupported environment
+        utils.sendValidationError(mockRes, 'Clipboard not supported in this environment');
+      }
+      
+      expect(mockRes.status).toHaveBeenCalled();
+      expect(mockRes.json).toHaveBeenCalled();
+    });
+
+    // verifies should handle environment-based feature configuration
+    test('should handle environment-based feature configuration', () => {
+      process.env.BROWSER_FEATURES = 'clipboard,geolocation,notifications';
+      process.env.SECURE_CONTEXT_REQUIRED = 'true';
+      
+      const configuredFeatures = getEnvVar('BROWSER_FEATURES', '').split(',');
+      const secureRequired = getEnvVar('SECURE_CONTEXT_REQUIRED', 'false') === 'true';
+      
+      expect(configuredFeatures).toContain('clipboard'); // clipboard configured
+      expect(secureRequired).toBe(true); // security requirement set
+      
+      // Setup browser environment based on configuration
+      global.window = { isSecureContext: secureRequired };
+      global.document = {};
+      global.navigator = configuredFeatures.includes('clipboard') ? {
+        clipboard: { writeText: jest.fn() }
+      } : {};
+      
+      const browserDetected = isBrowser();
+      const clipboardSupported = isClipboardSupported();
+      
+      expect(browserDetected).toBe(true); // browser environment
+      expect(clipboardSupported).toBe(secureRequired); // clipboard support matches security requirement
+      
+      // Feature availability should match configuration and environment
+      const availableFeatures = {
+        clipboard: configuredFeatures.includes('clipboard') && clipboardSupported,
+        browser: browserDetected
+      };
+      
+      expect(availableFeatures.clipboard).toBe(true); // clipboard available
+      expect(availableFeatures.browser).toBe(true); // browser available
     });
   });
 });
