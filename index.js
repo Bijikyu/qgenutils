@@ -22,7 +22,7 @@
 // Import all utility functions from organized modules
 // Each require() statement pulls in a focused set of related functionality
 const logger = require('./lib/logger'); // winston logger
-const { formatDateTime, formatDuration, addDays } = require('./lib/datetime'); // date formatting and arithmetic helpers
+const { formatDateTime, formatDuration, addDays, formatDate, formatDateWithPrefix, formatTimestamp, formatRelativeTime, formatExecutionDuration, formatCompletionDate } = require('./lib/datetime'); // enhanced date formatting and arithmetic helpers
 const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http'); // HTTP header and length utilities
 const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('./lib/response-utils'); // import additional response helpers for centralized error handling
 const { requireFields } = require('./lib/validation'); // request field validation
@@ -33,6 +33,9 @@ const { requireEnvVars, hasEnvVar, getEnvVar } = require('./lib/env'); // enviro
 const { makeCopyFn, isClipboardSupported, isBrowser } = require('./lib/browser'); // browser utilities
 const { createBroadcastRegistry, createPaymentBroadcastRegistry, createSocketBroadcastRegistry, validateBroadcastData } = require('./lib/realtime'); // real-time communication utilities
 const { generateExecutionId, generateTaskId, generateSecureId, generateSimpleId } = require('./lib/id-generation'); // secure ID generation utilities
+const { sanitizeString, sanitizeErrorMessage, sanitizeForHtml, validatePagination } = require('./lib/string-utils'); // string sanitization and validation utilities
+const { validateGitHubUrl, extractGitHubInfo, validateGitHubRepo, validateGitHubUrlDetailed } = require('./lib/github-validation'); // GitHub repository validation utilities
+const { validateEmail, validateRequired, validateMaxLength, validateSelection, combineValidations, validateObjectId } = require('./lib/advanced-validation'); // advanced validation utilities
 
 /*
  * Export Strategy Explanation:
@@ -58,6 +61,12 @@ module.exports = {
   formatDateTime, // convert a Date to a locale string for UIs
   formatDuration, // return human readable elapsed time
   addDays, // calculate future dates for business logic and expiration handling
+  formatDate, // format date with locale support and fallback handling
+  formatDateWithPrefix, // format date with contextual prefix (e.g., "Added 12/25/2023")
+  formatTimestamp, // format timestamp with both date and time components
+  formatRelativeTime, // format relative time (e.g., "5 minutes ago", "2 hours ago")
+  formatExecutionDuration, // format execution duration in compact format (e.g., "5m", "2h")
+  formatCompletionDate, // format completion date for execution status displays
   
   // HTTP utilities - manage content length, headers, responses, and validation
   calculateContentLength, // compute body byte length for header
@@ -106,6 +115,26 @@ module.exports = {
   generateTaskId, // create unique task IDs for workflow tracking
   generateSecureId, // core secure ID generator with configurable prefix
   generateSimpleId, // generate simple random IDs without timestamp
+  
+  // String sanitization utilities - security-first string processing
+  sanitizeString, // remove dangerous characters and normalize whitespace
+  sanitizeErrorMessage, // sanitize error messages to prevent information disclosure
+  sanitizeForHtml, // HTML-safe string sanitization with XSS prevention
+  validatePagination, // validate and sanitize pagination parameters with safe defaults
+  
+  // GitHub validation utilities - repository URL and format validation
+  validateGitHubUrl, // validate GitHub repository URL format with strict pattern matching
+  extractGitHubInfo, // extract owner and repository name from validated GitHub URL
+  validateGitHubRepo, // validate GitHub repository name in "owner/repo" format
+  validateGitHubUrlDetailed, // comprehensive GitHub URL validation with error categorization
+  
+  // Advanced validation utilities - comprehensive field validation with error reporting
+  validateEmail, // validate email address format using standard regex patterns
+  validateRequired, // validate required text fields with optional minimum length
+  validateMaxLength, // validate text fields with maximum length constraints
+  validateSelection, // validate dropdown/select field selections
+  combineValidations, // combine multiple validation functions with first-error reporting
+  validateObjectId, // validate MongoDB ObjectId format (24-character hexadecimal)
   
   logger, // winston logger instance
 };
