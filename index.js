@@ -31,7 +31,7 @@ const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = req
 const { renderView, registerViewRoute } = require('./lib/views'); // view rendering utilities
 const { requireEnvVars, hasEnvVar, getEnvVar } = require('./lib/env'); // environment variable utilities
 const { makeCopyFn, isClipboardSupported, isBrowser } = require('./lib/browser'); // browser utilities
-const { createBroadcastRegistry, createPaymentBroadcastRegistry, validateBroadcastData } = require('./lib/realtime'); // real-time communication utilities
+const { createBroadcastRegistry, createPaymentBroadcastRegistry, createSocketBroadcastRegistry, validateBroadcastData } = require('./lib/realtime'); // real-time communication utilities
 
 /*
  * Export Strategy Explanation:
@@ -97,6 +97,7 @@ module.exports = {
   // Real-time communication utilities - socket.io broadcast registries and validation
   createBroadcastRegistry, // factory to create custom broadcast function registries
   createPaymentBroadcastRegistry, // pre-configured registry for payment/usage broadcasts
+  createSocketBroadcastRegistry, // static interface registry with fixed broadcast functions
   validateBroadcastData, // validate data before real-time transmission
   
   logger, // winston logger instance

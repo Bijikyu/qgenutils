@@ -21,6 +21,7 @@ const {
   isBrowser,
   createBroadcastRegistry,
   createPaymentBroadcastRegistry,
+  createSocketBroadcastRegistry,
   validateBroadcastData
 } = utils;
 
