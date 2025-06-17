@@ -5,7 +5,8 @@
 const utils = require('../../index');
 const { 
   formatDateTime, 
-  formatDuration, 
+  formatDuration,
+  addDays,
   calculateContentLength, 
   buildCleanHeaders,
   ensureProtocol,
@@ -224,14 +225,16 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       expect(cleanHeaders['host']).toBeUndefined(); // host removed for proxying
       expect(cleanHeaders['x-target-url']).toBeUndefined(); // internal header removed
       
-      // Step 6: Format timestamps in response
+      // Step 6: Format timestamps and calculate expiration
       const formattedDate = formatDateTime(mockReq.body.published_at);
+      const expirationDate = addDays(90); // Calculate 90-day expiration
       
       // Step 7: Send successful response
       const responseData = {
         id: 123,
         title: mockReq.body.title,
         published_at: formattedDate,
+        expires_at: formatDateTime(expirationDate.toISOString()),
         status: 'created'
       };
       

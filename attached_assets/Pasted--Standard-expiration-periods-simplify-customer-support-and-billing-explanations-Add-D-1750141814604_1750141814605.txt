@@ -1,0 +1,64 @@
+* - Standard expiration periods simplify customer support and billing explanations
+ */
+
+/**
+ * Add Days to Current Date
+ * 
+ * Purpose: Calculates a future date by adding a specified number of days to today.
+ * This is the primary function used for setting credit expiration dates throughout
+ * the payment system, ensuring consistent and predictable expiration behavior.
+ * 
+ * Implementation rationale:
+ * - Uses current date as baseline to ensure credits expire relative to purchase time
+ * - Returns new Date object to prevent mutation of the current date (immutable pattern)
+ * - Handles month/year boundaries automatically via JavaScript Date arithmetic
+ * - Default 90-day expiration provides generous usage window while preventing indefinite accumulation
+ * - Simple implementation reduces complexity and potential for timezone-related bugs
+ * 
+ * Business rationale: 
+ * - Credit expiration encourages regular usage and prevents indefinite credit accumulation
+ * - 90-day default balances user convenience with business cash flow needs
+ * - Consistent expiration logic ensures fair treatment across all users and purchase types
+ * - Predictable expiration helps users plan their API usage and purchase timing
+ * 
+ * Technical considerations:
+ * - JavaScript Date automatically handles month/year rollovers (e.g., Jan 31 + 1 day = Feb 1)
+ * - Time component is preserved from current moment, providing precise expiration timing
+ * - Works correctly across daylight saving time transitions
+ * - No timezone conversion needed since expiration is relative to purchase time
+ * 
+ * Usage examples:
+ * - addDays() - Returns date 90 days from now (default for most credit purchases)
+ * - addDays(30) - Returns date 30 days from now (short-term promotions)
+ * - addDays(365) - Returns date 1 year from now (annual credit packages)
+ * 
+ * @param {number} days - Number of days to add to current date (defaults to 90)
+ *                       - Must be positive integer for future dates
+ *                       - Negative values would create past dates (not recommended for credits)
+ * @returns {Date} - New Date object representing the calculated expiration date
+ *                 - Includes both date and time components for precise expiration
+ *                 - Time will match the moment this function was called
+ */
+function addDays(days = 90) {
+    // Get current date and time as the baseline for expiration calculation
+    // Using current time ensures credits expire at the same time of day they were purchased
+    const today = new Date();
+
+    // Create a copy of the current date to avoid mutating the original
+    // This immutable pattern prevents unexpected side effects in calling code
+    const futureDate = new Date(today);
+
+    // Add the specified number of days to the baseline date
+    // JavaScript Date.setDate() automatically handles month and year boundaries
+    // For example: January 31 + 1 day correctly becomes February 1
+    futureDate.setDate(today.getDate() + days);
+
+    // Return the calculated expiration date for use in credit records
+    return futureDate;
+}
+
+// Export the utility function for use throughout the payment system
+// This centralized export ensures consistent date handling across all modules
+module.exports = {
+    addDays
+};

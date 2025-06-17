@@ -22,7 +22,7 @@
 // Import all utility functions from organized modules
 // Each require() statement pulls in a focused set of related functionality
 const logger = require('./lib/logger'); // winston logger
-const { formatDateTime, formatDuration } = require('./lib/datetime'); // date formatting helpers
+const { formatDateTime, formatDuration, addDays } = require('./lib/datetime'); // date formatting and arithmetic helpers
 const { calculateContentLength, buildCleanHeaders, getRequiredHeader } = require('./lib/http'); // HTTP header and length utilities
 const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('./lib/response-utils'); // import additional response helpers for centralized error handling
 const { requireFields } = require('./lib/validation'); // request field validation
@@ -53,9 +53,10 @@ const { createBroadcastRegistry, createPaymentBroadcastRegistry, validateBroadca
 // Export all functions for backward compatibility
 // This ensures existing code using require('./index.js') continues to work
 module.exports = {
-  // DateTime utilities - handle date formatting and duration calculations
+  // DateTime utilities - handle date formatting, duration calculations, and date arithmetic
   formatDateTime, // convert a Date to a locale string for UIs
   formatDuration, // return human readable elapsed time
+  addDays, // calculate future dates for business logic and expiration handling
   
   // HTTP utilities - manage content length, headers, responses, and validation
   calculateContentLength, // compute body byte length for header
