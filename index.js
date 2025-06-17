@@ -30,6 +30,7 @@ const { checkPassportAuth, hasGithubStrategy } = require('./lib/auth'); // Passp
 const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('./lib/url'); // URL normalization helpers
 const { renderView, registerViewRoute } = require('./lib/views'); // view rendering utilities
 const { requireEnvVars, hasEnvVar, getEnvVar } = require('./lib/env'); // environment variable utilities
+const { makeCopyFn, isClipboardSupported, isBrowser } = require('./lib/browser'); // browser utilities
 
 /*
  * Export Strategy Explanation:
@@ -85,6 +86,11 @@ module.exports = {
   requireEnvVars, // validate presence of required environment variables
   hasEnvVar, // check if single environment variable exists
   getEnvVar, // get environment variable value with optional default
+  
+  // Browser utilities - client-side functionality and clipboard operations
+  makeCopyFn, // factory to create clipboard copy handlers with feedback
+  isClipboardSupported, // check if clipboard API is available in browser
+  isBrowser, // detect if code is running in browser environment
   
   logger, // winston logger instance
 };

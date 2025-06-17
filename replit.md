@@ -19,6 +19,7 @@ QGenUtils/
 ├── lib/                     # Core utility modules
 │   ├── auth.js             # Passport.js authentication helpers
 │   ├── datetime.js         # Date/time formatting and validation
+│   ├── browser.js          # Client-side browser utilities and clipboard operations
 │   ├── env.js              # Environment variable validation and access
 │   ├── http.js             # HTTP request/response utilities
 │   ├── input-validation.js # Type checking and object validation
@@ -40,6 +41,11 @@ QGenUtils/
 - **Purpose**: Passport.js integration for authentication status checking
 - **Security Model**: Fail-closed - returns `false` when authentication state is uncertain
 - **Key Functions**: `checkPassportAuth()`, `hasGithubStrategy()`
+
+### Browser Utilities (`lib/browser.js`)
+- **Purpose**: Client-side browser functionality and clipboard operations
+- **Environment Model**: Works in both browser and server contexts with graceful degradation
+- **Key Functions**: `makeCopyFn()`, `isClipboardSupported()`, `isBrowser()`
 
 ### HTTP Utilities (`lib/http.js`)
 - **Purpose**: Header cleaning, content-length calculation, response standardization
@@ -124,6 +130,7 @@ QGenUtils/
 
 ## Changelog
 
+- June 17, 2025. Added browser utilities module (`lib/browser.js`) with `makeCopyFn()`, `isClipboardSupported()`, and `isBrowser()` functions. Factory pattern for clipboard operations with customizable feedback callbacks. Includes environment detection and graceful degradation for server-side compatibility. Enhanced existing clipboard functionality with comprehensive error handling, security validation, and cross-environment support.
 - June 17, 2025. Added environment variable utilities module (`lib/env.js`) with `requireEnvVars()`, `hasEnvVar()`, and `getEnvVar()` functions. Includes comprehensive unit tests and integration tests. Follows existing codebase patterns for error handling, logging, and fail-safe behavior.
 - June 15, 2025. Initial setup
 
