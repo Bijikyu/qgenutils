@@ -1,7 +1,7 @@
 // Unit tests for real-time communication utilities. These tests ensure proper
 // broadcast registry functionality, data validation, and graceful handling
 // when real-time features are unavailable.
-const { createBroadcastRegistry, createPaymentBroadcastRegistry, validateBroadcastData } = require('../../lib/realtime');
+const { createBroadcastRegistry, createPaymentBroadcastRegistry, createSocketBroadcastRegistry, validateBroadcastData } = require('../../lib/realtime');
 
 describe('Real-time Communication Utilities', () => { // validates real-time functionality
 
