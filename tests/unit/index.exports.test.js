@@ -20,10 +20,16 @@ describe('Index Exports', () => { // guards against accidental export removal
 
   // verifies all expected utility categories are exported
   test('should include all expected utility categories', () => {
-    // DateTime utilities
+    // DateTime utilities (existing and enhanced)
     expect(indexExports.formatDateTime).toBeDefined();
     expect(indexExports.formatDuration).toBeDefined();
     expect(indexExports.addDays).toBeDefined();
+    expect(indexExports.formatDate).toBeDefined();
+    expect(indexExports.formatDateWithPrefix).toBeDefined();
+    expect(indexExports.formatTimestamp).toBeDefined();
+    expect(indexExports.formatRelativeTime).toBeDefined();
+    expect(indexExports.formatExecutionDuration).toBeDefined();
+    expect(indexExports.formatCompletionDate).toBeDefined();
     
     // HTTP utilities
     expect(indexExports.calculateContentLength).toBeDefined();
@@ -69,6 +75,26 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.generateSecureId).toBeDefined();
     expect(indexExports.generateSimpleId).toBeDefined();
     
+    // String sanitization utilities
+    expect(indexExports.sanitizeString).toBeDefined();
+    expect(indexExports.sanitizeErrorMessage).toBeDefined();
+    expect(indexExports.sanitizeForHtml).toBeDefined();
+    expect(indexExports.validatePagination).toBeDefined();
+    
+    // GitHub validation utilities
+    expect(indexExports.validateGitHubUrl).toBeDefined();
+    expect(indexExports.extractGitHubInfo).toBeDefined();
+    expect(indexExports.validateGitHubRepo).toBeDefined();
+    expect(indexExports.validateGitHubUrlDetailed).toBeDefined();
+    
+    // Advanced validation utilities
+    expect(indexExports.validateEmail).toBeDefined();
+    expect(indexExports.validateRequired).toBeDefined();
+    expect(indexExports.validateMaxLength).toBeDefined();
+    expect(indexExports.validateSelection).toBeDefined();
+    expect(indexExports.combineValidations).toBeDefined();
+    expect(indexExports.validateObjectId).toBeDefined();
+    
     // Logger
     expect(indexExports.logger).toBeDefined();
   });
@@ -101,5 +127,41 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(typeof indexExports.generateTaskId).toBe('function');
     expect(typeof indexExports.generateSecureId).toBe('function');
     expect(typeof indexExports.generateSimpleId).toBe('function');
+  });
+
+  // verifies enhanced datetime utilities have correct function signatures
+  test('should have correct function signatures for enhanced datetime utilities', () => {
+    expect(typeof indexExports.formatDate).toBe('function');
+    expect(typeof indexExports.formatDateWithPrefix).toBe('function');
+    expect(typeof indexExports.formatTimestamp).toBe('function');
+    expect(typeof indexExports.formatRelativeTime).toBe('function');
+    expect(typeof indexExports.formatExecutionDuration).toBe('function');
+    expect(typeof indexExports.formatCompletionDate).toBe('function');
+  });
+
+  // verifies string sanitization utilities have correct function signatures
+  test('should have correct function signatures for string utilities', () => {
+    expect(typeof indexExports.sanitizeString).toBe('function');
+    expect(typeof indexExports.sanitizeErrorMessage).toBe('function');
+    expect(typeof indexExports.sanitizeForHtml).toBe('function');
+    expect(typeof indexExports.validatePagination).toBe('function');
+  });
+
+  // verifies GitHub validation utilities have correct function signatures
+  test('should have correct function signatures for GitHub validation utilities', () => {
+    expect(typeof indexExports.validateGitHubUrl).toBe('function');
+    expect(typeof indexExports.extractGitHubInfo).toBe('function');
+    expect(typeof indexExports.validateGitHubRepo).toBe('function');
+    expect(typeof indexExports.validateGitHubUrlDetailed).toBe('function');
+  });
+
+  // verifies advanced validation utilities have correct function signatures
+  test('should have correct function signatures for advanced validation utilities', () => {
+    expect(typeof indexExports.validateEmail).toBe('function');
+    expect(typeof indexExports.validateRequired).toBe('function');
+    expect(typeof indexExports.validateMaxLength).toBe('function');
+    expect(typeof indexExports.validateSelection).toBe('function');
+    expect(typeof indexExports.combineValidations).toBe('function');
+    expect(typeof indexExports.validateObjectId).toBe('function');
   });
 });
