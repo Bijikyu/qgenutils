@@ -184,6 +184,177 @@ describe('Real-time Communication Utilities', () => { // validates real-time fun
     });
   });
 
+  describe('createSocketBroadcastRegistry', () => { // validates static interface broadcast registry
+    
+    // verifies should create registry with static interface
+    test('should create registry with static interface', () => {
+      const registry = createSocketBroadcastRegistry();
+      
+      expect(registry).toBeDefined(); // registry created
+      expect(typeof registry).toBe('object'); // returns object
+      expect(registry.broadcastOutcome).toBeNull(); // initial state null
+      expect(registry.broadcastUsageUpdate).toBeNull(); // initial state null
+      expect(typeof registry.allFunctionsReady).toBe('function'); // utility method available
+      expect(typeof registry.getMissingFunctions).toBe('function'); // utility method available
+      expect(typeof registry.clearAllFunctions).toBe('function'); // utility method available
+    });
+
+    // verifies should allow function assignment through setters
+    test('should allow function assignment through setters', () => {
+      const registry = createSocketBroadcastRegistry();
+      const mockOutcomeFunction = jest.fn();
+      const mockUsageFunction = jest.fn();
+      
+      // Assign functions through setters
+      registry.broadcastOutcome = mockOutcomeFunction;
+      registry.broadcastUsageUpdate = mockUsageFunction;
+      
+      expect(registry.broadcastOutcome).toBe(mockOutcomeFunction); // outcome function assigned
+      expect(registry.broadcastUsageUpdate).toBe(mockUsageFunction); // usage function assigned
+    });
+
+    // verifies should execute assigned functions correctly
+    test('should execute assigned functions correctly', () => {
+      const registry = createSocketBroadcastRegistry();
+      const mockOutcomeFunction = jest.fn();
+      const mockUsageFunction = jest.fn();
+      
+      registry.broadcastOutcome = mockOutcomeFunction;
+      registry.broadcastUsageUpdate = mockUsageFunction;
+      
+      const outcomeData = { status: 'success', id: '123' };
+      const usageData = { credits: 500, usage: 120 };
+      
+      registry.broadcastOutcome(outcomeData);
+      registry.broadcastUsageUpdate(usageData);
+      
+      expect(mockOutcomeFunction).toHaveBeenCalledWith(outcomeData); // outcome function called with data
+      expect(mockUsageFunction).toHaveBeenCalledWith(usageData); // usage function called with data
+    });
+
+    // verifies should validate function assignments
+    test('should validate function assignments', () => {
+      const registry = createSocketBroadcastRegistry();
+      
+      // Test invalid assignments
+      expect(() => {
+        registry.broadcastOutcome = 'not a function';
+      }).toThrow('broadcastOutcome must be a function or null'); // string rejected
+      
+      expect(() => {
+        registry.broadcastUsageUpdate = 123;
+      }).toThrow('broadcastUsageUpdate must be a function or null'); // number rejected
+      
+      expect(() => {
+        registry.broadcastOutcome = {};
+      }).toThrow('broadcastOutcome must be a function or null'); // object rejected
+      
+      // Test valid assignments
+      expect(() => {
+        registry.broadcastOutcome = null;
+        registry.broadcastUsageUpdate = null;
+      }).not.toThrow(); // null allowed
+      
+      expect(() => {
+        registry.broadcastOutcome = () => {};
+        registry.broadcastUsageUpdate = function() {};
+      }).not.toThrow(); // functions allowed
+    });
+
+    // verifies should track readiness state correctly
+    test('should track readiness state correctly', () => {
+      const registry = createSocketBroadcastRegistry();
+      
+      expect(registry.allFunctionsReady()).toBe(false); // initially not ready
+      expect(registry.getMissingFunctions()).toEqual(['broadcastOutcome', 'broadcastUsageUpdate']); // both missing
+      
+      registry.broadcastOutcome = () => {};
+      expect(registry.allFunctionsReady()).toBe(false); // still not ready with one function
+      expect(registry.getMissingFunctions()).toEqual(['broadcastUsageUpdate']); // one missing
+      
+      registry.broadcastUsageUpdate = () => {};
+      expect(registry.allFunctionsReady()).toBe(true); // ready with both functions
+      expect(registry.getMissingFunctions()).toEqual([]); // none missing
+    });
+
+    // verifies should support function clearing
+    test('should support function clearing', () => {
+      const registry = createSocketBroadcastRegistry();
+      
+      registry.broadcastOutcome = () => {};
+      registry.broadcastUsageUpdate = () => {};
+      expect(registry.allFunctionsReady()).toBe(true); // functions assigned
+      
+      registry.clearAllFunctions();
+      expect(registry.broadcastOutcome).toBeNull(); // outcome cleared
+      expect(registry.broadcastUsageUpdate).toBeNull(); // usage cleared
+      expect(registry.allFunctionsReady()).toBe(false); // not ready after clearing
+    });
+
+    // verifies should handle null assignments correctly
+    test('should handle null assignments correctly', () => {
+      const registry = createSocketBroadcastRegistry();
+      const mockFunction = jest.fn();
+      
+      registry.broadcastOutcome = mockFunction;
+      expect(registry.broadcastOutcome).toBe(mockFunction); // function assigned
+      
+      registry.broadcastOutcome = null;
+      expect(registry.broadcastOutcome).toBeNull(); // null assignment accepted
+      expect(registry.allFunctionsReady()).toBe(false); // not ready with null
+    });
+
+    // verifies should work with typical socket.io usage patterns
+    test('should work with typical socket.io usage patterns', () => {
+      const registry = createSocketBroadcastRegistry();
+      
+      // Simulate socket.io setup
+      const mockIo = {
+        emit: jest.fn()
+      };
+      
+      registry.broadcastOutcome = (data) => mockIo.emit('payment:outcome', data);
+      registry.broadcastUsageUpdate = (data) => mockIo.emit('usage:update', data);
+      
+      // Simulate service usage
+      const paymentData = { status: 'success', amount: 100 };
+      const usageData = { credits: 500, usage: 120 };
+      
+      if (registry.broadcastOutcome) {
+        registry.broadcastOutcome(paymentData);
+      }
+      
+      if (registry.broadcastUsageUpdate) {
+        registry.broadcastUsageUpdate(usageData);
+      }
+      
+      expect(mockIo.emit).toHaveBeenCalledWith('payment:outcome', paymentData); // payment event emitted
+      expect(mockIo.emit).toHaveBeenCalledWith('usage:update', usageData); // usage event emitted
+      expect(mockIo.emit).toHaveBeenCalledTimes(2); // both events emitted
+    });
+
+    // verifies should match expected interface exactly
+    test('should match expected interface exactly', () => {
+      const registry = createSocketBroadcastRegistry();
+      
+      // Check property names match specification
+      expect(registry).toHaveProperty('broadcastOutcome');
+      expect(registry).toHaveProperty('broadcastUsageUpdate');
+      expect(registry).toHaveProperty('allFunctionsReady');
+      expect(registry).toHaveProperty('getMissingFunctions');
+      expect(registry).toHaveProperty('clearAllFunctions');
+      
+      // Check property descriptors for getters/setters
+      const outcomeDescriptor = Object.getOwnPropertyDescriptor(registry, 'broadcastOutcome');
+      const usageDescriptor = Object.getOwnPropertyDescriptor(registry, 'broadcastUsageUpdate');
+      
+      expect(typeof outcomeDescriptor.get).toBe('function'); // getter defined
+      expect(typeof outcomeDescriptor.set).toBe('function'); // setter defined
+      expect(typeof usageDescriptor.get).toBe('function'); // getter defined
+      expect(typeof usageDescriptor.set).toBe('function'); // setter defined
+    });
+  });
+
   describe('validateBroadcastData', () => { // broadcast data validation
     
     // verifies should validate simple valid data
