@@ -136,6 +136,7 @@ QGenUtils/
 
 ## Changelog
 
+- June 17, 2025. Added real-time communication utilities module (`lib/realtime.js`) with `createBroadcastRegistry()`, `createPaymentBroadcastRegistry()`, and `validateBroadcastData()` functions. Implements dependency injection pattern for socket.io broadcast function registries to prevent circular dependencies. Includes comprehensive data validation, security checking, and late binding support for real-time applications.
 - June 17, 2025. Added browser utilities module (`lib/browser.js`) with `makeCopyFn()`, `isClipboardSupported()`, and `isBrowser()` functions. Factory pattern for clipboard operations with customizable feedback callbacks. Includes environment detection and graceful degradation for server-side compatibility. Enhanced existing clipboard functionality with comprehensive error handling, security validation, and cross-environment support.
 - June 17, 2025. Added environment variable utilities module (`lib/env.js`) with `requireEnvVars()`, `hasEnvVar()`, and `getEnvVar()` functions. Includes comprehensive unit tests and integration tests. Follows existing codebase patterns for error handling, logging, and fail-safe behavior.
 - June 15, 2025. Initial setup
