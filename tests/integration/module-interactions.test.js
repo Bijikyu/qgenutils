@@ -22,7 +22,11 @@ const {
   createBroadcastRegistry,
   createPaymentBroadcastRegistry,
   createSocketBroadcastRegistry,
-  validateBroadcastData
+  validateBroadcastData,
+  generateExecutionId,
+  generateTaskId,
+  generateSecureId,
+  generateSimpleId
 } = utils;
 
 describe('Module Integration Tests', () => { // verifies utilities work together
@@ -899,6 +903,123 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       expect(mockRes.json).toHaveBeenCalledWith({
         error: 'Broadcast failed'
       });
+    });
+  });
+
+  describe('ID Generation and Workflow Integration', () => { // checks ID generation with other utilities
+    
+    // verifies should create complete workflow with IDs, timestamps, and validation
+    test('should create complete workflow with IDs, timestamps, and validation', () => {
+      // Step 1: Generate execution and task IDs
+      const executionId = generateExecutionId();
+      const taskId1 = generateTaskId();
+      const taskId2 = generateTaskId();
+      const userId = generateSimpleId('user');
+      
+      // Step 2: Create workflow with timestamps
+      const workflowStart = new Date().toISOString();
+      const workflowExpiry = addDays(30); // 30-day workflow expiration
+      
+      // Step 3: Build workflow object
+      const workflow = {
+        id: executionId,
+        userId: userId,
+        tasks: [
+          {
+            id: taskId1,
+            type: 'data_processing',
+            status: 'pending',
+            createdAt: workflowStart
+          },
+          {
+            id: taskId2,
+            type: 'notification',
+            status: 'pending',
+            createdAt: workflowStart
+          }
+        ],
+        createdAt: workflowStart,
+        expiresAt: workflowExpiry.toISOString(),
+        status: 'initialized'
+      };
+      
+      // Step 4: Validate workflow structure
+      expect(workflow.id).toMatch(/^exec_\d+_[a-zA-Z0-9_-]{11}$/); // execution ID format
+      expect(workflow.userId).toMatch(/^user_[a-zA-Z0-9_-]{8}$/); // user ID format
+      expect(workflow.tasks[0].id).toMatch(/^task_\d+_[a-zA-Z0-9_-]{11}$/); // task ID format
+      expect(workflow.tasks[1].id).toMatch(/^task_\d+_[a-zA-Z0-9_-]{11}$/); // task ID format
+      
+      // Step 5: Format timestamps for display
+      const formattedCreated = formatDateTime(workflow.createdAt);
+      const formattedExpiry = formatDateTime(workflow.expiresAt);
+      
+      expect(formattedCreated).toContain('2025'); // formatted creation date
+      expect(formattedExpiry).toContain('2025'); // formatted expiry date
+      
+      // Step 6: Calculate workflow duration estimate
+      const estimatedDuration = formatDuration(workflow.createdAt, workflow.expiresAt);
+      expect(estimatedDuration).toMatch(/^\d{2}:\d{2}:\d{2}$/); // duration format
+      
+      // Step 7: All IDs should be unique
+      const allIds = [
+        workflow.id,
+        workflow.userId,
+        ...workflow.tasks.map(task => task.id)
+      ];
+      
+      const uniqueIds = new Set(allIds);
+      expect(uniqueIds.size).toBe(allIds.length); // all IDs unique
+    });
+
+    // verifies should integrate with real-time broadcasting using IDs
+    test('should integrate with real-time broadcasting using IDs', () => {
+      // Step 1: Create broadcast registry for workflow updates
+      const registry = createSocketBroadcastRegistry();
+      const mockBroadcastFn = jest.fn();
+      registry.broadcastUsageUpdate = mockBroadcastFn;
+      
+      // Step 2: Generate workflow IDs
+      const executionId = generateExecutionId();
+      const taskId = generateTaskId();
+      const userId = generateSimpleId('user');
+      
+      // Step 3: Create workflow update event
+      const workflowUpdate = {
+        executionId: executionId,
+        taskId: taskId,
+        userId: userId,
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        result: 'success'
+      };
+      
+      // Step 4: Validate broadcast data before transmission
+      const validation = validateBroadcastData(workflowUpdate);
+      expect(validation.isValid).toBe(true); // workflow update data valid
+      expect(validation.errors).toEqual([]); // no validation errors
+      
+      // Step 5: Format timestamp for broadcast
+      const formattedTimestamp = formatDateTime(workflowUpdate.timestamp);
+      const broadcastPayload = {
+        ...workflowUpdate,
+        formattedTimestamp: formattedTimestamp
+      };
+      
+      // Step 6: Broadcast workflow update
+      if (registry.broadcastUsageUpdate && validation.isValid) {
+        registry.broadcastUsageUpdate(broadcastPayload);
+      }
+      
+      // Step 7: Verify broadcast was called with correct data
+      expect(mockBroadcastFn).toHaveBeenCalledWith(broadcastPayload); // broadcast called
+      expect(mockBroadcastFn).toHaveBeenCalledTimes(1); // single broadcast
+      
+      // Step 8: Verify all IDs in broadcast payload
+      const broadcastedData = mockBroadcastFn.mock.calls[0][0];
+      expect(broadcastedData.executionId).toMatch(/^exec_\d+_[a-zA-Z0-9_-]{11}$/); // execution ID
+      expect(broadcastedData.taskId).toMatch(/^task_\d+_[a-zA-Z0-9_-]{11}$/); // task ID
+      expect(broadcastedData.userId).toMatch(/^user_[a-zA-Z0-9_-]{8}$/); // user ID
+      expect(broadcastedData.formattedTimestamp).toContain('2025'); // formatted timestamp
     });
   });
 });
