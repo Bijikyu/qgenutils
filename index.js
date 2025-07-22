@@ -38,6 +38,7 @@ const { validateGitHubUrl, extractGitHubInfo, validateGitHubRepo, validateGitHub
 const { validateEmail, validateRequired, validateMaxLength, validateSelection, combineValidations, validateObjectId } = require('./lib/advanced-validation'); // advanced validation utilities
 const { formatFileSize } = require('./lib/file-utils'); // file utilities for formatting and file operations
 const { createWorkerPool } = require('./lib/worker-pool'); // worker thread pool management for CPU-intensive tasks
+const { createShutdownManager, gracefulShutdown } = require('./lib/shutdown-utils'); // graceful shutdown and resource cleanup utilities
 
 /*
  * Export Strategy Explanation:
@@ -143,6 +144,10 @@ module.exports = {
   
   // Worker pool utilities - CPU-intensive task management with automatic worker replacement
   createWorkerPool, // create and manage pool of worker threads for parallel processing
+  
+  // Shutdown utilities - graceful application shutdown and resource cleanup management
+  createShutdownManager, // create configurable shutdown manager with cleanup handler registry
+  gracefulShutdown, // simple graceful shutdown for basic server and resource cleanup
   
   logger, // winston logger instance
 };
