@@ -98,6 +98,9 @@ describe('Index Exports', () => { // guards against accidental export removal
     // File utilities
     expect(indexExports.formatFileSize).toBeDefined();
     
+    // Worker pool utilities
+    expect(indexExports.createWorkerPool).toBeDefined();
+    
     // Logger
     expect(indexExports.logger).toBeDefined();
   });
@@ -171,5 +174,10 @@ describe('Index Exports', () => { // guards against accidental export removal
   // verifies file utilities have correct function signatures
   test('should have correct function signatures for file utilities', () => {
     expect(typeof indexExports.formatFileSize).toBe('function');
+  });
+
+  // verifies worker pool utilities have correct function signatures
+  test('should have correct function signatures for worker pool utilities', () => {
+    expect(typeof indexExports.createWorkerPool).toBe('function');
   });
 });

@@ -27,6 +27,7 @@ QGenUtils/
 │   ├── realtime.js         # Socket.io broadcast registries and real-time communication
 │   ├── response-utils.js   # Standardized HTTP response patterns
 │   ├── file-utils.js       # File operations and formatting utilities
+│   ├── worker-pool.js      # Worker thread pool management for CPU-intensive tasks
 │   ├── url.js              # URL manipulation and parsing
 │   ├── validation.js       # Field validation and requirement checking
 │   └── views.js            # EJS template rendering with error handling
@@ -109,6 +110,11 @@ QGenUtils/
 - **Security Model**: Input validation with graceful handling of invalid data types and edge cases
 - **Key Functions**: `formatFileSize()` - converts bytes to human-readable format with appropriate units (B, KB, MB, GB)
 
+### Worker Pool Utilities (`lib/worker-pool.js`)
+- **Purpose**: Worker thread pool management for CPU-intensive tasks with automatic worker replacement
+- **Security Model**: Path validation, resource cleanup, and error isolation to prevent system instability
+- **Key Functions**: `createWorkerPool()` - creates managed pool of worker threads with task queuing and lifecycle management
+
 ## Data Flow
 
 ### Typical API Request Flow
@@ -162,6 +168,7 @@ QGenUtils/
 
 ## Changelog
 
+- July 22, 2025. Added worker pool utilities module (`lib/worker-pool.js`) with `createWorkerPool()` function for managing worker thread pools for CPU-intensive tasks. Includes automatic worker replacement on failure, task queuing system, transferable object support, graceful shutdown, and comprehensive error handling. Provides Promise-based API with configurable pool sizes and robust lifecycle management. Features complete test coverage with mocked worker threads.
 - July 22, 2025. Added file utilities module (`lib/file-utils.js`) with `formatFileSize()` function for converting byte values to human-readable file size strings. Includes comprehensive input validation, support for units up to GB, decimal precision handling, and graceful error handling for invalid inputs. Follows established security-first patterns with proper logging and test coverage.
 - June 17, 2025. Completed comprehensive validation and utility enhancement with four new modules: **String Sanitization** (`lib/string-utils.js`) providing security-first XSS prevention with `sanitizeString()`, `sanitizeErrorMessage()`, `sanitizeForHtml()`, and `validatePagination()`. **GitHub Validation** (`lib/github-validation.js`) offering strict repository URL validation with `validateGitHubUrl()`, `extractGitHubInfo()`, `validateGitHubRepo()`, and `validateGitHubUrlDetailed()`. **Advanced Validation** (`lib/advanced-validation.js`) delivering comprehensive field validation with `validateEmail()`, `validateRequired()`, `validateMaxLength()`, `validateSelection()`, `combineValidations()`, and `validateObjectId()`. **Enhanced DateTime** utilities expanding existing module with `formatDate()`, `formatDateWithPrefix()`, `formatTimestamp()`, `formatRelativeTime()`, `formatExecutionDuration()`, and `formatCompletionDate()`. All modules follow established security-first patterns, comprehensive error handling, and extensive test coverage. Module now exports 44 functions covering complete application development needs.
 - June 17, 2025. Added secure ID generation utilities module (`lib/id-generation.js`) with `generateExecutionId()`, `generateTaskId()`, `generateSecureId()`, and `generateSimpleId()` functions. Provides cryptographically secure identifier creation using nanoid for execution tracking, task management, and data integrity. Includes timestamp-based natural ordering, collision resistance, comprehensive input validation, and extensive test coverage with 400 unique IDs generated without conflicts.

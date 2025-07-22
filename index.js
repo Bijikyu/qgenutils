@@ -37,6 +37,7 @@ const { sanitizeString, sanitizeErrorMessage, sanitizeForHtml, validatePaginatio
 const { validateGitHubUrl, extractGitHubInfo, validateGitHubRepo, validateGitHubUrlDetailed } = require('./lib/github-validation'); // GitHub repository validation utilities
 const { validateEmail, validateRequired, validateMaxLength, validateSelection, combineValidations, validateObjectId } = require('./lib/advanced-validation'); // advanced validation utilities
 const { formatFileSize } = require('./lib/file-utils'); // file utilities for formatting and file operations
+const { createWorkerPool } = require('./lib/worker-pool'); // worker thread pool management for CPU-intensive tasks
 
 /*
  * Export Strategy Explanation:
@@ -139,6 +140,9 @@ module.exports = {
   
   // File utilities - file operations and formatting for storage management and UI display
   formatFileSize, // format file size in bytes to human-readable string with appropriate units
+  
+  // Worker pool utilities - CPU-intensive task management with automatic worker replacement
+  createWorkerPool, // create and manage pool of worker threads for parallel processing
   
   logger, // winston logger instance
 };
