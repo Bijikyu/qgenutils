@@ -95,6 +95,9 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.combineValidations).toBeDefined();
     expect(indexExports.validateObjectId).toBeDefined();
     
+    // File utilities
+    expect(indexExports.formatFileSize).toBeDefined();
+    
     // Logger
     expect(indexExports.logger).toBeDefined();
   });
@@ -163,5 +166,10 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(typeof indexExports.validateSelection).toBe('function');
     expect(typeof indexExports.combineValidations).toBe('function');
     expect(typeof indexExports.validateObjectId).toBe('function');
+  });
+
+  // verifies file utilities have correct function signatures
+  test('should have correct function signatures for file utilities', () => {
+    expect(typeof indexExports.formatFileSize).toBe('function');
   });
 });
