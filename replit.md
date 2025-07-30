@@ -68,7 +68,11 @@ QGenUtils/
 │   │   └── gracefulShutdown.js
 │   ├── views/              # View utilities
 │   │   └── renderView.js
-│   ├── input-validation.js # Legacy module (to be refactored)
+│   ├── input-validation/   # Input validation utilities
+│   │   ├── isValidObject.js
+│   │   ├── isValidString.js
+│   │   ├── hasMethod.js
+│   │   └── isValidExpressResponse.js
 │   └── logger.js           # Winston logger configuration
 ├── tests/                  # Comprehensive test suite
 │   ├── unit/               # Individual module tests
@@ -212,7 +216,7 @@ QGenUtils/
 
 ## Changelog
 
-- **July 30, 2025. PURE SRP ARCHITECTURE ✅ COMPLETED**: Completely restructured qgenutils codebase to pure Single Responsibility Principle (SRP) architecture as specified in AGENTS.md and .roo/rules/architecture.md. Implemented strict "one function per file" pattern with 32+ individual functions across 15 directories. Removed all multi-function modules for clean SRP compliance. Created comprehensive structure: datetime/ (5 functions), http/ (3 functions), response/ (2 functions), url/ (4 functions), auth/ (2 functions), validation/ (1 function), env/ (3 functions), browser/ (1 function), realtime/ (1 function), id-generation/ (1 function), string-utils/ (1 function), github-validation/ (1 function), advanced-validation/ (2 functions), file-utils/ (1 function), worker-pool/ (1 function), shutdown-utils/ (2 functions), and views/ (1 function). No backwards compatibility - pure SRP implementation. Benefits include maximum maintainability, testability, code clarity, and architectural compliance.
+- **July 30, 2025. PURE SRP ARCHITECTURE ✅ COMPLETED**: Completely restructured qgenutils codebase to pure Single Responsibility Principle (SRP) architecture as specified in AGENTS.md and .roo/rules/architecture.md. Implemented strict "one function per file" pattern with 36+ individual functions across 16 directories. Removed all multi-function modules including the final lib/input-validation.js for complete SRP compliance. Created comprehensive structure: datetime/ (5 functions), http/ (3 functions), response/ (2 functions), url/ (4 functions), auth/ (2 functions), validation/ (1 function), env/ (3 functions), browser/ (1 function), realtime/ (1 function), id-generation/ (1 function), string-utils/ (1 function), github-validation/ (1 function), advanced-validation/ (2 functions), file-utils/ (1 function), worker-pool/ (1 function), shutdown-utils/ (2 functions), views/ (1 function), and input-validation/ (4 functions). No backwards compatibility - pure SRP implementation. Benefits include maximum maintainability, testability, code clarity, and architectural compliance.
 - July 22, 2025. Added shutdown utilities module (`lib/shutdown-utils.js`) with `createShutdownManager()` and `gracefulShutdown()` functions for server lifecycle management. Provides configurable shutdown manager with cleanup handler registry, signal-based shutdown handling, timeout protection, and resource cleanup coordination. Includes comprehensive error handling, priority-based handler execution, and graceful degradation patterns. Features extensive test coverage with 22 test cases covering all shutdown scenarios and edge cases.
 - July 22, 2025. Added worker pool utilities module (`lib/worker-pool.js`) with `createWorkerPool()` function for managing worker thread pools for CPU-intensive tasks. Includes automatic worker replacement on failure, task queuing system, transferable object support, graceful shutdown, and comprehensive error handling. Provides Promise-based API with configurable pool sizes and robust lifecycle management. Features complete test coverage with mocked worker threads.
 - July 22, 2025. Added file utilities module (`lib/file-utils.js`) with `formatFileSize()` function for converting byte values to human-readable file size strings. Includes comprehensive input validation, support for units up to GB, decimal precision handling, and graceful error handling for invalid inputs. Follows established security-first patterns with proper logging and test coverage.
