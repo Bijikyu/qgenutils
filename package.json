@@ -47,6 +47,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^22.13.11",
+    "loqatevars": "^1.0.6",
     "nanoid": "^3.3.7",
     "qerrors": "^1.2.3",
     "qtests": "^1.0.4",
