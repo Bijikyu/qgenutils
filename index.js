@@ -1,22 +1,19 @@
 
 /*
- * Main Module Entry Point
+ * Main Module Entry Point - SRP Architecture
  * 
- * This file serves as the central export hub for all utility functions organized
- * across specialized modules. The design follows a modular architecture pattern
- * where related functionality is grouped into focused modules under /lib/.
+ * This file serves as the central export hub for all utility functions following
+ * Single Responsibility Principle (SRP) where each function has its own file.
  * 
- * RATIONALE FOR THIS APPROACH:
- * 1. Separation of Concerns: Each module handles a specific domain (auth, HTTP, URLs, etc.)
- * 2. Maintainability: Changes to one area don't affect others
- * 3. Testability: Individual modules can be tested in isolation
- * 4. Backward Compatibility: All functions remain accessible from the main module
- * 5. Tree Shaking: Bundlers can optimize imports by including only needed modules
+ * RATIONALE FOR SRP APPROACH:
+ * 1. Single Responsibility: Each file contains exactly one function
+ * 2. Maintainability: Changes to one function don't affect others
+ * 3. Testability: Individual functions can be tested in complete isolation
+ * 4. Code Organization: Clear function-to-file mapping improves navigation
+ * 5. Tree Shaking: Bundlers can optimize imports at the function level
  * 
- * The dual export strategy (CommonJS + ES modules) ensures compatibility with
- * both legacy require() callers and modern import syntax.  // clarify support for dual module systems
- * It exposes a CommonJS module.exports object and sets module.exports.default
- * for ES module consumers.  // explain parallel exports for broad usage
+ * Architecture follows "one function per file" principle as specified in
+ * AGENTS.md and .roo/rules/architecture.md for maximum modularity.
  */
 
 // Import all utility functions from SRP-compliant individual function files
@@ -92,22 +89,19 @@ const gracefulShutdown = require('./lib/shutdown-utils/gracefulShutdown');
 /*
  * Export Strategy Explanation:
  *
- * All utilities are re-exported from this file so consumers can access them
- * through one entry point, ensuring older codebases continue to `require('qgenutils')`
- * without modification. This backward compatible approach lets developers
- * cherry-pick imports while still benefiting from a single aggregated module.
+ * All utilities are re-exported from this file to provide a single entry point
+ * for the SRP-structured functions. Each function is imported from its individual
+ * file and exported here for convenient access.
  *
- * Exposing every utility here keeps the API surface small, allowing bundlers to
- * tree shake unused members and include only what is required. The simplified
- * surface also makes discovery easier for new developers.
+ * This approach allows bundlers to tree shake unused functions at the individual
+ * function level while maintaining a clean API surface. The SRP structure makes
+ * it easy for developers to understand exactly what each function does.
  *
- * We attach `module.exports.default` below so ES module loaders expecting a
- * default export can import the same object. This maintains parity between
- * `require()` and `import` usage without forcing consumers to change syntax.
+ * ES module compatibility is maintained through the default export strategy.
  */
 
-// Export all functions for backward compatibility
-// This ensures existing code using require('./index.js') continues to work
+// Export all functions from SRP structure
+// Each function is imported from its individual file following SRP principles
 module.exports = {
   // DateTime utilities - handle date formatting, duration calculations, and date arithmetic
   formatDateTime, // convert a Date to a locale string for UIs
