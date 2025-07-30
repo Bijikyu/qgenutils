@@ -214,6 +214,10 @@ QGenUtils/
 - All utilities handle missing dependencies gracefully
 - Fail-closed security patterns prevent unauthorized access
 
+## Recent Changes
+
+- **July 30, 2025 - Constants Centralization**: ✅ Migrated global constants from individual files to centralized localVars.js configuration. Updated `lib/http/buildCleanHeaders.js` to import `HEADERS_TO_REMOVE` array, `lib/logger.js` to import `LOG_DIR` configuration, and `lib/env/getEnvVar.js` to import validation constants (`ENV_VALID_TYPES`, `ENV_TRUTHY_VALUES`, `ENV_FALSY_VALUES`) from `loqatevars/config/localVars.js`. This ensures single source of truth for application constants, improves maintainability, and enables easier configuration management. Testing confirmed all imports work correctly.
+
 ## Changelog
 
 - **July 30, 2025. PURE SRP ARCHITECTURE ✅ COMPLETED**: Completely restructured qgenutils codebase to pure Single Responsibility Principle (SRP) architecture as specified in AGENTS.md and .roo/rules/architecture.md. Implemented strict "one function per file" pattern with 36+ individual functions across 16 directories. Removed all multi-function modules including the final lib/input-validation.js for complete SRP compliance. Created comprehensive structure: datetime/ (5 functions), http/ (3 functions), response/ (2 functions), url/ (4 functions), auth/ (2 functions), validation/ (1 function), env/ (3 functions), browser/ (1 function), realtime/ (1 function), id-generation/ (1 function), string-utils/ (1 function), github-validation/ (1 function), advanced-validation/ (2 functions), file-utils/ (1 function), worker-pool/ (1 function), shutdown-utils/ (2 functions), views/ (1 function), and input-validation/ (4 functions). No backwards compatibility - pure SRP implementation. Benefits include maximum maintainability, testability, code clarity, and architectural compliance.
