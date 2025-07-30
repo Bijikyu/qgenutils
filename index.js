@@ -86,6 +86,12 @@ const createWorkerPool = require('./lib/worker-pool/createWorkerPool');
 const createShutdownManager = require('./lib/shutdown-utils/createShutdownManager');
 const gracefulShutdown = require('./lib/shutdown-utils/gracefulShutdown');
 
+// Input validation utilities - individual functions
+const isValidObject = require('./lib/input-validation/isValidObject');
+const isValidString = require('./lib/input-validation/isValidString');
+const hasMethod = require('./lib/input-validation/hasMethod');
+const isValidExpressResponse = require('./lib/input-validation/isValidExpressResponse');
+
 /*
  * Export Strategy Explanation:
  *
@@ -168,6 +174,12 @@ module.exports = {
   // Shutdown utilities - graceful application termination and resource cleanup
   createShutdownManager, // create configurable shutdown manager with priority-based cleanup
   gracefulShutdown, // simple graceful shutdown for basic server applications
+
+  // Input validation utilities - type checking and validation helpers
+  isValidObject, // check if value is a plain object (not null, array, or primitive)
+  isValidString, // validate non-empty string with trimmed whitespace handling
+  hasMethod, // safely check if object has callable method
+  isValidExpressResponse, // verify object has Express response methods (status, json)
 
   // Logger utility
   logger // winston structured logger for application logging
