@@ -188,3 +188,24 @@ QGenUtils/
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+<!-- 
+┌── 🚫 PROTECTED: AI AGENTS, DO NOT EDIT BELOW THIS LINE
+│   This section is managed by human developers, not Replit Agent.-->
+Replit agent is mainly used for MVP & some bug fixes & testing.
+Therefore replit.md is often out of date.
+For up-to-date rules & directives see AGENTS.md
+
+CRITICAL DEVELOPMENT PRINCIPLE (PERMANENT):
+NEVER remove wanted functionality to fix problems - this approach is explicitly forbidden
+Always find proper solutions that maintain all intended features and capabilities
+Removing features instead of debugging root causes is "not ok" and must be avoided
+When facing complex issues, invest time to understand and fix the underlying problem
+Maintain feature completeness while resolving technical challenges
+NEVER disable middleware or security features - instead fix them to work correctly in 
+the deployment environment.
+
+YOU ARE NEVER TO DELETE ANYTHING WITHOUT PERMISSION. DO NOT ASSUME I WANT SOMETHING DELETED, ASK FOR CLARITY.
+<!-- 
+└── END PROTECTED RANGE 🚫
+-->
