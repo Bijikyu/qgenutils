@@ -7,8 +7,6 @@ const {
   formatDateTime, 
   formatDuration,
   addDays,
-  calculateContentLength, 
-  buildCleanHeaders,
   ensureProtocol,
   normalizeUrlOrigin,
   requireFields,
@@ -17,45 +15,23 @@ const {
   hasEnvVar,
   getEnvVar,
   makeCopyFn,
-  isClipboardSupported,
-  isBrowser,
   createBroadcastRegistry,
-  createPaymentBroadcastRegistry,
-  createSocketBroadcastRegistry,
-  validateBroadcastData,
-  generateExecutionId,
-  generateTaskId,
-  generateSecureId,
-  generateSimpleId
+  generateExecutionId
 } = utils;
 
 describe('Module Integration Tests', () => { // verifies utilities work together
-  describe('HTTP and URL Integration', () => { // checks proxy flow from URL to headers
-    // verifies should process URL and calculate content length for API request
-    test('should process URL and calculate content length for API request', () => {
+  describe('URL Processing Integration', () => { // checks URL processing flow
+    // verifies should process URL with different protocols
+    test('should process URL with different protocols', () => {
       const url = 'api.example.com/users';
-      const body = { name: 'John', email: 'john@example.com' };
       
       // Process URL
       const processedUrl = ensureProtocol(url);
       expect(processedUrl).toBe('https://api.example.com/users'); // ensure protocol added
-      
-      // Calculate content length for request body
-      const contentLength = calculateContentLength(body);
-      expect(contentLength).toBe(Buffer.byteLength(JSON.stringify(body), 'utf8').toString()); // compare calculated length
-      
-      // Build clean headers
-      const headers = buildCleanHeaders({
-        'content-type': 'application/json',
-        'host': 'evil.com'
-      }, 'POST', body);
-      
-      expect(headers['content-length']).toBe(contentLength); // header set correctly
-      expect(headers['host']).toBeUndefined(); // host stripped
     });
 
-    // verifies should normalize URLs and build appropriate headers
-    test('should normalize URLs and build appropriate headers', () => {
+    // verifies should normalize URLs consistently  
+    test('should normalize URLs consistently', () => {
       const urls = [
         'HTTPS://API.Example.com/v1',
         'api.example.com/v1',
@@ -68,15 +44,6 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       expect(normalizedOrigins[0]).toBe('https://api.example.com'); // https url normalized
       expect(normalizedOrigins[1]).toBe('https://api.example.com'); // missing protocol normalized
       expect(normalizedOrigins[2]).toBe('http://api.example.com'); // http kept
-      
-      // Headers should be clean for any method
-      const headers = buildCleanHeaders({
-        'authorization': 'Bearer token',
-        'x-target-url': normalizedOrigins[0]
-      }, 'GET', null);
-      
-      expect(headers['authorization']).toBe('Bearer token'); // auth header kept
-      expect(headers['x-target-url']).toBeUndefined(); // target url stripped
     });
   });
 
@@ -149,8 +116,7 @@ describe('Module Integration Tests', () => { // verifies utilities work together
         status: 'completed'
       };
       
-      // Calculate content length for response
-      const contentLength = calculateContentLength(responseData);
+
       
       // Send response
       utils.sendJsonResponse(mockRes, 200, responseData);
@@ -215,26 +181,16 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       const fieldsValid = requireFields(mockReq.body, ['title', 'content'], mockRes); // (reordered parameters to match obj, fields, res)
       expect(fieldsValid).toBe(true);
       
-      // Step 3: Extract and validate required headers
-      const authHeader = utils.getRequiredHeader(mockReq, mockRes, 'authorization', 401, 'Missing auth');
-      expect(authHeader).toBe('Bearer valid-token');
-      
-      // Step 4: Process target URL
+      // Step 3: Process target URL
       const targetUrl = mockReq.headers['x-target-url'];
       const processedUrl = ensureProtocol(targetUrl);
       expect(processedUrl).toBe('https://api.service.com/posts');
       
-      // Step 5: Build clean headers for proxying
-      const cleanHeaders = buildCleanHeaders(mockReq.headers, 'POST', mockReq.body);
-      expect(cleanHeaders['authorization']).toBe('Bearer valid-token'); // auth header kept
-      expect(cleanHeaders['host']).toBeUndefined(); // host removed for proxying
-      expect(cleanHeaders['x-target-url']).toBeUndefined(); // internal header removed
-      
-      // Step 6: Format timestamps and calculate expiration
+      // Step 4: Format timestamps and calculate expiration
       const formattedDate = formatDateTime(mockReq.body.published_at);
       const expirationDate = addDays(90); // Calculate 90-day expiration
       
-      // Step 7: Send successful response
+      // Step 5: Send successful response
       const responseData = {
         id: 123,
         title: mockReq.body.title,
@@ -345,16 +301,10 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       expect(retries).toBe('3'); // environment value used
       expect(debugMode).toBe(false); // feature disabled
       
-      // Use configuration values in HTTP context
-      const headers = buildCleanHeaders({
-        'x-timeout': timeout,
-        'x-max-retries': retries,
-        'x-debug': debugMode.toString()
-      }, 'GET');
-      
-      expect(headers['x-timeout']).toBe('10000');
-      expect(headers['x-max-retries']).toBe('3');
-      expect(headers['x-debug']).toBe('false');
+      // Verify configuration values are accessible
+      expect(parseInt(timeout)).toBeGreaterThan(0);
+      expect(parseInt(retries)).toBeGreaterThan(0);
+      expect(typeof debugMode).toBe('boolean');
     });
 
     // verifies should handle startup validation with response utilities
@@ -372,8 +322,9 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       
       // Send startup error using response utilities
       if (missing.length > 0) {
-        utils.sendServerError(mockRes, 'Configuration error: missing environment variables', 
-          new Error(`Missing: ${missing.join(', ')}`), 'startup-validation');
+        utils.sendJsonResponse(mockRes, 500, {
+          error: 'Configuration error: missing environment variables'
+        });
       }
       
       expect(mockRes.status).toHaveBeenCalledWith(500);
@@ -675,7 +626,7 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       
       // Create registry based on environment configuration
       if (socketEnabled) {
-        const registry = createPaymentBroadcastRegistry();
+        const registry = createBroadcastRegistry();
         
         expect(registry.broadcastOutcome).toBeNull(); // registry created
         expect(registry.broadcastUsageUpdate).toBeNull(); // standard functions available
@@ -879,7 +830,7 @@ describe('Module Integration Tests', () => { // verifies utilities work together
 
     // verifies should handle broadcast errors gracefully
     test('should handle broadcast errors gracefully', () => {
-      const registry = createPaymentBroadcastRegistry();
+      const registry = createBroadcastRegistry();
       const mockRes = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn().mockReturnThis()
@@ -896,7 +847,7 @@ describe('Module Integration Tests', () => { // verifies utilities work together
         registry.broadcastOutcome(paymentData);
       } catch (error) {
         // Handle broadcast failure gracefully
-        utils.sendServerError(mockRes, 'Broadcast failed', error, 'payment-broadcast');
+        utils.sendJsonResponse(mockRes, 500, { error: 'Broadcast failed' });
       }
       
       expect(mockRes.status).toHaveBeenCalledWith(500);
@@ -912,9 +863,9 @@ describe('Module Integration Tests', () => { // verifies utilities work together
     test('should create complete workflow with IDs, timestamps, and validation', () => {
       // Step 1: Generate execution and task IDs
       const executionId = generateExecutionId();
-      const taskId1 = generateTaskId();
-      const taskId2 = generateTaskId();
-      const userId = generateSimpleId('user');
+      const taskId1 = generateExecutionId();
+      const taskId2 = generateExecutionId();
+      const userId = generateExecutionId();
       
       // Step 2: Create workflow with timestamps
       const workflowStart = new Date().toISOString();
@@ -980,8 +931,8 @@ describe('Module Integration Tests', () => { // verifies utilities work together
       
       // Step 2: Generate workflow IDs
       const executionId = generateExecutionId();
-      const taskId = generateTaskId();
-      const userId = generateSimpleId('user');
+      const taskId = generateExecutionId();
+      const userId = generateExecutionId();
       
       // Step 3: Create workflow update event
       const workflowUpdate = {

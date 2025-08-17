@@ -5,7 +5,7 @@
  * edge cases, invalid inputs, and proper unit scaling.
  */
 
-const { formatFileSize } = require('../../lib/file-utils');
+const formatFileSize = require('../../lib/file-utils/formatFileSize');
 
 describe('File Utils', () => {
   describe('formatFileSize', () => {

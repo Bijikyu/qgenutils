@@ -27,10 +27,7 @@ const addDays = require('./lib/datetime/addDays');
 const formatDate = require('./lib/datetime/formatDate');
 const formatDateWithPrefix = require('./lib/datetime/formatDateWithPrefix');
 
-// HTTP utilities - individual functions
-const calculateContentLength = require('./lib/http/calculateContentLength');
-const buildCleanHeaders = require('./lib/http/buildCleanHeaders');
-const getRequiredHeader = require('./lib/http/getRequiredHeader');
+
 
 // Response utilities - individual functions
 const sendJsonResponse = require('./lib/response/sendJsonResponse');
@@ -116,10 +113,7 @@ module.exports = {
   formatDate, // format date with locale support and fallback handling
   formatDateWithPrefix, // format date with contextual prefix (e.g., "Added 12/25/2023")
   
-  // HTTP utilities - manage content length, headers, responses, and validation
-  calculateContentLength, // compute body byte length for header
-  buildCleanHeaders, // remove dangerous headers from requests
-  getRequiredHeader, // fetch mandatory header or error
+
   
   // Response utilities - standardized response handling
   sendJsonResponse, // send JSON payload with proper status

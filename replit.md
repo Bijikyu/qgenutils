@@ -28,10 +28,7 @@ QGenUtils/
 │   │   ├── addDays.js
 │   │   ├── formatDate.js
 │   │   └── formatDateWithPrefix.js
-│   ├── http/               # HTTP utilities
-│   │   ├── calculateContentLength.js
-│   │   ├── buildCleanHeaders.js
-│   │   └── getRequiredHeader.js
+
 │   ├── response/           # Response utilities
 │   │   ├── sendJsonResponse.js
 │   │   └── sendValidationError.js
@@ -93,10 +90,7 @@ QGenUtils/
 - **Environment Model**: Works in both browser and server contexts with graceful degradation
 - **Key Functions**: `makeCopyFn()`, `isClipboardSupported()`, `isBrowser()`
 
-### HTTP Utilities (`lib/http.js`)
-- **Purpose**: Header cleaning, content-length calculation, response standardization
-- **Security Features**: Removes dangerous headers to prevent injection attacks
-- **Key Functions**: `calculateContentLength()`, `buildCleanHeaders()`, `getRequiredHeader()`
+
 
 ### URL Processing (`lib/url.js`)
 - **Purpose**: URL normalization, protocol enforcement, parsing
@@ -216,6 +210,7 @@ QGenUtils/
 
 ## Recent Changes
 
+- **August 17, 2025 - HTTP Module Removal**: ✅ Removed HTTP utilities module (`lib/http/`) and all related functions (`calculateContentLength`, `buildCleanHeaders`, `getRequiredHeader`) as user moved them to another project. Cleaned up all references from index.js exports, test files, and documentation. Updated integration tests to remove HTTP-specific workflows while preserving URL processing and other module interactions.
 - **July 30, 2025 - Constants Centralization**: ✅ Migrated global constants from individual files to centralized localVars.js configuration. Updated `lib/http/buildCleanHeaders.js` to import `HEADERS_TO_REMOVE` array, `lib/logger.js` to import `LOG_DIR` configuration, and `lib/env/getEnvVar.js` to import validation constants (`ENV_VALID_TYPES`, `ENV_TRUTHY_VALUES`, `ENV_FALSY_VALUES`) from `loqatevars/config/localVars.js`. This ensures single source of truth for application constants, improves maintainability, and enables easier configuration management. Testing confirmed all imports work correctly.
 
 ## Changelog
