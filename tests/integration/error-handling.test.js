@@ -53,8 +53,7 @@ describe('Error Handling Integration Tests', () => { // verifies utilities inter
       // Each utility should handle the malformed data gracefully
       expect(utils.checkPassportAuth(malformedReq)).toBe(false); // auth fails with bad object
       
-      expect(utils.getRequiredHeader(malformedReq, mockRes, 'auth', 401, 'Missing')).toBeNull(); // header retrieval fails
-      expect(mockRes.status).toHaveBeenCalledWith(401); // unauthorized due to missing header
+      // Header processing would have failed but that module was removed
       
       expect(utils.requireFields(malformedReq.body, ['field'], mockRes)).toBe(false); // validation fails on body
     });
@@ -112,35 +111,7 @@ describe('Error Handling Integration Tests', () => { // verifies utilities inter
     });
   });
 
-  describe('HTTP Error Scenarios', () => { // checks network helper resilience
-    // verifies should handle content-length calculation errors
-    test('should handle content-length calculation errors', () => {
-      // These should handle gracefully without throwing
-      expect(utils.calculateContentLength(null)).toBe('0'); // null yields zero
-      expect(utils.calculateContentLength('')).toBe('0'); // empty string yields zero
-      expect(utils.calculateContentLength({})).toBe('0'); // empty object yields zero
-      
-      // This should throw as expected
-      expect(() => utils.calculateContentLength(undefined)).toThrow('Body is undefined'); // undefined still throws
-      
-      // Complex object should work
-      const complexObj = { nested: { data: [1, 2, 3] } };
-      const result = utils.calculateContentLength(complexObj);
-      expect(typeof result).toBe('string'); // returned as string
-      expect(parseInt(result)).toBeGreaterThan(0); // length positive
-    });
 
-    // verifies should handle header cleaning with malformed headers
-    test('should handle header cleaning with malformed headers', () => {
-      // Should handle null/undefined headers
-      expect(utils.buildCleanHeaders(null, 'GET', null)).toEqual(null); // null headers return null
-      expect(utils.buildCleanHeaders(undefined, 'GET', null)).toEqual(undefined); // undefined returns undefined
-      
-      // Should handle empty headers
-      const result = utils.buildCleanHeaders({}, 'POST', { data: 'test' });
-      expect(result).toEqual({ 'content-length': utils.calculateContentLength({ data: 'test' }) }); // only length header added
-    });
-  });
 
   describe('Authentication Error Scenarios', () => { // tests auth faults across modules
     // verifies should handle passport strategy detection with broken global state

@@ -1,7 +1,8 @@
 
 // Unit tests for authentication helpers. Each test ensures the auth utilities
 // behave predictably with varied request objects and Passport.js configurations.
-const { checkPassportAuth, hasGithubStrategy } = require('../../lib/auth');
+const checkPassportAuth = require('../../lib/auth/checkPassportAuth');
+const hasGithubStrategy = require('../../lib/auth/hasGithubStrategy');
 
 describe('Authentication Utilities', () => { // ensures login helpers behave consistently
   describe('checkPassportAuth', () => { // validates session checks across requests

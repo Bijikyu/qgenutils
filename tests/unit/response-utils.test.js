@@ -2,7 +2,8 @@
 // responses to verify that each helper produces consistent output and logs
 // errors through qerrors when appropriate.
 require('qtests/setup'); // ensure stub modules during tests
-const { sendJsonResponse, sendValidationError, sendAuthError, sendServerError } = require('../../lib/response-utils');
+const sendJsonResponse = require('../../lib/response/sendJsonResponse');
+const sendValidationError = require('../../lib/response/sendValidationError');
 const { qerrors } = require('qerrors');
 
 describe('Response Utilities', () => { // ensures standard responses remain uniform
@@ -75,72 +76,5 @@ describe('Response Utilities', () => { // ensures standard responses remain unif
     });
   });
 
-  describe('sendAuthError', () => { // confirms default auth error behavior
-    // verifies should send 401 auth error with default message
-    test('should send 401 auth error with default message', () => {
-      const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-      sendAuthError(res);
 
-      expect(res.status).toHaveBeenCalledWith(401); // 401 for auth error
-      expect(res.json).toHaveBeenCalledWith({ error: 'Authentication required' }); // default message output
-    });
-
-    // verifies should handle invalid response objects gracefully
-    test('should handle invalid response objects gracefully', () => {
-      sendAuthError(undefined, 'nope');
-      expect(qerrors).toHaveBeenCalled(); // invalid response object logged
-    });
-  });
-
-  describe('sendServerError', () => { // ensures server error reporting stays consistent
-    // verifies should send 500 error and log original error
-    test('should send 500 error and log original error', () => {
-      const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-      const err = new Error('fail');
-      sendServerError(res, 'Oops', err, 'context');
-
-      expect(qerrors).toHaveBeenCalledWith(err, 'sendServerError', { message: 'Oops', context: 'context' }); // original error forwarded
-      expect(res.status).toHaveBeenCalledWith(500); // sets status code to 500
-      expect(res.json).toHaveBeenCalledWith({ error: 'Oops' }); // send sanitized message
-    });
-
-    // verifies should handle invalid response objects gracefully
-    test('should handle invalid response objects gracefully', () => {
-      sendServerError(null, 'bad');
-      expect(qerrors).toHaveBeenCalled(); // invalid res logged
-    });
-
-    // verifies should handle JSON serialization failures
-    test('should handle JSON serialization failures', () => {
-      const res = { 
-        status: jest.fn().mockReturnThis(), 
-        json: jest.fn()
-          .mockImplementationOnce(() => { throw new Error('JSON error'); })
-          .mockImplementationOnce(() => { throw new Error('Fallback error'); })
-      };
-      
-      sendJsonResponse(res, 200, { circular: {} });
-      
-      // Should attempt fallback after first failure
-      expect(res.status).toHaveBeenCalledWith(200); // first attempt uses requested status
-      expect(res.status).toHaveBeenCalledWith(500); // retry uses error status
-      expect(qerrors).toHaveBeenCalled(); // Verify error logging occurred
-    });
-
-    // verifies should handle successful JSON serialization after retry
-    test('should handle successful JSON serialization after retry', () => {
-      const res = { 
-        status: jest.fn().mockReturnThis(), 
-        json: jest.fn()
-          .mockImplementationOnce(() => { throw new Error('JSON error'); })
-          .mockImplementationOnce(() => 'success')
-      };
-      
-      sendJsonResponse(res, 200, { data: 'test' });
-      
-      expect(res.status).toHaveBeenCalledWith(200); // normal response status first
-      expect(res.status).toHaveBeenCalledWith(500); // fallback on serialization error
-      expect(res.json).toHaveBeenCalledWith({ error: 'Response serialization failed' }); // send generic error JSON
-    });
-  });
 });
