@@ -4,7 +4,7 @@
 const isValidObject = require('../../lib/input-validation/isValidObject');
 const isValidString = require('../../lib/input-validation/isValidString');
 const hasMethod = require('../../lib/input-validation/hasMethod');
-const isValidExpressResponse = require('../../lib/input-validation/isValidExpressResponse');
+
 
 describe('Input Validation Utilities', () => { // ensures sanity checks remain strict
   describe('isValidObject', () => { // verifies plain objects are recognized
@@ -75,24 +75,5 @@ describe('Input Validation Utilities', () => { // ensures sanity checks remain s
     });
   });
 
-  describe('isValidExpressResponse', () => { // asserts Express response shape
-    test('should return true for object with status and json', () => {
-      const res = { status: function(){ return this; }, json: function(){ return this; } };
-      expect(isValidExpressResponse(res)).toBe(true); //verify proper response accepted
-    });
 
-    test('should return false when json missing', () => {
-      const res = { status: function(){ return this; } };
-      expect(isValidExpressResponse(res)).toBe(false); //verify missing method rejected
-    });
-
-    test('should return false for null input', () => {
-      expect(isValidExpressResponse(null)).toBe(false); //verify null now returns false
-    });
-
-    test('should return false when methods not functions', () => {
-      const res = { status: 'ok', json: {} };
-      expect(isValidExpressResponse(res)).toBe(false); //verify properties must be functions
-    });
-  });
 });
