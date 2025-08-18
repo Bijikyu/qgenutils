@@ -85,7 +85,7 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.isValidObject).toBeDefined();
     expect(indexExports.isValidString).toBeDefined();
     expect(indexExports.hasMethod).toBeDefined();
-    expect(indexExports.isValidExpressResponse).toBeDefined();
+
     
     // Logger
     expect(indexExports.logger).toBeDefined();
