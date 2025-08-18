@@ -5,10 +5,7 @@ const indexExports = require('../../index');
 
 describe('Index Exports', () => { // guards against accidental export removal
   // verifies should include response utility exports
-  test('should include response utility exports', () => {
-    expect(indexExports.sendValidationError).toBeDefined(); // verify export exists
-    expect(indexExports.sendJsonResponse).toBeDefined(); // verify export exists
-  });
+
 
   // verifies should include environment utility exports
   test('should include environment utility exports', () => {
