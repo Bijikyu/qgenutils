@@ -21,70 +21,70 @@
 const logger = require('./lib/logger'); // winston logger
 
 // DateTime utilities - individual functions
-const formatDateTime = require('./lib/datetime/formatDateTime');
-const formatDuration = require('./lib/datetime/formatDuration');
-const addDays = require('./lib/datetime/addDays');
-const formatDate = require('./lib/datetime/formatDate');
-const formatDateWithPrefix = require('./lib/datetime/formatDateWithPrefix');
+const formatDateTime = require('./lib/utilities/datetime/formatDateTime');
+const formatDuration = require('./lib/utilities/datetime/formatDuration');
+const addDays = require('./lib/utilities/datetime/addDays');
+const formatDate = require('./lib/utilities/datetime/formatDate');
+const formatDateWithPrefix = require('./lib/utilities/datetime/formatDateWithPrefix');
 
 
 
 
 
 // Validation utilities - individual functions
-const requireFields = require('./lib/validation/requireFields');
+const requireFields = require('./lib/validation/basic/requireFields');
 
 // Authentication utilities - individual functions
-const checkPassportAuth = require('./lib/auth/checkPassportAuth');
-const hasGithubStrategy = require('./lib/auth/hasGithubStrategy');
+const checkPassportAuth = require('./lib/security/auth/checkPassportAuth');
+const hasGithubStrategy = require('./lib/security/auth/hasGithubStrategy');
 
 // URL utilities - individual functions
-const ensureProtocol = require('./lib/url/ensureProtocol');
-const normalizeUrlOrigin = require('./lib/url/normalizeUrlOrigin');
-const stripProtocol = require('./lib/url/stripProtocol');
-const parseUrlParts = require('./lib/url/parseUrlParts');
+const ensureProtocol = require('./lib/utilities/url/ensureProtocol');
+const normalizeUrlOrigin = require('./lib/utilities/url/normalizeUrlOrigin');
+const stripProtocol = require('./lib/utilities/url/stripProtocol');
+const parseUrlParts = require('./lib/utilities/url/parseUrlParts');
 
 // View utilities - individual functions
-const renderView = require('./lib/views/renderView');
+const renderView = require('./lib/client/views/renderView');
 
 // Environment utilities - individual functions
-const requireEnvVars = require('./lib/env/requireEnvVars');
-const hasEnvVar = require('./lib/env/hasEnvVar');
-const getEnvVar = require('./lib/env/getEnvVar');
+const requireEnvVars = require('./lib/system/env/requireEnvVars');
+const hasEnvVar = require('./lib/system/env/hasEnvVar');
+const getEnvVar = require('./lib/system/env/getEnvVar');
 
 // Browser utilities - individual functions
-const makeCopyFn = require('./lib/browser/makeCopyFn');
+const makeCopyFn = require('./lib/client/browser/makeCopyFn');
 
 // Real-time communication utilities - individual functions
-const createBroadcastRegistry = require('./lib/realtime/createBroadcastRegistry');
+const createBroadcastRegistry = require('./lib/system/realtime/createBroadcastRegistry');
 
 // ID generation utilities - individual functions
-const generateExecutionId = require('./lib/id-generation/generateExecutionId');
+const generateExecutionId = require('./lib/utilities/id-generation/generateExecutionId');
 
 // String sanitization utilities - individual functions
-const sanitizeString = require('./lib/string-utils/sanitizeString');
+const sanitizeString = require('./lib/utilities/string/sanitizeString');
 
 // GitHub validation utilities - individual functions
-const validateGitHubUrl = require('./lib/github-validation/validateGitHubUrl');
+const validateGitHubUrl = require('./lib/validation/github/validateGitHubUrl');
 
 // Advanced validation utilities - individual functions
-const validateEmail = require('./lib/advanced-validation/validateEmail');
-const validateRequired = require('./lib/advanced-validation/validateRequired');
+const validateEmail = require('./lib/validation/advanced/validateEmail');
+const validateRequired = require('./lib/validation/advanced/validateRequired');
 
 // File utilities - individual functions
-const formatFileSize = require('./lib/file-utils/formatFileSize');
+const formatFileSize = require('./lib/utilities/file/formatFileSize');
 
 // Worker pool utilities - individual functions
-const createWorkerPool = require('./lib/worker-pool/createWorkerPool');
+const createWorkerPool = require('./lib/system/worker-pool/createWorkerPool');
 
 // Shutdown utilities - individual functions
-const createShutdownManager = require('./lib/shutdown-utils/createShutdownManager');
-const gracefulShutdown = require('./lib/shutdown-utils/gracefulShutdown');
+const createShutdownManager = require('./lib/system/shutdown/createShutdownManager');
+const gracefulShutdown = require('./lib/system/shutdown/gracefulShutdown');
 
 // Input validation utilities - individual functions
-const isValidObject = require('./lib/input-validation/isValidObject');
-const isValidString = require('./lib/input-validation/isValidString');
-const hasMethod = require('./lib/input-validation/hasMethod');
+const isValidObject = require('./lib/validation/input/isValidObject');
+const isValidString = require('./lib/validation/input/isValidString');
+const hasMethod = require('./lib/validation/input/hasMethod');
 
 
 /*

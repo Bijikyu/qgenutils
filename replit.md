@@ -14,7 +14,12 @@ QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture,
 - **Modular Architecture**: Domain-separated modules operate independently.
 - **Consistent Error Handling**: Structured logging via `qerrors` with graceful degradation.
 - **Performance Optimization**: Lightweight implementation.
-- **Directory Structure**: Organized with a `lib/` directory containing domain-specific subdirectories (e.g., `auth/`, `datetime/`, `url/`, `validation/`, `env/`, `browser/`, `realtime/`, `id-generation/`, `string-utils/`, `github-validation/`, `advanced-validation/`, `file-utils/`, `worker-pool/`, `shutdown-utils/`, `views/`, `input-validation/`) with individual function files.
+- **Directory Structure**: Organized with a `lib/` directory using superset categories containing specialized subdirectories:
+  - `validation/` (basic/, input/, advanced/, github/) - All validation-related utilities
+  - `utilities/` (string/, file/, url/, datetime/, id-generation/) - General-purpose utility functions
+  - `system/` (env/, shutdown/, worker-pool/, realtime/) - System and infrastructure management
+  - `security/` (auth/) - Authentication and security utilities
+  - `client/` (browser/, views/) - Client-side and presentation utilities
 - **UI/UX Decisions**: Not applicable as this is a backend utility library.
 - **Technical Implementations**: Node.js based, leveraging SRP for maintainability.
 - **Feature Specifications**:

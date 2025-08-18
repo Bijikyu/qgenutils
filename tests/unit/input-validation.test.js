@@ -1,9 +1,9 @@
 // Unit tests ensuring core input validation helpers return accurate boolean
 // results for a variety of argument types. These tests guard against regressions
 // in basic sanity checks used throughout the library.
-const isValidObject = require('../../lib/input-validation/isValidObject');
-const isValidString = require('../../lib/input-validation/isValidString');
-const hasMethod = require('../../lib/input-validation/hasMethod');
+const isValidObject = require('../../lib/validation/input/isValidObject');
+const isValidString = require('../../lib/validation/input/isValidString');
+const hasMethod = require('../../lib/validation/input/hasMethod');
 
 
 describe('Input Validation Utilities', () => { // ensures sanity checks remain strict
