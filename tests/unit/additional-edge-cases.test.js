@@ -5,10 +5,10 @@
  * than throwing, ensuring the rest of the application can continue running.
  */
 
-const ensureProtocol = require('../../lib/url/ensureProtocol');
-const normalizeUrlOrigin = require('../../lib/url/normalizeUrlOrigin');
-const stripProtocol = require('../../lib/url/stripProtocol');
-const parseUrlParts = require('../../lib/url/parseUrlParts');
+const ensureProtocol = require('../../lib/utilities/url/ensureProtocol');
+const normalizeUrlOrigin = require('../../lib/utilities/url/normalizeUrlOrigin');
+const stripProtocol = require('../../lib/utilities/url/stripProtocol');
+const parseUrlParts = require('../../lib/utilities/url/parseUrlParts');
 const { qerrors } = require('qerrors');
 
 describe('Additional Edge Cases', () => { // ensures resilience for uncommon inputs
