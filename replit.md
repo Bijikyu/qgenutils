@@ -14,7 +14,7 @@ QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture,
 - **Modular Architecture**: Domain-separated modules operate independently.
 - **Consistent Error Handling**: Structured logging via `qerrors` with graceful degradation.
 - **Performance Optimization**: Lightweight implementation.
-- **Directory Structure**: Organized with a `lib/` directory containing domain-specific subdirectories (e.g., `auth/`, `datetime/`, `response/`, `url/`, `validation/`, `env/`, `browser/`, `realtime/`, `id-generation/`, `string-utils/`, `github-validation/`, `advanced-validation/`, `file-utils/`, `worker-pool/`, `shutdown-utils/`, `views/`, `input-validation/`) with individual function files.
+- **Directory Structure**: Organized with a `lib/` directory containing domain-specific subdirectories (e.g., `auth/`, `datetime/`, `url/`, `validation/`, `env/`, `browser/`, `realtime/`, `id-generation/`, `string-utils/`, `github-validation/`, `advanced-validation/`, `file-utils/`, `worker-pool/`, `shutdown-utils/`, `views/`, `input-validation/`) with individual function files.
 - **UI/UX Decisions**: Not applicable as this is a backend utility library.
 - **Technical Implementations**: Node.js based, leveraging SRP for maintainability.
 - **Feature Specifications**:
@@ -25,7 +25,7 @@ QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture,
     - **DateTime Utilities**: Locale-aware formatting, duration, business date arithmetic; returns "N/A" for invalid dates.
     - **Environment Utilities**: Environment variable validation and configuration checking; fail-fast at startup.
     - **Real-time Communication**: Socket.io broadcast registries, dependency injection for circular dependency prevention.
-    - **Response Utilities**: Centralized HTTP response handling with standardized JSON and error formats.
+
     - **ID Generation**: Cryptographically secure identifier creation using `nanoid`.
     - **String Sanitization**: Security-first string processing, XSS prevention, fail-closed.
     - **GitHub Validation**: Strict GitHub repository URL validation.

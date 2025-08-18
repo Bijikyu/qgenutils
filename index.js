@@ -29,9 +29,7 @@ const formatDateWithPrefix = require('./lib/datetime/formatDateWithPrefix');
 
 
 
-// Response utilities - individual functions
-const sendJsonResponse = require('./lib/response/sendJsonResponse');
-const sendValidationError = require('./lib/response/sendValidationError');
+
 
 // Validation utilities - individual functions
 const requireFields = require('./lib/validation/requireFields');
@@ -114,11 +112,7 @@ module.exports = {
   formatDateWithPrefix, // format date with contextual prefix (e.g., "Added 12/25/2023")
   
 
-  
-  // Response utilities - standardized response handling
-  sendJsonResponse, // send JSON payload with proper status
-  sendValidationError, // issue 400 when fields fail validation
-  
+
   // URL utilities - handle protocol normalization and URL parsing
   ensureProtocol, // prefix http/https when missing
   normalizeUrlOrigin, // normalize origin for comparisons
