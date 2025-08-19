@@ -1,5 +1,24 @@
 # QGenUtils - Replit Development Guide
 
+<!--AI Can write above this line-->
+
+<!--┌── 🚫 PROTECTED: DO NOT EDIT (READ ONLY) BELOW THIS LINE-->
+For comprehensive agent development rules and guidelines, please refer to the documentation 
+located at `node_modules/commoncontext/00-AGENTS.md`. This file contains detailed instructions 
+for agent behavior, CLI tool usage, coding standards, and workflow procedures that should be followed 
+throughout the development process.
+
+Additional project-specific guidance can be found in:
+- `node_modules/npmcontext/01-STACK_RULES.md` - NPM & JavaScript development rules and policies
+- `node_modules/npmcontext/02-NPM_architecture.md` - Architecture patterns and Single Responsibility Principle guidelines
+
+While replit.md is the source of truth for replit agent, it often becomes out of date, 
+with these being the maintained rules files. Check these for up to date information and 
+copy their guidance to replit.md.
+<!--└── END PROTECTED RANGE 🚫-->
+
+<!--AI Can write from here on below-->
+
 ## Overview
 QGenUtils is a security-first Node.js utility library designed as a lightweight alternative to larger libraries. It provides essential functionalities like authentication, HTTP operations, URL processing, validation, datetime formatting, and template rendering. Its core purpose is to offer robust, fail-closed security patterns and consistent error handling across various utilities, aiming for maximum maintainability, testability, and code clarity.
 

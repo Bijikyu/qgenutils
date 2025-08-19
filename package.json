@@ -47,10 +47,15 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^22.13.11",
+    "agentsqripts": "^1.0.8",
+    "arqitect": "^1.0.7",
+    "commoncontext": "^1.0.0",
     "loqatevars": "^1.0.6",
     "nanoid": "^3.3.7",
-    "qerrors": "^1.2.3",
-    "qtests": "^1.0.4",
+    "npmcontext": "^1.0.0",
+    "qerrors": "^1.2.6",
+    "qtests": "^1.1.4",
+    "quantumagent": "^1.0.5",
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
