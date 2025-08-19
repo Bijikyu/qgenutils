@@ -17,5 +17,7 @@ module.exports = {
     '!**/*.test.js'
   ],
   testTimeout: 10000,
-  verbose: true
+  verbose: true,
+  clearMocks: true,
+  restoreMocks: true
 };
