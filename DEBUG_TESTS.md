@@ -1,7 +1,7 @@
 # Test Failure Analysis
 
-**Creation Time:** 2025-08-19T10:42:00.831Z
-**Pacific Time:** Tuesday, August 19, 2025 at 03:42:00 AM PDT
+**Creation Time:** 2025-08-19T10:46:30.911Z
+**Pacific Time:** Tuesday, August 19, 2025 at 03:46:30 AM PDT
 
 ⚠️ **STALENESS WARNING:** If your code changes are after the creation time above and you are checking this file, then it is stale and tests need to be rerun.
 
@@ -14,16 +14,16 @@ Analyze and address the following test failures:
 No tests found, exiting with code 1
 Run with `--passWithNoTests` to exit with code 0
 In /home/runner/workspace
-  85 files checked.
-  roots: /home/runner/workspace/lib, /home/runner/workspace/tests - 85 matches
+  90 files checked.
+  roots: /home/runner/workspace/lib, /home/runner/workspace/tests - 90 matches
   testMatch: **/tests/**/*.test.js, **/*.test.js - 51 matches
-  testPathIgnorePatterns: /node_modules/ - 85 matches
+  testPathIgnorePatterns: /node_modules/ - 90 matches
   testRegex:  - 0 matches
 Pattern: index.exports.test.js - 0 matches
 
 ```
 
-### Duration: 47208ms
+### Duration: 50269ms
 
 ---
 
@@ -31,12 +31,12 @@ Pattern: index.exports.test.js - 0 matches
 
 ### Output:
 ```
-FAIL lib/additional-edge-cases.test.js (5.353 s)
+FAIL lib/additional-edge-cases.test.js (9.993 s)
   Additional Edge Cases
     stripProtocol
-      ✕ should return input when not string and log error (25 ms)
+      ✕ should return input when not string and log error (19 ms)
     parseUrlParts
-      ✕ should return null for malformed url with protocol only (25 ms)
+      ✕ should return null for malformed url with protocol only (44 ms)
 
   ● Additional Edge Cases › stripProtocol › should return input when not string and log error
 
@@ -45,15 +45,15 @@ FAIL lib/additional-edge-cases.test.js (5.353 s)
     Expected number of calls: >= 1
     Received number of calls:    0
 
-      19 |       const mockQerrors = jest.spyOn(require('qerrors'), 'qerrors').mockImplementation(() => {});
-      20 |       const result = stripProtocol(null);
-    > 21 |       expect(mockQerrors).toHaveBeenCalled(); // confirm error logged for bad input
+      20 |       const mockQerrors = jest.spyOn(qerrors, 'qerrors').mockImplementation(() => {});
+      21 |       const result = stripProtocol(null);
+    > 22 |       expect(mockQerrors).toHaveBeenCalled(); // confirm error logged for bad input
          |                           ^
-      22 |       expect(result).toBeNull(); // invalid input returns null
-      23 |       mockQerrors.mockRestore();
-      24 |     });
+      23 |       expect(result).toBeNull(); // invalid input returns null
+      24 |       mockQerrors.mockRestore();
+      25 |     });
 
-      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:21:27)
+      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:22:27)
 
   ● Additional Edge Cases › parseUrlParts › should return null for malformed url with protocol only
 
@@ -62,15 +62,15 @@ FAIL lib/additional-edge-cases.test.js (5.353 s)
     Expected number of calls: >= 1
     Received number of calls:    0
 
-      29 |       const mockQerrors = jest.spyOn(require('qerrors'), 'qerrors').mockImplementation(() => {});
-      30 |       const result = parseUrlParts('http://');
-    > 31 |       expect(mockQerrors).toHaveBeenCalled(); // invalid url should trigger logging
+      30 |       const mockQerrors = jest.spyOn(qerrors, 'qerrors').mockImplementation(() => {});
+      31 |       const result = parseUrlParts('http://');
+    > 32 |       expect(mockQerrors).toHaveBeenCalled(); // invalid url should trigger logging
          |                           ^
-      32 |       expect(result).toBeNull(); // result should be null on failure
-      33 |       mockQerrors.mockRestore();
-      34 |     });
+      33 |       expect(result).toBeNull(); // result should be null on failure
+      34 |       mockQerrors.mockRestore();
+      35 |     });
 
-      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:31:27)
+      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:32:27)
 
 
 ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/additional-edge-cases.test.js.
@@ -97,7 +97,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 49907ms
+### Duration: 46362ms
 
 ---
 
@@ -134,7 +134,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 28030ms
+### Duration: 22822ms
 
 ---
 
@@ -142,48 +142,48 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL lib/system/realtime/realtime.test.js (15.643 s)
+FAIL lib/system/realtime/realtime.test.js (23.006 s)
   Real-time Communication Utilities
     createBroadcastRegistry
-      ✕ should create registry with specified functions (79 ms)
-      ✕ should handle invalid configuration gracefully (3 ms)
-      ✓ should allow setting and getting broadcast functions (20 ms)
-      ✕ should reject non-function values (6 ms)
-      ✓ should allow setting functions to null (2 ms)
-      ✕ should track function readiness correctly (87 ms)
-      ✕ should clear all functions (1 ms)
-      ✕ should skip invalid function names (6 ms)
-      ✕ should prevent deletion of registry properties (7 ms)
+      ✕ should create registry with specified functions (88 ms)
+      ✕ should handle invalid configuration gracefully (10 ms)
+      ✓ should allow setting and getting broadcast functions (6 ms)
+      ✕ should reject non-function values (7 ms)
+      ✓ should allow setting functions to null (77 ms)
+      ✕ should track function readiness correctly (20 ms)
+      ✕ should clear all functions (220 ms)
+      ✕ should skip invalid function names (3 ms)
+      ✕ should prevent deletion of registry properties (2 ms)
     createPaymentBroadcastRegistry
       ✕ should create registry with standard payment functions
       ✕ should work with standard payment workflow
-      ✕ should support typical usage patterns
+      ✕ should support typical usage patterns (1 ms)
     createSocketBroadcastRegistry
-      ✕ should create registry with static interface (1 ms)
-      ✕ should allow function assignment through setters
+      ✕ should create registry with static interface
+      ✕ should allow function assignment through setters (1 ms)
       ✕ should execute assigned functions correctly
       ✕ should validate function assignments
       ✕ should track readiness state correctly
       ✕ should support function clearing
       ✕ should handle null assignments correctly
       ✕ should work with typical socket.io usage patterns
-      ✕ should match expected interface exactly (1 ms)
+      ✕ should match expected interface exactly
     validateBroadcastData
       ✕ should validate simple valid data
-      ✕ should reject null and undefined data (1 ms)
-      ✕ should reject circular references
+      ✕ should reject null and undefined data
+      ✕ should reject circular references (1 ms)
       ✕ should reject oversized data
-      ✕ should detect potentially sensitive data (1 ms)
+      ✕ should detect potentially sensitive data
       ✕ should reject functions by default
       ✕ should allow functions when explicitly enabled
       ✕ should handle nested objects
       ✕ should handle arrays
       ✕ should handle custom size limits
-      ✕ should handle validation errors gracefully (1 ms)
+      ✕ should handle validation errors gracefully
     Integration Scenarios
       ✕ should support complete broadcast workflow
-      ✕ should handle service initialization timing (1 ms)
-      ✕ should support testing with mock functions (67 ms)
+      ✕ should handle service initialization timing
+      ✕ should support testing with mock functions (30 ms)
 
   ● Real-time Communication Utilities › createBroadcastRegistry › should create registry with specified functions
 
@@ -683,7 +683,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 27157ms
+### Duration: 36180ms
 
 ---
 
@@ -717,12 +717,12 @@ FAIL lib/system/shutdown/shutdown-utils.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        9.597 s
+Time:        7.521 s
 Ran all test suites matching /lib\/system\/shutdown\/shutdown-utils.test.js/i.
 
 ```
 
-### Duration: 48654ms
+### Duration: 55399ms
 
 ---
 
@@ -756,12 +756,12 @@ FAIL lib/system/worker-pool/worker-pool.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        9.595 s
+Time:        16.117 s
 Ran all test suites matching /lib\/system\/worker-pool\/worker-pool.test.js/i.
 
 ```
 
-### Duration: 54365ms
+### Duration: 54084ms
 
 ---
 
@@ -769,31 +769,537 @@ Ran all test suites matching /lib\/system\/worker-pool\/worker-pool.test.js/i.
 
 ### Output:
 ```
-FAIL lib/utilities/datetime/datetime-enhanced.test.js
-  ● Test suite failed to run
+FAIL lib/utilities/datetime/datetime-enhanced.test.js (8.18 s)
+  Enhanced DateTime Utilities
+    formatDate
+      ✓ should format Date objects to locale string (95 ms)
+      ✓ should format ISO date strings (12 ms)
+      ✓ should return fallback for null/undefined dates (13 ms)
+      ✓ should return fallback for invalid dates (9 ms)
+      ✓ should handle various date string formats (7 ms)
+    formatDateWithPrefix
+      ✓ should format date with default prefix (12 ms)
+      ✓ should format date with custom prefix (11 ms)
+      ✓ should return fallback for null/undefined dates (3 ms)
+      ✓ should return fallback for invalid dates (3 ms)
+      ✓ should handle Date objects (4 ms)
+    formatTimestamp
+      ✕ should format timestamp with date and time (4 ms)
+      ✕ should format Date objects (1 ms)
+      ✕ should return fallback for null/undefined timestamps
+      ✕ should return fallback for invalid timestamps
+    formatRelativeTime
+      ✕ should return "Just now" for very recent dates (1 ms)
+      ✕ should format minutes ago correctly
+      ✕ should format hours ago correctly
+      ✕ should format days ago correctly
+      ✕ should fall back to absolute date for longer periods
+      ✕ should handle singular vs plural correctly
+      ✕ should return fallback for invalid dates
+      ✕ should handle ISO date strings
+    formatExecutionDuration
+      ✕ should format completed execution duration in seconds
+      ✕ should format duration in minutes
+      ✕ should format duration in hours
+      ✕ should calculate ongoing execution duration
+      ✕ should handle missing startedAt
+      ✕ should handle null/undefined execution (1 ms)
+      ✕ should handle invalid dates
+      ✕ should handle Date objects
+      ✕ should round durations appropriately
+    formatCompletionDate
+      ✕ should format completion date when completedAt is present (1 ms)
+      ✕ should return "Running..." for processing executions
+      ✕ should return "Running..." for in_progress executions (1 ms)
+      ✕ should use custom running text
+      ✕ should return "Not completed" for other statuses
+      ✕ should return "Not completed" for null/undefined execution
+      ✕ should prefer completedAt over status
+      ✕ should handle Date objects in completedAt (4 ms)
+      ✕ should handle invalid completedAt dates (1 ms)
+    Integration with existing datetime functions
+      ✕ should work alongside existing formatDateTime (7 ms)
+      ✓ should work alongside existing addDays (12 ms)
+      ✕ should work alongside existing formatDuration (198 ms)
 
-    Cannot find module '../datetime' from 'lib/utilities/datetime/datetime-enhanced.test.js'
+  ● Enhanced DateTime Utilities › formatTimestamp › should format timestamp with date and time
 
-       7 |  */
-       8 |
-    >  9 | const datetimeUtils = require('../datetime');
-         |                       ^
-      10 |
-      11 | describe('Enhanced DateTime Utilities', () => {
-      12 |   describe('formatDate', () => {
+    TypeError: datetimeUtils.formatTimestamp is not a function
 
-      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)
-      at Object.require (lib/utilities/datetime/datetime-enhanced.test.js:9:23)
+      74 |   describe('formatTimestamp', () => {
+      75 |     test('should format timestamp with date and time', () => {
+    > 76 |       const result = datetimeUtils.formatTimestamp('2023-12-25T10:30:00Z');
+         |                                    ^
+      77 |       expect(typeof result).toBe('string');
+      78 |       expect(result).not.toBe('Unknown');
+      79 |       // Should include both date and time components
 
-Test Suites: 1 failed, 1 total
-Tests:       0 total
-Snapshots:   0 total
-Time:        13.774 s
-Ran all test suites matching /lib\/utilities\/datetime\/datetime-enhanced.test.js/i.
+      at Object.formatTimestamp (lib/utilities/datetime/datetime-enhanced.test.js:76:36)
+
+  ● Enhanced DateTime Utilities › formatTimestamp › should format Date objects
+
+    TypeError: datetimeUtils.formatTimestamp is not a function
+
+      83 |     test('should format Date objects', () => {
+      84 |       const date = new Date('2023-12-25T10:30:00Z');
+    > 85 |       const result = datetimeUtils.formatTimestamp(date);
+         |                                    ^
+      86 |       expect(typeof result).toBe('string');
+      87 |       expect(result).not.toBe('Unknown');
+      88 |     });
+
+      at Object.formatTimestamp (lib/utilities/datetime/datetime-enhanced.test.js:85:36)
+
+  ● Enhanced DateTime Utilities › formatTimestamp › should return fallback for null/undefined timestamps
+
+    TypeError: datetimeUtils.formatTimestamp is not a function
+
+      89 |
+      90 |     test('should return fallback for null/undefined timestamps', () => {
+    > 91 |       expect(datetimeUtils.formatTimestamp(null)).toBe('Unknown');
+         |                            ^
+      92 |       expect(datetimeUtils.formatTimestamp(undefined, 'No time')).toBe('No time');
+      93 |     });
+      94 |
+
+      at Object.formatTimestamp (lib/utilities/datetime/datetime-enhanced.test.js:91:28)
+
+  ● Enhanced DateTime Utilities › formatTimestamp › should return fallback for invalid timestamps
+
+    TypeError: datetimeUtils.formatTimestamp is not a function
+
+      94 |
+      95 |     test('should return fallback for invalid timestamps', () => {
+    > 96 |       expect(datetimeUtils.formatTimestamp('invalid-timestamp')).toBe('Unknown');
+         |                            ^
+      97 |       expect(datetimeUtils.formatTimestamp(new Date('invalid'), 'Error')).toBe('Error');
+      98 |     });
+      99 |   });
+
+      at Object.formatTimestamp (lib/utilities/datetime/datetime-enhanced.test.js:96:28)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should return "Just now" for very recent dates
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      102 |     test('should return "Just now" for very recent dates', () => {
+      103 |       const recentDate = new Date(Date.now() - 30000); // 30 seconds ago
+    > 104 |       const result = datetimeUtils.formatRelativeTime(recentDate);
+          |                                    ^
+      105 |       expect(result).toBe('Just now');
+      106 |     });
+      107 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:104:36)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should format minutes ago correctly
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      108 |     test('should format minutes ago correctly', () => {
+      109 |       const minutesAgo = new Date(Date.now() - 300000); // 5 minutes ago
+    > 110 |       const result = datetimeUtils.formatRelativeTime(minutesAgo);
+          |                                    ^
+      111 |       expect(result).toMatch(/\d+ minutes? ago/);
+      112 |     });
+      113 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:110:36)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should format hours ago correctly
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      114 |     test('should format hours ago correctly', () => {
+      115 |       const hoursAgo = new Date(Date.now() - 7200000); // 2 hours ago
+    > 116 |       const result = datetimeUtils.formatRelativeTime(hoursAgo);
+          |                                    ^
+      117 |       expect(result).toMatch(/\d+ hours? ago/);
+      118 |     });
+      119 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:116:36)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should format days ago correctly
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      120 |     test('should format days ago correctly', () => {
+      121 |       const daysAgo = new Date(Date.now() - 172800000); // 2 days ago
+    > 122 |       const result = datetimeUtils.formatRelativeTime(daysAgo);
+          |                                    ^
+      123 |       expect(result).toMatch(/\d+ days? ago/);
+      124 |     });
+      125 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:122:36)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should fall back to absolute date for longer periods
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      126 |     test('should fall back to absolute date for longer periods', () => {
+      127 |       const weekAgo = new Date(Date.now() - 604800000); // 1 week ago
+    > 128 |       const result = datetimeUtils.formatRelativeTime(weekAgo);
+          |                                    ^
+      129 |       expect(result).not.toMatch(/ago$/); // Should be absolute date format
+      130 |     });
+      131 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:128:36)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should handle singular vs plural correctly
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      132 |     test('should handle singular vs plural correctly', () => {
+      133 |       const oneMinuteAgo = new Date(Date.now() - 60000);
+    > 134 |       const result = datetimeUtils.formatRelativeTime(oneMinuteAgo);
+          |                                    ^
+      135 |       expect(result).toBe('1 minute ago');
+      136 |     });
+      137 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:134:36)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should return fallback for invalid dates
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      137 |
+      138 |     test('should return fallback for invalid dates', () => {
+    > 139 |       expect(datetimeUtils.formatRelativeTime(null)).toBe('Unknown');
+          |                            ^
+      140 |       expect(datetimeUtils.formatRelativeTime('invalid-date', 'Error')).toBe('Error');
+      141 |     });
+      142 |
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:139:28)
+
+  ● Enhanced DateTime Utilities › formatRelativeTime › should handle ISO date strings
+
+    TypeError: datetimeUtils.formatRelativeTime is not a function
+
+      143 |     test('should handle ISO date strings', () => {
+      144 |       const isoDate = new Date(Date.now() - 300000).toISOString();
+    > 145 |       const result = datetimeUtils.formatRelativeTime(isoDate);
+          |                                    ^
+      146 |       expect(result).toMatch(/\d+ minutes? ago/);
+      147 |     });
+      148 |   });
+
+      at Object.formatRelativeTime (lib/utilities/datetime/datetime-enhanced.test.js:145:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should format completed execution duration in seconds
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      154 |         completedAt: '2023-12-25T10:00:45Z'
+      155 |       };
+    > 156 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      157 |       expect(result).toBe('45s');
+      158 |     });
+      159 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:156:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should format duration in minutes
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      163 |         completedAt: '2023-12-25T10:05:00Z'
+      164 |       };
+    > 165 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      166 |       expect(result).toBe('5m');
+      167 |     });
+      168 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:165:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should format duration in hours
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      172 |         completedAt: '2023-12-25T12:00:00Z'
+      173 |       };
+    > 174 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      175 |       expect(result).toBe('2h');
+      176 |     });
+      177 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:174:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should calculate ongoing execution duration
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      181 |         startedAt: fiveMinutesAgo
+      182 |       };
+    > 183 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      184 |       expect(result).toMatch(/[45]m/); // Should be around 5 minutes
+      185 |     });
+      186 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:183:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should handle missing startedAt
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      187 |     test('should handle missing startedAt', () => {
+      188 |       const execution = {};
+    > 189 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      190 |       expect(result).toBe('Not started');
+      191 |     });
+      192 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:189:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should handle null/undefined execution
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      192 |
+      193 |     test('should handle null/undefined execution', () => {
+    > 194 |       expect(datetimeUtils.formatExecutionDuration(null)).toBe('Not started');
+          |                            ^
+      195 |       expect(datetimeUtils.formatExecutionDuration(undefined)).toBe('Not started');
+      196 |     });
+      197 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:194:28)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should handle invalid dates
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      201 |         completedAt: '2023-12-25T10:00:00Z'
+      202 |       };
+    > 203 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      204 |       expect(result).toBe('Invalid time');
+      205 |     });
+      206 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:203:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should handle Date objects
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      212 |         completedAt: end
+      213 |       };
+    > 214 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      215 |       expect(result).toMatch(/[45]m/);
+      216 |     });
+      217 |
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:214:36)
+
+  ● Enhanced DateTime Utilities › formatExecutionDuration › should round durations appropriately
+
+    TypeError: datetimeUtils.formatExecutionDuration is not a function
+
+      221 |         completedAt: '2023-12-25T10:05:30Z' // 5.5 minutes
+      222 |       };
+    > 223 |       const result = datetimeUtils.formatExecutionDuration(execution);
+          |                                    ^
+      224 |       expect(result).toBe('6m'); // Should round to 6 minutes
+      225 |     });
+      226 |   });
+
+      at Object.formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:223:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should format completion date when completedAt is present
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      231 |         completedAt: '2023-12-25T10:00:00Z'
+      232 |       };
+    > 233 |       const result = datetimeUtils.formatCompletionDate(execution);
+          |                                    ^
+      234 |       expect(typeof result).toBe('string');
+      235 |       expect(result).not.toBe('Not completed');
+      236 |       expect(result).not.toBe('Running...');
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:233:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should return "Running..." for processing executions
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      239 |     test('should return "Running..." for processing executions', () => {
+      240 |       const execution = { status: 'processing' };
+    > 241 |       const result = datetimeUtils.formatCompletionDate(execution);
+          |                                    ^
+      242 |       expect(result).toBe('Running...');
+      243 |     });
+      244 |
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:241:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should return "Running..." for in_progress executions
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      245 |     test('should return "Running..." for in_progress executions', () => {
+      246 |       const execution = { status: 'in_progress' };
+    > 247 |       const result = datetimeUtils.formatCompletionDate(execution);
+          |                                    ^
+      248 |       expect(result).toBe('Running...');
+      249 |     });
+      250 |
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:247:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should use custom running text
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      251 |     test('should use custom running text', () => {
+      252 |       const execution = { status: 'processing' };
+    > 253 |       const result = datetimeUtils.formatCompletionDate(execution, 'Active');
+          |                                    ^
+      254 |       expect(result).toBe('Active');
+      255 |     });
+      256 |
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:253:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should return "Not completed" for other statuses
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      256 |
+      257 |     test('should return "Not completed" for other statuses', () => {
+    > 258 |       expect(datetimeUtils.formatCompletionDate({ status: 'failed' })).toBe('Not completed');
+          |                            ^
+      259 |       expect(datetimeUtils.formatCompletionDate({ status: 'cancelled' })).toBe('Not completed');
+      260 |       expect(datetimeUtils.formatCompletionDate({ status: 'pending' })).toBe('Not completed');
+      261 |     });
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:258:28)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should return "Not completed" for null/undefined execution
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      262 |
+      263 |     test('should return "Not completed" for null/undefined execution', () => {
+    > 264 |       expect(datetimeUtils.formatCompletionDate(null)).toBe('Not completed');
+          |                            ^
+      265 |       expect(datetimeUtils.formatCompletionDate(undefined)).toBe('Not completed');
+      266 |     });
+      267 |
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:264:28)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should prefer completedAt over status
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      271 |         status: 'processing'
+      272 |       };
+    > 273 |       const result = datetimeUtils.formatCompletionDate(execution);
+          |                                    ^
+      274 |       expect(result).not.toBe('Running...');
+      275 |       expect(typeof result).toBe('string');
+      276 |     });
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:273:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should handle Date objects in completedAt
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      280 |         completedAt: new Date('2023-12-25T10:00:00Z')
+      281 |       };
+    > 282 |       const result = datetimeUtils.formatCompletionDate(execution);
+          |                                    ^
+      283 |       expect(typeof result).toBe('string');
+      284 |       expect(result).not.toBe('Not completed');
+      285 |     });
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:282:36)
+
+  ● Enhanced DateTime Utilities › formatCompletionDate › should handle invalid completedAt dates
+
+    TypeError: datetimeUtils.formatCompletionDate is not a function
+
+      289 |         completedAt: 'invalid-date'
+      290 |       };
+    > 291 |       const result = datetimeUtils.formatCompletionDate(execution);
+          |                                    ^
+      292 |       expect(result).toBe('Completed'); // Falls back to 'Completed' for invalid dates
+      293 |     });
+      294 |   });
+
+      at Object.formatCompletionDate (lib/utilities/datetime/datetime-enhanced.test.js:291:36)
+
+  ● Enhanced DateTime Utilities › Integration with existing datetime functions › should work alongside existing formatDateTime
+
+    TypeError: datetimeUtils.formatTimestamp is not a function
+
+      299 |       const dateStr = '2023-12-25T10:30:00Z';
+      300 |       const existing = datetimeUtils.formatDateTime(dateStr);
+    > 301 |       const enhanced = datetimeUtils.formatTimestamp(dateStr);
+          |                                      ^
+      302 |       
+      303 |       expect(typeof existing).toBe('string');
+      304 |       expect(typeof enhanced).toBe('string');
+
+      at Object.formatTimestamp (lib/utilities/datetime/datetime-enhanced.test.js:301:38)
+
+  ● Enhanced DateTime Utilities › Integration with existing datetime functions › should work alongside existing formatDuration
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "datetimeUtils.formatExecutionDuration is not a function"
+
+          322 |       expect(() => {
+          323 |         datetimeUtils.formatDuration(startDate, endDate);
+        > 324 |         datetimeUtils.formatExecutionDuration({ startedAt: startDate, completedAt: endDate });
+              |                       ^
+          325 |       }).not.toThrow();
+          326 |     });
+          327 |   });
+
+      at formatExecutionDuration (lib/utilities/datetime/datetime-enhanced.test.js:324:23)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (lib/utilities/datetime/datetime-enhanced.test.js:325:14)
+      at Object.toThrow (lib/utilities/datetime/datetime-enhanced.test.js:325:14)
+
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/datetime/datetime-enhanced.test.js.
+
+      at buildLogger (node_modules/qerrors/lib/logger.js:152:33)
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/datetime/datetime-enhanced.test.js.
+
+      at Object.get [as File] (node_modules/winston/lib/winston/transports/index.js:30:12)
+      at node_modules/qerrors/lib/logger.js:164:57
+      at buildLogger (node_modules/qerrors/lib/logger.js:171:11)
+/home/runner/workspace/node_modules/qerrors/lib/logger.js:164
+                                arr.push(new transports.File({ filename: path.join(logDir, 'error.log'), level: 'error', ...rotationOpts, maxFiles: fileCap, format: fileFormat })); //(size-based rotation for error files with count limit)
+                                         ^
+
+TypeError: transports.File is not a constructor
+    at /home/runner/workspace/node_modules/qerrors/lib/logger.js:164:42
+    at buildLogger (/home/runner/workspace/node_modules/qerrors/lib/logger.js:171:11)
+
+Node.js v20.19.3
 
 ```
 
-### Duration: 46719ms
+### Duration: 26592ms
 
 ---
 
@@ -801,31 +1307,82 @@ Ran all test suites matching /lib\/utilities\/datetime\/datetime-enhanced.test.j
 
 ### Output:
 ```
-FAIL lib/utilities/datetime/datetime.test.js
-  ● Test suite failed to run
+FAIL lib/utilities/datetime/datetime.test.js (11.407 s)
+  DateTime Utilities
+    formatDateTime
+      ✓ should format valid ISO date string (39 ms)
+      ✓ should return "N/A" for empty string (3 ms)
+      ✓ should return "N/A" for null input (10 ms)
+      ✓ should return "N/A" for undefined input (1 ms)
+      ✓ should return "N/A" for invalid date string (3 ms)
+      ✓ should handle different ISO formats (17 ms)
+    formatDuration
+      ✓ should calculate duration between two valid dates (1 ms)
+      ✓ should calculate duration from start to now when end is not provided (5 ms)
+      ✓ should return "00:00:00" for empty start date (4 ms)
+      ✓ should return "00:00:00" for null start date (8 ms)
+      ✓ should handle same start and end dates (8 ms)
+      ✓ should handle end date before start date (absolute difference) (6 ms)
+      ✓ should throw error for invalid start date (106 ms)
+      ✓ should throw error for invalid end date (4 ms)
+      ✓ should format durations correctly with zero padding
+    addDays
+      ✓ should add default 90 days when no parameter provided (1 ms)
+      ✓ should add specified number of days (35 ms)
+      ✓ should handle negative days (past dates) (1 ms)
+      ✓ should handle zero days (current date)
+      ✓ should handle month boundaries correctly (2 ms)
+      ✓ should handle year boundaries correctly (1 ms)
+      ✓ should preserve time component (1 ms)
+      ✕ should handle invalid input gracefully (20 ms)
+      ✓ should handle large day values (59 ms)
+      ✓ should return new Date object (immutability) (7 ms)
+      ✓ should work with typical business scenarios (1 ms)
+      ✓ should handle leap year calculations (1 ms)
+      ✓ should be consistent across multiple calls (2 ms)
 
-    Cannot find module '../datetime' from 'lib/utilities/datetime/datetime.test.js'
+  ● DateTime Utilities › addDays › should handle invalid input gracefully
 
-      2 | // Unit tests verifying date/time formatting helpers and date arithmetic functions
-      3 | // handle diverse inputs and edge cases without throwing unexpected errors.
-    > 4 | const { formatDateTime, formatDuration, addDays } = require('../datetime');
-        |                                                     ^
-      5 |
-      6 | describe('DateTime Utilities', () => { // ensures date helpers handle real-world formats
-      7 |   describe('formatDateTime', () => { // validates fallback when dates are invalid
+    expect(received).toBeLessThan(expected)
 
-      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)
-      at Object.require (lib/utilities/datetime/datetime.test.js:4:53)
+    Expected: < 1000
+    Received:   7776000001
 
-Test Suites: 1 failed, 1 total
-Tests:       0 total
-Snapshots:   0 total
-Time:        14.837 s
-Ran all test suites matching /lib\/utilities\/datetime\/datetime.test.js/i.
+      230 |         
+      231 |         const timeDiff = Math.abs(result.getTime() - expected.getTime());
+    > 232 |         expect(timeDiff).toBeLessThan(1000); // within 1 second (accounting for execution time)
+          |                          ^
+      233 |       });
+      234 |     });
+      235 |
+
+      at toBeLessThan (lib/utilities/datetime/datetime.test.js:232:26)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (lib/utilities/datetime/datetime.test.js:221:21)
+
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/datetime/datetime.test.js.
+
+      at buildLogger (node_modules/qerrors/lib/logger.js:152:33)
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/datetime/datetime.test.js.
+
+      at Object.get [as File] (node_modules/winston/lib/winston/transports/index.js:30:12)
+      at node_modules/qerrors/lib/logger.js:164:57
+      at buildLogger (node_modules/qerrors/lib/logger.js:171:11)
+/home/runner/workspace/node_modules/qerrors/lib/logger.js:164
+                                arr.push(new transports.File({ filename: path.join(logDir, 'error.log'), level: 'error', ...rotationOpts, maxFiles: fileCap, format: fileFormat })); //(size-based rotation for error files with count limit)
+                                         ^
+
+TypeError: transports.File is not a constructor
+    at /home/runner/workspace/node_modules/qerrors/lib/logger.js:164:42
+    at buildLogger (/home/runner/workspace/node_modules/qerrors/lib/logger.js:171:11)
+
+Node.js v20.19.3
 
 ```
 
-### Duration: 46912ms
+### Duration: 26427ms
 
 ---
 
@@ -852,12 +1409,12 @@ FAIL lib/utilities/file/file-utils.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        11.874 s
+Time:        12.869 s
 Ran all test suites matching /lib\/utilities\/file\/file-utils.test.js/i.
 
 ```
 
-### Duration: 23576ms
+### Duration: 25355ms
 
 ---
 
@@ -865,31 +1422,511 @@ Ran all test suites matching /lib\/utilities\/file\/file-utils.test.js/i.
 
 ### Output:
 ```
-FAIL lib/utilities/id-generation/id-generation.test.js
-  ● Test suite failed to run
+FAIL lib/utilities/id-generation/id-generation.test.js (10.432 s)
+  Secure ID Generation Utilities
+    generateExecutionId
+      ✕ should generate execution ID with correct format (68 ms)
+      ✓ should generate unique IDs on multiple calls (87 ms)
+      ✓ should generate IDs with recent timestamps
+      ✓ should maintain chronological ordering (13 ms)
+      ✓ should handle rapid generation without collisions (20 ms)
+    generateTaskId
+      ✕ should generate task ID with correct format (1 ms)
+      ✕ should generate unique task IDs (1 ms)
+      ✕ should generate different types of IDs with different prefixes
+      ✕ should support workflow hierarchy tracking
+    generateSecureId
+      ✕ should generate ID with custom prefix
+      ✕ should validate prefix parameter (75 ms)
+      ✕ should accept valid prefixes (8 ms)
+      ✕ should generate IDs with different prefixes correctly
+      ✕ should maintain timestamp ordering across different prefixes (1 ms)
+      ✕ should handle edge case prefixes
+    generateSimpleId
+      ✕ should generate simple ID with default length (1 ms)
+      ✕ should generate simple ID with custom length
+      ✕ should validate length parameter (100 ms)
+      ✕ should accept valid lengths (96 ms)
+      ✕ should validate prefix like generateSecureId (1 ms)
+      ✕ should generate unique simple IDs
+      ✕ should not include timestamp
+      ✕ should work with different use cases (1 ms)
+    ID Format and Security
+      ✕ should use nanoid character set
+      ✕ should generate IDs safe for URLs and databases (1 ms)
+      ✕ should provide collision resistance (1 ms)
+      ✕ should handle concurrent generation
+      ✕ should maintain performance under load
+    Error Handling
+      ✕ should handle errors gracefully (10 ms)
+      ✕ should provide descriptive error messages
+      ✓ should validate all edge cases consistently (11 ms)
+      ✕ should handle boundary values correctly (47 ms)
 
-    Cannot find module '../id-generation' from 'lib/utilities/id-generation/id-generation.test.js'
+  ● Secure ID Generation Utilities › generateExecutionId › should generate execution ID with correct format
 
-      2 | // ID format, uniqueness guarantees, input validation, and error handling
-      3 | // for execution tracking and data integrity across applications.
-    > 4 | const { generateExecutionId, generateTaskId, generateSecureId, generateSimpleId } = require('../id-generation');
-        |                                                                                     ^
-      5 |
-      6 | describe('Secure ID Generation Utilities', () => { // validates ID generation functionality
-      7 |
+    expect(received).toMatch(expected)
 
-      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)
-      at Object.require (lib/utilities/id-generation/id-generation.test.js:4:85)
+    Expected pattern: /^exec_\d+_[a-zA-Z0-9_-]{11}$/
+    Received string:  "exec_1755600247684_nxUVgwafbMa9"
 
-Test Suites: 1 failed, 1 total
-Tests:       0 total
-Snapshots:   0 total
-Time:        11.508 s
-Ran all test suites matching /lib\/utilities\/id-generation\/id-generation.test.js/i.
+      13 |       
+      14 |       expect(typeof execId).toBe('string'); // returns string
+    > 15 |       expect(execId).toMatch(/^exec_\d+_[a-zA-Z0-9_-]{11}$/); // matches expected format
+         |                      ^
+      16 |       expect(execId.startsWith('exec_')).toBe(true); // has execution prefix
+      17 |       
+      18 |       const parts = execId.split('_');
+
+      at Object.toMatch (lib/utilities/id-generation/id-generation.test.js:15:22)
+
+  ● Secure ID Generation Utilities › generateTaskId › should generate task ID with correct format
+
+    TypeError: generateTaskId is not a function
+
+      86 |     // verifies should generate task ID with correct format
+      87 |     test('should generate task ID with correct format', () => {
+    > 88 |       const taskId = generateTaskId();
+         |                      ^
+      89 |       
+      90 |       expect(typeof taskId).toBe('string'); // returns string
+      91 |       expect(taskId).toMatch(/^task_\d+_[a-zA-Z0-9_-]{11}$/); // matches expected format
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:88:22)
+
+  ● Secure ID Generation Utilities › generateTaskId › should generate unique task IDs
+
+    TypeError: generateTaskId is not a function
+
+      105 |       
+      106 |       for (let i = 0; i < numTests; i++) {
+    > 107 |         const id = generateTaskId();
+          |                    ^
+      108 |         expect(ids.has(id)).toBe(false); // no duplicates
+      109 |         ids.add(id);
+      110 |       }
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:107:20)
+
+  ● Secure ID Generation Utilities › generateTaskId › should generate different types of IDs with different prefixes
+
+    TypeError: generateTaskId is not a function
+
+      116 |     test('should generate different types of IDs with different prefixes', () => {
+      117 |       const execId = generateExecutionId();
+    > 118 |       const taskId = generateTaskId();
+          |                      ^
+      119 |       
+      120 |       expect(execId.startsWith('exec_')).toBe(true); // execution has exec prefix
+      121 |       expect(taskId.startsWith('task_')).toBe(true); // task has task prefix
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:118:22)
+
+  ● Secure ID Generation Utilities › generateTaskId › should support workflow hierarchy tracking
+
+    TypeError: generateTaskId is not a function
+
+      126 |     test('should support workflow hierarchy tracking', () => {
+      127 |       const executionId = generateExecutionId();
+    > 128 |       const taskId1 = generateTaskId();
+          |                       ^
+      129 |       const taskId2 = generateTaskId();
+      130 |       
+      131 |       // Simulate workflow structure
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:128:23)
+
+  ● Secure ID Generation Utilities › generateSecureId › should generate ID with custom prefix
+
+    TypeError: generateSecureId is not a function
+
+      146 |     // verifies should generate ID with custom prefix
+      147 |     test('should generate ID with custom prefix', () => {
+    > 148 |       const customId = generateSecureId('custom');
+          |                        ^
+      149 |       
+      150 |       expect(typeof customId).toBe('string'); // returns string
+      151 |       expect(customId).toMatch(/^custom_\d+_[a-zA-Z0-9_-]{11}$/); // matches expected format
+
+      at Object.generateSecureId (lib/utilities/id-generation/id-generation.test.js:148:24)
+
+  ● Secure ID Generation Utilities › generateSecureId › should validate prefix parameter
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "Prefix must be a non-empty string"
+    Received message:   "generateSecureId is not a function"
+
+          160 |     test('should validate prefix parameter', () => {
+          161 |       // Test invalid prefixes
+        > 162 |       expect(() => generateSecureId()).toThrow('Prefix must be a non-empty string'); // undefined prefix
+              |                    ^
+          163 |       expect(() => generateSecureId(null)).toThrow('Prefix must be a non-empty string'); // null prefix
+          164 |       expect(() => generateSecureId('')).toThrow('Prefix cannot be empty or whitespace only'); // empty prefix
+          165 |       expect(() => generateSecureId('   ')).toThrow('Prefix cannot be empty or whitespace only'); // whitespace prefix
+
+      at generateSecureId (lib/utilities/id-generation/id-generation.test.js:162:20)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:162:40)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:162:40)
+
+  ● Secure ID Generation Utilities › generateSecureId › should accept valid prefixes
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "generateSecureId is not a function"
+
+          182 |       
+          183 |       validPrefixes.forEach(prefix => {
+        > 184 |         expect(() => generateSecureId(prefix)).not.toThrow(); // valid prefix accepted
+              |                      ^
+          185 |         const id = generateSecureId(prefix);
+          186 |         expect(id.startsWith(prefix + '_')).toBe(true); // correct prefix used
+          187 |       });
+
+      at generateSecureId (lib/utilities/id-generation/id-generation.test.js:184:22)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at toThrow (lib/utilities/id-generation/id-generation.test.js:184:52)
+                at Array.forEach (<anonymous>)
+      at Object.forEach (lib/utilities/id-generation/id-generation.test.js:183:21)
+      at toThrow (lib/utilities/id-generation/id-generation.test.js:184:52)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (lib/utilities/id-generation/id-generation.test.js:183:21)
+
+  ● Secure ID Generation Utilities › generateSecureId › should generate IDs with different prefixes correctly
+
+    TypeError: generateSecureId is not a function
+
+      190 |     // verifies should generate IDs with different prefixes correctly
+      191 |     test('should generate IDs with different prefixes correctly', () => {
+    > 192 |       const sessionId = generateSecureId('session');
+          |                         ^
+      193 |       const requestId = generateSecureId('req');
+      194 |       const batchId = generateSecureId('batch');
+      195 |       
+
+      at Object.generateSecureId (lib/utilities/id-generation/id-generation.test.js:192:25)
+
+  ● Secure ID Generation Utilities › generateSecureId › should maintain timestamp ordering across different prefixes
+
+    TypeError: generateSecureId is not a function
+
+      205 |     // verifies should maintain timestamp ordering across different prefixes
+      206 |     test('should maintain timestamp ordering across different prefixes', () => {
+    > 207 |       const id1 = generateSecureId('type1');
+          |                   ^
+      208 |       const delay = new Promise(resolve => setTimeout(resolve, 1));
+      209 |       
+      210 |       return delay.then(() => {
+
+      at Object.generateSecureId (lib/utilities/id-generation/id-generation.test.js:207:19)
+
+  ● Secure ID Generation Utilities › generateSecureId › should handle edge case prefixes
+
+    TypeError: generateSecureId is not a function
+
+      219 |     // verifies should handle edge case prefixes
+      220 |     test('should handle edge case prefixes', () => {
+    > 221 |       const singleChar = generateSecureId('a');
+          |                          ^
+      222 |       const numbers = generateSecureId('123');
+      223 |       const underscores = generateSecureId('_test_');
+      224 |       const maxLength = generateSecureId('a'.repeat(20));
+
+      at Object.generateSecureId (lib/utilities/id-generation/id-generation.test.js:221:26)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should generate simple ID with default length
+
+    TypeError: generateSimpleId is not a function
+
+      235 |     // verifies should generate simple ID with default length
+      236 |     test('should generate simple ID with default length', () => {
+    > 237 |       const simpleId = generateSimpleId('user');
+          |                        ^
+      238 |       
+      239 |       expect(typeof simpleId).toBe('string'); // returns string
+      240 |       expect(simpleId).toMatch(/^user_[a-zA-Z0-9_-]{8}$/); // matches expected format with default length
+
+      at Object.generateSimpleId (lib/utilities/id-generation/id-generation.test.js:237:24)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should generate simple ID with custom length
+
+    TypeError: generateSimpleId is not a function
+
+      249 |     // verifies should generate simple ID with custom length
+      250 |     test('should generate simple ID with custom length', () => {
+    > 251 |       const shortId = generateSimpleId('key', 6);
+          |                       ^
+      252 |       const longId = generateSimpleId('token', 16);
+      253 |       
+      254 |       expect(shortId).toMatch(/^key_[a-zA-Z0-9_-]{6}$/); // 6 character random
+
+      at Object.generateSimpleId (lib/utilities/id-generation/id-generation.test.js:251:23)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should validate length parameter
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "Length must be a positive integer"
+    Received message:   "generateSimpleId is not a function"
+
+          264 |     test('should validate length parameter', () => {
+          265 |       // Test invalid lengths
+        > 266 |       expect(() => generateSimpleId('test', 0)).toThrow('Length must be a positive integer'); // zero length
+              |                    ^
+          267 |       expect(() => generateSimpleId('test', -1)).toThrow('Length must be a positive integer'); // negative length
+          268 |       expect(() => generateSimpleId('test', 1.5)).toThrow('Length must be a positive integer'); // decimal length
+          269 |       expect(() => generateSimpleId('test', '8')).toThrow('Length must be a positive integer'); // string length
+
+      at generateSimpleId (lib/utilities/id-generation/id-generation.test.js:266:20)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:266:49)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:266:49)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should accept valid lengths
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "generateSimpleId is not a function"
+
+          280 |       
+          281 |       validLengths.forEach(length => {
+        > 282 |         expect(() => generateSimpleId('test', length)).not.toThrow(); // valid length accepted
+              |                      ^
+          283 |         const id = generateSimpleId('test', length);
+          284 |         const randomPart = id.split('_')[1];
+          285 |         expect(randomPart).toHaveLength(length); // correct length generated
+
+      at generateSimpleId (lib/utilities/id-generation/id-generation.test.js:282:22)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at toThrow (lib/utilities/id-generation/id-generation.test.js:282:60)
+                at Array.forEach (<anonymous>)
+      at Object.forEach (lib/utilities/id-generation/id-generation.test.js:281:20)
+      at toThrow (lib/utilities/id-generation/id-generation.test.js:282:60)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (lib/utilities/id-generation/id-generation.test.js:281:20)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should validate prefix like generateSecureId
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "Prefix must be a non-empty string"
+    Received message:   "generateSimpleId is not a function"
+
+          290 |     test('should validate prefix like generateSecureId', () => {
+          291 |       // Test invalid prefixes (same validation as generateSecureId)
+        > 292 |       expect(() => generateSimpleId()).toThrow('Prefix must be a non-empty string'); // undefined prefix
+              |                    ^
+          293 |       expect(() => generateSimpleId(null)).toThrow('Prefix must be a non-empty string'); // null prefix
+          294 |       expect(() => generateSimpleId('')).toThrow('Prefix cannot be empty or whitespace only'); // empty prefix
+          295 |       expect(() => generateSimpleId('invalid-prefix')).toThrow('Prefix must contain only alphanumeric characters and underscores'); // invalid characters
+
+      at generateSimpleId (lib/utilities/id-generation/id-generation.test.js:292:20)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:292:40)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:292:40)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should generate unique simple IDs
+
+    TypeError: generateSimpleId is not a function
+
+      302 |       
+      303 |       for (let i = 0; i < numTests; i++) {
+    > 304 |         const id = generateSimpleId('test');
+          |                    ^
+      305 |         expect(ids.has(id)).toBe(false); // no duplicates
+      306 |         ids.add(id);
+      307 |       }
+
+      at Object.generateSimpleId (lib/utilities/id-generation/id-generation.test.js:304:20)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should not include timestamp
+
+    TypeError: generateSimpleId is not a function
+
+      312 |     // verifies should not include timestamp
+      313 |     test('should not include timestamp', () => {
+    > 314 |       const simpleId = generateSimpleId('user');
+          |                        ^
+      315 |       const parts = simpleId.split('_');
+      316 |       
+      317 |       expect(parts).toHaveLength(2); // only prefix and random parts
+
+      at Object.generateSimpleId (lib/utilities/id-generation/id-generation.test.js:314:24)
+
+  ● Secure ID Generation Utilities › generateSimpleId › should work with different use cases
+
+    TypeError: generateSimpleId is not a function
+
+      321 |     // verifies should work with different use cases
+      322 |     test('should work with different use cases', () => {
+    > 323 |       const userId = generateSimpleId('user'); // default 8 chars
+          |                      ^
+      324 |       const apiKey = generateSimpleId('key', 16); // longer for security
+      325 |       const configId = generateSimpleId('cfg', 6); // shorter for brevity
+      326 |       const sessionToken = generateSimpleId('sess', 12); // medium length
+
+      at Object.generateSimpleId (lib/utilities/id-generation/id-generation.test.js:323:22)
+
+  ● Secure ID Generation Utilities › ID Format and Security › should use nanoid character set
+
+    TypeError: generateTaskId is not a function
+
+      339 |       const ids = [
+      340 |         generateExecutionId(),
+    > 341 |         generateTaskId(),
+          |         ^
+      342 |         generateSecureId('test'),
+      343 |         generateSimpleId('simple')
+      344 |       ];
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:341:9)
+
+  ● Secure ID Generation Utilities › ID Format and Security › should generate IDs safe for URLs and databases
+
+    TypeError: generateTaskId is not a function
+
+      354 |       const ids = [
+      355 |         generateExecutionId(),
+    > 356 |         generateTaskId(),
+          |         ^
+      357 |         generateSecureId('test'),
+      358 |         generateSimpleId('simple')
+      359 |       ];
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:356:9)
+
+  ● Secure ID Generation Utilities › ID Format and Security › should provide collision resistance
+
+    TypeError: generateTaskId is not a function
+
+      375 |       for (let i = 0; i < numTests; i++) {
+      376 |         largeSet.add(generateExecutionId());
+    > 377 |         largeSet.add(generateTaskId());
+          |                      ^
+      378 |         largeSet.add(generateSecureId('test'));
+      379 |         largeSet.add(generateSimpleId('simple'));
+      380 |       }
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:377:22)
+
+  ● Secure ID Generation Utilities › ID Format and Security › should handle concurrent generation
+
+    TypeError: generateTaskId is not a function
+
+      391 |       for (let i = 0; i < numConcurrent; i++) {
+      392 |         promises.push(Promise.resolve(generateExecutionId()));
+    > 393 |         promises.push(Promise.resolve(generateTaskId()));
+          |                                       ^
+      394 |         promises.push(Promise.resolve(generateSecureId('concurrent')));
+      395 |         promises.push(Promise.resolve(generateSimpleId('simple')));
+      396 |       }
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:393:39)
+
+  ● Secure ID Generation Utilities › ID Format and Security › should maintain performance under load
+
+    TypeError: generateTaskId is not a function
+
+      409 |       for (let i = 0; i < numIterations; i++) {
+      410 |         generateExecutionId();
+    > 411 |         generateTaskId();
+          |         ^
+      412 |         generateSecureId('perf');
+      413 |         generateSimpleId('simple');
+      414 |       }
+
+      at Object.generateTaskId (lib/utilities/id-generation/id-generation.test.js:411:9)
+
+  ● Secure ID Generation Utilities › Error Handling › should handle errors gracefully
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "generateTaskId is not a function"
+
+          428 |       // Test with valid inputs to ensure no unexpected errors
+          429 |       expect(() => generateExecutionId()).not.toThrow(); // execution ID generation
+        > 430 |       expect(() => generateTaskId()).not.toThrow(); // task ID generation
+              |                    ^
+          431 |       expect(() => generateSecureId('valid')).not.toThrow(); // secure ID generation
+          432 |       expect(() => generateSimpleId('valid')).not.toThrow(); // simple ID generation
+          433 |     });
+
+      at generateTaskId (lib/utilities/id-generation/id-generation.test.js:430:20)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:430:42)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:430:42)
+
+  ● Secure ID Generation Utilities › Error Handling › should provide descriptive error messages
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "alphanumeric characters and underscores"
+    Received string:    "generateSecureId is not a function"
+
+      439 |         fail('Should have thrown an error');
+      440 |       } catch (error) {
+    > 441 |         expect(error.message).toContain('alphanumeric characters and underscores'); // descriptive message
+          |                               ^
+      442 |       }
+      443 |       
+      444 |       try {
+
+      at Object.toContain (lib/utilities/id-generation/id-generation.test.js:441:31)
+
+  ● Secure ID Generation Utilities › Error Handling › should handle boundary values correctly
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "generateSimpleId is not a function"
+
+          463 |     test('should handle boundary values correctly', () => {
+          464 |       // Test boundary lengths for simple IDs
+        > 465 |       expect(() => generateSimpleId('test', 1)).not.toThrow(); // minimum length
+              |                    ^
+          466 |       expect(() => generateSimpleId('test', 50)).not.toThrow(); // maximum length
+          467 |       
+          468 |       // Test boundary prefix lengths
+
+      at generateSimpleId (lib/utilities/id-generation/id-generation.test.js:465:20)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:465:53)
+      at Object.toThrow (lib/utilities/id-generation/id-generation.test.js:465:53)
+
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/id-generation/id-generation.test.js.
+
+      at buildLogger (node_modules/qerrors/lib/logger.js:152:33)
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/id-generation/id-generation.test.js.
+
+      at Object.get [as File] (node_modules/winston/lib/winston/transports/index.js:30:12)
+      at node_modules/qerrors/lib/logger.js:164:57
+      at buildLogger (node_modules/qerrors/lib/logger.js:171:11)
+/home/runner/workspace/node_modules/qerrors/lib/logger.js:164
+                                arr.push(new transports.File({ filename: path.join(logDir, 'error.log'), level: 'error', ...rotationOpts, maxFiles: fileCap, format: fileFormat })); //(size-based rotation for error files with count limit)
+                                         ^
+
+TypeError: transports.File is not a constructor
+    at /home/runner/workspace/node_modules/qerrors/lib/logger.js:164:42
+    at buildLogger (/home/runner/workspace/node_modules/qerrors/lib/logger.js:171:11)
+
+Node.js v20.19.3
 
 ```
 
-### Duration: 20212ms
+### Duration: 36561ms
 
 ---
 
@@ -916,12 +1953,12 @@ FAIL lib/utilities/string/string-utils.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        12.78 s
+Time:        9.141 s
 Ran all test suites matching /lib\/utilities\/string\/string-utils.test.js/i.
 
 ```
 
-### Duration: 20543ms
+### Duration: 18841ms
 
 ---
 
@@ -929,31 +1966,170 @@ Ran all test suites matching /lib\/utilities\/string\/string-utils.test.js/i.
 
 ### Output:
 ```
-FAIL lib/utilities/url/url.test.js
-  ● Test suite failed to run
+FAIL lib/utilities/url/url.test.js (24.804 s)
+  URL Utilities
+    ensureProtocol
+      ✓ should add https to URL without protocol (74 ms)
+      ✓ should preserve existing https protocol (13 ms)
+      ✓ should preserve existing http protocol (14 ms)
+      ✕ should handle case-insensitive protocols (33 ms)
+      ✕ should return null for empty string (32 ms)
+      ✕ should return null for null input (21 ms)
+      ✕ should return null for non-string input (24 ms)
+      ✓ should handle URLs with paths (35 ms)
+      ✓ should handle URLs with query parameters (7 ms)
+      ✓ should trim whitespace and add https (7 ms)
+    normalizeUrlOrigin
+      ✓ should normalize URL to lowercase origin (14 ms)
+      ✕ should handle URL without protocol (44 ms)
+      ✓ should preserve port numbers (8 ms)
+      ✓ should return null for invalid URLs (2 ms)
+      ✓ should handle complex URLs
+    stripProtocol
+      ✓ should remove https protocol (1 ms)
+      ✓ should remove http protocol (1 ms)
+      ✓ should remove trailing slash (1 ms)
+      ✓ should handle case-insensitive protocols (2 ms)
+      ✓ should preserve paths and query parameters (2 ms)
+      ✓ should handle URLs without protocol (3 ms)
+      ✓ should handle error cases gracefully (1 ms)
+    parseUrlParts
+      ✓ should parse URL into base and endpoint (36 ms)
+      ✓ should handle URL with existing protocol (1 ms)
+      ✓ should handle root path (10 ms)
+      ✓ should handle URL without path (2 ms)
+      ✓ should return null for invalid URLs (21 ms)
+      ✕ should handle URLs with ports (25 ms)
+      ✓ should handle complex query parameters (27 ms)
 
-    Cannot find module '../url' from 'lib/utilities/url/url.test.js'
+  ● URL Utilities › ensureProtocol › should handle case-insensitive protocols
 
-      3 | // normalization, protocol stripping, and structured parsing. Each case asserts
-      4 | // reliable output for both valid and malformed input.
-    > 5 | const { ensureProtocol, normalizeUrlOrigin, stripProtocol, parseUrlParts } = require('../url');
-        |                                                                              ^
-      6 |
-      7 | describe('URL Utilities', () => { // ensures robust URL transformations
-      8 |   describe('ensureProtocol', () => { // adds protocols when missing
+    expect(received).toBe(expected) // Object.is equality
 
-      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)
-      at Object.require (lib/utilities/url/url.test.js:5:78)
+    Expected: "HTTP://example.com"
+    Received: "http://example.com"
 
-Test Suites: 1 failed, 1 total
-Tests:       0 total
-Snapshots:   0 total
-Time:        13.09 s
-Ran all test suites matching /lib\/utilities\/url\/url.test.js/i.
+      24 |     // verifies should handle case-insensitive protocols
+      25 |     test('should handle case-insensitive protocols', () => {
+    > 26 |       expect(ensureProtocol('HTTP://example.com')).toBe('HTTP://example.com'); // should not alter case
+         |                                                    ^
+      27 |       expect(ensureProtocol('HTTPS://example.com')).toBe('HTTPS://example.com'); // protocol preserved
+      28 |     });
+      29 |
+
+      at Object.toBe (lib/utilities/url/url.test.js:26:52)
+
+  ● URL Utilities › ensureProtocol › should return null for empty string
+
+    expect(received).toBeNull()
+
+    Received: "https://"
+
+      30 |     // verifies should return null for empty string
+      31 |     test('should return null for empty string', () => {
+    > 32 |       expect(ensureProtocol('')).toBeNull(); // invalid string results in null
+         |                                  ^
+      33 |     });
+      34 |
+      35 |     // verifies should return null for null input
+
+      at Object.toBeNull (lib/utilities/url/url.test.js:32:34)
+
+  ● URL Utilities › ensureProtocol › should return null for null input
+
+    expect(received).toBeNull()
+
+    Received: "https://"
+
+      35 |     // verifies should return null for null input
+      36 |     test('should return null for null input', () => {
+    > 37 |       expect(ensureProtocol(null)).toBeNull(); // null returns null
+         |                                    ^
+      38 |     });
+      39 |
+      40 |     // verifies should return null for non-string input
+
+      at Object.toBeNull (lib/utilities/url/url.test.js:37:36)
+
+  ● URL Utilities › ensureProtocol › should return null for non-string input
+
+    expect(received).toBeNull()
+
+    Received: "https://"
+
+      40 |     // verifies should return null for non-string input
+      41 |     test('should return null for non-string input', () => {
+    > 42 |       expect(ensureProtocol(123)).toBeNull(); // non-string input returns null
+         |                                   ^
+      43 |       expect(ensureProtocol({})).toBeNull(); // object input returns null
+      44 |     });
+      45 |
+
+      at Object.toBeNull (lib/utilities/url/url.test.js:42:35)
+
+  ● URL Utilities › normalizeUrlOrigin › should handle URL without protocol
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "https://example.com"
+    Received: null
+
+      68 |     // verifies should handle URL without protocol
+      69 |     test('should handle URL without protocol', () => {
+    > 70 |       expect(normalizeUrlOrigin('Example.Com/path')).toBe('https://example.com'); // protocol added when missing
+         |                                                      ^
+      71 |     });
+      72 |
+      73 |     // verifies should preserve port numbers
+
+      at Object.toBe (lib/utilities/url/url.test.js:70:54)
+
+  ● URL Utilities › parseUrlParts › should handle URLs with ports
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "baseUrl": "https://example.com:8080",
+    +   "baseUrl": "https://0.0.31.144",
+        "endpoint": "/api",
+      }
+
+      173 |     test('should handle URLs with ports', () => {
+      174 |       const result = parseUrlParts('example.com:8080/api');
+    > 175 |       expect(result).toEqual({ // port support
+          |                      ^
+      176 |         baseUrl: 'https://example.com:8080',
+      177 |         endpoint: '/api'
+      178 |       });
+
+      at Object.toEqual (lib/utilities/url/url.test.js:175:22)
+
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/url/url.test.js.
+
+      at buildLogger (node_modules/qerrors/lib/logger.js:152:33)
+
+ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/utilities/url/url.test.js.
+
+      at Object.get [as File] (node_modules/winston/lib/winston/transports/index.js:30:12)
+      at node_modules/qerrors/lib/logger.js:164:57
+      at buildLogger (node_modules/qerrors/lib/logger.js:171:11)
+/home/runner/workspace/node_modules/qerrors/lib/logger.js:164
+                                arr.push(new transports.File({ filename: path.join(logDir, 'error.log'), level: 'error', ...rotationOpts, maxFiles: fileCap, format: fileFormat })); //(size-based rotation for error files with count limit)
+                                         ^
+
+TypeError: transports.File is not a constructor
+    at /home/runner/workspace/node_modules/qerrors/lib/logger.js:164:42
+    at buildLogger (/home/runner/workspace/node_modules/qerrors/lib/logger.js:171:11)
+
+Node.js v20.19.3
 
 ```
 
-### Duration: 48146ms
+### Duration: 62646ms
 
 ---
 
@@ -961,43 +2137,43 @@ Ran all test suites matching /lib\/utilities\/url\/url.test.js/i.
 
 ### Output:
 ```
-FAIL lib/validation/advanced-validation.test.js (17.38 s)
+FAIL lib/validation/advanced-validation.test.js (16.131 s)
   Advanced Validation Utilities
     validateEmail
-      ✓ should validate correct email formats (1061 ms)
-      ✓ should reject invalid email formats (74 ms)
-      ✓ should handle empty or invalid input types (229 ms)
-      ✓ should sanitize input before validation (9 ms)
+      ✓ should validate correct email formats (516 ms)
+      ✓ should reject invalid email formats (68 ms)
+      ✓ should handle empty or invalid input types (188 ms)
+      ✓ should sanitize input before validation (245 ms)
     validateRequired
-      ✓ should validate non-empty required fields (51 ms)
-      ✓ should reject empty or whitespace-only fields (37 ms)
-      ✓ should validate minimum length requirements (41 ms)
-      ✓ should handle invalid input types (5 ms)
-      ✕ should use singular/plural correctly in error messages (123 ms)
+      ✓ should validate non-empty required fields (144 ms)
+      ✓ should reject empty or whitespace-only fields (60 ms)
+      ✓ should validate minimum length requirements (410 ms)
+      ✓ should handle invalid input types (50 ms)
+      ✕ should use singular/plural correctly in error messages (55 ms)
     validateMaxLength
-      ✕ should validate fields within length limits
+      ✕ should validate fields within length limits (27 ms)
       ✕ should reject fields exceeding length limits
-      ✕ should handle null/undefined gracefully (1 ms)
+      ✕ should handle null/undefined gracefully
       ✕ should sanitize input before length check
     validateSelection
-      ✕ should validate non-empty selections (1 ms)
-      ✕ should reject empty or whitespace selections (2 ms)
-      ✕ should handle invalid input types (2 ms)
-      ✕ should use lowercase field names in error messages (1 ms)
+      ✕ should validate non-empty selections
+      ✕ should reject empty or whitespace selections
+      ✕ should handle invalid input types (1 ms)
+      ✕ should use lowercase field names in error messages
     combineValidations
       ✕ should return empty string when all validators pass
       ✕ should return first error encountered
       ✕ should handle validators that throw exceptions
       ✕ should validate that all arguments are functions
       ✕ should handle empty validator list
-      ✕ should work with real validation functions (1 ms)
+      ✕ should work with real validation functions
     validateObjectId
       ✕ should validate correct MongoDB ObjectId formats
-      ✕ should sanitize input before validation (4 ms)
-      ✕ should throw error for invalid input types (115 ms)
-      ✕ should throw error for empty input (3 ms)
-      ✕ should throw error for invalid ObjectId formats (2 ms)
-      ✕ should use custom field names in error messages (158 ms)
+      ✕ should sanitize input before validation (1 ms)
+      ✕ should throw error for invalid input types (258 ms)
+      ✕ should throw error for empty input (36 ms)
+      ✕ should throw error for invalid ObjectId formats (171 ms)
+      ✕ should use custom field names in error messages (49 ms)
 
   ● Advanced Validation Utilities › validateRequired › should use singular/plural correctly in error messages
 
@@ -1346,7 +2522,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 50309ms
+### Duration: 41377ms
 
 ---
 
@@ -1354,34 +2530,34 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL lib/validation/github-validation.test.js (13.68 s)
+FAIL lib/validation/github-validation.test.js (19.628 s)
   GitHub Validation Utilities
     validateGitHubUrl
-      ✓ should validate correct GitHub repository URLs (1066 ms)
-      ✓ should reject empty or invalid URLs (253 ms)
-      ✓ should reject non-GitHub URLs (379 ms)
-      ✓ should reject HTTP URLs (require HTTPS) (77 ms)
-      ✓ should reject URLs with additional paths (9 ms)
-      ✓ should handle malformed input safely (119 ms)
+      ✓ should validate correct GitHub repository URLs (515 ms)
+      ✓ should reject empty or invalid URLs (31 ms)
+      ✓ should reject non-GitHub URLs (168 ms)
+      ✓ should reject HTTP URLs (require HTTPS) (4 ms)
+      ✓ should reject URLs with additional paths (32 ms)
+      ✓ should handle malformed input safely (32 ms)
     extractGitHubInfo
       ✕ should extract owner and repository from valid URLs (1 ms)
       ✕ should handle URLs with special characters in names
       ✕ should return null for invalid URLs
-      ✕ should return null for URLs with insufficient path parts
+      ✕ should return null for URLs with insufficient path parts (16 ms)
     validateGitHubRepo
-      ✕ should validate correct repository formats (1 ms)
+      ✕ should validate correct repository formats
       ✕ should apply string sanitization
-      ✕ should throw error for invalid input types (515 ms)
-      ✕ should throw error for empty or invalid formats (23 ms)
+      ✕ should throw error for invalid input types (275 ms)
+      ✕ should throw error for empty or invalid formats (593 ms)
     validateGitHubUrlDetailed
-      ✕ should return valid result for correct URLs (1 ms)
+      ✕ should return valid result for correct URLs
       ✕ should categorize empty URL errors
       ✕ should categorize format errors
-      ✕ should categorize protocol errors (1 ms)
+      ✕ should categorize protocol errors
       ✕ should categorize domain errors
       ✕ should categorize path errors
       ✕ should categorize invalid name errors
-      ✕ should include original URL in all results
+      ✕ should include original URL in all results (5 ms)
 
   ● GitHub Validation Utilities › extractGitHubInfo › should extract owner and repository from valid URLs
 
@@ -1643,7 +2819,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 46703ms
+### Duration: 50769ms
 
 ---
 
@@ -1651,21 +2827,21 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL lib/validation/validation.test.js (8.234 s)
+FAIL lib/validation/validation.test.js (13.692 s)
   Validation Utilities
     requireFields
-      ✓ should return true when all required fields are present (9 ms)
-      ✕ should return false and send error for missing fields (19 ms)
-      ✕ should return false for multiple missing fields (5 ms)
-      ✕ should treat falsy values as missing (16 ms)
-      ✓ should handle empty object (2 ms)
-      ✓ should handle empty required fields array (2 ms)
-      ✕ should handle undefined object gracefully (2 ms)
-      ✕ should handle null object gracefully (1 ms)
-      ✓ should accept truthy values (3 ms)
-      ✕ should handle invalid requiredFields parameter (3 ms)
-      ✕ should handle non-array requiredFields parameter (2 ms)
-      ✕ should handle invalid obj parameter (2 ms)
+      ✓ should return true when all required fields are present (22 ms)
+      ✕ should return false and send error for missing fields (108 ms)
+      ✕ should return false for multiple missing fields (4 ms)
+      ✕ should treat falsy values as missing (42 ms)
+      ✓ should handle empty object (7 ms)
+      ✓ should handle empty required fields array (6 ms)
+      ✕ should handle undefined object gracefully (8 ms)
+      ✕ should handle null object gracefully (7 ms)
+      ✓ should accept truthy values (8 ms)
+      ✕ should handle invalid requiredFields parameter (4 ms)
+      ✕ should handle non-array requiredFields parameter (5 ms)
+      ✕ should handle invalid obj parameter (10 ms)
 
   ● Validation Utilities › requireFields › should return false and send error for missing fields
 
@@ -1865,7 +3041,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 15031ms
+### Duration: 32205ms
 
 ---
 
@@ -1873,22 +3049,22 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL tests/integration/error-handling.test.js (7.64 s)
+FAIL tests/integration/error-handling.test.js (14.134 s)
   Error Handling Integration Tests
     Cascading Error Scenarios
-      ✕ should handle multiple module failures gracefully (9 ms)
-      ✕ should handle error propagation in API workflow (18 ms)
+      ✕ should handle multiple module failures gracefully (36 ms)
+      ✕ should handle error propagation in API workflow (15 ms)
     View Rendering Error Recovery
-      ✕ should handle template rendering failures across multiple views
-      ✕ should handle route registration with missing global app (146 ms)
+      ✕ should handle template rendering failures across multiple views (4 ms)
+      ✕ should handle route registration with missing global app (77 ms)
     Authentication Error Scenarios
-      ✓ should handle passport strategy detection with broken global state (30 ms)
-      ✓ should handle authentication with various request object states (73 ms)
+      ✓ should handle passport strategy detection with broken global state (170 ms)
+      ✓ should handle authentication with various request object states (98 ms)
     URL Processing Error Recovery
-      ✓ should handle malformed URLs throughout processing pipeline (16 ms)
-      ✓ should handle URL processing with partial failures (224 ms)
+      ✓ should handle malformed URLs throughout processing pipeline (32 ms)
+      ✓ should handle URL processing with partial failures (434 ms)
     Data Validation Error Recovery
-      ✕ should handle validation with various malformed objects (7 ms)
+      ✕ should handle validation with various malformed objects (8 ms)
 
   ● Error Handling Integration Tests › Cascading Error Scenarios › should handle multiple module failures gracefully
 
@@ -2001,7 +3177,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 13879ms
+### Duration: 31864ms
 
 ---
 
@@ -2009,4 +3185,4 @@ Node.js v20.19.3
 
 - Total failed tests: 16
 - Failed test files: index.exports.test.js, lib/additional-edge-cases.test.js, lib/system/env/env.test.js, lib/system/realtime/realtime.test.js, lib/system/shutdown/shutdown-utils.test.js, lib/system/worker-pool/worker-pool.test.js, lib/utilities/datetime/datetime-enhanced.test.js, lib/utilities/datetime/datetime.test.js, lib/utilities/file/file-utils.test.js, lib/utilities/id-generation/id-generation.test.js, lib/utilities/string/string-utils.test.js, lib/utilities/url/url.test.js, lib/validation/advanced-validation.test.js, lib/validation/github-validation.test.js, lib/validation/validation.test.js, tests/integration/error-handling.test.js
-- Generated: 2025-08-19T10:42:00.881Z
+- Generated: 2025-08-19T10:46:31.520Z
