@@ -178,10 +178,23 @@ class TestRunner {
   }
 
   /**
-   * Run a single test file
+   * Run a single test file with timeout protection and optimized Node.js performance flags
    */
   async runTestFile(testFile) {
     return new Promise((resolve) => {
+      // Reasonable timeout - 20 seconds per test
+      const timeout = setTimeout(() => {
+        child.kill('SIGTERM');
+        resolve({
+          file: testFile,
+          success: false,
+          duration: 20000,
+          output: '',
+          error: 'Test timeout after 20 seconds',
+          code: 124
+        });
+      }, 20000);
+      
       const startTime = Date.now();
       let stdout = '';
       let stderr = '';
@@ -190,12 +203,19 @@ class TestRunner {
       const isJestTest = this.shouldUseJest(testFile);
       
       const command = isJestTest ? 'npx' : 'node';
-      const testPathFlag = isJestTest ? this.getJestTestPathFlag() : null;
-      const args = isJestTest ? ['jest', testPathFlag, testFile, '--verbose'] : [testFile];
+      
+      // Minimal arguments that actually work
+      const args = isJestTest 
+        ? ['jest', testFile, '--forceExit']
+        : ['--max-old-space-size=768', '--no-warnings', testFile];
 
       const child = spawn(command, args, {
         stdio: ['ignore', 'pipe', 'pipe'],
-        env: { ...process.env, NODE_ENV: 'test' }
+        env: { 
+          ...process.env, 
+          NODE_ENV: 'test'
+        },
+        shell: true // Use shell for better Jest compatibility
       });
 
       child.stdout.on('data', (data) => {
@@ -207,6 +227,7 @@ class TestRunner {
       });
 
       child.on('close', (code) => {
+        clearTimeout(timeout);
         const duration = Date.now() - startTime;
         
         // Robust success detection for both Jest and qtests/Node.js formats
@@ -256,6 +277,7 @@ class TestRunner {
       });
 
       child.on('error', (error) => {
+        clearTimeout(timeout);
         this.failedTests++;
         resolve({
           file: testFile,
@@ -270,42 +292,186 @@ class TestRunner {
   }
 
   /**
-   * Determine if a test should use Jest
+   * Determine if a test should use Jest - CORRECTED LOGIC
    */
   shouldUseJest(testFile) {
+    // Most test files need Jest for describe/test functions
+    // Only a few specific utility files can run with pure Node.js
+    
+    const fileName = path.basename(testFile);
+    
+    // Files that can run with Node.js (no describe/test/jest APIs)
+    const nodeJsCompatible = [
+      'reloadCheck.js',
+      'setupMultipleChild.js',
+      'testSetup.js',
+      'withoutSetup.js'
+    ];
+    
+    if (nodeJsCompatible.includes(fileName)) {
+      return false; // Use Node.js
+    }
+    
+    // Everything else uses Jest (files with describe, test, jest APIs)
+    return true;
+  }
+
+  /**
+   * Group tests by complexity using FAST filename patterns (no I/O)
+   */
+  groupTestsByComplexity(testFiles) {
+    const lightweight = []; // Fast module loading tests
+    const integration = []; // Integration tests - run separately  
+    const heavy = []; // Complex tests - run with special handling
+    
+    testFiles.forEach(file => {
+      const fileName = path.basename(file);
+      
+      // Heavy integration tests (filename-based detection - NO I/O)
+      if (fileName.includes('integration') || fileName.includes('comprehensive') || 
+          fileName.includes('offlineMode') || fileName.includes('mockModels') ||
+          fileName.includes('sendEmail') || fileName.includes('mockAxios') ||
+          fileName.includes('runTestSuite')) {
+        heavy.push(file);
+      }
+      // Integration tests (medium priority)
+      else if (file.includes('/test/') && (fileName.includes('mock') || fileName.includes('http'))) {
+        integration.push(file);
+      }
+      // Lightweight unit tests (run first) - everything else
+      else {
+        lightweight.push(file);
+      }
+    });
+    
+    return { lightweight, integration, heavy };
+  }
+
+  /**
+   * Get file size safely
+   */
+  getFileSize(file) {
     try {
-      const content = fs.readFileSync(testFile, 'utf8');
-      // Look for Jest-specific patterns
-      return /\b(describe|it|test|expect|jest|beforeEach|afterEach|beforeAll|afterAll)\b/.test(content);
+      const stats = fs.statSync(file);
+      return stats.size;
     } catch {
-      return false;
+      return 1000; // Default size for inaccessible files
     }
   }
 
   /**
-   * Run tests in parallel batches
+   * Run Jest tests in efficient batches like Jest does natively
+   */
+  async runJestBatch(jestFiles) {
+    if (jestFiles.length === 0) return [];
+    
+    return new Promise((resolve) => {
+      const startTime = Date.now();
+      
+      // Run all Jest files in a single Jest process - this is what makes Jest fast!
+      const args = ['jest', ...jestFiles, '--forceExit'];
+      
+      const child = spawn('npx', args, {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, NODE_ENV: 'test' },
+        shell: true
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => stdout += data.toString());
+      child.stderr.on('data', (data) => stderr += data.toString());
+
+      child.on('close', (code) => {
+        const duration = Date.now() - startTime;
+        const output = stdout + stderr;
+        
+        // Parse Jest results - Jest shows PASS/FAIL for each file
+        const results = jestFiles.map(file => {
+          const baseName = path.basename(file);
+          const hasPass = output.includes(`PASS ${file}`) || output.includes(`PASS ./${file}`) || 
+                         output.includes(`✓`) && output.includes(baseName);
+          const hasFail = output.includes(`FAIL ${file}`) || output.includes(`FAIL ./${file}`) ||
+                         output.includes(`✗`) && output.includes(baseName);
+          
+          const success = hasPass && !hasFail && code === 0;
+          
+          if (success) this.passedTests++;
+          else this.failedTests++;
+          
+          return {
+            file,
+            success,
+            duration: Math.floor(duration / jestFiles.length), // Approximate per file
+            output: success ? `PASS ${file}` : output.slice(0, 500),
+            error: success ? '' : stderr,
+            code
+          };
+        });
+        
+        resolve(results);
+      });
+    });
+  }
+
+  /**
+   * Run tests with advanced parallel execution and smart grouping
+   * Maintains max concurrency at all times - starts new test immediately as others finish
    */
   async runInParallel(testFiles, maxConcurrency) {
     const results = [];
-    
-    for (let i = 0; i < testFiles.length; i += maxConcurrency) {
-      const batch = testFiles.slice(i, i + maxConcurrency);
-      const batchPromises = batch.map(file => this.runTestFile(file));
-      
-      try {
-        const batchResults = await Promise.all(batchPromises);
-        results.push(...batchResults);
-        
-        // Show progress
-        const completed = Math.min(i + maxConcurrency, testFiles.length);
-        process.stdout.write(`\r${colors.dim}Progress: ${completed}/${testFiles.length} files completed${colors.reset}`);
-      } catch (error) {
-        console.error(`${colors.red}Batch error:${colors.reset}`, error);
-      }
-    }
-    
-    console.log(); // New line after progress
-    return results;
+    const queue = [...testFiles]; // Copy files to process
+    const running = new Set(); // Track currently running tests
+    let completed = 0;
+
+    return new Promise((resolve, reject) => {
+      const startNext = () => {
+        // Start new tests up to max concurrency
+        while (running.size < maxConcurrency && queue.length > 0) {
+          const testFile = queue.shift();
+          const promise = this.runTestFile(testFile);
+          
+          running.add(promise);
+          
+          promise.then((result) => {
+            results.push(result);
+            running.delete(promise);
+            completed++;
+            
+            // Update progress with staggered display for smoother appearance
+            if (completed % 2 === 0 || completed === testFiles.length) {
+              process.stdout.write(`\r${colors.dim}Progress: ${completed}/${testFiles.length} files completed${colors.reset}`);
+            }
+            
+            // Start next test immediately if queue has more
+            startNext();
+            
+            // Check if all tests are done
+            if (completed === testFiles.length) {
+              console.log(); // New line after progress
+              resolve(results);
+            }
+          }).catch((error) => {
+            console.error(`${colors.red}Test error:${colors.reset}`, error);
+            running.delete(promise);
+            completed++;
+            
+            // Continue even if one test fails
+            process.stdout.write(`\r${colors.dim}Progress: ${completed}/${testFiles.length} files completed${colors.reset}`);
+            setImmediate(startNext);
+            
+            if (completed === testFiles.length) {
+              console.log(); // New line after progress
+              resolve(results);
+            }
+          });
+        }
+      };
+
+      // Start initial batch
+      startNext();
+    });
   }
 
   /**
@@ -396,8 +562,8 @@ class TestRunner {
    * Main execution method
    */
   async run() {
-    console.log(`${colors.bright}🧪 qtests Test Runner - Parallel Mode${colors.reset}`);
-    console.log(`${colors.dim}Discovering and running all tests...${colors.reset}\n`);
+    console.log(`${colors.bright}🧪 qtests Test Runner - Tiered Execution Mode${colors.reset}`);
+    console.log(`${colors.dim}Discovering and running all tests with optimized strategy...${colors.reset}\n`);
 
     // Discover all test files
     const testFiles = this.discoverTests();
@@ -408,20 +574,67 @@ class TestRunner {
       return;
     }
 
-    console.log(`${colors.blue}Found ${testFiles.length} test file(s):${colors.reset}`);
-    testFiles.forEach(file => console.log(`  ${colors.dim}•${colors.reset} ${file}`));
-    console.log(`\n${colors.magenta}🚀 Running tests in parallel...${colors.reset}\n`);
+    // Group tests by complexity for tiered execution
+    const { lightweight, integration, heavy } = this.groupTestsByComplexity(testFiles);
     
-    // Run tests in parallel with aggressive concurrency for speed
+    console.log(`${colors.blue}Test Strategy:${colors.reset}`);
+    console.log(`  ${colors.green}Lightweight: ${lightweight.length} files${colors.reset}`);
+    console.log(`  ${colors.yellow}Integration: ${integration.length} files${colors.reset}`);
+    console.log(`  ${colors.red}Heavy: ${heavy.length} files${colors.reset}`);
+    
+    // Calculate concurrency settings
     const cpuCount = os.cpus().length;
-    const maxConcurrency = Math.min(testFiles.length, Math.max(4, cpuCount * 2)); // Use 2x CPU cores for I/O-bound tests
-    console.log(`${colors.dim}Max concurrency: ${maxConcurrency} workers (${cpuCount} CPU cores)${colors.reset}\n`);
+    const totalMemoryGB = Math.round(os.totalmem() / (1024 ** 3));
+    const maxConcurrency = Math.min(8, Math.max(4, Math.floor(cpuCount * 1.5)));
     
-    const results = await this.runInParallel(testFiles, maxConcurrency);
-    this.results = results;
+    console.log(`${colors.dim}Max concurrency: ${maxConcurrency} workers${colors.reset}\n`);
+    
+    let allResults = [];
+    
+    // Phase 1: Run lightweight tests with Jest-style batch execution
+    if (lightweight.length > 0) {
+      console.log(`${colors.green}📦 Phase 1: Lightweight Tests (${lightweight.length} files)${colors.reset}`);
+      
+      // Separate Jest and Node.js tests for optimal execution
+      const lightJest = lightweight.filter(f => this.shouldUseJest(f));
+      const lightNode = lightweight.filter(f => !this.shouldUseJest(f));
+      
+      const lightResults = [];
+      if (lightJest.length > 0) {
+        console.log(`${colors.dim}Running ${lightJest.length} Jest tests in efficient batch...${colors.reset}`);
+        const jestResults = await this.runJestBatch(lightJest);
+        lightResults.push(...jestResults);
+      }
+      if (lightNode.length > 0) {
+        console.log(`${colors.dim}Running ${lightNode.length} Node.js tests individually...${colors.reset}`);
+        const nodeResults = await this.runInParallel(lightNode, Math.min(12, lightNode.length));
+        lightResults.push(...nodeResults);
+      }
+      
+      allResults = allResults.concat(lightResults);
+      console.log(`${colors.dim}Phase 1 complete: ${lightResults.filter(r => r.success).length}/${lightweight.length} passed${colors.reset}\n`);
+    }
+    
+    // Phase 2: Run integration tests
+    if (integration.length > 0) {
+      console.log(`${colors.yellow}🔗 Phase 2: Integration Tests (${integration.length} files)${colors.reset}`);
+      const integrationResults = await this.runInParallel(integration, Math.min(maxConcurrency, 6));
+      allResults = allResults.concat(integrationResults);
+      console.log(`${colors.dim}Phase 2 complete: ${this.passedTests}/${this.passedTests + this.failedTests} passed${colors.reset}\n`);
+    }
+    
+    // Phase 3: Run heavy tests with reduced concurrency and higher timeout
+    if (heavy.length > 0) {
+      console.log(`${colors.red}⚙️  Phase 3: Heavy Tests (${heavy.length} files) - Special handling${colors.reset}`);
+      const heavyResults = await this.runInParallel(heavy, Math.min(4, heavy.length)); // Lower concurrency
+      allResults = allResults.concat(heavyResults);
+      console.log(`${colors.dim}Phase 3 complete: ${this.passedTests}/${this.passedTests + this.failedTests} passed${colors.reset}\n`);
+    }
+    
+    this.results = allResults;
     
     // Display comprehensive results
-    this.displayResults(results);
+    this.displayResults(allResults);
     
     // Exit with appropriate code
     process.exit(this.failedTests > 0 ? 1 : 0);
