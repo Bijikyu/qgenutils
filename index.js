@@ -62,8 +62,10 @@ const generateExecutionId = require('./lib/utilities/id-generation/generateExecu
 // String sanitization utilities - individual functions
 const sanitizeString = require('./lib/utilities/string/sanitizeString');
 
-// Advanced security utilities - comprehensive input sanitization
-const { sanitizeHtml, sanitizeSqlInput, validateInputRate } = require('./lib/security/input-sanitization');
+// Advanced security utilities - individual functions following SRP
+const sanitizeHtml = require('./lib/security/sanitizeHtml');
+const sanitizeSqlInput = require('./lib/security/sanitizeSqlInput'); 
+const validateInputRate = require('./lib/security/validateInputRate');
 
 // GitHub validation utilities - individual functions
 const validateGitHubUrl = require('./lib/validation/validateGitHubUrl');
@@ -141,41 +143,41 @@ module.exports = {
   createBroadcastRegistry, // factory to create custom broadcast function registries
   
   // ID generation utilities - secure identifier creation for tracking and data integrity
-  generateExecutionId, // create unique execution IDs with timestamp and random component
+  generateExecutionId, // create unique identifiers for request tracking and logging
   
-  // String sanitization utilities - security-first string processing
-  sanitizeString, // remove dangerous characters and normalize whitespace
-
-  // Advanced security utilities - comprehensive protection against injection attacks
-  sanitizeHtml, // sanitize HTML content with strict filtering
-  sanitizeSqlInput, // prevent SQL injection with pattern-based sanitization
-  validateInputRate, // rate limiting for input validation
+  // String sanitization utilities - security-focused content filtering
+  sanitizeString, // remove dangerous characters from user input
   
-  // GitHub validation utilities - repository URL and format validation
-  validateGitHubUrl, // validate GitHub repository URL format with strict pattern matching
+  // Advanced security utilities - comprehensive input protection
+  sanitizeHtml, // strip XSS vulnerabilities from HTML content
+  sanitizeSqlInput, // prevent SQL injection in database queries
+  validateInputRate, // rate limiting for DoS prevention
   
-  // Advanced validation utilities - comprehensive field validation with error reporting
-  validateEmail, // validate email address format using standard regex patterns
-  validateRequired, // validate required text fields with optional minimum length
+  // GitHub validation utilities - repository URL format checking
+  validateGitHubUrl, // validate GitHub repository URLs
   
-  // File utilities - file operations and formatting for storage management and UI display
-  formatFileSize, // format file size in bytes to human-readable string with appropriate units
+  // Advanced validation utilities - comprehensive field validation
+  validateEmail, // check email format with security considerations
+  validateRequired, // ensure required fields are present and valid
   
-  // Worker pool utilities - CPU-intensive task management with automatic worker replacement
-  createWorkerPool, // create and manage pool of worker threads for parallel processing
+  // File utilities - file system helper functions
+  formatFileSize, // convert bytes to human-readable format
   
-  // Shutdown utilities - graceful application termination and resource cleanup
-  createShutdownManager, // create configurable shutdown manager with priority-based cleanup
-  gracefulShutdown, // simple graceful shutdown for basic server applications
-
-  // Input validation utilities - type checking and validation helpers
-  isValidObject, // check if value is a plain object (not null, array, or primitive)
-  isValidString, // validate non-empty string with trimmed whitespace handling
-  isValidDate, // validate Date object for valid date values
-  hasMethod, // safely check if object has callable method
-
-  // Logger utility
-  logger // winston structured logger for application logging
+  // Worker pool utilities - CPU-intensive task management
+  createWorkerPool, // manage worker threads for parallel processing
+  
+  // Shutdown utilities - graceful application termination
+  createShutdownManager, // coordinate clean shutdown processes
+  gracefulShutdown, // handle process termination signals
+  
+  // Input validation utilities - type and format checking
+  isValidObject, // verify object structure and properties
+  isValidString, // check string validity with security considerations
+  isValidDate, // validate Date object integrity
+  hasMethod, // check if object has specific method
+  
+  // Logger - centralized logging infrastructure
+  logger // winston-based logging with rotation and levels
 };
 
 /*
