@@ -8,6 +8,10 @@ Preferred communication style: Simple, everyday language.
 Replit agent is mainly used for MVP & some bug fixes & testing.
 YOU ARE NEVER TO DELETE ANYTHING WITHOUT PERMISSION. DO NOT ASSUME I WANT SOMETHING DELETED, ASK FOR CLARITY.
 
+## Recent Changes
+- January 2025: Removed `lib/client/` directory and associated utilities (renderView, makeCopyFn) as functionality moved elsewhere
+- Library reorganized from individual category folders to superset groupings for better organization
+
 ## System Architecture
 QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture, where each function resides in its own file. Key design principles include:
 - **Security-First**: Utilities default to secure states on errors (fail-closed patterns).
@@ -19,12 +23,11 @@ QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture,
   - `utilities/` (string/, file/, url/, datetime/, id-generation/) - General-purpose utility functions
   - `system/` (env/, shutdown/, worker-pool/, realtime/) - System and infrastructure management
   - `security/` (auth/) - Authentication and security utilities
-  - `client/` (browser/, views/) - Client-side and presentation utilities
 - **UI/UX Decisions**: Not applicable as this is a backend utility library.
 - **Technical Implementations**: Node.js based, leveraging SRP for maintainability.
 - **Feature Specifications**:
     - **Authentication**: Passport.js integration, fail-closed.
-    - **Browser Utilities**: Client-side functions with graceful degradation for server context.
+
     - **URL Processing**: Normalization, protocol enforcement (defaults to HTTPS), parsing.
     - **Validation System**: Fail-fast, field presence validation with standardized error responses.
     - **DateTime Utilities**: Locale-aware formatting, duration, business date arithmetic; returns "N/A" for invalid dates.

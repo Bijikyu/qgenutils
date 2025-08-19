@@ -39,16 +39,14 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(indexExports.checkPassportAuth).toBeDefined();
     expect(indexExports.hasGithubStrategy).toBeDefined();
     
-    // View utilities
-    expect(indexExports.renderView).toBeDefined();
+
     
     // Environment utilities
     expect(indexExports.requireEnvVars).toBeDefined();
     expect(indexExports.hasEnvVar).toBeDefined();
     expect(indexExports.getEnvVar).toBeDefined();
     
-    // Browser utilities
-    expect(indexExports.makeCopyFn).toBeDefined();
+
 
     
     // Real-time communication utilities
@@ -95,11 +93,7 @@ describe('Index Exports', () => { // guards against accidental export removal
     expect(typeof indexExports.getEnvVar).toBe('function');
   });
 
-  // verifies browser utilities have correct function signatures
-  test('should have correct function signatures for browser utilities', () => {
-    expect(typeof indexExports.makeCopyFn).toBe('function');
 
-  });
 
   // verifies real-time utilities have correct function signatures
   test('should have correct function signatures for real-time utilities', () => {

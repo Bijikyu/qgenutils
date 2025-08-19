@@ -44,16 +44,14 @@ const normalizeUrlOrigin = require('./lib/utilities/url/normalizeUrlOrigin');
 const stripProtocol = require('./lib/utilities/url/stripProtocol');
 const parseUrlParts = require('./lib/utilities/url/parseUrlParts');
 
-// View utilities - individual functions
-const renderView = require('./lib/client/views/renderView');
+
 
 // Environment utilities - individual functions
 const requireEnvVars = require('./lib/system/env/requireEnvVars');
 const hasEnvVar = require('./lib/system/env/hasEnvVar');
 const getEnvVar = require('./lib/system/env/getEnvVar');
 
-// Browser utilities - individual functions
-const makeCopyFn = require('./lib/client/browser/makeCopyFn');
+
 
 // Real-time communication utilities - individual functions
 const createBroadcastRegistry = require('./lib/system/realtime/createBroadcastRegistry');
@@ -126,16 +124,14 @@ module.exports = {
   checkPassportAuth, // verify request authenticated via Passport
   hasGithubStrategy, // detect configured GitHub strategy
   
-  // View utilities - template rendering
-  renderView, // render EJS template with data
+
   
   // Environment utilities - configuration validation and access
   requireEnvVars, // validate presence of required environment variables
   hasEnvVar, // check if single environment variable exists
   getEnvVar, // get environment variable value with optional default
   
-  // Browser utilities - client-side functionality and clipboard operations
-  makeCopyFn, // factory to create clipboard copy handlers with feedback
+
   
   // Real-time communication utilities - socket.io broadcast registries and validation
   createBroadcastRegistry, // factory to create custom broadcast function registries
