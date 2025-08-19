@@ -82,6 +82,7 @@ const gracefulShutdown = require('./lib/system/shutdown/gracefulShutdown');
 // Input validation utilities - individual functions
 const isValidObject = require('./lib/validation/isValidObject');
 const isValidString = require('./lib/validation/isValidString');
+const isValidDate = require('./lib/validation/isValidDate');
 const hasMethod = require('./lib/validation/hasMethod');
 
 
@@ -162,6 +163,7 @@ module.exports = {
   // Input validation utilities - type checking and validation helpers
   isValidObject, // check if value is a plain object (not null, array, or primitive)
   isValidString, // validate non-empty string with trimmed whitespace handling
+  isValidDate, // validate Date object for valid date values
   hasMethod, // safely check if object has callable method
 
   // Logger utility
