@@ -62,6 +62,9 @@ const generateExecutionId = require('./lib/utilities/id-generation/generateExecu
 // String sanitization utilities - individual functions
 const sanitizeString = require('./lib/utilities/string/sanitizeString');
 
+// Advanced security utilities - comprehensive input sanitization
+const { sanitizeHtml, sanitizeSqlInput, validateInputRate } = require('./lib/security/input-sanitization');
+
 // GitHub validation utilities - individual functions
 const validateGitHubUrl = require('./lib/validation/validateGitHubUrl');
 
@@ -142,6 +145,11 @@ module.exports = {
   
   // String sanitization utilities - security-first string processing
   sanitizeString, // remove dangerous characters and normalize whitespace
+
+  // Advanced security utilities - comprehensive protection against injection attacks
+  sanitizeHtml, // sanitize HTML content with strict filtering
+  sanitizeSqlInput, // prevent SQL injection with pattern-based sanitization
+  validateInputRate, // rate limiting for input validation
   
   // GitHub validation utilities - repository URL and format validation
   validateGitHubUrl, // validate GitHub repository URL format with strict pattern matching
