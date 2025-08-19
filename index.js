@@ -32,7 +32,7 @@ const formatDateWithPrefix = require('./lib/utilities/datetime/formatDateWithPre
 
 
 // Validation utilities - individual functions
-const requireFields = require('./lib/validation/basic/requireFields');
+const requireFields = require('./lib/validation/requireFields');
 
 // Authentication utilities - individual functions
 const checkPassportAuth = require('./lib/security/auth/checkPassportAuth');
@@ -63,11 +63,11 @@ const generateExecutionId = require('./lib/utilities/id-generation/generateExecu
 const sanitizeString = require('./lib/utilities/string/sanitizeString');
 
 // GitHub validation utilities - individual functions
-const validateGitHubUrl = require('./lib/validation/github/validateGitHubUrl');
+const validateGitHubUrl = require('./lib/validation/validateGitHubUrl');
 
 // Advanced validation utilities - individual functions
-const validateEmail = require('./lib/validation/advanced/validateEmail');
-const validateRequired = require('./lib/validation/advanced/validateRequired');
+const validateEmail = require('./lib/validation/validateEmail');
+const validateRequired = require('./lib/validation/validateRequired');
 
 // File utilities - individual functions
 const formatFileSize = require('./lib/utilities/file/formatFileSize');
@@ -80,9 +80,9 @@ const createShutdownManager = require('./lib/system/shutdown/createShutdownManag
 const gracefulShutdown = require('./lib/system/shutdown/gracefulShutdown');
 
 // Input validation utilities - individual functions
-const isValidObject = require('./lib/validation/input/isValidObject');
-const isValidString = require('./lib/validation/input/isValidString');
-const hasMethod = require('./lib/validation/input/hasMethod');
+const isValidObject = require('./lib/validation/isValidObject');
+const isValidString = require('./lib/validation/isValidString');
+const hasMethod = require('./lib/validation/hasMethod');
 
 
 /*
