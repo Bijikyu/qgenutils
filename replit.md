@@ -11,6 +11,7 @@ YOU ARE NEVER TO DELETE ANYTHING WITHOUT PERMISSION. DO NOT ASSUME I WANT SOMETH
 ## Recent Changes
 - January 2025: Removed `lib/client/` directory and associated utilities (renderView, makeCopyFn) as functionality moved elsewhere
 - Library reorganized from individual category folders to superset groupings for better organization
+- Flattened `lib/validation/` structure - moved all validation files directly into validation directory (removed subfolders)
 
 ## System Architecture
 QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture, where each function resides in its own file. Key design principles include:
@@ -18,8 +19,8 @@ QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture,
 - **Modular Architecture**: Domain-separated modules operate independently.
 - **Consistent Error Handling**: Structured logging via `qerrors` with graceful degradation.
 - **Performance Optimization**: Lightweight implementation.
-- **Directory Structure**: Organized with a `lib/` directory using superset categories containing specialized subdirectories:
-  - `validation/` (basic/, input/, advanced/, github/) - All validation-related utilities
+- **Directory Structure**: Organized with a `lib/` directory using superset categories:
+  - `validation/` - All validation-related utilities (flattened structure)
   - `utilities/` (string/, file/, url/, datetime/, id-generation/) - General-purpose utility functions
   - `system/` (env/, shutdown/, worker-pool/, realtime/) - System and infrastructure management
   - `security/` (auth/) - Authentication and security utilities
