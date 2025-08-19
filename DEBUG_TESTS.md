@@ -1,7 +1,7 @@
 # Test Failure Analysis
 
-**Creation Time:** 2025-08-19T10:23:30.075Z
-**Pacific Time:** Tuesday, August 19, 2025 at 03:23:30 AM PDT
+**Creation Time:** 2025-08-19T10:42:00.831Z
+**Pacific Time:** Tuesday, August 19, 2025 at 03:42:00 AM PDT
 
 ⚠️ **STALENESS WARNING:** If your code changes are after the creation time above and you are checking this file, then it is stale and tests need to be rerun.
 
@@ -23,7 +23,7 @@ Pattern: index.exports.test.js - 0 matches
 
 ```
 
-### Duration: 38334ms
+### Duration: 47208ms
 
 ---
 
@@ -31,50 +31,46 @@ Pattern: index.exports.test.js - 0 matches
 
 ### Output:
 ```
-FAIL lib/additional-edge-cases.test.js (8.566 s)
+FAIL lib/additional-edge-cases.test.js (5.353 s)
   Additional Edge Cases
     stripProtocol
-      ✕ should return input when not string and log error (9 ms)
+      ✕ should return input when not string and log error (25 ms)
     parseUrlParts
-      ✕ should return null for malformed url with protocol only (12 ms)
+      ✕ should return null for malformed url with protocol only (25 ms)
 
   ● Additional Edge Cases › stripProtocol › should return input when not string and log error
 
-    expect(received).toHaveBeenCalled()
+    expect(jest.fn()).toHaveBeenCalled()
 
-    Matcher error: received value must be a mock or spy function
+    Expected number of calls: >= 1
+    Received number of calls:    0
 
-    Received has type:  function
-    Received has value: [Function qerrors]
+      19 |       const mockQerrors = jest.spyOn(require('qerrors'), 'qerrors').mockImplementation(() => {});
+      20 |       const result = stripProtocol(null);
+    > 21 |       expect(mockQerrors).toHaveBeenCalled(); // confirm error logged for bad input
+         |                           ^
+      22 |       expect(result).toBeNull(); // invalid input returns null
+      23 |       mockQerrors.mockRestore();
+      24 |     });
 
-      18 |     test('should return input when not string and log error', () => {
-      19 |       const result = stripProtocol(null);
-    > 20 |       expect(qerrors).toHaveBeenCalled(); // confirm error logged for bad input
-         |                       ^
-      21 |       expect(result).toBeNull(); // invalid input returns null
-      22 |     });
-      23 |   });
-
-      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:20:23)
+      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:21:27)
 
   ● Additional Edge Cases › parseUrlParts › should return null for malformed url with protocol only
 
-    expect(received).toHaveBeenCalled()
+    expect(jest.fn()).toHaveBeenCalled()
 
-    Matcher error: received value must be a mock or spy function
+    Expected number of calls: >= 1
+    Received number of calls:    0
 
-    Received has type:  function
-    Received has value: [Function qerrors]
+      29 |       const mockQerrors = jest.spyOn(require('qerrors'), 'qerrors').mockImplementation(() => {});
+      30 |       const result = parseUrlParts('http://');
+    > 31 |       expect(mockQerrors).toHaveBeenCalled(); // invalid url should trigger logging
+         |                           ^
+      32 |       expect(result).toBeNull(); // result should be null on failure
+      33 |       mockQerrors.mockRestore();
+      34 |     });
 
-      26 |     test('should return null for malformed url with protocol only', () => {
-      27 |       const result = parseUrlParts('http://');
-    > 28 |       expect(qerrors).toHaveBeenCalled(); // invalid url should trigger logging
-         |                       ^
-      29 |       expect(result).toBeNull(); // result should be null on failure
-      30 |     });
-      31 |   });
-
-      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:28:23)
+      at Object.toHaveBeenCalled (lib/additional-edge-cases.test.js:31:27)
 
 
 ReferenceError: You are trying to `import` a file after the Jest environment has been torn down. From lib/additional-edge-cases.test.js.
@@ -101,7 +97,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 45594ms
+### Duration: 49907ms
 
 ---
 
@@ -138,7 +134,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 31027ms
+### Duration: 28030ms
 
 ---
 
@@ -146,25 +142,25 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL lib/system/realtime/realtime.test.js (17.834 s)
+FAIL lib/system/realtime/realtime.test.js (15.643 s)
   Real-time Communication Utilities
     createBroadcastRegistry
-      ✕ should create registry with specified functions (49 ms)
-      ✕ should handle invalid configuration gracefully (2 ms)
-      ✓ should allow setting and getting broadcast functions (4 ms)
-      ✕ should reject non-function values (3 ms)
+      ✕ should create registry with specified functions (79 ms)
+      ✕ should handle invalid configuration gracefully (3 ms)
+      ✓ should allow setting and getting broadcast functions (20 ms)
+      ✕ should reject non-function values (6 ms)
       ✓ should allow setting functions to null (2 ms)
-      ✕ should track function readiness correctly (12 ms)
-      ✕ should clear all functions (2 ms)
-      ✕ should skip invalid function names (4 ms)
-      ✕ should prevent deletion of registry properties (3 ms)
+      ✕ should track function readiness correctly (87 ms)
+      ✕ should clear all functions (1 ms)
+      ✕ should skip invalid function names (6 ms)
+      ✕ should prevent deletion of registry properties (7 ms)
     createPaymentBroadcastRegistry
       ✕ should create registry with standard payment functions
-      ✕ should work with standard payment workflow (1 ms)
+      ✕ should work with standard payment workflow
       ✕ should support typical usage patterns
     createSocketBroadcastRegistry
-      ✕ should create registry with static interface
-      ✕ should allow function assignment through setters (1 ms)
+      ✕ should create registry with static interface (1 ms)
+      ✕ should allow function assignment through setters
       ✕ should execute assigned functions correctly
       ✕ should validate function assignments
       ✕ should track readiness state correctly
@@ -177,17 +173,17 @@ FAIL lib/system/realtime/realtime.test.js (17.834 s)
       ✕ should reject null and undefined data (1 ms)
       ✕ should reject circular references
       ✕ should reject oversized data
-      ✕ should detect potentially sensitive data
+      ✕ should detect potentially sensitive data (1 ms)
       ✕ should reject functions by default
       ✕ should allow functions when explicitly enabled
-      ✕ should handle nested objects (1 ms)
-      ✕ should handle arrays (2 ms)
-      ✕ should handle custom size limits (1 ms)
+      ✕ should handle nested objects
+      ✕ should handle arrays
+      ✕ should handle custom size limits
       ✕ should handle validation errors gracefully (1 ms)
     Integration Scenarios
-      ✕ should support complete broadcast workflow (1 ms)
-      ✕ should handle service initialization timing
-      ✕ should support testing with mock functions (5 ms)
+      ✕ should support complete broadcast workflow
+      ✕ should handle service initialization timing (1 ms)
+      ✕ should support testing with mock functions (67 ms)
 
   ● Real-time Communication Utilities › createBroadcastRegistry › should create registry with specified functions
 
@@ -687,7 +683,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 26780ms
+### Duration: 27157ms
 
 ---
 
@@ -721,12 +717,12 @@ FAIL lib/system/shutdown/shutdown-utils.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        10.065 s
+Time:        9.597 s
 Ran all test suites matching /lib\/system\/shutdown\/shutdown-utils.test.js/i.
 
 ```
 
-### Duration: 54249ms
+### Duration: 48654ms
 
 ---
 
@@ -760,12 +756,12 @@ FAIL lib/system/worker-pool/worker-pool.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        16.431 s
+Time:        9.595 s
 Ran all test suites matching /lib\/system\/worker-pool\/worker-pool.test.js/i.
 
 ```
 
-### Duration: 53855ms
+### Duration: 54365ms
 
 ---
 
@@ -792,12 +788,12 @@ FAIL lib/utilities/datetime/datetime-enhanced.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        11.502 s
+Time:        13.774 s
 Ran all test suites matching /lib\/utilities\/datetime\/datetime-enhanced.test.js/i.
 
 ```
 
-### Duration: 49863ms
+### Duration: 46719ms
 
 ---
 
@@ -824,12 +820,12 @@ FAIL lib/utilities/datetime/datetime.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        12.821 s
+Time:        14.837 s
 Ran all test suites matching /lib\/utilities\/datetime\/datetime.test.js/i.
 
 ```
 
-### Duration: 49476ms
+### Duration: 46912ms
 
 ---
 
@@ -856,12 +852,12 @@ FAIL lib/utilities/file/file-utils.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        14.354 s
+Time:        11.874 s
 Ran all test suites matching /lib\/utilities\/file\/file-utils.test.js/i.
 
 ```
 
-### Duration: 29784ms
+### Duration: 23576ms
 
 ---
 
@@ -888,12 +884,12 @@ FAIL lib/utilities/id-generation/id-generation.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        13.503 s
+Time:        11.508 s
 Ran all test suites matching /lib\/utilities\/id-generation\/id-generation.test.js/i.
 
 ```
 
-### Duration: 22049ms
+### Duration: 20212ms
 
 ---
 
@@ -920,12 +916,12 @@ FAIL lib/utilities/string/string-utils.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        9.382 s
+Time:        12.78 s
 Ran all test suites matching /lib\/utilities\/string\/string-utils.test.js/i.
 
 ```
 
-### Duration: 18156ms
+### Duration: 20543ms
 
 ---
 
@@ -952,12 +948,12 @@ FAIL lib/utilities/url/url.test.js
 Test Suites: 1 failed, 1 total
 Tests:       0 total
 Snapshots:   0 total
-Time:        8.517 s
+Time:        13.09 s
 Ran all test suites matching /lib\/utilities\/url\/url.test.js/i.
 
 ```
 
-### Duration: 43988ms
+### Duration: 48146ms
 
 ---
 
@@ -965,31 +961,31 @@ Ran all test suites matching /lib\/utilities\/url\/url.test.js/i.
 
 ### Output:
 ```
-FAIL lib/validation/advanced-validation.test.js (8.416 s)
+FAIL lib/validation/advanced-validation.test.js (17.38 s)
   Advanced Validation Utilities
     validateEmail
-      ✓ should validate correct email formats (347 ms)
-      ✓ should reject invalid email formats (129 ms)
-      ✓ should handle empty or invalid input types (15 ms)
-      ✓ should sanitize input before validation (19 ms)
+      ✓ should validate correct email formats (1061 ms)
+      ✓ should reject invalid email formats (74 ms)
+      ✓ should handle empty or invalid input types (229 ms)
+      ✓ should sanitize input before validation (9 ms)
     validateRequired
-      ✓ should validate non-empty required fields (179 ms)
-      ✓ should reject empty or whitespace-only fields (11 ms)
-      ✓ should validate minimum length requirements (58 ms)
-      ✓ should handle invalid input types (12 ms)
-      ✕ should use singular/plural correctly in error messages (17 ms)
+      ✓ should validate non-empty required fields (51 ms)
+      ✓ should reject empty or whitespace-only fields (37 ms)
+      ✓ should validate minimum length requirements (41 ms)
+      ✓ should handle invalid input types (5 ms)
+      ✕ should use singular/plural correctly in error messages (123 ms)
     validateMaxLength
-      ✕ should validate fields within length limits (1 ms)
-      ✕ should reject fields exceeding length limits (1 ms)
-      ✕ should handle null/undefined gracefully
+      ✕ should validate fields within length limits
+      ✕ should reject fields exceeding length limits
+      ✕ should handle null/undefined gracefully (1 ms)
       ✕ should sanitize input before length check
     validateSelection
-      ✕ should validate non-empty selections
-      ✕ should reject empty or whitespace selections (1 ms)
-      ✕ should handle invalid input types
-      ✕ should use lowercase field names in error messages
+      ✕ should validate non-empty selections (1 ms)
+      ✕ should reject empty or whitespace selections (2 ms)
+      ✕ should handle invalid input types (2 ms)
+      ✕ should use lowercase field names in error messages (1 ms)
     combineValidations
-      ✕ should return empty string when all validators pass (1 ms)
+      ✕ should return empty string when all validators pass
       ✕ should return first error encountered
       ✕ should handle validators that throw exceptions
       ✕ should validate that all arguments are functions
@@ -997,11 +993,11 @@ FAIL lib/validation/advanced-validation.test.js (8.416 s)
       ✕ should work with real validation functions (1 ms)
     validateObjectId
       ✕ should validate correct MongoDB ObjectId formats
-      ✕ should sanitize input before validation (1 ms)
-      ✕ should throw error for invalid input types (104 ms)
-      ✕ should throw error for empty input (27 ms)
+      ✕ should sanitize input before validation (4 ms)
+      ✕ should throw error for invalid input types (115 ms)
+      ✕ should throw error for empty input (3 ms)
       ✕ should throw error for invalid ObjectId formats (2 ms)
-      ✕ should use custom field names in error messages (19 ms)
+      ✕ should use custom field names in error messages (158 ms)
 
   ● Advanced Validation Utilities › validateRequired › should use singular/plural correctly in error messages
 
@@ -1350,7 +1346,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 45773ms
+### Duration: 50309ms
 
 ---
 
@@ -1358,30 +1354,30 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL lib/validation/github-validation.test.js (10.721 s)
+FAIL lib/validation/github-validation.test.js (13.68 s)
   GitHub Validation Utilities
     validateGitHubUrl
-      ✓ should validate correct GitHub repository URLs (807 ms)
-      ✓ should reject empty or invalid URLs (142 ms)
-      ✓ should reject non-GitHub URLs (360 ms)
-      ✓ should reject HTTP URLs (require HTTPS) (4 ms)
-      ✓ should reject URLs with additional paths (45 ms)
-      ✓ should handle malformed input safely (31 ms)
+      ✓ should validate correct GitHub repository URLs (1066 ms)
+      ✓ should reject empty or invalid URLs (253 ms)
+      ✓ should reject non-GitHub URLs (379 ms)
+      ✓ should reject HTTP URLs (require HTTPS) (77 ms)
+      ✓ should reject URLs with additional paths (9 ms)
+      ✓ should handle malformed input safely (119 ms)
     extractGitHubInfo
-      ✕ should extract owner and repository from valid URLs (5 ms)
+      ✕ should extract owner and repository from valid URLs (1 ms)
       ✕ should handle URLs with special characters in names
-      ✕ should return null for invalid URLs (1 ms)
-      ✕ should return null for URLs with insufficient path parts (123 ms)
+      ✕ should return null for invalid URLs
+      ✕ should return null for URLs with insufficient path parts
     validateGitHubRepo
       ✕ should validate correct repository formats (1 ms)
       ✕ should apply string sanitization
-      ✕ should throw error for invalid input types (109 ms)
-      ✕ should throw error for empty or invalid formats (10 ms)
+      ✕ should throw error for invalid input types (515 ms)
+      ✕ should throw error for empty or invalid formats (23 ms)
     validateGitHubUrlDetailed
-      ✕ should return valid result for correct URLs
-      ✕ should categorize empty URL errors (7 ms)
-      ✕ should categorize format errors (1 ms)
-      ✕ should categorize protocol errors
+      ✕ should return valid result for correct URLs (1 ms)
+      ✕ should categorize empty URL errors
+      ✕ should categorize format errors
+      ✕ should categorize protocol errors (1 ms)
       ✕ should categorize domain errors
       ✕ should categorize path errors
       ✕ should categorize invalid name errors
@@ -1647,7 +1643,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 29534ms
+### Duration: 46703ms
 
 ---
 
@@ -1655,21 +1651,21 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL lib/validation/validation.test.js (6.192 s)
+FAIL lib/validation/validation.test.js (8.234 s)
   Validation Utilities
     requireFields
-      ✓ should return true when all required fields are present (17 ms)
-      ✕ should return false and send error for missing fields (69 ms)
-      ✕ should return false for multiple missing fields (10 ms)
-      ✕ should treat falsy values as missing (40 ms)
-      ✓ should handle empty object (3 ms)
-      ✓ should handle empty required fields array (3 ms)
-      ✕ should handle undefined object gracefully (9 ms)
-      ✕ should handle null object gracefully (7 ms)
-      ✓ should accept truthy values (2 ms)
+      ✓ should return true when all required fields are present (9 ms)
+      ✕ should return false and send error for missing fields (19 ms)
+      ✕ should return false for multiple missing fields (5 ms)
+      ✕ should treat falsy values as missing (16 ms)
+      ✓ should handle empty object (2 ms)
+      ✓ should handle empty required fields array (2 ms)
+      ✕ should handle undefined object gracefully (2 ms)
+      ✕ should handle null object gracefully (1 ms)
+      ✓ should accept truthy values (3 ms)
       ✕ should handle invalid requiredFields parameter (3 ms)
       ✕ should handle non-array requiredFields parameter (2 ms)
-      ✕ should handle invalid obj parameter (6 ms)
+      ✕ should handle invalid obj parameter (2 ms)
 
   ● Validation Utilities › requireFields › should return false and send error for missing fields
 
@@ -1869,7 +1865,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 13801ms
+### Duration: 15031ms
 
 ---
 
@@ -1877,22 +1873,22 @@ Node.js v20.19.3
 
 ### Output:
 ```
-FAIL tests/integration/error-handling.test.js (7.565 s)
+FAIL tests/integration/error-handling.test.js (7.64 s)
   Error Handling Integration Tests
     Cascading Error Scenarios
-      ✕ should handle multiple module failures gracefully (19 ms)
-      ✕ should handle error propagation in API workflow (35 ms)
+      ✕ should handle multiple module failures gracefully (9 ms)
+      ✕ should handle error propagation in API workflow (18 ms)
     View Rendering Error Recovery
       ✕ should handle template rendering failures across multiple views
-      ✕ should handle route registration with missing global app (134 ms)
+      ✕ should handle route registration with missing global app (146 ms)
     Authentication Error Scenarios
-      ✓ should handle passport strategy detection with broken global state (42 ms)
-      ✓ should handle authentication with various request object states (12 ms)
+      ✓ should handle passport strategy detection with broken global state (30 ms)
+      ✓ should handle authentication with various request object states (73 ms)
     URL Processing Error Recovery
-      ✓ should handle malformed URLs throughout processing pipeline (4 ms)
-      ✓ should handle URL processing with partial failures (153 ms)
+      ✓ should handle malformed URLs throughout processing pipeline (16 ms)
+      ✓ should handle URL processing with partial failures (224 ms)
     Data Validation Error Recovery
-      ✕ should handle validation with various malformed objects (4 ms)
+      ✕ should handle validation with various malformed objects (7 ms)
 
   ● Error Handling Integration Tests › Cascading Error Scenarios › should handle multiple module failures gracefully
 
@@ -2005,7 +2001,7 @@ Node.js v20.19.3
 
 ```
 
-### Duration: 14783ms
+### Duration: 13879ms
 
 ---
 
@@ -2013,4 +2009,4 @@ Node.js v20.19.3
 
 - Total failed tests: 16
 - Failed test files: index.exports.test.js, lib/additional-edge-cases.test.js, lib/system/env/env.test.js, lib/system/realtime/realtime.test.js, lib/system/shutdown/shutdown-utils.test.js, lib/system/worker-pool/worker-pool.test.js, lib/utilities/datetime/datetime-enhanced.test.js, lib/utilities/datetime/datetime.test.js, lib/utilities/file/file-utils.test.js, lib/utilities/id-generation/id-generation.test.js, lib/utilities/string/string-utils.test.js, lib/utilities/url/url.test.js, lib/validation/advanced-validation.test.js, lib/validation/github-validation.test.js, lib/validation/validation.test.js, tests/integration/error-handling.test.js
-- Generated: 2025-08-19T10:23:30.100Z
+- Generated: 2025-08-19T10:42:00.881Z
