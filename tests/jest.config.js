@@ -5,10 +5,12 @@ module.exports = {
   // Test environment
   testEnvironment: 'node',
   
-  // Test file patterns
+  // Test file patterns - now co-located with source files
   testMatch: [
     '**/tests/**/*.test.js',
-    '**/tests/**/*.spec.js'
+    '**/tests/**/*.spec.js',
+    '**/*.test.js',
+    '**/*.spec.js'
   ],
   
   // Setup files
@@ -35,7 +37,9 @@ module.exports = {
     'index.js',
     '!**/node_modules/**',
     '!**/tests/**',
-    '!**/coverage/**'
+    '!**/coverage/**',
+    '!**/*.test.js',
+    '!**/*.spec.js'
   ],
   
   // Module paths
