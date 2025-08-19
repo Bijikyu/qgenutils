@@ -12,6 +12,7 @@ YOU ARE NEVER TO DELETE ANYTHING WITHOUT PERMISSION. DO NOT ASSUME I WANT SOMETH
 - January 2025: Removed `lib/client/` directory and associated utilities (renderView, makeCopyFn) as functionality moved elsewhere
 - Library reorganized from individual category folders to superset groupings for better organization
 - Flattened `lib/validation/` structure - moved all validation files directly into validation directory (removed subfolders)
+- Moved unit tests to be co-located with source files instead of centralized `tests/unit/` directory
 
 ## System Architecture
 QGenUtils is built on a pure Single Responsibility Principle (SRP) architecture, where each function resides in its own file. Key design principles include:
