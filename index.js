@@ -66,6 +66,8 @@ const sanitizeString = require('./lib/utilities/string/sanitizeString');
 const sanitizeHtml = require('./lib/security/sanitizeHtml');
 const sanitizeSqlInput = require('./lib/security/sanitizeSqlInput'); 
 const validateInputRate = require('./lib/security/validateInputRate');
+const sanitizeObjectRecursively = require('./lib/security/sanitizeObjectRecursively');
+const validateUserInput = require('./lib/security/validateUserInput');
 
 // GitHub validation utilities - individual functions
 const validateGitHubUrl = require('./lib/validation/validateGitHubUrl');
@@ -152,6 +154,8 @@ module.exports = {
   sanitizeHtml, // strip XSS vulnerabilities from HTML content
   sanitizeSqlInput, // prevent SQL injection in database queries
   validateInputRate, // rate limiting for DoS prevention
+  sanitizeObjectRecursively, // recursively sanitize nested objects and arrays
+  validateUserInput, // advanced input validation with size constraints
   
   // GitHub validation utilities - repository URL format checking
   validateGitHubUrl, // validate GitHub repository URLs
