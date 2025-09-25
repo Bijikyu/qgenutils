@@ -1,0 +1,90 @@
+/** Sanitize string values to prevent injection attacks.
+ * Trade-offs: Best-effort string scrubbing for docs/tooling; business endpoints should still validate via Zod.
+ */
+export function sanitizeString(str: string): string {
+  if (typeof str !== 'string') return str as any;
+  return str
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/eval\s*\(/gi, '')
+    .replace(/exec\s*\(/gi, '')
+    .replace(/system\s*\(/gi, '')
+    .trim();
+}
+
+/** Recursively sanitize object properties to prevent injection */
+export function sanitizeObjectRecursively(obj: any): any {
+  if (typeof obj === 'string') return sanitizeString(obj);
+  if (Array.isArray(obj)) return obj.map(sanitizeObjectRecursively);
+  if (typeof obj === 'object' && obj !== null) {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const sanitizedKey = sanitizeString(key);
+      sanitized[sanitizedKey] = sanitizeObjectRecursively(value);
+    }
+    return sanitized;
+  }
+  return obj;
+}
+
+/** Validate and sanitize arbitrary user input */
+// Bounded deep sanitize+clone to avoid JSON round-trips and excessive allocations
+// Limits: depth<=6, max keys/items per level<=100, strings<=8k chars, total budget<=16kB (approx)
+const MAX_DEPTH = 6;
+const MAX_ENTRIES = 100;
+const MAX_STRING = 8192;
+
+function deepSanitizeClone(value: any, depth = 0, state = { remaining: 16 * 1024 }): any {
+  if (state.remaining <= 0) return '[truncated]';
+  if (value == null) return value;
+  if (depth > MAX_DEPTH) return '[truncated]';
+
+  const byteLen = (s: string) => {
+    try { return Buffer.byteLength(s, 'utf8'); } catch { return s.length; }
+  };
+  const spend = (n: number) => { state.remaining -= n; return state.remaining > 0; };
+
+  const t = typeof value;
+  if (t === 'string') {
+    const s = sanitizeString(value);
+    const clipped = s.length > MAX_STRING ? s.slice(0, MAX_STRING) + '…' : s;
+    spend(byteLen(clipped));
+    return clipped;
+  }
+  if (t === 'number' || t === 'boolean') { spend(8); return value; }
+  if (Array.isArray(value)) {
+    const out: any[] = [];
+    const n = Math.min(value.length, MAX_ENTRIES);
+    for (let i = 0; i < n && state.remaining > 0; i++) out.push(deepSanitizeClone(value[i], depth + 1, state));
+    if (value.length > n && state.remaining > 0) out.push('[…]');
+    spend(2);
+    return out;
+  }
+  if (t === 'object') {
+    const out: any = {};
+    let i = 0;
+    for (const [k, v] of Object.entries(value)) {
+      if (i++ >= MAX_ENTRIES || state.remaining <= 0) { out['…'] = '[truncated]'; break; }
+      const sk = sanitizeString(k);
+      spend(byteLen(sk) + 2);
+      out[sk] = deepSanitizeClone(v, depth + 1, state);
+    }
+    return out;
+  }
+  // functions/symbols/others → string tag
+  try { const s = String(value); spend(byteLen(s)); return s; } catch { return '[unserializable]'; }
+}
+
+export function validateUserInput(input: any): { isValid: boolean; sanitized: any; error?: string } {
+  if (input === null || input === undefined) {
+    return { isValid: true, sanitized: input };
+  }
+  try {
+    const sanitized = deepSanitizeClone(input, 0);
+    return { isValid: true, sanitized };
+  } catch {
+    return { isValid: false, sanitized: null, error: 'Failed to sanitize input' };
+  }
+}
