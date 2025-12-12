@@ -235,6 +235,13 @@ const createProcessingCapabilities = require('./lib/utilities/config/createProce
 const execHelperWrapper = require('./lib/utilities/function/execHelperWrapper');
 const createExecHelper = require('./lib/utilities/function/createExecHelper');
 
+// Performance monitoring utilities - real-time metrics and alerting
+const collectPerformanceMetrics = require('./lib/utilities/performance-monitor/collectPerformanceMetrics');
+const measureEventLoopLag = require('./lib/utilities/performance-monitor/measureEventLoopLag');
+const analyzePerformanceMetrics = require('./lib/utilities/performance-monitor/analyzePerformanceMetrics');
+const getPerformanceHealthStatus = require('./lib/utilities/performance-monitor/getPerformanceHealthStatus');
+const createPerformanceMonitor = require('./lib/utilities/performance-monitor/createPerformanceMonitor');
+
 // Input validation utilities - comprehensive validation and sanitization
 const validateEmailFormat = require('./lib/utilities/validation/validateEmail');
 const validatePasswordStrength = require('./lib/utilities/validation/validatePassword');
@@ -477,6 +484,13 @@ module.exports = {
   // Exec helper utilities - function wrapping with error handling
   execHelperWrapper, // wrap functions with error handling and logging
   createExecHelper, // factory for exec helper instances
+  
+  // Performance monitoring utilities - real-time metrics and alerting
+  collectPerformanceMetrics, // collect CPU, memory, heap metrics from process
+  measureEventLoopLag, // async measurement of event loop blocking
+  analyzePerformanceMetrics, // analyze metrics against thresholds
+  getPerformanceHealthStatus, // compute overall health status with recommendations
+  createPerformanceMonitor, // factory for complete monitoring system
   
   // Input validation utilities - comprehensive validation and sanitization
   validateEmailFormat, // RFC 5322 email validation (from @scrooge)
