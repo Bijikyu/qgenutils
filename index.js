@@ -235,6 +235,9 @@ const createProcessingCapabilities = require('./lib/utilities/config/createProce
 const execHelperWrapper = require('./lib/utilities/function/execHelperWrapper');
 const createExecHelper = require('./lib/utilities/function/createExecHelper');
 
+// Data structure utilities
+const createMinHeap = require('./lib/utilities/data-structures/MinHeap');
+
 // Password utilities - secure hashing and generation
 const hashPassword = require('./lib/utilities/password/hashPassword');
 const verifyPassword = require('./lib/utilities/password/verifyPassword');
@@ -500,6 +503,9 @@ module.exports = {
   // Exec helper utilities - function wrapping with error handling
   execHelperWrapper, // wrap functions with error handling and logging
   createExecHelper, // factory for exec helper instances
+  
+  // Data structure utilities
+  createMinHeap, // O(log n) min-heap for priority queues
   
   // Password utilities - secure hashing and generation
   hashPassword, // bcrypt hashing with 12 salt rounds
