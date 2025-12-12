@@ -1,0 +1,324 @@
+Validation Modules
+@codex/validation-framework
+Purpose: Comprehensive validation framework with Zod schemas, error handling, and safe execution patterns.
+
+Explanation:
+This module provides a complete validation framework built on Zod with comprehensive error handling, safe execution patterns, and reusable validation utilities. It includes string validators for common patterns, number validators with range constraints, object validation utilities, and schema builders for complex validation scenarios. The framework is particularly valuable for applications that need consistent input validation across APIs, forms, and data processing pipelines.
+
+The validation framework includes support for different data types, custom error messages, field-specific validation, and result types for error-safe operations that prevent exceptions from disrupting application flow.
+
+// 🔗 Common Patterns: Shared validation utilities
+// 🚩AI: MUST_UPDATE_IF_VALIDATION_PATTERNS_CHANGE
+// Rationale: Centralized validation patterns using Zod for consistent input validation
+// Provides reusable validation functions with clear error messages and type safety
+// Single source of truth for all validation logic across the application
+import { z } from 'zod';
+import { errorUtils } from './errorHandling.js';
+// Re-export z for convenience - this is the single source of truth for zod imports
+// Rationale: Prevents multiple Zod imports and ensures consistent version usage
+export { z };
+/**
+ * Common validation patterns for string inputs
+ * Rationale: Provides reusable string validation functions with descriptive error messages
+ * Each validator handles specific string formats and business rules
+ */
+export const stringValidators = {
+  /**
+   * Validates non-empty string with custom error messages
+   * Rationale: Ensures required string fields are present and contain visible characters
+   * @param fieldName - Name of the field being validated for error messages
+   * @param customMessage - Optional custom error message override
+   */
+  nonEmpty: (fieldName: string, customMessage?: string) => 
+    z.string({
+      required_error: customMessage || `${fieldName} is required`,
+    }).min(1, customMessage || `${fieldName} must not be empty`),
+  /**
+   * Validates email format with comprehensive error handling
+   * Rationale: Ensures email addresses follow RFC 5322 format for deliverability
+   * @param fieldName - Name of the email field for error messages
+   */
+  email: (fieldName: string) =>
+    z.string({
+      required_error: `${fieldName} is required`,
+    }).email(`${fieldName} must be a valid email address`),
+  /**
+   * Validates API key format with service-specific error messages
+   * Rationale: Ensures API keys are present for service authentication
+   * @param serviceName - Name of the service requiring the API key
+   */
+  apiKey: (serviceName: string) =>
+    z.string({
+      required_error: `${serviceName} API key is required`,
+    }).min(1, `${serviceName} API key is required`),
+  /**
+   * Validates URL format with proper protocol checking
+   * Rationale: Ensures URLs are properly formatted for HTTP requests and redirects
+   * @param fieldName - Name of the URL field for error messages
+   */
+  url: (fieldName: string) =>
+    z.string({
+      required_error: `${fieldName} is required`,
+    }).url(`${fieldName} must be a valid URL`),
+};
+/**
+ * Common validation patterns for numeric inputs
+ */
+export const numberValidators = {
+  /**
+   * Validates positive integer
+   */
+  positiveInt: (fieldName: string) =>
+    z.number({
+      required_error: `${fieldName} is required`,
+    }).int(`${fieldName} must be an integer`)
+      .positive(`${fieldName} must be positive`),
+  /**
+   * Validates temperature (0-2 range)
+   */
+  temperature: (fieldName: string = 'temperature') =>
+    z.number({
+      required_error: `${fieldName} is required`,
+    }).min(0, `${fieldName} cannot be negative`)
+      .max(2, `${fieldName} must be within safety bounds (0-2)`),
+  /**
+   * Validates timeout in milliseconds
+   */
+  timeout: (fieldName: string = 'timeout') =>
+    z.number({
+      required_error: `${fieldName} is required`,
+    }).positive(`${fieldName} must be positive`),
+};
+/**
+ * Common validation utilities
+ */
+export const validationUtils = {
+  /**
+   * Validates and trims string input
+   */
+  validateString: (input: unknown, fieldName: string): string => {
+    if (typeof input !== 'string') {
+      throw errorUtils.validation(fieldName, input);
+    }
+    const trimmed = input.trim();
+    if (!trimmed) {
+      throw errorUtils.validation(fieldName, 'empty string');
+    }
+    return trimmed;
+  },
+  /**
+   * Validates API key with optional format checking
+   */
+  validateApiKey: (apiKey: unknown, serviceName: string): string => {
+    const validated = validationUtils.validateString(apiKey, `${serviceName} API key`);
+    // Add service-specific format validation if needed
+    return validated;
+  },
+  /**
+   * Validates email format
+   */
+  validateEmail: (email: unknown, fieldName: string = 'email'): string => {
+    const validated = validationUtils.validateString(email, fieldName);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(validated)) {
+      throw errorUtils.validation(fieldName, validated);
+    }
+    return validated;
+  },
+  /**
+   * Validates required object fields
+   */
+  validateRequiredFields: (
+    obj: any,
+    requiredFields: string[],
+    context: string
+  ): void => {
+    if (!obj || typeof obj !== 'object') {
+      throw errorUtils.validation(context, obj);
+    }
+    const missing = requiredFields.filter(field => {
+      const value = obj[field];
+      return value === undefined || value === null || 
+        (typeof value === 'string' && !value.trim());
+    });
+    if (missing.length) {
+      throw new Error(`Missing required fields for ${context}: ${missing.join(', ')}`);
+    }
+  },
+  /**
+   * Validates choice among allowed values
+   */
+  validateChoice: <T>(
+    value: unknown,
+    allowedValues: T[],
+    fieldName: string
+  ): T => {
+    if (!allowedValues.includes(value as T)) {
+      throw errorUtils.validation(
+        fieldName, 
+        `${value} not in allowed values: ${allowedValues.join(', ')}`
+      );
+    }
+    return value as T;
+  },
+};
+/**
+ * Common schema builders
+ */
+export const schemaBuilders = {
+  /**
+   * Creates a standard data schema with string validation
+   */
+  dataWithStrings: (fields: Record<string, string>) => {
+    const schemaFields: Record<string, z.ZodTypeAny> = {};
+    
+    Object.entries(fields).forEach(([fieldName, description]) => {
+      schemaFields[fieldName] = stringValidators.nonEmpty(fieldName, description);
+    });
+    
+    return z.object(schemaFields);
+  },
+  /**
+   * Creates credential schema for API services
+   */
+  credentials: (serviceName: string, fields: string[]) => {
+    const schemaFields: Record<string, z.ZodTypeAny> = {};
+    
+    fields.forEach(field => {
+      schemaFields[field] = stringValidators.apiKey(`${serviceName} ${field}`);
+    });
+    
+    return z.object(schemaFields);
+  },
+};
+
+@codex/service-meta
+Purpose: Service metadata utilities for API documentation, authentication, and validation patterns.
+
+Explanation:
+This module provides comprehensive utilities for creating service metadata, API authentication, and validation patterns. It includes functions for creating standard HTTP authentication, Zod string validators with custom error messages, credential schemas for API services, and service meta objects for consistent API documentation. The utilities are particularly valuable for building RESTful APIs with consistent authentication, validation, and documentation patterns.
+
+The module includes support for different authentication methods, customizable error messages, and standardized meta schema interfaces for API documentation generation.
+
+// 🔗 Common Patterns: Shared utilities for service meta patterns
+// 🚩AI: MUST_UPDATE_IF_SERVICE_META_PATTERNS_CHANGE
+import { z } from 'zod';
+/**
+ * Common meta schema interface for all service functions
+ */
+export interface ServiceMeta {
+  route: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  description: string;
+  requiredRole: 'public' | 'user' | 'admin';
+  apiKeyRequired: boolean;
+  schema: z.ZodSchema;
+  exampleInput: any;
+  plan: 'free' | 'pro';
+}
+/**
+ * Creates standard HTTP authentication for API keys
+ */
+export function createApiKeyAuth(apiKey: string) {
+  return {
+    username: 'anystring',
+    password: apiKey,
+  };
+}
+/**
+ * Creates a standard Zod string validator with common error messages
+ */
+export function createRequiredStringValidator(
+  fieldName: string,
+  errorMessage?: string
+) {
+  return z.string({
+    required_error: errorMessage || `${fieldName} is required`,
+  }).min(1, errorMessage || `${fieldName} must not be empty`);
+}
+/**
+ * Creates a standard credential schema for API-based services
+ */
+export function createCredentialSchema(fields: {
+  apiKey?: { name?: string; description?: string };
+  serverPrefix?: { name?: string; description?: string };
+  [key: string]: { name?: string; description?: string } | undefined;
+}) {
+  const schemaFields: Record<string, z.ZodTypeAny> = {};
+  
+  if (fields.apiKey) {
+    schemaFields.apiKey = z.string({
+      required_error: fields.apiKey.description || `${fields.apiKey.name || 'API key'} is required`,
+    }).min(1, fields.apiKey.description || `${fields.apiKey.name || 'API key'} is required`);
+  }
+  
+  if (fields.serverPrefix) {
+    schemaFields.serverPrefix = z.string({
+      required_error: fields.serverPrefix.description || `${fields.serverPrefix.name || 'Server prefix'} is required`,
+    }).min(1, fields.serverPrefix.description || `${fields.serverPrefix.name || 'Server prefix'} is required`);
+  }
+  
+  // Add other fields dynamically
+  Object.entries(fields).forEach(([key, config]) => {
+    if (key !== 'apiKey' && key !== 'serverPrefix' && config) {
+      schemaFields[key] = z.string({
+        required_error: config.description || `${config.name || key} is required`,
+      }).min(1, config.description || `${config.name || key} is required`);
+    }
+  });
+  
+  return z.object(schemaFields);
+}
+/**
+ * Creates a standard service meta object
+ */
+export function createServiceMeta(config: ServiceMeta): ServiceMeta {
+  return {
+    route: config.route,
+    method: config.method,
+    description: config.description,
+    requiredRole: config.requiredRole,
+    apiKeyRequired: config.apiKeyRequired,
+    schema: config.schema,
+    exampleInput: config.exampleInput,
+    plan: config.plan,
+  };
+}
+/**
+ * Common validation and sanitization utilities
+ */
+export const metaValidationUtils = {
+  /**
+   * Validates and trims a string input
+   */
+  validateString: (input: unknown, fieldName: string): string => {
+    const str = typeof input === 'string' ? input.trim() : '';
+    if (!str) {
+      throw new Error(`${fieldName} must be a non-empty string`);
+    }
+    return str;
+  },
+  /**
+   * Validates API key presence
+   */
+  validateApiKey: (apiKey: unknown, serviceName: string): string => {
+    const key = typeof apiKey === 'string' ? apiKey.trim() : '';
+    if (!key) {
+      throw new Error(`${serviceName} API key is required`);
+    }
+    return key;
+  },
+  /**
+   * Validates required object fields
+   */
+  validateRequiredFields: (
+    obj: any,
+    requiredFields: string[],
+    context: string
+  ): void => {
+    const missing = requiredFields.filter(field => !obj[field]);
+    if (missing.length) {
+      throw new Error(`Missing required fields for ${context}: ${missing.join(', ')}`);
+    }
+  },
+};
