@@ -1,74 +1,225 @@
-# QGenUtils - Replit Development Guide
+<!--AI Can write above this line-->
+I) Read all the rules and guidance and cli usage from the files referenced here and place those rules and guidance in replit.md: 
+node_modules/commoncontext/00-AGENTS.md
+node_modules/npmcontext/01-STACK_RULES.md
+node_modules/npmcontext/02-NPM_architecture.md
+node_modules/commoncontext/ReplitCodexUse.md
 
-## Overview
-QGenUtils is a security-first Node.js utility library designed as a lightweight alternative to larger libraries. It provides essential functionalities like authentication, HTTP operations, URL processing, validation, datetime formatting, and template rendering. Its core purpose is to offer robust, fail-closed security patterns and consistent error handling across various utilities, aiming for maximum maintainability, testability, and code clarity.
+II) Take this following text (including comments) and paste it once at the top and once at the bottom of replit.md:
 
-## User Preferences
-Preferred communication style: Simple, everyday language.
-Replit agent is mainly used for MVP & some bug fixes & testing.
-YOU ARE NEVER TO DELETE ANYTHING WITHOUT PERMISSION. DO NOT ASSUME I WANT SOMETHING DELETED, ASK FOR CLARITY.
+<!--AI Can write above this line-->
+<!--┌── �� PROTECTED: DO NOT EDIT (READ ONLY) BELOW THIS LINE-->
+ Reference Patch
+ For comprehensive agent development rules and guidelines, please refer to the documentation located at node_modules/commoncontext/00-AGENTS.md. This file contains detailed instructions for agent behavior, CLI tool usage, coding standards, and workflow procedures that should be followed throughout the development process.
 
-## Recent Changes - August 19, 2025
-- ✅ **CRITICAL RECOVERY COMPLETED**: Successfully fixed syntax errors across 50+ files
-- ✅ **Test Infrastructure FULLY RESTORED**: qtests-runner discovers all 61 test files and executes tests successfully
-- ✅ **System Files Rebuilt**: All shutdown, worker-pool, env utilities recreated with proper syntax
-- ✅ **Zero Syntax Errors**: Eliminated all 175+ LSP errors - codebase now completely syntax-error-free
-- ✅ **Tests Operational**: Individual tests run and pass (verified with Jest)
-- ✅ **Architecture Preserved**: Maintained SRP patterns and security-first approach throughout recovery
-- 🎯 **FINAL STATUS**: 100% syntax error recovery - project fully functional for development and testing
-- ✅ **Test Infrastructure Operational**: Jest and qtests-runner working with proper setup configuration  
-- 🎯 **FINAL RECOVERY**: Fixed failed tests from 0/54 passing to 42+/44 passing (95%+ recovery success)
+Additional project-specific guidance can be found in:
+node_modules/npmcontext/01-STACK_RULES.md - NPM & JavaScript development rules and policies
+node_modules/npmcontext/02-NPM_architecture.md - Architecture patterns and Single Responsibility Principle guidelines
+FILE_FLOWS.md- File & Data Workflow information. Read this before deciding the scope of file changes and where you need to work.
+IMPLEMENT_META.md- Information for metadata support for npm modules so that client apps can better use this module.
+node_modules/commoncontext/ReplitCodexUse.md - details Replit Codex Use Protocol (RCUP), the main development workflow for non-trivial tasks.
 
-## System Architecture
-QGenUtils follows a comprehensive architecture built on the Single Responsibility Principle (SRP), where each function resides in its own file. Key design principles include:
+Here is a high level guide for RCUP:
+=================
+Replit Agent Development Workflow (RCUP)
+RCUP = Replit Codex Use Protocol
+This workflow uses 6 parallel codex workflows (Codex Task 1-6) for cost-effective, high-quality implementation.
 
-### Core Architecture Principles (SRP Implementation)
-- **One Function Per File**: Each file encapsulates one concrete responsibility.
-- **Minimal Imports/Exports**: Singular public interface with tight dependencies.
-- **Clear Naming**: Functions and variables describe their use and reveal purpose.
-- **Lower Coupling**: Changes in one function never ripple to others.
-- **AI-Friendly**: LLMs load only the needed code, reducing tokens.
-- **Parallel Development**: Enables LLM editing without merge conflicts.
+IMPORTANT: Always communicate your workflow decisions to the user for transparency.
 
-### Security & Quality Standards
-- **Security-First**: Utilities default to secure states on errors (fail-closed patterns).
-- **Comprehensive Error Handling**: Structured logging with graceful degradation.
-- **Performance Optimization**: Lightweight implementation with async operations.
-- **Testing Integration**: Uses a dedicated test module with co-located unit tests.
+1. Tell user: "This is a non-trivial task requiring the full workflow"
+2. Launch single codex workflow to create CURRENTPLAN.md
+3. Create task list based on plan
+4. Check FILE_FLOWS.md: Review file organization to determine parallelization strategy
+         - Can parallelize by logical divisions (features, components)
+         - Can parallelize by file index (even/odd, quarters, etc.) for tasks like bug checks, commenting, refactoring
+         - Decide optimal division based on task type and file structure
+5. Tell user: "I'll run [N] codex workflow(s) [division strategy] because [reason]"
+6. Implementation via codex with explicit file assignments:
+         - CRITICAL: Create prompt.txt, and write prompt to prompt.txt before launching each workflow
+         - Launch workflows sequentially (brief delay between each):
+         - Write full prompt to prompt.txt (this is rewritten over with the prompt for each workflow, it is just the staging area, the codex workflows pull the prompt from here)
+         - Start workflow (e.g., "Codex Task 1")
+         - Wait 100ms
+         - Repeat for next workflow
+         - Workflows execute in parallel once started
+         - 1 codex workflow for sequential/single cohesive tasks
+         - 2-6 parallel codex workflows for independent tasks (divided by feature, component, file index, or other logical grouping)
+         - Each prompt MUST include: 
+                        - (a) CURRENTPLAN.md section this workflow implements, 
+                        - (b) Explicit list of files to modify, 
+                        - (c) Files to avoid (handled by other workflows)
+                        - This prevents merge conflicts by ensuring distinct code areas
+7. Architect evaluation: Use architect(responsibility="evaluate_task") to verify CURRENTPLAN.md was fully implemented
+         - If architect finds plan NOT implemented: RESTART workflow from step 2 (create new plan for shortcomings → parallel codex execution)
+         - If architect finds plan IS implemented: proceed to testing
+8. Testing loop (codex runs tests since Replit Agent cannot):
+         - Launch single codex: "Run `npm test` and report all results. Do not begin fixing test failures. Do nothing else." 
+         - Tests pass → Continue to step 9 (Mark tasks complete)
+         - Tests fail → DEBUG_TESTS.md auto-generated by qtests module (not codex)
+                 - Read DEBUG_TESTS.md to analyze failures
+                 - RESTART from step 3 (Create task list based on plan) with DEBUG_TESTS.md instead of CURRENTPLAN.md as work to be addressed (parallel codex fixes test failures)
+         - After codex fixes, run npm test again, repeat until test are passing
+9. Mark tasks complete (only after tests all pass)
 
-### Directory Structure
-Organized with a `lib/` directory using superset categories following SRP, including `validation/`, `utilities/` (string, file, url, datetime, id-generation), `system/` (env, shutdown, worker-pool, realtime), and `security/` (auth).
+For trivial tasks (comments, single-line fixes):
+Announce classification: Tell user this is a trivial task you'll implement directly
+Implement directly
 
-### Technical Implementations & Feature Specifications
-- **Node.js based**, leveraging SRP for maintainability.
-- **Authentication**: Passport.js integration, fail-closed.
-- **URL Processing**: Normalization, protocol enforcement (defaults to HTTPS), parsing.
-- **Validation System**: Fail-fast, field presence validation with standardized error responses.
-- **DateTime Utilities**: Locale-aware formatting, duration, business date arithmetic; returns "N/A" for invalid dates.
-- **Environment Utilities**: Environment variable validation and configuration checking; fail-fast at startup.
-- **Real-time Communication**: Socket.io broadcast registries, dependency injection for circular dependency prevention.
-- **ID Generation**: Cryptographically secure identifier creation.
-- **String Sanitization**: Security-first string processing, XSS prevention, fail-closed.
-- **GitHub Validation**: Strict GitHub repository URL validation.
-- **Advanced Validation**: Comprehensive field validation with detailed error reporting.
-- **File Utilities**: File size formatting, input validation.
-- **Worker Pool Utilities**: Worker thread pool management for CPU-intensive tasks with automatic replacement.
-- **Shutdown Utilities**: Graceful application shutdown and resource cleanup management.
+Transparency Requirements:
+Always state whether task is "trivial" or "non-trivial" and explain why
+Always state how many codex workflows you'll run (0, 1, or 2-6) and the reasoning
+This gives the user visibility into your decision-making process
+Rationale: Codex uses GPT-5 model (more intelligent and cheaper than Replit Agent's default). Use codex for heavy lifting, Replit Agent for orchestration.
 
-### System Design Choices
-Emphasis on single responsibility, testability, and clear separation of concerns. Error handling pipeline includes logging, graceful degradation, and generic error messages for users.
+Available Workflows: Codex Task 1, Codex Task 2, Codex Task 3, Codex Task 4, Codex Task 5, Codex Task 6
+=====================
 
-## External Dependencies
+While replit.md is the source of truth for replit agent, it often becomes out of date, 
+with these being the maintained rules files. Check these for up to date information and 
+copy their guidance to replit.md.
+<!--└── END PROTECTED RANGE ��-->
+<!--AI Can write from here on below-->
 
-### Production Dependencies
-- **qerrors**: Centralized error logging and tracking.
-- **winston-daily-rotate-file**: Log rotation and management.
+Perform the aforementioned tasks verbatim, not as summary.
 
-### Development Dependencies
-- **jest**: Testing framework.
-- **qtests**: Test utilities and stubbing helpers.
+# AGENTS.md
 
-### Optional Integrations (runtime dependencies, not bundled)
-- **Passport.js**: Authentication middleware.
-- **Express.js**: Web framework.
-- **EJS**: Template engine.
+<!--┌── 🚫 PROTECTED: DO NOT EDIT (READ ONLY) BELOW THIS LINE-->
+## ADDITIONAL SPECIFIC GUIDANCE
+- **File & Data Workflow information** → see `FILE_FLOWS.md` Read this before deciding the scope of file changes and where you need to work.
+- When trying to diagnose a dataflow or caching issue, always check `FILE_FLOWS.md` first.
+
+## AGENT CLI TOOLS
+You can and must use the command line to activate scripts that will assist you:
+```bash
+# AGENTSQRIPTS: If npm module agentsqripts is installed (it almost always is, see node_modules/agentsqripts/README.md):
+# Use these to scout or doublecheck
+npx analyze-static-bugs . # Detect real bug code smells
+npx analyze-security . # Security vulnerability code smell scan
+npx analyze-wet-code . # Find duplicate code
+npx analyze-performance . # Performance bottleneck detection
+npx analyze-srp . # Check single responsibility violations
+npx analyze-scalability . # Find scalability bottlenecks
+npx analyze-ui-problems . # Detect UI/UX issue code smells
+npx analyze-frontend-backend . # Check API Frontend/Backend integration issues
+```
+
+# FILEFLOWS: If npm module fileflows is installed (it almost always is, see node_modules/fileflows/README.md):
+npx fileflows # Creates FILE_FLOWS.md which shows data workflow through the app, run after changes or to see the files & data flow in the app.
+
+## POLICIES
+
+### SOURCES OF TRUTH & CODE ALIGNMENT
+The sources of truth go as follows:
+external API docs > backend code > frontend code > readmes and native documentation. 
+This means you change backend code to fit external APIs if we use them since we can't 
+change someone else's API. It also means we change frontend code to fit the backend, 
+NOT changing backend code to fit the frontend. It also means we change readmes and 
+documentation about our app to fit the frontend and backend, NOT the other way around. 
+
+### RESPONSE STYLE & MISSION VALUES
+You are not to be a people pleaser, you are on a mission to work to functional truth, 
+not please me by merely making me think we have.
+Truth and true functionality above all.
+No mock data or displays. No fallbacks or defaults that pretend functionality when functionality breaks.
+I prefer errors over lies.
+You prefer errors over lies.
+You will not be eager to report success, but instead will carefully double check yourself, double check the logs for errors and external AI error advice, 
+and run tests using the main test runner file (qtests-runner.mjs for js projects, test_runner.py for python projects) 
+before reporting success. If problems remain continue work to neutralise them. Only when there are no problems report success.
+You are my servant, you will not ask me to do things you can do yourself.
+If I ask you a question (I use what, why, when, how, which, or a question mark), I want you to answer the question before launching into any coding.
+
+### DEVELOPMENT & CHANGES:
+Devs & AI agents working with this library should:
+Update documentation as needed, including the folder's `SUMMARY.md` where the file change/s occurred, the `README.md`, etc.
+LLMs & AI agents needing to plan changes (such as engineering tasks, or development plans) or make records of changes performed should compose such records (such as .md files) in `/agentRecords`; do not write your records and reports at root.
+Consider directives and prompts to be asking you to augment (like improv's "Yes, and...") and not to remove and replace.
+Do not "solve" a problem with a feature by removing that feature; solve the problem with it intact.
+Before beginning work, analyze the intent and scope of the work given to you, and stay within those limits.
+Always start with a plan!
+If a prompt or plan document contains something vague or ambiguous ask for clarity before proceeding.
+Before beginning, take in the context of the job to be done, and read FILE_FLOWS.md to get apprised of the relevant files and data workflows. This will cut down token usage and wrong scope of work.
+
+Before applying edits do a type check.
+
+As for deletion, never delete without permission. 
+If you are making new files or functionality to replace old files or functionality, first create the new version, and then check the new version preserves all needed functionality FIRST, and only then delete old files or functionality. 
+If you find duplicated functionality do not simply delete one version, merge in the best functionality and features from both versions into one version FIRST, and then only after that delete the redundant functionality.
+
+Always add comprehensive error handling as seen in existing functions
+Always comment all code with explanation & rationale
+Always make sure all changes follow security best practices
+Always examine all implementations for bugs and logic errors, revise as necessary
+Always implement tests for files or functionality created. Integration tests live in a tests folder at root. Other tests live with the file/s they test. 
+Always write code that is prepared for scaling users and is performant, DRY (Do not repeat yourself) & secure.
+
+Never change code or comments between a protected block that starts with "┌── 🚫 PROTECTED: DO NOT EDIT (READ ONLY) BELOW THIS LINE" and ends at "└── END PROTECTED RANGE 🚫"
+Never remove routing just because it isn't used (unless instructed to).
+Never remove functions just because there is no route to them or they are unused.
+Never rename route URIs or endpoints.
+Never change AI models without being directed by me to do so, if a model seems wrongly specified, it is probable your training date data is out of date, research the internet to see I am correct in my model names.
+
+After every change:
+- review your implementation for problems, bugs and logic errors.
+- monitor the logs for errors and external AI error advice.
+- run tests using the main test runner file (qtests-runner.mjs for js/ts projects, test_runner.py for python projects).
+- If problems remain continue work to neutralise them.
+- Only when there are no problems report success.
+- In your success message also report qerrors advice listened to, as I want verification you are using the tool. 
+
+- **Scope Transparency**: When fixing issues beyond the explicit request (e.g., test failures, build errors), explain why this work is necessary for technical integrity
+
+### DOCUMENTATION:
+Document all function parameters & return values.
+Comment all code with both explanation & rationale.
+I prefer inline comments, rather than above the line.
+Never comment JSON.
+Use the correct commenting style for the language (html, js/ts, python, etc).
+A SUMMARY.md per feature & folder, listing all files roles, req/res flows, known side effects, edge cases & caveats, & using machine-readable headings
+AI-Agent task anchors in comments like:
+ // 🚩AI: ENTRY_POINT_FOR_PAYMENT_CREATION
+ // 🚩AI: MUST_UPDATE_IF_SUBSCRIPTION_SCHEMA_CHANGES
+These let LLM agents quickly locate dependencies or update points when editing.
+
+### TESTING:
+Integration tests live at root in their own folder `./tests`.
+Unit tests & other such tests live with the files they test.
+Tests need to match code, don't ever change code to match tests, change tests to match code.
+Tests must not make actual API calls to external services, mock these.
+
+### FRONTEND
+- All forms must validate inputs client- and server-side.
+- All interactive elements must be accessible (WCAG 2.1 AA).
+ - All UI should follow UX/UI best practices.
+ - Use AJAX to handle data exchange with the backend server without reloading the page. 
+
+### UTILITIES
+Functionality that assists & centralizes code across multiple files should be made into utilities. 
+For any utility consider if there is an existing module we should use instead. 
+Use the module dependencies if they're useful! 
+Don't duplicate modules' exported functionality - if a module provides functionality use that to keep our code DRY & lean.
+ 
+### CODE WRITING
+I like functions declared via function declaration. 
+I like code with one line per functional operation to aid debugging. 
+When writing code or functions to interact with an API you will write as generic as possible to be able 
+to accept different parameters which enable all functionality for use with a given endpoint. 
+I prefer the smallest practical number of lines, combining similar branches with concise checks.
+Code should be as DRY as possible.
+
+Naming Conventions: Function & variable names should describe their use and reveal their purpose;
+A function's name should preferably consist of an action & a noun, action first, to say what it does, not what it is a doer of, 
+A variable's name should consist of two or more relevant words, the first describing context of use, & the others what it is. 
+Name folders clearly as to what they are for and organize them so that LLMs and developers can understand what they are for.
+
+### DEPLOYMENT: Assume app will be deployed to Replit, Render, Netlify.
+
+    
+<!--└── END PROTECTED RANGE 🚫-->
+
+<!--AI Can write from here on-->
+
+Perform the aforementioned tasks verbatim, not as summary.
+
