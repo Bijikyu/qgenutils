@@ -44,6 +44,7 @@ const hasGithubStrategy = require('./lib/security/auth/hasGithubStrategy');
 
 // URL utilities - individual functions
 const ensureProtocol = require('./lib/utilities/url/ensureProtocol');
+const ensureProtocolUrl = require('./lib/utilities/url/ensureProtocolUrl');
 const normalizeUrlOrigin = require('./lib/utilities/url/normalizeUrlOrigin');
 const stripProtocol = require('./lib/utilities/url/stripProtocol');
 const parseUrlParts = require('./lib/utilities/url/parseUrlParts');
@@ -155,6 +156,7 @@ module.exports = {
 
   // URL utilities - handle protocol normalization and URL parsing
   ensureProtocol, // prefix http/https when missing
+  ensureProtocolUrl, // object-based version with allowEmpty option
   normalizeUrlOrigin, // normalize origin for comparisons
   stripProtocol, // remove http/https scheme from URL
   parseUrlParts, // split URL into host and path
