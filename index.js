@@ -290,6 +290,14 @@ const validateNumberInRange = require('./lib/utilities/validation/validateNumber
 const validateBooleanField = require('./lib/utilities/validation/validateBooleanField');
 const handleValidationFailure = require('./lib/utilities/validation/handleValidationFailure');
 
+// Security middleware utilities - rate limiting, monitoring, and protection
+const SECURITY_CONFIG = require('./lib/utilities/security/securityConfig');
+const detectSuspiciousPatterns = require('./lib/utilities/security/detectSuspiciousPatterns');
+const createIpTracker = require('./lib/utilities/security/createIpTracker');
+const createSecurityMiddleware = require('./lib/utilities/security/createSecurityMiddleware');
+const createSecurityRateLimiter = require('./lib/utilities/security/createSecurityRateLimiter');
+const setSecurityHeaders = require('./lib/utilities/security/setSecurityHeaders');
+
 /*
  * Export Strategy Explanation:
  *
@@ -577,6 +585,14 @@ module.exports = {
   validateNumberInRange, // validate number with min/max in req.body
   validateBooleanField, // validate boolean field in req.body
   handleValidationFailure, // send standardized validation error response
+  
+  // Security middleware utilities - rate limiting and monitoring
+  SECURITY_CONFIG, // security configuration constants
+  detectSuspiciousPatterns, // detect XSS, SQL injection, path traversal
+  createIpTracker, // IP tracking with memory management
+  createSecurityMiddleware, // security monitoring middleware factory
+  createSecurityRateLimiter, // security rate limiter with blocking
+  setSecurityHeaders, // security headers middleware factory
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
