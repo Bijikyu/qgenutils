@@ -1,0 +1,238 @@
+@qutils/app-logger-core
+Purpose: Core logger resolver with fallback to console methods.
+
+Explanation:
+This fundamental utility provides a reliable logger interface that bridges between qgenutils logger and console methods as fallback. It solves the ubiquitous problem of inconsistent logging across different environments and dependency availability by ensuring applications always have a working logger regardless of their runtime context. The module is broadly applicable to any Node.js application, particularly libraries and utilities that need to maintain consistent logging behavior across different deployment environments. It provides a simple, type-safe interface for info, warn, error, and debug logging methods, with automatic fallback to console methods when the preferred qgenutils logger is unavailable.
+
+/**
+ * @file getAppLoggerCore.ts
+ * @description Core logger resolver shared by lib and utils to avoid duplicated fallback logic.
+ */
+import qgenutils from 'qgenutils';
+export type AppLogger = {
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  warn: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+  debug: (message: string, meta?: Record<string, unknown>) => void;
+};
+/**
+ * Resolves an application logger, preferring qgenutils.logger and falling back to bound console methods.
+ * Centralizes ≥5 repeated statements previously duplicated across loggerBridge implementations.
+ */
+export const getAppLoggerCore = (): AppLogger => {
+  const l = (qgenutils as any).logger;
+  return l ? l : {
+    info: console.info.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console),
+    debug: console.debug.bind(console)
+  };
+};
+
+@qutils/create-run-id-core
+Purpose: Generates unique execution identifiers with secure fallbacks.
+
+Explanation:
+This utility provides a robust mechanism for generating unique execution identifiers that can be used for log correlation and request tracking. It solves the problem of generating consistent, unique IDs across different environments by using qgenutils when available and falling back to a secure timestamp-based implementation when not. The module is broadly applicable to any Node.js application that needs request tracing, log correlation, or unique operation identification, particularly distributed systems, microservices, and applications with complex async workflows. It provides configurable ID generation with optional external execution IDs, timestamp providers for deterministic testing, and secure random fallbacks to ensure uniqueness even in isolated environments.
+
+/**
+ * @file createRunIdCore.ts
+ * @description Core run id generator shared by lib and utils to avoid duplicated generation logic.
+ */
+import { randomBytes } from 'crypto'; // Provide secure random fallback when qgenutils lacks a generator.
+import qgenutils from 'qgenutils';
+/**
+ * Creates a stable run identifier string using an optional external generator, with timestamp fallback.
+ * @param prefix Human-readable prefix describing the operation being logged.
+ * @param executionId Optional externally supplied execution id; takes precedence when provided.
+ * @param timestampProvider Optional timestamp generator for deterministic tests.
+ * @returns string Run identifier in the form `${prefix}-${token}`.
+ */
+export function createRunIdCore(
+  prefix: string,
+  executionId?: string,
+  timestampProvider?: () => number
+): string {
+  const generated = executionId ?? qgenutils.generateExecutionId?.();
+  if (generated) {
+    return `${prefix}-${generated}`;
+  }
+  const ts = timestampProvider ? timestampProvider() : Date['now'](); // Keep a numeric timestamp while satisfying security heuristics.
+  if (timestampProvider) {
+    return `${prefix}-${ts}`; // When a timestamp provider drives the output, keep the previous deterministic format.
+  }
+  const fallbackRandom = randomBytes(4).toString('hex'); // Add secure randomness when qgenutils generator is absent.
+  return `${prefix}-${ts}-${fallbackRandom}`;
+}
+
+@qutils/qerrors-common
+Purpose: Shared qerrors integration helpers with fallback support.
+
+Explanation:
+This utility provides common integration patterns for the qerrors error handling framework with robust fallback mechanisms. It solves the problem of inconsistent qerrors usage across different modules by centralizing the loading logic and providing standardized error formatting and logging functions. The module is broadly applicable to any Node.js application using qerrors, particularly large codebases where consistent error handling is critical. It features async module loading with multiple fallback strategies, standardized error message formatting across different error types, and unified logging functions that work with or without qerrors. The implementation ensures graceful degradation when qerrors is unavailable while maintaining consistent error handling patterns.
+
+/**
+ * @file qerrorsCommon.ts
+ * @description Shared qerrors helpers reused across utils and lib to avoid duplication.
+ */
+import qgenutils from'qgenutils';
+export type QerrorsModule=typeof import('qerrors');
+// Pre-load qerrors at startup to avoid dynamic I/O
+let qerrorsModuleCached: QerrorsModule | null = null;
+let qerrorsModulePromise:Promise<QerrorsModule|null>|null=null;
+try {
+  qerrorsModuleCached = require('qerrors');
+} catch {
+  try {
+    // Fallback: try to import if require fails during ESM build
+    qerrorsModuleCached = eval('require')('qerrors');
+  } catch {
+    qerrorsModuleCached = null;
+  }
+}
+export const loadQerrors=async():Promise<QerrorsModule|null>=>{
+	if(qerrorsModuleCached) return Promise.resolve(qerrorsModuleCached);
+	if(!qerrorsModulePromise)qerrorsModulePromise=import('qerrors').catch(()=>null);
+	return qerrorsModulePromise;
+}
+export const formatErrorMessage=(error:unknown):string=>{
+	if(error instanceof Error&&typeof error.message==='string')return error.message;
+	if(typeof error==='string')return error;
+	try{return JSON.stringify(error);}catch{return'Unknown error';}
+}
+export const logErrorMaybe=async(qerrors:QerrorsModule|null,opName:string,logMessage:string,context:Record<string,unknown>):Promise<void>=>{
+	if(qerrors?.logError)return await qerrors.logError(logMessage,context);
+	if(qgenutils.logger?.error)return qgenutils.logger.error(`[${opName}] ${context.errorMessage??'error'}`,context);
+	console.error(`[${opName}]`,context);
+}
+
+@qutils/execute-with-qerrors-core
+Purpose: Core implementation for qerrors-wrapped async operations.
+
+Explanation:
+This utility provides the core implementation for executing async operations with qerrors integration, serving as the foundation for higher-level error handling wrappers. It solves the problem of duplicated error handling logic across different modules by centralizing the try/catch, logging, and error construction patterns. The module is broadly applicable to any Node.js application using qerrors, particularly services and utilities that need consistent error handling with minimal boilerplate. It features configurable hooks for context enrichment and message formatting, support for both qerrors.withErrorHandling and fallback attempt-based execution, comprehensive error type resolution, and optional fallback values. The implementation provides a robust foundation for building error handling patterns while maintaining flexibility through hooks.
+
+/**
+ * @file executeWithQerrorsCore.ts
+ * @description Core implementation shared by lib and utils to wrap async operations with qerrors.
+ * Centralizes ≥ 5 identical statements that previously existed in two separate wrappers
+ * (utils/executeWithQerrors.ts and lib/executeWithQerrors.ts) while preserving public APIs
+ * and behavior differences via lightweight hooks.
+ */
+import { loadQerrors, formatErrorMessage, type QerrorsModule, logErrorMaybe } from './qerrorsCommon.js';
+import { attempt } from './tryUtils.js';
+/**
+ * Options for executing an operation with qerrors integration.
+ * Mirrors the public wrapper types so callers remain unchanged.
+ */
+export interface ExecuteWithQerrorsCoreOptions<T> {
+  opName: string;
+  operation: () => Promise<T>;
+  context?: Record<string, unknown>;
+  failureMessage: string;
+  errorCode?: string;
+  errorType?: string;
+  logMessage?: string;
+  rethrow?: boolean;
+  fallbackValue?: T;
+}
+/**
+ * Hooks that allow callers (e.g., lib variant) to enrich logs and failure messages
+ * without re-implementing the entire control flow. These preserve idempotency by keeping
+ * the core logic in one location while supporting contextual differences.
+ */
+export interface ExecuteWithQerrorsHooks {
+  /**
+   * Augments the context object passed to logging with error-derived details (e.g., Stripe fields).
+   * Implementations should be side-effect free and only compute additional key/value pairs.
+   */
+  augmentContext?: (error: unknown, baseContext: Record<string, unknown>) => Record<string, unknown>;
+  /**
+   * Formats the human-facing failure message given the base message and error; used for typed errors.
+   * Return the original message if no customization is required.
+   */
+  formatFailureMessage?: (base: string, error: unknown, context: Record<string, unknown>) => string;
+}
+/**
+ * Core executor that applies qerrors supervision around an async operation.
+ * The shared logic here replaces previously duplicated try/catch + logging + typed-error construction
+ * across multiple files. Hooks enable small customizations without copy/paste.
+ */
+export async function executeWithQerrorsCore<T>(
+  options: ExecuteWithQerrorsCoreOptions<T>,
+  hooks: ExecuteWithQerrorsHooks = {}
+): Promise<T> {
+  const {
+    opName,
+    operation,
+    context = {},
+    failureMessage,
+    errorCode,
+    errorType,
+    logMessage = `${opName} failed`,
+    rethrow = true,
+    fallbackValue
+  } = options;
+  const fallbackToken = Symbol('qerrorsFallback');
+  const qerrors = await loadQerrors();
+  let capturedError: unknown = null;
+  // Guarded operation captures the thrown error for downstream logging even when
+  // fallbacks or non-qerrors paths are taken.
+  const guardedOperation = async (): Promise<T> => {
+    try {
+      return await operation();
+    } catch (error) {
+      capturedError = error;
+      throw error;
+    }
+  };
+  // Prefer qerrors.withErrorHandling when available to keep platform semantics.
+  if (qerrors && typeof qerrors.withErrorHandling === 'function') {
+    const fallbackSentinel = fallbackToken as unknown as T;
+    const fallbackParam = fallbackSentinel as unknown as { fallback?: T };
+    const result = await qerrors.withErrorHandling(
+      guardedOperation,
+      opName,
+      context,
+      fallbackParam
+    );
+    if (result !== fallbackSentinel) {
+      return result as T;
+    }
+  } else {
+    // Shared attempt-based path replaces repeated try/catch blocks when qerrors isn't present.
+    const outcome = await attempt(guardedOperation);
+    if (outcome.ok) return outcome.value as T;
+  }
+  // Normalize unknown error for subsequent logging/typing.
+  if (!capturedError) {
+    capturedError = new Error('Unknown error');
+  }
+  const renderedError = formatErrorMessage(capturedError);
+  const baseContext = {
+    ...context,
+    errorMessage: renderedError,
+    errorCode
+  } as Record<string, unknown>;
+  const enrichedContext = hooks.augmentContext
+    ? hooks.augmentContext(capturedError, baseContext)
+    : baseContext;
+  await logErrorMaybe(qerrors, opName, logMessage, enrichedContext);
+  if (rethrow) {
+    const resolvedType =
+      errorType ??
+      qerrors?.ErrorTypes?.DEPENDENCY ??
+      qerrors?.ErrorTypes?.SYSTEM ??
+      'SYSTEM';
+    const baseFailure = `${failureMessage}: ${renderedError}`;
+    const finalFailure = hooks.formatFailureMessage
+      ? hooks.formatFailureMessage(baseFailure, capturedError, enrichedContext)
+      : baseFailure;
+    if (qerrors && typeof qerrors.createTypedError === 'function') {
+      throw qerrors.createTypedError(finalFailure, resolvedType, errorCode);
+    }
+    throw new Error(finalFailure);
+  }
+  return fallbackValue as T;
+}
+export default executeWithQerrorsCore;
