@@ -110,6 +110,12 @@ const defaultChargeRetryPlanObj = require('./lib/system/retry/defaultChargeRetry
 // Logger bridge utilities - unified logging with fallback
 const getAppLogger = require('./lib/utilities/logger/getAppLogger');
 const createRunId = require('./lib/utilities/logger/createRunId');
+const getAppLoggerCore = require('./lib/utilities/logger/getAppLoggerCore');
+const createRunIdCore = require('./lib/utilities/logger/createRunIdCore');
+
+// Qerrors integration utilities - error handling with fallback
+const qerrorsCommon = require('./lib/system/qerrors/qerrorsCommon');
+const executeWithQerrorsCore = require('./lib/system/qerrors/executeWithQerrorsCore');
 
 // Task scheduler utilities - centralized timer management
 const TaskScheduler = require('./lib/system/scheduler/TaskScheduler');
@@ -244,6 +250,12 @@ module.exports = {
   // Logger bridge utilities - unified logging with fallback
   getAppLogger, // get logger with fallback to console methods
   createRunId, // generate structured execution identifier for log correlation
+  getAppLoggerCore, // core logger resolver with bound console fallback
+  createRunIdCore, // core run ID with secure random fallback
+  
+  // Qerrors integration utilities - error handling with fallback
+  qerrorsCommon, // shared qerrors helpers (loadQerrors, formatErrorMessage, logErrorMaybe)
+  executeWithQerrorsCore, // wrap async operations with qerrors supervision
   
   // Task scheduler utilities - centralized timer management
   TaskScheduler, // singleton class for consolidated task scheduling
