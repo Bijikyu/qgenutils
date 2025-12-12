@@ -1,0 +1,395 @@
+Security
+@scrooge/api-key-validation
+Purpose: Secure API key validation middleware with timing attack prevention and comprehensive logging. Explanation:
+This module provides production-ready API key validation middleware that prevents timing attacks, supports multiple key sources, and includes comprehensive security logging. It solves the critical security problem of timing attacks in string comparison and provides flexible API key extraction from various HTTP locations. This would be reused across any API that requires secure authentication via API keys, particularly in microservices and payment systems where security is paramount.
+
+The module accepts Express request/response/next function objects as inputs and validates API keys using constant-time comparison. It handles edge cases like missing keys, invalid formats, multiple key sources (headers, query, body), and provides detailed security event logging.
+
+/**
+ * API Key Validation Middleware
+ * 
+ * This middleware ensures that all API requests include a valid API key for authentication.
+ * It serves as a first line of defense against unauthorized access to the payment system.
+ */
+import qapibara from '@bijikyu/qapibara'; // rationale: reuse qapibara authentication utilities for API key extraction consistency
+import type { Request, Response, NextFunction } from 'express'; // rationale: import Express types for proper middleware typing
+import { timingSafeEqual } from 'crypto'; // rationale: constant-time comparison to prevent timing attacks
+import * as localVars from '../config/localVars.js'; // rationale: centralized variable access for API key values
+import { logger } from '../utils/qerrorsLogger.js'; // rationale: qerrors logger adapter with AI-powered error analysis
+import { logAuthEvent, logSuspiciousActivity } from '../utils/security/securityEventLogger.js'; // rationale: enhanced security logging for authentication events
+type QapibaraAuthHelpers = { extractApiKey: (req: Request, options?: { headerNames?: string[]; queryParam?: string; authorizationPrefix?: string; checkBody?: boolean }) => string | null; };
+const { extractApiKey: qapiExtractApiKey } = qapibara as unknown as QapibaraAuthHelpers;
+/**
+ * Extract API Key from Request
+ * 
+ * Purpose: Retrieves the API key from various possible locations in the HTTP request
+ * 
+ * Key source priority:
+ * 1. Authorization header (Bearer token format) - most secure for HTTPS
+ * 2. x-api-key header - common REST API pattern
+ * 3. api_key query parameter - fallback for simple integrations
+ * 
+ * @param req - Express request object containing headers and query parameters
+ * @returns The extracted API key, or null if not found
+ */
+const extractApiKey = (req: Request): string | null => {
+    const preferredHeader = String((localVars as any).AUTH_HEADER_API_KEY || 'x-api-key').toLowerCase();
+    const headerNames = Array.from(new Set([preferredHeader, 'x-api-key', 'api-key']));
+    const authorizationPrefix = String((localVars as any).AUTH_HEADER_BEARER_PREFIX || 'Bearer ');
+    const queryParam = String((localVars as any).AUTH_QUERY_PARAM_API_KEY || 'api_key');
+    const extracted = qapiExtractApiKey(req, { headerNames, authorizationPrefix, queryParam, checkBody: true });
+    return extracted ? extracted.trim() : null;
+};
+/**
+ * API Key Validation Middleware Function
+ * 
+ * Purpose: Validates that incoming requests contain a valid API key
+ * 
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next middleware function
+ */
+const validateApiKey = (req: Request & { validatedApiKey?: string }, res: Response, next: NextFunction): void => {
+    const providedApiKey = extractApiKey(req);
+    try { console.log('[validateApiKey] providedApiKey', providedApiKey ? '***masked***' : 'none'); } catch { /* noop */ }
+    
+    if (!providedApiKey) {
+        // Log authentication failure
+        logAuthEvent('API key missing', {
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+          path: req.path,
+          requestId: (req as any).requestId
+        }, 'MEDIUM');
+        if (logger.isLevelEnabled('debug')) {
+            console.log(localVars.AUTH_LOG_MSG_UNAUTHORIZED.replace('{ip}', req.ip || '').replace('{path}', req.path));
+        }
+        res.status(401).json({
+            error: localVars.AUTH_ERROR_MSG_API_KEY_REQUIRED,
+            message: localVars.AUTH_GUIDANCE_API_KEY,
+            documentation: localVars.AUTH_DOCS_URL
+        });
+        return;
+    }
+    
+    const validApiKey = localVars.SCROOGE_API_KEY || localVars.DEFAULT_API_KEY;
+     try { console.log('[validateApiKey] expectedApiKey', validApiKey ? '***masked***' : 'none'); } catch { /* noop */ }
+    
+    // Use constant-time comparison to prevent timing attacks
+    if (providedApiKey.length !== validApiKey.length || 
+        !timingSafeEqual(Buffer.from(providedApiKey), Buffer.from(validApiKey))) {
+        const maskedKey = providedApiKey.substring(0, 4) + '***';
+        
+        // Log authentication failure
+        logAuthEvent('Invalid API key provided', {
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+          path: req.path,
+          maskedKey: maskedKey,
+          requestId: (req as any).requestId
+        }, 'HIGH');
+        if (logger.isLevelEnabled('debug')) {
+            console.log(localVars.AUTH_LOG_MSG_INVALID_API_KEY.replace('{ip}', req.ip || '').replace('{maskedKey}', maskedKey));
+        }
+        res.status(403).json({
+            error: localVars.AUTH_ERROR_MSG_INVALID_API_KEY,
+            message: localVars.AUTH_ERROR_MSG_INVALID_API_KEY_DETAILS,
+            documentation: localVars.AUTH_DOCS_URL
+        });
+        return;
+    }
+    
+    req.validatedApiKey = providedApiKey;
+    next();
+};
+export default validateApiKey; // rationale: export middleware function for use in route definitions
+
+@scrooge/rate-limiter
+Purpose: Comprehensive rate limiting middleware with multiple strategies and configurable policies. Explanation:
+This module provides production-ready rate limiting middleware with support for various strategies (IP-based, user-based, API key-based), configurable thresholds, and detailed logging. It solves the problem of protecting APIs from abuse and DoS attacks while providing flexibility for different use cases. This would be reused across any API that needs rate limiting, particularly in SaaS applications, payment systems, and public APIs where abuse prevention is critical.
+
+The module accepts configuration options for different rate limiting strategies and returns Express middleware functions. It handles edge cases like distributed rate limiting, skip conditions for successful/failed requests, key-based reset functionality, and provides comprehensive monitoring capabilities.
+
+/**
+ * Rate Limiter Middleware for Scrooge Payment API
+ * Provides comprehensive rate limiting via @bijikyu/qapibara to ensure
+ * centralized configuration and shared retry semantics across services.
+ */
+import qapibara from '@bijikyu/qapibara';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import * as localVars from '../config/localVars.js';
+import { logger } from '../utils/qerrorsLogger.js';
+interface LegacyRateLimitOptions {
+  windowMs?: number;
+  max?: number;
+  message?: Record<string, unknown>;
+  keyGenerator?: (req: Request, res: Response) => string;
+  skipSuccessfulRequests?: boolean;
+  skipFailedRequests?: boolean;
+  keyPrefix?: string;
+  identifier?: string;
+  pointsOverride?: number;
+  durationSecondsOverride?: number;
+}
+type QapibaraRateLimiter = {
+  consume: (key: string) => Promise<{ remainingPoints: number; msBeforeNext: number }>;
+  get?: (key: string) => Promise<{ consumedPoints: number; msBeforeNext?: number } | null>;
+  delete?: (key: string) => Promise<boolean | number | void>;
+  resetKey?: (key: string) => Promise<void>;
+};
+type QapibaraRateLimitingExports = {
+  createRateLimiter: (options: { points?: number; duration?: number; keyPrefix?: string }) => QapibaraRateLimiter;
+  createRateLimitTracker: (options?: { points?: number; duration?: number }) => QapibaraRateLimiter;
+};
+type QapibaraHttpHelpers = {
+  sendJsonResponse: (res: Response, statusCode: number, data: unknown) => Response;
+};
+const {
+  createRateLimiter: qapiCreateRateLimiter,
+  createRateLimitTracker: qapiCreateRateLimitTracker,
+} = qapibara as unknown as QapibaraRateLimitingExports;
+const { sendJsonResponse: qapiSendJsonResponse } = qapibara as unknown as QapibaraHttpHelpers;
+const limiterRegistry = new Map<string, QapibaraRateLimiter>();
+const DEFAULT_POINTS = Number((localVars as any).DEFAULT_RATE_LIMIT_POINTS ?? 100);
+const DEFAULT_DURATION = Number((localVars as any).DEFAULT_RATE_LIMIT_DURATION ?? 60); // seconds
+const DEFAULT_KEY_PREFIX = String((localVars as any).DEFAULT_RATE_LIMIT_KEY_PREFIX ?? 'scrooge_rl');
+const buildLimiter = (points: number, duration: number, keyPrefix?: string): QapibaraRateLimiter => {
+  try {
+    return qapiCreateRateLimiter({ points, duration, keyPrefix: keyPrefix ?? DEFAULT_KEY_PREFIX });
+  } catch (error) {
+    logger.warn('createRateLimiter fallback to tracker', { error: (error as Error).message });
+    return qapiCreateRateLimitTracker({ points, duration });
+  }
+};
+const calculatePoints = (options: LegacyRateLimitOptions): number => {
+  if (typeof options.pointsOverride === 'number') return Math.max(1, options.pointsOverride);
+  if (typeof options.max === 'number') return Math.max(1, options.max);
+  return DEFAULT_POINTS;
+};
+const calculateDuration = (options: LegacyRateLimitOptions): number => {
+  if (typeof options.durationSecondsOverride === 'number') {
+    return Math.max(1, options.durationSecondsOverride);
+  }
+  if (typeof options.windowMs === 'number') {
+    return Math.max(1, Math.round(options.windowMs / 1000));
+  }
+  return DEFAULT_DURATION;
+};
+const defaultMessage = (retryAfter: number): Record<string, unknown> => ({
+  error: true,
+  message: 'Too many requests, please try again later',
+  code: 'RATE_LIMIT_EXCEEDED',
+  retryAfter,
+  timestamp: new Date().toISOString(),
+});
+const respondWithLimit = (
+  res: Response,
+  statusCode: number,
+  payload: Record<string, unknown>,
+): Response => {
+  const body = { ...payload, timestamp: payload.timestamp ?? new Date().toISOString() };
+  return qapiSendJsonResponse(res, statusCode, body);
+};
+const handleLimitExceeded = (
+  res: Response,
+  limiterRes: { msBeforeNext?: number; remainingPoints?: number } | null,
+  message?: Record<string, unknown>,
+) => {
+  const retryAfter = Math.max(1, Math.ceil((limiterRes?.msBeforeNext ?? DEFAULT_DURATION * 1000) / 1000));
+  res.setHeader('Retry-After', String(retryAfter));
+  const payload = message ? { ...message, retryAfter } : defaultMessage(retryAfter);
+  respondWithLimit(res, 429, payload);
+};
+const registerLimiter = (identifier: string | undefined, limiter: QapibaraRateLimiter): void => {
+  if (!identifier) return;
+  limiterRegistry.set(identifier, limiter);
+};
+const shouldSkipIncrement = (statusCode: number, options: LegacyRateLimitOptions): boolean => {
+  if (options.skipSuccessfulRequests && statusCode < 400) return true;
+  if (options.skipFailedRequests && statusCode >= 400) return true;
+  return false;
+};
+const createLimiterMiddleware = (options: LegacyRateLimitOptions = {}): RequestHandler => {
+  const points = calculatePoints(options);
+  const duration = calculateDuration(options);
+  const limiter = buildLimiter(points, duration, options.keyPrefix);
+  registerLimiter(options.identifier, limiter);
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const keyGenerator = options.keyGenerator ?? ((request: Request) => request.ip || 'anonymous');
+    const key = keyGenerator(req, res) || 'anonymous';
+    try {
+      const current = limiter.get ? await limiter.get(key) : null;
+      if (current && current.consumedPoints >= points) {
+        logger.warn('rate-limit threshold reached pre-consume', { key, points, duration });
+        handleLimitExceeded(res, current, options.message);
+        return;
+      }
+      if (options.skipSuccessfulRequests || options.skipFailedRequests) {
+        res.once('finish', async () => {
+          if (shouldSkipIncrement(res.statusCode, options)) {
+            return;
+          }
+          try {
+            await limiter.consume(key);
+          } catch (consumeError) {
+            logger.warn('rate-limit post-response overflow', {
+              key,
+              error: consumeError instanceof Error ? consumeError.message : String(consumeError),
+            });
+          }
+        });
+        next();
+        return;
+      }
+      await limiter.consume(key);
+      next();
+    } catch (consumeResult) {
+      logger.warn('rate-limit exceeded', {
+        key,
+        points,
+        duration,
+        error: consumeResult instanceof Error ? consumeResult.message : undefined,
+      });
+      handleLimitExceeded(res, consumeResult as { msBeforeNext?: number; remainingPoints?: number }, options.message);
+    }
+  };
+};
+export function createRateLimiter(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('createRateLimiter invoked', { options });
+  return createLimiterMiddleware(options);
+}
+export function createPaymentRateLimiter(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('createPaymentRateLimiter invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 5 * 60 * 1000,
+    max: 10,
+    message: {
+      error: true,
+      message: 'Payment rate limit exceeded. Please wait before retrying your payment request.',
+      code: 'PAYMENT_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => `payment_${req.ip}_${req.headers['x-api-key'] ?? 'anonymous'}`,
+    identifier: 'payment',
+    ...options,
+  });
+}
+export function createAuthRateLimiter(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('createAuthRateLimiter invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: {
+      error: true,
+      message: 'Too many authentication attempts. Please try again later.',
+      code: 'AUTH_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => `auth_${req.ip}_${(req.body as any)?.email || (req.body as any)?.username || 'unknown'}`,
+    skipSuccessfulRequests: true,
+    identifier: 'auth',
+    ...options,
+  });
+}
+export function createCriticalAuthRateLimiter(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('createCriticalAuthRateLimiter invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 5 * 60 * 1000,
+    max: 3,
+    message: {
+      error: true,
+      message: 'Critical authentication attempts exceeded. Account temporarily locked.',
+      code: 'CRITICAL_AUTH_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => `critical_auth_${req.ip}_${(req.body as any)?.email || 'unknown'}`,
+    skipSuccessfulRequests: false, // Always count failed attempts
+    identifier: 'criticalAuth',
+    ...options,
+  });
+}
+export function createBruteForceProtection(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('createBruteForceProtection invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    message: {
+      error: true,
+      message: 'Too many failed attempts. IP temporarily blocked.',
+      code: 'BRUTE_FORCE_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => `brute_force_${req.ip}`,
+    skipSuccessfulRequests: true,
+    identifier: 'bruteForce',
+    ...options,
+  });
+}
+export function createApiKeyRateLimiter(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('createApiKeyRateLimiter invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 60 * 60 * 1000,
+    max: 1000,
+    message: {
+      error: true,
+      message: 'API key rate limit exceeded. Please upgrade your plan or try again later.',
+      code: 'API_KEY_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => {
+      const headerKey = req.headers['x-api-key'];
+      const bearer = req.headers.authorization?.replace('Bearer ', '');
+      return `api_${headerKey || bearer || req.ip || 'anonymous'}`;
+    },
+    identifier: 'apiKey',
+    ...options,
+  });
+}
+export function rateLimitByUserId(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('rateLimitByUserId invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: {
+      error: true,
+      message: 'User rate limit exceeded',
+      code: 'USER_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => `user_${(req as any).user?.id || req.headers['x-user-id'] || req.ip || 'unknown'}`,
+    identifier: 'user',
+    ...options,
+  });
+}
+export function rateLimitByIpAddress(options: LegacyRateLimitOptions = {}): RequestHandler {
+  logger.debug('rateLimitByIpAddress invoked', { options });
+  return createLimiterMiddleware({
+    windowMs: 15 * 60 * 1000,
+    max: 500,
+    message: {
+      error: true,
+      message: 'IP rate limit exceeded',
+      code: 'IP_RATE_LIMIT_EXCEEDED',
+    },
+    keyGenerator: (req) => `ip_${req.ip || (req.connection as any)?.remoteAddress || 'unknown'}`,
+    identifier: 'ip',
+    ...options,
+  });
+}
+export async function resetRateLimit(type: string, identifier: string): Promise<boolean> {
+  logger.debug('resetRateLimit invoked', { type, identifier });
+  const limiter = limiterRegistry.get(type);
+  if (!limiter) {
+    return false;
+  }
+  const key = `${type}_${identifier}`;
+  try {
+    if (typeof limiter.delete === 'function') {
+      await limiter.delete(key);
+      return true;
+    }
+    if (typeof limiter.resetKey === 'function') {
+      await limiter.resetKey(key);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    logger.error('resetRateLimit failed', { error: (error as Error).message });
+    return false;
+  }
+}
+export default createRateLimiter;

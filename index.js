@@ -206,6 +206,16 @@ const memoize = require('./lib/utilities/performance/memoize');
 const throttle = require('./lib/utilities/performance/throttle');
 const debounce = require('./lib/utilities/performance/debounce');
 
+// Security utilities - API key handling and rate limiting primitives
+const timingSafeCompare = require('./lib/utilities/security/timingSafeCompare');
+const maskApiKey = require('./lib/utilities/security/maskApiKey');
+const extractApiKey = require('./lib/utilities/security/extractApiKey');
+const createRateLimitStore = require('./lib/utilities/security/createRateLimitStore');
+const buildRateLimitKey = require('./lib/utilities/security/buildRateLimitKey');
+
+// Middleware factories - Express-compatible middleware
+const createApiKeyValidator = require('./lib/utilities/middleware/createApiKeyValidator');
+const createRateLimiter = require('./lib/utilities/middleware/createRateLimiter');
 
 /*
  * Export Strategy Explanation:
@@ -407,6 +417,17 @@ module.exports = {
   memoize, // cache function results with optional LRU
   throttle, // limit function calls to once per interval
   debounce, // delay execution until activity stops
+  
+  // Security utilities - API key handling and rate limiting primitives
+  timingSafeCompare, // constant-time string comparison for timing attack prevention
+  maskApiKey, // mask API key for safe logging
+  extractApiKey, // extract API key from request headers/query/body
+  createRateLimitStore, // in-memory rate limit store with cleanup
+  buildRateLimitKey, // generate rate limit keys from request (IP/user/apiKey)
+  
+  // Middleware factories - Express-compatible middleware
+  createApiKeyValidator, // API key validation middleware with timing attack prevention
+  createRateLimiter, // rate limiting middleware with configurable strategies
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
