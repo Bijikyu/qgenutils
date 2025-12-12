@@ -235,6 +235,12 @@ const createProcessingCapabilities = require('./lib/utilities/config/createProce
 const execHelperWrapper = require('./lib/utilities/function/execHelperWrapper');
 const createExecHelper = require('./lib/utilities/function/createExecHelper');
 
+// Module loader utilities - dynamic loading with CJS/ESM interop
+const loadAndFlattenModule = require('./lib/utilities/module-loader/loadAndFlattenModule');
+const createCachedLoader = require('./lib/utilities/module-loader/createCachedLoader');
+const createSimpleLoader = require('./lib/utilities/module-loader/createSimpleLoader');
+const createDirectLoader = require('./lib/utilities/module-loader/createDirectLoader');
+
 // Performance monitoring utilities - real-time metrics and alerting
 const collectPerformanceMetrics = require('./lib/utilities/performance-monitor/collectPerformanceMetrics');
 const measureEventLoopLag = require('./lib/utilities/performance-monitor/measureEventLoopLag');
@@ -484,6 +490,12 @@ module.exports = {
   // Exec helper utilities - function wrapping with error handling
   execHelperWrapper, // wrap functions with error handling and logging
   createExecHelper, // factory for exec helper instances
+  
+  // Module loader utilities - dynamic loading with CJS/ESM interop
+  loadAndFlattenModule, // dynamic import with CJS/ESM normalization
+  createCachedLoader, // factory for cached async module loaders
+  createSimpleLoader, // factory for non-cached loaders
+  createDirectLoader, // factory for direct loaders without flattening
   
   // Performance monitoring utilities - real-time metrics and alerting
   collectPerformanceMetrics, // collect CPU, memory, heap metrics from process
