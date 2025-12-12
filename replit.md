@@ -1,6 +1,6 @@
 # Overview
 
-This project focuses on developing a robust, scalable, and high-quality application. The primary goal is to deliver functional software, prioritizing real-world utility over superficial aesthetics. The development methodology emphasizes transparency, adherence to best practices, and a structured workflow to ensure maintainability and optimal performance.
+QGenUtils is a utilities-focused Node.js library providing DateTime formatting, HTTP configuration, URL processing, collections manipulation, batch processing, and performance utilities. This instance focuses purely on utility functions - security, system, and validation modules have been split into separate repositories.
 
 # User Preferences
 
