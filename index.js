@@ -273,6 +273,17 @@ const validateSubscriptionPlan = require('./lib/utilities/validation/validateSub
 const sanitizeInput = require('./lib/utilities/validation/sanitizeInput');
 const { createPaymentValidation, createUserValidation, createSubscriptionValidation, handleValidationErrors } = require('./lib/utilities/validation/createValidationMiddleware');
 const extractValidationErrors = require('./lib/utilities/validation/extractValidationErrors');
+const validateEnum = require('./lib/utilities/validation/validateEnum');
+const validateNumberRange = require('./lib/utilities/validation/validateNumberRange');
+const validateStringLength = require('./lib/utilities/validation/validateStringLength');
+const validateArray = require('./lib/utilities/validation/validateArray');
+const validatePattern = require('./lib/utilities/validation/validatePattern');
+const validateBoolean = require('./lib/utilities/validation/validateBoolean');
+const validateDate = require('./lib/utilities/validation/validateDate');
+const validateObjectId = require('./lib/utilities/validation/validateObjectId');
+const validatePagination = require('./lib/utilities/validation/validatePagination');
+const createValidator = require('./lib/utilities/validation/createValidator');
+const createResourceValidator = require('./lib/utilities/validation/createResourceValidator');
 
 /*
  * Export Strategy Explanation:
@@ -545,6 +556,17 @@ module.exports = {
   createSubscriptionValidation, // Express middleware for subscription validation
   handleValidationErrors, // Express middleware error handler
   extractValidationErrors, // extract errors from express-validator result
+  validateEnum, // check value is in allowed list
+  validateNumberRange, // check number is within bounds
+  validateStringLength, // check string length bounds
+  validateArray, // check array length bounds
+  validatePattern, // check value matches regex pattern
+  validateBoolean, // check value is boolean
+  validateDate, // check value is valid date
+  validateObjectId, // check MongoDB ObjectId format
+  validatePagination, // validate page/limit params
+  createValidator, // compose multiple validators
+  createResourceValidator, // CRUD validators factory
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
