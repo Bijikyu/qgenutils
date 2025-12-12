@@ -217,6 +217,24 @@ const buildRateLimitKey = require('./lib/utilities/security/buildRateLimitKey');
 const createApiKeyValidator = require('./lib/utilities/middleware/createApiKeyValidator');
 const createRateLimiter = require('./lib/utilities/middleware/createRateLimiter');
 
+// Scheduling utilities - interval and job management
+const msToCron = require('./lib/utilities/scheduling/msToCron');
+const scheduleInterval = require('./lib/utilities/scheduling/scheduleInterval');
+const scheduleOnce = require('./lib/utilities/scheduling/scheduleOnce');
+const cleanupJobs = require('./lib/utilities/scheduling/cleanupJobs');
+
+// Config builder utilities - standardized configuration objects
+const buildFeatureConfig = require('./lib/utilities/config/buildFeatureConfig');
+const buildSecurityConfig = require('./lib/utilities/config/buildSecurityConfig');
+const buildValidationConfig = require('./lib/utilities/config/buildValidationConfig');
+const buildTestRunnerConfig = require('./lib/utilities/config/buildTestRunnerConfig');
+const createPerformanceMetrics = require('./lib/utilities/config/createPerformanceMetrics');
+const createProcessingCapabilities = require('./lib/utilities/config/createProcessingCapabilities');
+
+// Exec helper utilities - function wrapping with error handling
+const execHelperWrapper = require('./lib/utilities/function/execHelperWrapper');
+const createExecHelper = require('./lib/utilities/function/createExecHelper');
+
 /*
  * Export Strategy Explanation:
  *
@@ -428,6 +446,24 @@ module.exports = {
   // Middleware factories - Express-compatible middleware
   createApiKeyValidator, // API key validation middleware with timing attack prevention
   createRateLimiter, // rate limiting middleware with configurable strategies
+  
+  // Scheduling utilities - interval and job management
+  msToCron, // convert milliseconds to cron expression
+  scheduleInterval, // schedule recurring jobs with tracking
+  scheduleOnce, // schedule one-time jobs
+  cleanupJobs, // bulk cleanup of scheduled jobs
+  
+  // Config builder utilities - standardized configuration objects
+  buildFeatureConfig, // build feature flag configuration
+  buildSecurityConfig, // build comprehensive security configuration
+  buildValidationConfig, // build validation configuration
+  buildTestRunnerConfig, // build test runner configuration
+  createPerformanceMetrics, // create performance metrics configuration
+  createProcessingCapabilities, // create processing capabilities configuration
+  
+  // Exec helper utilities - function wrapping with error handling
+  execHelperWrapper, // wrap functions with error handling and logging
+  createExecHelper, // factory for exec helper instances
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
