@@ -235,6 +235,19 @@ const createProcessingCapabilities = require('./lib/utilities/config/createProce
 const execHelperWrapper = require('./lib/utilities/function/execHelperWrapper');
 const createExecHelper = require('./lib/utilities/function/createExecHelper');
 
+// Input validation utilities - comprehensive validation and sanitization
+const validateEmailFormat = require('./lib/utilities/validation/validateEmail');
+const validatePasswordStrength = require('./lib/utilities/validation/validatePassword');
+const validateMonetaryAmount = require('./lib/utilities/validation/validateAmount');
+const validateApiKeyFormat = require('./lib/utilities/validation/validateApiKey');
+const validateCurrencyCode = require('./lib/utilities/validation/validateCurrency');
+const validatePaymentMethodNonce = require('./lib/utilities/validation/validatePaymentMethodNonce');
+const validateDateRange = require('./lib/utilities/validation/validateDateRange');
+const validateSubscriptionPlan = require('./lib/utilities/validation/validateSubscriptionPlan');
+const sanitizeInput = require('./lib/utilities/validation/sanitizeInput');
+const { createPaymentValidation, createUserValidation, createSubscriptionValidation, handleValidationErrors } = require('./lib/utilities/validation/createValidationMiddleware');
+const extractValidationErrors = require('./lib/utilities/validation/extractValidationErrors');
+
 /*
  * Export Strategy Explanation:
  *
@@ -464,6 +477,22 @@ module.exports = {
   // Exec helper utilities - function wrapping with error handling
   execHelperWrapper, // wrap functions with error handling and logging
   createExecHelper, // factory for exec helper instances
+  
+  // Input validation utilities - comprehensive validation and sanitization
+  validateEmailFormat, // RFC 5322 email validation (from @scrooge)
+  validatePasswordStrength, // password strength validation with complexity requirements
+  validateMonetaryAmount, // monetary amount validation with business rules
+  validateApiKeyFormat, // API key format validation
+  validateCurrencyCode, // ISO 4217 currency code validation
+  validatePaymentMethodNonce, // Braintree payment nonce validation
+  validateDateRange, // date range validation using date-fns
+  validateSubscriptionPlan, // subscription plan validation
+  sanitizeInput, // XSS prevention with sanitize-html
+  createPaymentValidation, // Express middleware for payment validation
+  createUserValidation, // Express middleware for user validation
+  createSubscriptionValidation, // Express middleware for subscription validation
+  handleValidationErrors, // Express middleware error handler
+  extractValidationErrors, // extract errors from express-validator result
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
