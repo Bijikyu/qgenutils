@@ -1,0 +1,525 @@
+General Utility Modules
+@codex/http-utilities
+Purpose: Comprehensive HTTP utilities for API configuration, authentication, and request building.
+
+Explanation:
+This module provides a complete set of HTTP utilities for common API patterns, including authentication configuration, header management, timeout handling, and request building. It includes context-aware timeout configurations for different operation types, standardized HTTP response validation, and utilities for building API requests for common services. The module is particularly valuable for applications that interact with multiple APIs and need consistent HTTP handling patterns.
+
+The utilities include support for various authentication methods, configurable timeout strategies based on operation type, and comprehensive request builders for common API patterns like chat completions and campaign creation.
+
+// 🔗 Common Patterns: Shared HTTP utilities
+// 🚩AI: MUST_UPDATE_IF_HTTP_PATTERNS_CHANGE
+// HttpCredentials not needed here, but available for consumers
+/**
+ * HTTP request configuration
+ */
+export interface HttpConfig {
+  auth?: { username?: string; password?: string };
+  headers?: Record<string, string>;
+  timeoutMs?: number;
+}
+/**
+ * HTTP response wrapper
+ */
+export interface HttpResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+}
+/**
+ * HTTP utilities for common patterns
+ */
+export const httpUtils = {
+  /**
+   * Creates standard HTTP authentication
+   */
+  createAuth: (apiKey: string, username: string = 'anystring'): HttpConfig['auth'] => ({
+    username,
+    password: apiKey,
+  }),
+  /**
+   * Creates standard headers for API requests
+   */
+  createHeaders: (contentType: string = 'application/json'): HttpConfig['headers'] => ({
+    'Content-Type': contentType,
+    'Accept': 'application/json',
+  }),
+  /**
+   * Builds axios-compatible config
+   */
+  buildConfig: (config?: HttpConfig) => ({
+    auth: config?.auth,
+    headers: config?.headers,
+    timeout: config?.timeoutMs ?? 15000,
+  }),
+  /**
+   * Creates complete config with auth and headers
+   */
+  createApiConfig: (
+    apiKey: string,
+    options?: {
+      username?: string;
+      contentType?: string;
+      timeout?: number;
+      additionalHeaders?: Record<string, string>;
+    }
+  ): HttpConfig => {
+    const auth = httpUtils.createAuth(apiKey, options?.username);
+    const baseHeaders = httpUtils.createHeaders(options?.contentType);
+    const headers = {
+      ...baseHeaders,
+      ...options?.additionalHeaders,
+    };
+    return {
+      auth,
+      headers,
+      timeoutMs: options?.timeout,
+    };
+  },
+  /**
+   * Standard timeout configurations
+   */
+  timeouts: {
+    default: 15000,
+    short: 5000,
+    long: 30000,
+    extended: 60000,
+  },
+  /**
+   * Validates HTTP response
+   */
+  validateResponse: <T>(response: any): HttpResponse<T> => {
+    if (!response || typeof response !== 'object') {
+      throw new Error('Invalid HTTP response');
+    }
+    return {
+      data: response.data,
+      status: response.status || 200,
+      statusText: response.statusText || 'OK',
+      headers: response.headers || {},
+    };
+  },
+};
+/**
+ * API endpoint configuration utilities
+ */
+export const endpointUtils = {
+  /**
+   * Creates Mailchimp API URL
+   */
+  mailchimpUrl: (serverPrefix: string, path: string): string => {
+    const cleanPrefix = serverPrefix.replace(/^https?:\/\//, '');
+    return `https://${cleanPrefix}.api.mailchimp.com/3.0${path}`;
+  },
+  /**
+   * Creates OpenAI API URL
+   */
+  openaiUrl: (path: string): string => {
+    return `https://api.openai.com/v1${path}`;
+  },
+  /**
+   * Validates and formats API paths
+   */
+  validatePath: (path: string): string => {
+    if (!path || typeof path !== 'string') {
+      throw new Error('API path must be a non-empty string');
+    }
+    return path.startsWith('/') ? path : `/${path}`;
+  },
+};
+/**
+ * Request builders for common API patterns
+ */
+export const requestBuilders = {
+  /**
+   * Creates standard campaign creation request
+   */
+  createCampaign: (params: {
+    listId: string;
+    subject: string;
+    fromName: string;
+    replyTo: string;
+    title?: string;
+  }) => ({
+    type: 'regular',
+    recipients: { list_id: params.listId },
+    settings: {
+      subject_line: params.subject,
+      title: params.title || params.subject,
+      from_name: params.fromName,
+      reply_to: params.replyTo,
+    },
+  }),
+  /**
+   * Creates standard content upload request
+   */
+  uploadContent: (html: string) => ({
+    html,
+  }),
+  /**
+   * Creates standard chat completion request
+   */
+  chatCompletion: (params: {
+    messages: Array<{ role: string; content: string }>;
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+  }) => ({
+    model: params.model || 'gpt-4o',
+    messages: params.messages,
+    temperature: params.temperature ?? 0.7,
+    max_tokens: params.maxTokens,
+  }),
+};
+
+@codex/http-config
+Purpose: HTTP configuration utilities with context-aware timeouts and dynamic scaling.
+
+Explanation:
+This module provides sophisticated HTTP configuration utilities with context-aware timeout management, dynamic timeout scaling based on payload size, and comprehensive configuration builders. It includes pre-configured timeout values for different operation types (LLM inference, file uploads, database queries, etc.), automatic timeout adjustment based on payload size, and warning systems for unusually long timeouts. The module is particularly valuable for applications that need optimal timeout configurations for different types of operations.
+
+The utilities support custom timeout overrides, payload-based timeout scaling, and complete HTTP configuration builders with authentication and headers.
+
+// 🔗 Common Patterns: HTTP Configuration Utilities
+// 🚩AI: MUST_UPDATE_IF_HTTP_PATTERNS_CHANGE
+/**
+ * Creates standard JSON headers for HTTP requests
+ * @param additionalHeaders - Optional additional headers to merge
+ * @returns Record of headers with Content-Type set to application/json
+ */
+export function createJsonHeaders(additionalHeaders?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (additionalHeaders) {
+    Object.assign(headers, additionalHeaders);
+  }
+  
+  return headers;
+}
+/**
+ * Creates basic authentication object for HTTP requests
+ * @param apiKey - The API key to use as password
+ * @param username - Optional username (defaults to 'anystring')
+ * @returns Basic authentication object with username and password
+ */
+export function createBasicAuth(apiKey: string, username: string = 'anystring'): { username: string; password: string } {
+  return {
+    username,
+    password: apiKey,
+  };
+}
+/**
+ * Gets default timeout value for HTTP requests
+ * @returns Default timeout in milliseconds (15000ms = 15 seconds)
+ */
+export function getDefaultTimeout(): number {
+  return 15000;
+}
+/**
+ * Context-aware timeout configurations for different operation types
+ * Rationale: Different operations have different optimal timeout requirements
+ * Provides appropriate timeouts while preventing hanging operations
+ */
+export const contextualTimeouts = {
+  'llm-inference': 120000, // 2 minutes for LLM processing
+  'mjml-rendering': 30000, // 30 seconds for MJML compilation
+  'mailchimp-api': 60000, // 1 minute for Mailchimp operations
+  'http-api': 30000, // 30 seconds for general HTTP APIs
+  'file-upload': 120000, // 2 minutes for file uploads
+  'websocket': 300000, // 5 minutes for WebSocket connections
+  'database-query': 45000, // 45 seconds for database operations
+  'cache-lookup': 5000, // 5 seconds for cache operations
+  'default': 15000 // 15 seconds fallback
+} as const;
+export type OperationType = keyof typeof contextualTimeouts;
+/**
+ * Gets contextual timeout based on operation type
+ * @param operation - Type of operation being performed
+ * @returns Appropriate timeout in milliseconds
+ */
+export function getContextualTimeout(operation: OperationType): number {
+  return contextualTimeouts[operation] ?? contextualTimeouts.default;
+}
+/**
+ * Creates timeout configuration with context awareness
+ * @param operation - Type of operation
+ * @param customTimeout - Optional custom timeout override
+ * @param multiplier - Optional multiplier for base timeout
+ * @returns Timeout configuration with context awareness
+ */
+export function createTimeoutConfig(
+  operation: OperationType,
+  customTimeout?: number,
+  multiplier: number = 1
+): { timeoutMs: number; operationType: OperationType } {
+  const baseTimeout = getContextualTimeout(operation);
+  const finalTimeout = customTimeout ?? Math.round(baseTimeout * multiplier);
+  
+  // Warn about unusually long timeouts
+  if (finalTimeout > 300000) { // 5 minutes
+    console.warn(`⚠️ Long timeout configured: ${finalTimeout}ms for operation: ${operation}`);
+  }
+  
+  return {
+    timeoutMs: finalTimeout,
+    operationType: operation
+  };
+}
+/**
+ * Creates dynamic timeout based on payload size
+ * @param baseTimeout - Base timeout in milliseconds
+ * @param payloadSize - Size of payload in bytes
+ * @returns Adjusted timeout based on payload size
+ */
+export function createDynamicTimeout(baseTimeout: number, payloadSize: number): number {
+  // Add 10 seconds per MB of data, with minimum base timeout
+  const sizeMB = payloadSize / (1024 * 1024);
+  const additionalTime = Math.min(sizeMB * 10000, 120000); // Max 2 minutes additional
+  return baseTimeout + additionalTime;
+}
+/**
+ * Creates a complete HTTP configuration object with common settings
+ * @param apiKey - Optional API key for authentication
+ * @param additionalHeaders - Optional additional headers
+ * @param customTimeout - Optional custom timeout override
+ * @returns Complete HTTP configuration object
+ */
+export function createHttpConfig(
+  apiKey?: string,
+  additionalHeaders?: Record<string, string>,
+  customTimeout?: number
+): {
+  headers?: Record<string, string>;
+  auth?: { username: string; password: string };
+  timeout: number;
+} {
+  const config: {
+    headers?: Record<string, string>;
+    auth?: { username: string; password: string };
+    timeout: number;
+  } = {
+    timeout: customTimeout || getDefaultTimeout(),
+  };
+  if (apiKey) {
+    config.auth = createBasicAuth(apiKey);
+  }
+  config.headers = createJsonHeaders(additionalHeaders);
+  return config;
+}
+
+@codex/string-validation
+Purpose: Essential string validation utilities with trimming and error handling.
+
+Explanation:
+This module provides fundamental string validation utilities that are commonly needed across applications. It includes functions for validating and trimming strings, validating API keys, and ensuring required string fields are present. The utilities provide consistent error messages and handle various input types gracefully. The module is particularly valuable for form validation, API input validation, and any scenario requiring reliable string processing.
+
+The validation functions include support for different input types, comprehensive error messages with field names, and consistent trimming behavior for string normalization.
+
+// 🔗 Common Patterns: String Validation Utilities
+// 🚩AI: MUST_UPDATE_IF_VALIDATION_PATTERNS_CHANGE
+/**
+ * Validates and trims a string input
+ * @param input - The input value to validate and trim
+ * @param fieldName - The name of the field for error messages
+ * @returns Trimmed string or empty string if invalid
+ */
+export function validateAndTrimString(input: unknown, fieldName?: string): string {
+  if (typeof input === 'string') {
+    return input.trim();
+  }
+  return '';
+}
+/**
+ * Validates an API key is provided and non-empty
+ * @param apiKey - The API key to validate
+ * @param serviceName - The name of the service for error messages
+ * @returns The validated API key
+ * @throws Error if API key is missing or empty
+ */
+export function validateApiKey(apiKey: unknown, serviceName: string): string {
+  const apiKeyStr = String(apiKey || '');
+  if (!apiKeyStr.trim()) {
+    throw new Error(`${serviceName} API key is required`);
+  }
+  return apiKeyStr.trim();
+}
+/**
+ * Validates a string field is provided and non-empty
+ * @param value - The value to validate
+ * @param fieldName - The name of the field for error messages
+ * @returns The validated string
+ * @throws Error if value is missing or empty
+ */
+export function validateRequiredString(value: unknown, fieldName: string): string {
+  const cleanValue = validateAndTrimString(value, fieldName);
+  if (!cleanValue) {
+    throw new Error(`${fieldName} is required and cannot be empty`);
+  }
+  return cleanValue;
+}
+
+@codex/field-validation
+Purpose: Required field validation utilities for object validation.
+
+Explanation:
+This module provides utilities for validating that required fields are present in objects, with comprehensive error reporting and type safety. It includes functions for validating required fields and returning validated objects, support for different field types (strings, numbers, objects), and detailed error messages that specify which fields are missing. The module is particularly valuable for API request validation, configuration validation, and any scenario requiring comprehensive object validation.
+
+The validation utilities handle edge cases like empty strings, null values, and undefined values, while providing clear error messages that include the validation context.
+
+// 🔗 Common Patterns: Required Field Validation Utilities
+// 🚩AI: MUST_UPDATE_IF_VALIDATION_PATTERNS_CHANGE
+/**
+ * Validates that all required fields are present in an object
+ * @param obj - The object to validate
+ * @param requiredFields - Array of required field names
+ * @param context - Context for error messages
+ * @throws Error if any required fields are missing
+ */
+export function validateRequiredFields(obj: any, requiredFields: string[], context: string): void {
+  const missing = requiredFields.filter(field => {
+    const value = obj[field];
+    return value === undefined || value === null || 
+      (typeof value === 'string' && !value.trim());
+  });
+  if (missing.length) {
+    throw new Error(`Missing required fields for ${context}: ${missing.join(', ')}`);
+  }
+}
+/**
+ * Validates that required fields are present and returns the validated object
+ * @param obj - The object to validate
+ * @param requiredFields - Array of required field names
+ * @param context - Context for error messages
+ * @returns The original object (unchanged if validation passes)
+ * @throws Error if any required fields are missing
+ */
+export function validateAndReturn<T extends Record<string, any>>(
+  obj: T, 
+  requiredFields: (keyof T)[], 
+  context: string
+): T {
+  validateRequiredFields(obj, requiredFields as string[], context);
+  return obj;
+}
+
+@codex/llm-providers
+Purpose: LLM provider initialization utilities with dynamic import caching.
+
+Explanation:
+This module provides utilities for creating chat model instances across different LLM providers with consistent interfaces and error handling. It includes support for multiple providers (DeepSeek, OpenAI, etc.), dynamic import caching for improved performance, and comprehensive error handling with detailed error messages. The module is particularly valuable for applications that need to work with multiple LLM providers or want to switch between providers without changing application code.
+
+The utilities include support for provider-specific configurations, temperature and API key management, and fallback mechanisms for unsupported providers.
+
+// 🔗 Common Patterns: LLM Provider Initialization Utilities
+// 🚩AI: MUST_UPDATE_IF_LLM_PATTERNS_CHANGE
+import * as localVars from '../../config/localVars.js';
+/**
+ * Options for creating a chat model
+ */
+export interface ChatModelOptions {
+  temperature?: number;
+  apiKey?: string;
+}
+import { cachedImport } from '../../utils/middleware/dynamicImportCache.js';
+/**
+ * Creates a chat model instance for the specified provider
+ * Uses advanced dynamic import caching to improve scalability
+ * @param provider - The LLM provider name (e.g., 'deepseek', 'openai', etc.)
+ * @param model - The model name to use
+ * @param options - Additional options for chat model
+ * @returns Promise resolving to the chat model instance
+ * @throws Error if provider or model is not available
+ */
+export async function createChatModel(
+  provider: string, 
+  model: string, 
+  options: ChatModelOptions = {}
+): Promise<any> {
+  const { temperature, apiKey } = options;
+  if (provider === 'deepseek') {
+    try {
+      // Use cached dynamic import for deepseek module
+      const deepseekModule = await cachedImport('@langchain/deepseek');
+      const ChatDeepSeek = (deepseekModule as any)?.ChatDeepSeek;
+      
+      if (!ChatDeepSeek) {
+        throw new Error('DeepSeek ChatDeepSeek class not found in module');
+      }
+      
+      return new ChatDeepSeek({ 
+        model, 
+        temperature: temperature || localVars.LLM_DEFAULT_TEMPERATURE,
+        ...(apiKey && { apiKey }) 
+      });
+    } catch (error) {
+      throw new Error(`DeepSeek provider not available: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  } else {
+    try {
+      // Use cached dynamic import for universal module
+      const universalModule = await cachedImport('langchain/chat_models/universal');
+      const initChatModel = (universalModule as any)?.initChatModel;
+      
+      if (typeof initChatModel !== 'function') {
+        throw new Error('LangChain universal init not available');
+      }
+      
+      return await initChatModel(`${provider}:${model}`, { 
+        ...(apiKey && { apiKey }), 
+        temperature: temperature || localVars.LLM_DEFAULT_TEMPERATURE 
+      });
+    } catch (error) {
+      throw new Error(`LangChain universal provider not available: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+}
+
+@codex/system-prompts
+Purpose: System prompt constants and templates for LLM interactions.
+
+Explanation:
+This module provides a collection of system prompts and prompt templates for common LLM interactions, particularly focused on marketing and email design tasks. It includes variant support for different prompt styles (standard, concise), template functions for generating context-specific prompts, and centralized prompt management for consistency across applications. The module is particularly valuable for applications that use LLMs for marketing content, email design, or other text generation tasks.
+
+The prompts include specialized templates for email copy generation, MJML conversion, and marketing content creation, with support for customization and context injection.
+
+// 🔗 Common Patterns: System Prompt Constants
+// 🚩AI: MUST_UPDATE_IF_PROMPT_PATTERNS_CHANGE
+/**
+ * Available system prompt variants
+ */
+export type SystemPromptVariant = 'standard' | 'concise';
+/**
+ * Gets the marketing system prompt for LLM interactions
+ * @param variant - The variant of the prompt to use
+ * @returns The system prompt string
+ */
+export function getMarketingSystemPrompt(variant: SystemPromptVariant = 'standard'): string {
+  switch (variant) {
+    case 'concise':
+      return 'You are an expert marketing AI. Generate concise, high-converting email copy and subject lines.';
+    
+    case 'standard':
+    default:
+      return 'You are an expert marketing AI. Generate high-converting email copy and a subject line that captures attention and drives action. Focus on clear value propositions and compelling calls-to-action.';
+  }
+}
+/**
+ * Gets the MJML design system prompt
+ * @returns The MJML design system prompt string
+ */
+export function getMjmlDesignSystemPrompt(): string {
+  return 'You are an expert email designer using MJML. Convert HTML email designs to clean, responsive MJML markup that works across all email clients. Focus on maintaining the visual integrity while ensuring mobile responsiveness.';
+}
+/**
+ * Standard prompt templates for common tasks
+ */
+export const PromptTemplates = {
+  emailCopy: (product: string, audience: string) => 
+    `Create email copy for ${product} targeting ${audience}. Include a compelling subject line and clear call-to-action.`,
+    
+  mjmlConversion: (designType: string) => 
+    `Convert this ${designType} email design to clean MJML markup. Ensure mobile responsiveness and cross-client compatibility.`
+} as const;
