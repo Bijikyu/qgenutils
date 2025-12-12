@@ -31,35 +31,12 @@ const formatDateTimeWithProvider = require('./lib/utilities/datetime/formatDateT
 const formatDurationWithProvider = require('./lib/utilities/datetime/formatDurationWithProvider');
 const formatRelativeTime = require('./lib/utilities/datetime/formatRelativeTime');
 
-
-
-
-
-// Validation utilities - individual functions
-const requireFields = require('./lib/validation/requireFields');
-
-// Authentication utilities - individual functions
-const checkPassportAuth = require('./lib/security/auth/checkPassportAuth');
-const hasGithubStrategy = require('./lib/security/auth/hasGithubStrategy');
-
 // URL utilities - individual functions
 const ensureProtocol = require('./lib/utilities/url/ensureProtocol');
 const ensureProtocolUrl = require('./lib/utilities/url/ensureProtocolUrl');
 const normalizeUrlOrigin = require('./lib/utilities/url/normalizeUrlOrigin');
 const stripProtocol = require('./lib/utilities/url/stripProtocol');
 const parseUrlParts = require('./lib/utilities/url/parseUrlParts');
-
-
-
-// Environment utilities - individual functions
-const requireEnvVars = require('./lib/system/env/requireEnvVars');
-const hasEnvVar = require('./lib/system/env/hasEnvVar');
-const getEnvVar = require('./lib/system/env/getEnvVar');
-
-
-
-// Real-time communication utilities - individual functions
-const createBroadcastRegistry = require('./lib/system/realtime/createBroadcastRegistry');
 
 // ID generation utilities - individual functions
 const generateExecutionId = require('./lib/utilities/id-generation/generateExecutionId');
@@ -72,21 +49,6 @@ const sanitizeString = require('./lib/utilities/string/sanitizeString');
 // Array utilities - individual functions
 const dedupeByLowercaseFirst = require('./lib/utilities/array/dedupeByLowercaseFirst');
 
-// Advanced security utilities - individual functions following SRP
-const sanitizeHtml = require('./lib/security/sanitizeHtml');
-const escapeHtml = require('./lib/security/escapeHtml');
-const sanitizeSqlInput = require('./lib/security/sanitizeSqlInput'); 
-const validateInputRate = require('./lib/security/validateInputRate');
-const sanitizeObjectRecursively = require('./lib/security/sanitizeObjectRecursively');
-const validateUserInput = require('./lib/security/validateUserInput');
-
-// GitHub validation utilities - individual functions
-const validateGitHubUrl = require('./lib/validation/validateGitHubUrl');
-
-// Advanced validation utilities - individual functions
-const validateEmail = require('./lib/validation/validateEmail');
-const validateRequired = require('./lib/validation/validateRequired');
-
 // File utilities - individual functions
 const formatFileSize = require('./lib/utilities/file/formatFileSize');
 
@@ -97,64 +59,15 @@ const createSafeDurationExtractor = require('./lib/utilities/performance/createS
 // Function utilities - ergonomic function wrapping
 const createDualVersionFunction = require('./lib/utilities/function/createDualVersionFunction');
 
-// Worker pool utilities - individual functions
-const createWorkerPool = require('./lib/system/worker-pool/createWorkerPool');
-
-// Shutdown utilities - individual functions
-const createShutdownManager = require('./lib/system/shutdown/createShutdownManager');
-const gracefulShutdown = require('./lib/system/shutdown/gracefulShutdown');
-
-// Retry policy utilities - resilient operation handling
-const defaultChargeRetryPlan = require('./lib/system/retry/defaultChargeRetryPlan');
-const defaultChargeRetryPlanObj = require('./lib/system/retry/defaultChargeRetryPlanObj');
-
 // Logger bridge utilities - unified logging with fallback
 const getAppLogger = require('./lib/utilities/logger/getAppLogger');
 const createRunId = require('./lib/utilities/logger/createRunId');
 const getAppLoggerCore = require('./lib/utilities/logger/getAppLoggerCore');
 const createRunIdCore = require('./lib/utilities/logger/createRunIdCore');
 
-// Qerrors integration utilities - error handling with fallback
-const qerrorsCommon = require('./lib/system/qerrors/qerrorsCommon');
-const executeWithQerrorsCore = require('./lib/system/qerrors/executeWithQerrorsCore');
-
-// Task scheduler utilities - centralized timer management
-const TaskScheduler = require('./lib/system/scheduler/TaskScheduler');
-const getScheduler = require('./lib/system/scheduler/getScheduler');
-
 // API endpoint metadata utilities - documentation and introspection
 const buildEndpointMeta = require('./lib/utilities/api/buildEndpointMeta');
 const attachEndpointMeta = require('./lib/utilities/api/attachEndpointMeta');
-
-// Audit logging utilities - compliance and security monitoring
-const auditLogger = require('./lib/system/audit/auditLogger');
-
-// Input validation utilities - individual functions
-const isValidObject = require('./lib/validation/isValidObject');
-const isValidString = require('./lib/validation/isValidString');
-const isValidDate = require('./lib/validation/isValidDate');
-const hasMethod = require('./lib/validation/hasMethod');
-
-// Throwing validation utilities - fail-fast validation with custom error messages
-const validateInputObject = require('./lib/validation/validateInputObject');
-const validateInputString = require('./lib/validation/validateInputString');
-const validateRequiredFields = require('./lib/validation/validateRequiredFields');
-const validateApiKey = require('./lib/validation/validateApiKey');
-
-// Non-throwing validation utilities - structured result objects for API responses
-const validateInputObjectObj = require('./lib/validation/validateInputObjectObj');
-const validateInputStringObj = require('./lib/validation/validateInputStringObj');
-const validateRequiredFieldsObj = require('./lib/validation/validateRequiredFieldsObj');
-const validateAndTrimString = require('./lib/validation/validateAndTrimString');
-
-// Number validation utilities - type-safe parsing and amount validation
-const parsePositiveNumber = require('./lib/validation/parsePositiveNumber');
-const validatePositiveAmount = require('./lib/validation/validatePositiveAmount');
-
-// URL security utilities - SSRF prevention with domain allowlisting
-const isAllowedExternalUrl = require('./lib/security/url/isAllowedExternalUrl');
-const validateExternalUrl = require('./lib/security/url/validateExternalUrl');
-const buildSafeExternalUrl = require('./lib/security/url/buildSafeExternalUrl');
 
 // HTTP configuration utilities - headers, auth, contextual timeouts
 const createJsonHeaders = require('./lib/utilities/http/createJsonHeaders');
@@ -335,305 +248,220 @@ const maskString = require('./lib/utilities/security/maskString');
 // Each function is imported from its individual file following SRP principles
 module.exports = {
   // DateTime utilities - handle date formatting, duration calculations, and date arithmetic
-  formatDateTime, // convert a Date to a locale string for UIs
-  formatDuration, // return human readable elapsed time
-  addDays, // calculate future dates for business logic and expiration handling
-  formatDate, // format date with locale support and fallback handling
-  formatDateWithPrefix, // format date with contextual prefix (e.g., "Added 12/25/2023")
-  createTimeProvider, // injectable time provider for deterministic testing
-  formatDateTimeWithProvider, // locale formatting with custom options
-  formatDurationWithProvider, // duration with injectable time provider
-  formatRelativeTime, // user-friendly relative time (e.g., "5 minutes ago")
-  
-
+  formatDateTime,
+  formatDuration,
+  addDays,
+  formatDate,
+  formatDateWithPrefix,
+  createTimeProvider,
+  formatDateTimeWithProvider,
+  formatDurationWithProvider,
+  formatRelativeTime,
 
   // URL utilities - handle protocol normalization and URL parsing
-  ensureProtocol, // prefix http/https when missing
-  ensureProtocolUrl, // object-based version with allowEmpty option
-  normalizeUrlOrigin, // normalize origin for comparisons
-  stripProtocol, // remove http/https scheme from URL
-  parseUrlParts, // split URL into host and path
-  
-  // Validation utilities - field presence and format checking
-  requireFields, // confirm required request fields exist
-  
-  // Authentication utilities - Passport.js integration helpers
-  checkPassportAuth, // verify request authenticated via Passport
-  hasGithubStrategy, // detect configured GitHub strategy
-  
+  ensureProtocol,
+  ensureProtocolUrl,
+  normalizeUrlOrigin,
+  stripProtocol,
+  parseUrlParts,
 
-  
-  // Environment utilities - configuration validation and access
-  requireEnvVars, // validate presence of required environment variables
-  hasEnvVar, // check if single environment variable exists
-  getEnvVar, // get environment variable value with optional default
-  
-
-  
-  // Real-time communication utilities - socket.io broadcast registries and validation
-  createBroadcastRegistry, // factory to create custom broadcast function registries
-  
   // ID generation utilities - secure identifier creation for tracking and data integrity
-  generateExecutionId, // create unique identifiers for request tracking and logging
-  makeIdempotencyKey, // create deterministic keys from parts for deduplication
-  makeIdempotencyKeyObj, // object-based version returning {key: string}
-  
+  generateExecutionId,
+  makeIdempotencyKey,
+  makeIdempotencyKeyObj,
+
   // String sanitization utilities - security-focused content filtering
-  sanitizeString, // remove dangerous characters from user input
-  
+  sanitizeString,
+
   // Array utilities - collection manipulation and deduplication
-  dedupeByLowercaseFirst, // deduplicate array by lowercase key preserving first occurrence
-  
-  // Advanced security utilities - comprehensive input protection
-  sanitizeHtml, // strip XSS vulnerabilities from HTML content
-  escapeHtml, // encode dangerous chars to HTML entities (preserves content)
-  sanitizeSqlInput, // prevent SQL injection in database queries
-  validateInputRate, // rate limiting for DoS prevention
-  sanitizeObjectRecursively, // recursively sanitize nested objects and arrays
-  validateUserInput, // advanced input validation with size constraints
-  
-  // GitHub validation utilities - repository URL format checking
-  validateGitHubUrl, // validate GitHub repository URLs
-  
-  // Advanced validation utilities - comprehensive field validation
-  validateEmail, // check email format with security considerations
-  validateRequired, // ensure required fields are present and valid
-  
+  dedupeByLowercaseFirst,
+
   // File utilities - file system helper functions
-  formatFileSize, // convert bytes to human-readable format
-  
+  formatFileSize,
+
   // Performance monitoring utilities - safe timer handling
-  safeDurationFromTimer, // safely extract duration from timer objects
-  createSafeDurationExtractor, // factory for bound duration extraction functions
-  
+  safeDurationFromTimer,
+  createSafeDurationExtractor,
+
   // Function utilities - ergonomic function wrapping
-  createDualVersionFunction, // wrap functions to accept both spread args and object input
-  
-  // Worker pool utilities - CPU-intensive task management
-  createWorkerPool, // manage worker threads for parallel processing
-  
-  // Shutdown utilities - graceful application termination
-  createShutdownManager, // coordinate clean shutdown processes
-  gracefulShutdown, // handle process termination signals
-  
-  // Retry policy utilities - resilient operation handling
-  defaultChargeRetryPlan, // create progressive retry plan for charge operations
-  defaultChargeRetryPlanObj, // object-based version returning {plan: RetryPlan[]}
-  
+  createDualVersionFunction,
+
   // Logger bridge utilities - unified logging with fallback
-  getAppLogger, // get logger with fallback to console methods
-  createRunId, // generate structured execution identifier for log correlation
-  getAppLoggerCore, // core logger resolver with bound console fallback
-  createRunIdCore, // core run ID with secure random fallback
-  
-  // Qerrors integration utilities - error handling with fallback
-  qerrorsCommon, // shared qerrors helpers (loadQerrors, formatErrorMessage, logErrorMaybe)
-  executeWithQerrorsCore, // wrap async operations with qerrors supervision
-  
-  // Task scheduler utilities - centralized timer management
-  TaskScheduler, // singleton class for consolidated task scheduling
-  getScheduler, // get shared scheduler instance
-  
+  getAppLogger,
+  createRunId,
+  getAppLoggerCore,
+  createRunIdCore,
+
   // API endpoint metadata utilities - documentation and introspection
-  buildEndpointMeta, // construct endpoint metadata object
-  attachEndpointMeta, // attach metadata to handler functions
-  
-  // Audit logging utilities - compliance and security monitoring
-  auditLogger, // structured audit logging with sensitive data sanitization
-  
-  // Input validation utilities - type and format checking
-  isValidObject, // verify object structure and properties
-  isValidString, // check string validity with security considerations
-  isValidDate, // validate Date object integrity
-  hasMethod, // check if object has specific method
-  
-  // Throwing validation utilities - fail-fast validation with custom error messages
-  validateInputObject, // throw if not a valid plain object
-  validateInputString, // throw if not a valid non-empty string
-  validateRequiredFields, // throw if required fields are missing (framework-agnostic)
-  validateApiKey, // throw if API key is missing or empty (service-specific)
-  
-  // Non-throwing validation utilities - structured result objects for batch/API processing
-  validateInputObjectObj, // returns {isValid: boolean}
-  validateInputStringObj, // returns {isValid: boolean}
-  validateRequiredFieldsObj, // returns {isValid: boolean, missingFields: string[]}
-  validateAndTrimString, // silent trim returning empty string for invalid input
-  
-  // Number validation utilities - type-safe parsing and amount validation
-  parsePositiveNumber, // parse unknown input to positive number with result object
-  validatePositiveAmount, // payment amount validation with Express 400 response
-  
-  // URL security utilities - SSRF prevention with domain allowlisting
-  isAllowedExternalUrl, // check if URL domain is in allowlist
-  validateExternalUrl, // throw if URL domain not allowed
-  buildSafeExternalUrl, // build URL with validation and path normalization
-  
+  buildEndpointMeta,
+  attachEndpointMeta,
+
   // HTTP configuration utilities - headers, auth, contextual timeouts
-  createJsonHeaders, // create JSON Content-Type headers with optional extras
-  createBasicAuth, // create basic auth object for HTTP clients
-  contextualTimeouts, // operation-aware timeout configurations
-  getContextualTimeout, // get timeout for operation type
-  createTimeoutConfig, // build timeout config with multiplier support
-  createDynamicTimeout, // scale timeout based on payload size
-  createHttpConfig, // complete axios-compatible HTTP configuration
-  
+  createJsonHeaders,
+  createBasicAuth,
+  contextualTimeouts,
+  getContextualTimeout,
+  createTimeoutConfig,
+  createDynamicTimeout,
+  createHttpConfig,
+
   // Batch processing utilities - high-performance data processing
-  createSemaphore, // concurrency control with permit-based limiting
-  retryWithBackoff, // retry async operations with exponential backoff
-  processBatch, // process arrays with concurrency, retries, progress tracking
-  
+  createSemaphore,
+  retryWithBackoff,
+  processBatch,
+
   // Array collection utilities - functional array manipulation
-  groupBy, // group array elements by key function
-  partition, // split array into passing/failing groups
-  unique, // deduplicate with optional key function
-  chunk, // split array into fixed-size chunks
-  flatten, // flatten nested arrays recursively
-  intersection, // find common elements across arrays
-  difference, // find elements in first array not in others
-  sortBy, // multi-criteria sorting
-  shuffle, // Fisher-Yates random shuffle
-  take, // take first n elements
-  takeWhile, // take while predicate true
-  skip, // skip first n elements
-  skipWhile, // skip while predicate true
-  
+  groupBy,
+  partition,
+  unique,
+  chunk,
+  flatten,
+  intersection,
+  difference,
+  sortBy,
+  shuffle,
+  take,
+  takeWhile,
+  skip,
+  skipWhile,
+
   // Object collection utilities - functional object manipulation
-  isPlainObject, // check if value is plain object (not array/Date/etc)
-  pick, // extract specified keys from object
-  omit, // exclude specified keys from object
-  deepMerge, // recursively merge objects
-  deepClone, // create independent copy of nested structure
-  getNestedValue, // safely access nested property with default
-  setNestedValue, // set nested property creating intermediates
-  isEqual, // deep equality comparison
-  mapKeys, // transform object keys
-  mapValues, // transform object values
-  filterKeys, // filter object by key/value predicate
-  isEmpty, // check if null/empty array/empty object
-  toQueryString, // convert object to URL query string
-  fromQueryString, // parse query string to object
-  
+  isPlainObject,
+  pick,
+  omit,
+  deepMerge,
+  deepClone,
+  getNestedValue,
+  setNestedValue,
+  isEqual,
+  mapKeys,
+  mapValues,
+  filterKeys,
+  isEmpty,
+  toQueryString,
+  fromQueryString,
+
   // Performance utilities - function optimization
-  memoize, // cache function results with optional LRU
-  throttle, // limit function calls to once per interval
-  debounce, // delay execution until activity stops
-  
+  memoize,
+  throttle,
+  debounce,
+
   // Security utilities - API key handling and rate limiting primitives
-  timingSafeCompare, // constant-time string comparison for timing attack prevention
-  maskApiKey, // mask API key for safe logging
-  extractApiKey, // extract API key from request headers/query/body
-  createRateLimitStore, // in-memory rate limit store with cleanup
-  buildRateLimitKey, // generate rate limit keys from request (IP/user/apiKey)
-  
+  timingSafeCompare,
+  maskApiKey,
+  extractApiKey,
+  createRateLimitStore,
+  buildRateLimitKey,
+
   // Middleware factories - Express-compatible middleware
-  createApiKeyValidator, // API key validation middleware with timing attack prevention
-  createRateLimiter, // rate limiting middleware with configurable strategies
-  
+  createApiKeyValidator,
+  createRateLimiter,
+
   // Scheduling utilities - interval and job management
-  msToCron, // convert milliseconds to cron expression
-  scheduleInterval, // schedule recurring jobs with tracking
-  scheduleOnce, // schedule one-time jobs
-  cleanupJobs, // bulk cleanup of scheduled jobs
-  
+  msToCron,
+  scheduleInterval,
+  scheduleOnce,
+  cleanupJobs,
+
   // Config builder utilities - standardized configuration objects
-  buildFeatureConfig, // build feature flag configuration
-  buildSecurityConfig, // build comprehensive security configuration
-  buildValidationConfig, // build validation configuration
-  buildTestRunnerConfig, // build test runner configuration
-  createPerformanceMetrics, // create performance metrics configuration
-  createProcessingCapabilities, // create processing capabilities configuration
-  
+  buildFeatureConfig,
+  buildSecurityConfig,
+  buildValidationConfig,
+  buildTestRunnerConfig,
+  createPerformanceMetrics,
+  createProcessingCapabilities,
+
   // Exec helper utilities - function wrapping with error handling
-  execHelperWrapper, // wrap functions with error handling and logging
-  createExecHelper, // factory for exec helper instances
-  
+  execHelperWrapper,
+  createExecHelper,
+
   // Data structure utilities
-  createMinHeap, // O(log n) min-heap for priority queues
-  
+  createMinHeap,
+
   // Password utilities - secure hashing and generation
-  hashPassword, // bcrypt hashing with 12 salt rounds
-  verifyPassword, // constant-time password comparison
-  generateSecurePassword, // cryptographically secure password generation
-  
+  hashPassword,
+  verifyPassword,
+  generateSecurePassword,
+
   // Secure config utilities - validation and credential protection
-  maskSensitiveValue, // mask credentials for safe logging
-  validateConfigValue, // validate config values against schema
-  buildSecureConfig, // build validated config using convict
-  
+  maskSensitiveValue,
+  validateConfigValue,
+  buildSecureConfig,
+
   // Module loader utilities - dynamic loading with CJS/ESM interop
-  loadAndFlattenModule, // dynamic import with CJS/ESM normalization
-  createCachedLoader, // factory for cached async module loaders
-  createSimpleLoader, // factory for non-cached loaders
-  createDirectLoader, // factory for direct loaders without flattening
-  
+  loadAndFlattenModule,
+  createCachedLoader,
+  createSimpleLoader,
+  createDirectLoader,
+
   // Performance monitoring utilities - real-time metrics and alerting
-  collectPerformanceMetrics, // collect CPU, memory, heap metrics from process
-  measureEventLoopLag, // async measurement of event loop blocking
-  analyzePerformanceMetrics, // analyze metrics against thresholds
-  getPerformanceHealthStatus, // compute overall health status with recommendations
-  createPerformanceMonitor, // factory for complete monitoring system
-  
+  collectPerformanceMetrics,
+  measureEventLoopLag,
+  analyzePerformanceMetrics,
+  getPerformanceHealthStatus,
+  createPerformanceMonitor,
+
   // Input validation utilities - comprehensive validation and sanitization
-  validateEmailFormat, // RFC 5322 email validation (from @scrooge)
-  validatePasswordStrength, // password strength validation with complexity requirements
-  validateMonetaryAmount, // monetary amount validation with business rules
-  validateApiKeyFormat, // API key format validation
-  validateCurrencyCode, // ISO 4217 currency code validation
-  validatePaymentMethodNonce, // Braintree payment nonce validation
-  validateDateRange, // date range validation using date-fns
-  validateSubscriptionPlan, // subscription plan validation
-  sanitizeInput, // XSS prevention with sanitize-html
-  createPaymentValidation, // Express middleware for payment validation
-  createUserValidation, // Express middleware for user validation
-  createSubscriptionValidation, // Express middleware for subscription validation
-  handleValidationErrors, // Express middleware error handler
-  extractValidationErrors, // extract errors from express-validator result
-  validateEnum, // check value is in allowed list
-  validateNumberRange, // check number is within bounds
-  validateStringLength, // check string length bounds
-  validateArray, // check array length bounds
-  validatePattern, // check value matches regex pattern
-  validateBoolean, // check value is boolean
-  validateDate, // check value is valid date
-  validateObjectId, // check MongoDB ObjectId format
-  validatePagination, // validate page/limit params
-  createValidator, // compose multiple validators
-  createResourceValidator, // CRUD validators factory
-  createValidationErrorHandler, // factory for controller validation handlers
-  validateRequiredString, // validate required string field in req.body
-  validateNumberInRange, // validate number with min/max in req.body
-  validateBooleanField, // validate boolean field in req.body
-  handleValidationFailure, // send standardized validation error response
-  
+  validateEmailFormat,
+  validatePasswordStrength,
+  validateMonetaryAmount,
+  validateApiKeyFormat,
+  validateCurrencyCode,
+  validatePaymentMethodNonce,
+  validateDateRange,
+  validateSubscriptionPlan,
+  sanitizeInput,
+  createPaymentValidation,
+  createUserValidation,
+  createSubscriptionValidation,
+  handleValidationErrors,
+  extractValidationErrors,
+  validateEnum,
+  validateNumberRange,
+  validateStringLength,
+  validateArray,
+  validatePattern,
+  validateBoolean,
+  validateDate,
+  validateObjectId,
+  validatePagination,
+  createValidator,
+  createResourceValidator,
+  createValidationErrorHandler,
+  validateRequiredString,
+  validateNumberInRange,
+  validateBooleanField,
+  handleValidationFailure,
+
   // Zod validation framework utilities
-  zodStringValidators, // Zod string validators (nonEmpty, email, apiKey, url)
-  zodNumberValidators, // Zod number validators (positiveInt, range, temperature)
-  zodValidationUtils, // validation utilities (validateString, validateEmail, etc)
-  zodSchemaBuilders, // schema builders (dataWithStrings, credentials, pagination)
-  createApiKeyAuth, // create HTTP basic auth from API key
-  createCredentialSchema, // create Zod credential schema for services
-  createServiceMeta, // create service meta object for API docs
-  
+  zodStringValidators,
+  zodNumberValidators,
+  zodValidationUtils,
+  zodSchemaBuilders,
+  createApiKeyAuth,
+  createCredentialSchema,
+  createServiceMeta,
+
   // Security middleware utilities - rate limiting and monitoring
-  SECURITY_CONFIG, // security configuration constants
-  detectSuspiciousPatterns, // detect XSS, SQL injection, path traversal
-  createIpTracker, // IP tracking with memory management
-  createSecurityMiddleware, // security monitoring middleware factory
-  createSecurityRateLimiter, // security rate limiter with blocking
-  setSecurityHeaders, // security headers middleware factory
-  validateAndNormalizePath, // path validation against directory traversal
-  validateBucketName, // GCS/S3 bucket name validation
-  validateObjectName, // GCS/S3 object name validation
-  createSafeObjectPath, // combine bucket and object names safely
-  sanitizeLogValue, // sanitize values for safe logging
-  sanitizeObject, // recursively sanitize objects for logging
-  sanitizeUrl, // remove sensitive URL query params
-  createSafeLoggingContext, // safe Express request context for logging
-  isSensitiveField, // check if field name is sensitive
-  maskString, // mask string with partial visibility
-  
+  SECURITY_CONFIG,
+  detectSuspiciousPatterns,
+  createIpTracker,
+  createSecurityMiddleware,
+  createSecurityRateLimiter,
+  setSecurityHeaders,
+  validateAndNormalizePath,
+  validateBucketName,
+  validateObjectName,
+  createSafeObjectPath,
+  sanitizeLogValue,
+  sanitizeObject,
+  sanitizeUrl,
+  createSafeLoggingContext,
+  isSensitiveField,
+  maskString,
+
   // Logger - centralized logging infrastructure
-  logger // winston-based logging with rotation and levels
+  logger
 };
 
 /*
@@ -648,5 +476,5 @@ module.exports = {
  * This ensures maximum compatibility across different JavaScript environments.
  */
 
-// Mirror exports under 'default' to support import statements  // clarify ESM usage
-module.exports.default = module.exports; // provide default export for import syntax
+// Mirror exports under 'default' to support import statements
+module.exports.default = module.exports;
