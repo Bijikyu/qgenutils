@@ -95,6 +95,10 @@ const createWorkerPool = require('./lib/system/worker-pool/createWorkerPool');
 const createShutdownManager = require('./lib/system/shutdown/createShutdownManager');
 const gracefulShutdown = require('./lib/system/shutdown/gracefulShutdown');
 
+// Retry policy utilities - resilient operation handling
+const defaultChargeRetryPlan = require('./lib/system/retry/defaultChargeRetryPlan');
+const defaultChargeRetryPlanObj = require('./lib/system/retry/defaultChargeRetryPlanObj');
+
 // Input validation utilities - individual functions
 const isValidObject = require('./lib/validation/isValidObject');
 const isValidString = require('./lib/validation/isValidString');
@@ -201,6 +205,10 @@ module.exports = {
   // Shutdown utilities - graceful application termination
   createShutdownManager, // coordinate clean shutdown processes
   gracefulShutdown, // handle process termination signals
+  
+  // Retry policy utilities - resilient operation handling
+  defaultChargeRetryPlan, // create progressive retry plan for charge operations
+  defaultChargeRetryPlanObj, // object-based version returning {plan: RetryPlan[]}
   
   // Input validation utilities - type and format checking
   isValidObject, // verify object structure and properties
