@@ -147,6 +147,15 @@ const validateInputStringObj = require('./lib/validation/validateInputStringObj'
 const validateRequiredFieldsObj = require('./lib/validation/validateRequiredFieldsObj');
 const validateAndTrimString = require('./lib/validation/validateAndTrimString');
 
+// Number validation utilities - type-safe parsing and amount validation
+const parsePositiveNumber = require('./lib/validation/parsePositiveNumber');
+const validatePositiveAmount = require('./lib/validation/validatePositiveAmount');
+
+// URL security utilities - SSRF prevention with domain allowlisting
+const isAllowedExternalUrl = require('./lib/security/url/isAllowedExternalUrl');
+const validateExternalUrl = require('./lib/security/url/validateExternalUrl');
+const buildSafeExternalUrl = require('./lib/security/url/buildSafeExternalUrl');
+
 // HTTP configuration utilities - headers, auth, contextual timeouts
 const createJsonHeaders = require('./lib/utilities/http/createJsonHeaders');
 const createBasicAuth = require('./lib/utilities/http/createBasicAuth');
@@ -298,6 +307,15 @@ module.exports = {
   validateInputStringObj, // returns {isValid: boolean}
   validateRequiredFieldsObj, // returns {isValid: boolean, missingFields: string[]}
   validateAndTrimString, // silent trim returning empty string for invalid input
+  
+  // Number validation utilities - type-safe parsing and amount validation
+  parsePositiveNumber, // parse unknown input to positive number with result object
+  validatePositiveAmount, // payment amount validation with Express 400 response
+  
+  // URL security utilities - SSRF prevention with domain allowlisting
+  isAllowedExternalUrl, // check if URL domain is in allowlist
+  validateExternalUrl, // throw if URL domain not allowed
+  buildSafeExternalUrl, // build URL with validation and path normalization
   
   // HTTP configuration utilities - headers, auth, contextual timeouts
   createJsonHeaders, // create JSON Content-Type headers with optional extras
