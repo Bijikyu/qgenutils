@@ -68,6 +68,9 @@ const makeIdempotencyKeyObj = require('./lib/utilities/id-generation/makeIdempot
 // String sanitization utilities - individual functions
 const sanitizeString = require('./lib/utilities/string/sanitizeString');
 
+// Array utilities - individual functions
+const dedupeByLowercaseFirst = require('./lib/utilities/array/dedupeByLowercaseFirst');
+
 // Advanced security utilities - individual functions following SRP
 const sanitizeHtml = require('./lib/security/sanitizeHtml');
 const sanitizeSqlInput = require('./lib/security/sanitizeSqlInput'); 
@@ -182,6 +185,9 @@ module.exports = {
   
   // String sanitization utilities - security-focused content filtering
   sanitizeString, // remove dangerous characters from user input
+  
+  // Array utilities - collection manipulation and deduplication
+  dedupeByLowercaseFirst, // deduplicate array by lowercase key preserving first occurrence
   
   // Advanced security utilities - comprehensive input protection
   sanitizeHtml, // strip XSS vulnerabilities from HTML content
