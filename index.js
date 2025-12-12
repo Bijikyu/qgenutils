@@ -138,11 +138,22 @@ const hasMethod = require('./lib/validation/hasMethod');
 const validateInputObject = require('./lib/validation/validateInputObject');
 const validateInputString = require('./lib/validation/validateInputString');
 const validateRequiredFields = require('./lib/validation/validateRequiredFields');
+const validateApiKey = require('./lib/validation/validateApiKey');
 
 // Non-throwing validation utilities - structured result objects for API responses
 const validateInputObjectObj = require('./lib/validation/validateInputObjectObj');
 const validateInputStringObj = require('./lib/validation/validateInputStringObj');
 const validateRequiredFieldsObj = require('./lib/validation/validateRequiredFieldsObj');
+const validateAndTrimString = require('./lib/validation/validateAndTrimString');
+
+// HTTP configuration utilities - headers, auth, contextual timeouts
+const createJsonHeaders = require('./lib/utilities/http/createJsonHeaders');
+const createBasicAuth = require('./lib/utilities/http/createBasicAuth');
+const contextualTimeouts = require('./lib/utilities/http/contextualTimeouts');
+const getContextualTimeout = require('./lib/utilities/http/getContextualTimeout');
+const createTimeoutConfig = require('./lib/utilities/http/createTimeoutConfig');
+const createDynamicTimeout = require('./lib/utilities/http/createDynamicTimeout');
+const createHttpConfig = require('./lib/utilities/http/createHttpConfig');
 
 
 /*
@@ -278,11 +289,22 @@ module.exports = {
   validateInputObject, // throw if not a valid plain object
   validateInputString, // throw if not a valid non-empty string
   validateRequiredFields, // throw if required fields are missing (framework-agnostic)
+  validateApiKey, // throw if API key is missing or empty (service-specific)
   
   // Non-throwing validation utilities - structured result objects for batch/API processing
   validateInputObjectObj, // returns {isValid: boolean}
   validateInputStringObj, // returns {isValid: boolean}
   validateRequiredFieldsObj, // returns {isValid: boolean, missingFields: string[]}
+  validateAndTrimString, // silent trim returning empty string for invalid input
+  
+  // HTTP configuration utilities - headers, auth, contextual timeouts
+  createJsonHeaders, // create JSON Content-Type headers with optional extras
+  createBasicAuth, // create basic auth object for HTTP clients
+  contextualTimeouts, // operation-aware timeout configurations
+  getContextualTimeout, // get timeout for operation type
+  createTimeoutConfig, // build timeout config with multiplier support
+  createDynamicTimeout, // scale timeout based on payload size
+  createHttpConfig, // complete axios-compatible HTTP configuration
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
