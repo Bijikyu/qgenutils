@@ -107,6 +107,21 @@ const gracefulShutdown = require('./lib/system/shutdown/gracefulShutdown');
 const defaultChargeRetryPlan = require('./lib/system/retry/defaultChargeRetryPlan');
 const defaultChargeRetryPlanObj = require('./lib/system/retry/defaultChargeRetryPlanObj');
 
+// Logger bridge utilities - unified logging with fallback
+const getAppLogger = require('./lib/utilities/logger/getAppLogger');
+const createRunId = require('./lib/utilities/logger/createRunId');
+
+// Task scheduler utilities - centralized timer management
+const TaskScheduler = require('./lib/system/scheduler/TaskScheduler');
+const getScheduler = require('./lib/system/scheduler/getScheduler');
+
+// API endpoint metadata utilities - documentation and introspection
+const buildEndpointMeta = require('./lib/utilities/api/buildEndpointMeta');
+const attachEndpointMeta = require('./lib/utilities/api/attachEndpointMeta');
+
+// Audit logging utilities - compliance and security monitoring
+const auditLogger = require('./lib/system/audit/auditLogger');
+
 // Input validation utilities - individual functions
 const isValidObject = require('./lib/validation/isValidObject');
 const isValidString = require('./lib/validation/isValidString');
@@ -225,6 +240,21 @@ module.exports = {
   // Retry policy utilities - resilient operation handling
   defaultChargeRetryPlan, // create progressive retry plan for charge operations
   defaultChargeRetryPlanObj, // object-based version returning {plan: RetryPlan[]}
+  
+  // Logger bridge utilities - unified logging with fallback
+  getAppLogger, // get logger with fallback to console methods
+  createRunId, // generate structured execution identifier for log correlation
+  
+  // Task scheduler utilities - centralized timer management
+  TaskScheduler, // singleton class for consolidated task scheduling
+  getScheduler, // get shared scheduler instance
+  
+  // API endpoint metadata utilities - documentation and introspection
+  buildEndpointMeta, // construct endpoint metadata object
+  attachEndpointMeta, // attach metadata to handler functions
+  
+  // Audit logging utilities - compliance and security monitoring
+  auditLogger, // structured audit logging with sensitive data sanitization
   
   // Input validation utilities - type and format checking
   isValidObject, // verify object structure and properties
