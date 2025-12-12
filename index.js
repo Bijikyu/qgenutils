@@ -284,6 +284,11 @@ const validateObjectId = require('./lib/utilities/validation/validateObjectId');
 const validatePagination = require('./lib/utilities/validation/validatePagination');
 const createValidator = require('./lib/utilities/validation/createValidator');
 const createResourceValidator = require('./lib/utilities/validation/createResourceValidator');
+const createValidationErrorHandler = require('./lib/utilities/validation/createValidationErrorHandler');
+const validateRequiredString = require('./lib/utilities/validation/validateRequiredString');
+const validateNumberInRange = require('./lib/utilities/validation/validateNumberInRange');
+const validateBooleanField = require('./lib/utilities/validation/validateBooleanField');
+const handleValidationFailure = require('./lib/utilities/validation/handleValidationFailure');
 
 /*
  * Export Strategy Explanation:
@@ -567,6 +572,11 @@ module.exports = {
   validatePagination, // validate page/limit params
   createValidator, // compose multiple validators
   createResourceValidator, // CRUD validators factory
+  createValidationErrorHandler, // factory for controller validation handlers
+  validateRequiredString, // validate required string field in req.body
+  validateNumberInRange, // validate number with min/max in req.body
+  validateBooleanField, // validate boolean field in req.body
+  handleValidationFailure, // send standardized validation error response
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
