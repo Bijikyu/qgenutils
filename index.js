@@ -58,6 +58,8 @@ const createBroadcastRegistry = require('./lib/system/realtime/createBroadcastRe
 
 // ID generation utilities - individual functions
 const generateExecutionId = require('./lib/utilities/id-generation/generateExecutionId');
+const makeIdempotencyKey = require('./lib/utilities/id-generation/makeIdempotencyKey');
+const makeIdempotencyKeyObj = require('./lib/utilities/id-generation/makeIdempotencyKeyObj');
 
 // String sanitization utilities - individual functions
 const sanitizeString = require('./lib/utilities/string/sanitizeString');
@@ -163,6 +165,8 @@ module.exports = {
   
   // ID generation utilities - secure identifier creation for tracking and data integrity
   generateExecutionId, // create unique identifiers for request tracking and logging
+  makeIdempotencyKey, // create deterministic keys from parts for deduplication
+  makeIdempotencyKeyObj, // object-based version returning {key: string}
   
   // String sanitization utilities - security-focused content filtering
   sanitizeString, // remove dangerous characters from user input
