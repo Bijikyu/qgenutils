@@ -306,6 +306,16 @@ const createIpTracker = require('./lib/utilities/security/createIpTracker');
 const createSecurityMiddleware = require('./lib/utilities/security/createSecurityMiddleware');
 const createSecurityRateLimiter = require('./lib/utilities/security/createSecurityRateLimiter');
 const setSecurityHeaders = require('./lib/utilities/security/setSecurityHeaders');
+const validateAndNormalizePath = require('./lib/utilities/security/validateAndNormalizePath');
+const validateBucketName = require('./lib/utilities/security/validateBucketName');
+const validateObjectName = require('./lib/utilities/security/validateObjectName');
+const createSafeObjectPath = require('./lib/utilities/security/createSafeObjectPath');
+const sanitizeLogValue = require('./lib/utilities/security/sanitizeLogValue');
+const sanitizeObject = require('./lib/utilities/security/sanitizeObject');
+const sanitizeUrl = require('./lib/utilities/security/sanitizeUrl');
+const createSafeLoggingContext = require('./lib/utilities/security/createSafeLoggingContext');
+const isSensitiveField = require('./lib/utilities/security/isSensitiveField');
+const maskString = require('./lib/utilities/security/maskString');
 
 /*
  * Export Strategy Explanation:
@@ -611,6 +621,16 @@ module.exports = {
   createSecurityMiddleware, // security monitoring middleware factory
   createSecurityRateLimiter, // security rate limiter with blocking
   setSecurityHeaders, // security headers middleware factory
+  validateAndNormalizePath, // path validation against directory traversal
+  validateBucketName, // GCS/S3 bucket name validation
+  validateObjectName, // GCS/S3 object name validation
+  createSafeObjectPath, // combine bucket and object names safely
+  sanitizeLogValue, // sanitize values for safe logging
+  sanitizeObject, // recursively sanitize objects for logging
+  sanitizeUrl, // remove sensitive URL query params
+  createSafeLoggingContext, // safe Express request context for logging
+  isSensitiveField, // check if field name is sensitive
+  maskString, // mask string with partial visibility
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
