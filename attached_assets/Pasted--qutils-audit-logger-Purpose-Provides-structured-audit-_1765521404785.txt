@@ -1,0 +1,184 @@
+@qutils/audit-logger
+Purpose: Provides structured audit logging for compliance and security monitoring.
+
+Explanation:
+This utility offers comprehensive audit logging capabilities designed for security compliance and regulatory requirements. It solves the critical problem of tracking security-relevant events, data access, and system modifications in a structured, searchable format. The module is broadly applicable to any application that requires audit trails, particularly financial services, healthcare systems, and applications handling sensitive data. It provides automatic data sanitization to prevent logging sensitive information, structured event categorization (authentication, authorization, data access, etc.), severity levels, unique audit ID generation, and convenience methods for common audit scenarios. The logger ensures compliance with security standards while maintaining performance through efficient data processing.
+
+/**
+ * @file auditLogger.ts
+ * @description Enhanced audit logging utility for compliance and security monitoring.
+ * Provides structured logging for data access, modifications, and security events.
+ */
+/**
+ * Audit event severity levels
+ */
+export type AuditSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+/**
+ * Standard audit event structure
+ */
+export interface AuditEvent {
+	timestamp: string;
+	severity: AuditSeverity;
+	category: 'AUTHENTICATION' | 'AUTHORIZATION' | 'DATA_ACCESS' | 'DATA_MODIFICATION' | 'SECURITY_EVENT' | 'PAYMENT_OPERATION';
+	action: string;
+	userId?: string;
+	ipAddress?: string;
+	userAgent?: string;
+	resource?: string;
+	outcome: 'SUCCESS' | 'FAILURE' | 'ATTEMPT';
+	details: Record<string, unknown>;
+	auditId: string;
+}
+/**
+ * Generates a unique audit event ID
+ */
+const generateAuditId = (): string => {
+	const timestamp = Date.now().toString(36);
+	const random = Math.random().toString(36).substring(2, 8);
+	return `audit_${timestamp}_${random}`;
+};
+/**
+ * Recursively sanitize object data without JSON roundtrip for performance
+ */
+const sanitizeAuditDataRecursive = (data: any, sensitivePatterns: RegExp[]): any => {
+	if (Array.isArray(data)) {
+		return data.map(item => 
+			typeof item === 'object' && item !== null ? sanitizeAuditDataRecursive(item, sensitivePatterns) : item
+		);
+	}
+	
+	if (typeof data === 'object' && data !== null) {
+		const sanitized: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(data)) {
+			if (sensitivePatterns.some(pattern => pattern.test(key))) {
+				sanitized[key] = '[REDACTED]';
+		} else if (typeof value === 'object' && value !== null) {
+			sanitized[key] = sanitizeAuditDataRecursive(value, sensitivePatterns);
+		} else {
+				sanitized[key] = value;
+			}
+		}
+		return sanitized;
+	}
+	
+	return data;
+};
+/**
+ * Sanitizes sensitive data for audit logging
+ */
+const sanitizeAuditData = (data: Record<string, unknown>): Record<string, unknown> => {
+	const sensitivePatterns = [
+		/api[_-]?key/i,
+		/token/i,
+		/password/i,
+		/secret/i,
+		/client[_-]?secret/i,
+		/authorization/i,
+		/bearer/i,
+		/credit[_-]?card/i,
+		/card[_-]?number/i,
+		/ssn/i,
+		/bank[_-]?account/i
+	];
+	const sanitized: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(data)) {
+		if (sensitivePatterns.some(pattern => pattern.test(key))) {
+			sanitized[key] = '[REDACTED]';
+		} else if (typeof value === 'object' && value !== null) {
+			// Recursive sanitization without JSON roundtrip for better performance
+			sanitized[key] = sanitizeAuditDataRecursive(value, sensitivePatterns);
+		} else {
+			sanitized[key] = value;
+		}
+	}
+	return sanitized;
+};
+/**
+ * Enhanced audit logger with structured output
+ */
+export const auditLogger = {
+	/**
+	 * Logs an audit event with full compliance metadata
+	 */
+	log: (event: Omit<AuditEvent, 'timestamp' | 'auditId'>): void => {
+		const auditEvent: AuditEvent = {
+			timestamp: new Date().toISOString(),
+			auditId: generateAuditId(),
+			...event,
+			details: sanitizeAuditData(event.details)
+		};
+		// In production, this would go to a secure audit log system
+		// For now, using the existing qerrors infrastructure
+		console.log(JSON.stringify({
+			type: 'AUDIT_EVENT',
+			...auditEvent
+		}));
+	},
+	/**
+	 * Convenience method for authentication events
+	 */
+	logAuth: (action: string, outcome: 'SUCCESS' | 'FAILURE' | 'ATTEMPT', userId?: string, details: Record<string, unknown> = {}) => {
+		auditLogger.log({
+			severity: outcome === 'FAILURE' ? 'HIGH' : 'MEDIUM',
+			category: 'AUTHENTICATION',
+			action,
+			userId,
+			outcome,
+			details
+		});
+	},
+	/**
+	 * Convenience method for data access events
+	 */
+	logDataAccess: (resource: string, action: string, userId?: string, details: Record<string, unknown> = {}) => {
+		auditLogger.log({
+			severity: 'LOW',
+			category: 'DATA_ACCESS',
+			action,
+			userId,
+			resource,
+			outcome: 'SUCCESS',
+			details
+		});
+	},
+	/**
+	 * Convenience method for data modification events
+	 */
+	logDataModification: (resource: string, action: string, outcome: 'SUCCESS' | 'FAILURE', userId?: string, details: Record<string, unknown> = {}) => {
+		auditLogger.log({
+			severity: outcome === 'SUCCESS' ? 'MEDIUM' : 'HIGH',
+			category: 'DATA_MODIFICATION',
+			action,
+			userId,
+			resource,
+			outcome,
+			details
+		});
+	},
+	/**
+	 * Convenience method for security events
+	 */
+	logSecurityEvent: (action: string, severity: AuditSeverity, details: Record<string, unknown> = {}, userId?: string) => {
+		auditLogger.log({
+			severity,
+			category: 'SECURITY_EVENT',
+			action,
+			userId,
+			outcome: 'ATTEMPT',
+			details
+		});
+	},
+	/**
+	 * Convenience method for payment operations
+	 */
+	logPaymentOperation: (action: string, outcome: 'SUCCESS' | 'FAILURE', userId?: string, details: Record<string, unknown> = {}) => {
+		auditLogger.log({
+			severity: outcome === 'SUCCESS' ? 'MEDIUM' : 'HIGH',
+			category: 'PAYMENT_OPERATION',
+			action,
+			userId,
+			outcome,
+			details
+		});
+	}
+};
