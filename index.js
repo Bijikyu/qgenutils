@@ -290,6 +290,15 @@ const validateNumberInRange = require('./lib/utilities/validation/validateNumber
 const validateBooleanField = require('./lib/utilities/validation/validateBooleanField');
 const handleValidationFailure = require('./lib/utilities/validation/handleValidationFailure');
 
+// Zod validation framework utilities
+const zodStringValidators = require('./lib/utilities/validation/zodStringValidators');
+const zodNumberValidators = require('./lib/utilities/validation/zodNumberValidators');
+const zodValidationUtils = require('./lib/utilities/validation/zodValidationUtils');
+const zodSchemaBuilders = require('./lib/utilities/validation/zodSchemaBuilders');
+const createApiKeyAuth = require('./lib/utilities/validation/createApiKeyAuth');
+const createCredentialSchema = require('./lib/utilities/validation/createCredentialSchema');
+const createServiceMeta = require('./lib/utilities/validation/createServiceMeta');
+
 // Security middleware utilities - rate limiting, monitoring, and protection
 const SECURITY_CONFIG = require('./lib/utilities/security/securityConfig');
 const detectSuspiciousPatterns = require('./lib/utilities/security/detectSuspiciousPatterns');
@@ -585,6 +594,15 @@ module.exports = {
   validateNumberInRange, // validate number with min/max in req.body
   validateBooleanField, // validate boolean field in req.body
   handleValidationFailure, // send standardized validation error response
+  
+  // Zod validation framework utilities
+  zodStringValidators, // Zod string validators (nonEmpty, email, apiKey, url)
+  zodNumberValidators, // Zod number validators (positiveInt, range, temperature)
+  zodValidationUtils, // validation utilities (validateString, validateEmail, etc)
+  zodSchemaBuilders, // schema builders (dataWithStrings, credentials, pagination)
+  createApiKeyAuth, // create HTTP basic auth from API key
+  createCredentialSchema, // create Zod credential schema for services
+  createServiceMeta, // create service meta object for API docs
   
   // Security middleware utilities - rate limiting and monitoring
   SECURITY_CONFIG, // security configuration constants
