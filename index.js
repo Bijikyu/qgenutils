@@ -92,6 +92,16 @@ const isValidString = require('./lib/validation/isValidString');
 const isValidDate = require('./lib/validation/isValidDate');
 const hasMethod = require('./lib/validation/hasMethod');
 
+// Throwing validation utilities - fail-fast validation with custom error messages
+const validateInputObject = require('./lib/validation/validateInputObject');
+const validateInputString = require('./lib/validation/validateInputString');
+const validateRequiredFields = require('./lib/validation/validateRequiredFields');
+
+// Non-throwing validation utilities - structured result objects for API responses
+const validateInputObjectObj = require('./lib/validation/validateInputObjectObj');
+const validateInputStringObj = require('./lib/validation/validateInputStringObj');
+const validateRequiredFieldsObj = require('./lib/validation/validateRequiredFieldsObj');
+
 
 /*
  * Export Strategy Explanation:
@@ -179,6 +189,16 @@ module.exports = {
   isValidString, // check string validity with security considerations
   isValidDate, // validate Date object integrity
   hasMethod, // check if object has specific method
+  
+  // Throwing validation utilities - fail-fast validation with custom error messages
+  validateInputObject, // throw if not a valid plain object
+  validateInputString, // throw if not a valid non-empty string
+  validateRequiredFields, // throw if required fields are missing (framework-agnostic)
+  
+  // Non-throwing validation utilities - structured result objects for batch/API processing
+  validateInputObjectObj, // returns {isValid: boolean}
+  validateInputStringObj, // returns {isValid: boolean}
+  validateRequiredFieldsObj, // returns {isValid: boolean, missingFields: string[]}
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
