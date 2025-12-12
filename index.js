@@ -79,6 +79,13 @@ const validateRequired = require('./lib/validation/validateRequired');
 // File utilities - individual functions
 const formatFileSize = require('./lib/utilities/file/formatFileSize');
 
+// Performance monitoring utilities - safe timer handling
+const safeDurationFromTimer = require('./lib/utilities/performance/safeDurationFromTimer');
+const createSafeDurationExtractor = require('./lib/utilities/performance/createSafeDurationExtractor');
+
+// Function utilities - ergonomic function wrapping
+const createDualVersionFunction = require('./lib/utilities/function/createDualVersionFunction');
+
 // Worker pool utilities - individual functions
 const createWorkerPool = require('./lib/system/worker-pool/createWorkerPool');
 
@@ -176,6 +183,13 @@ module.exports = {
   
   // File utilities - file system helper functions
   formatFileSize, // convert bytes to human-readable format
+  
+  // Performance monitoring utilities - safe timer handling
+  safeDurationFromTimer, // safely extract duration from timer objects
+  createSafeDurationExtractor, // factory for bound duration extraction functions
+  
+  // Function utilities - ergonomic function wrapping
+  createDualVersionFunction, // wrap functions to accept both spread args and object input
   
   // Worker pool utilities - CPU-intensive task management
   createWorkerPool, // manage worker threads for parallel processing
