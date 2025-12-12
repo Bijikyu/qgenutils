@@ -1,7 +1,7 @@
 
-# QGenUtils - Comprehensive Utility Library
+# QGenUtils - Utilities Library
 
-A security-first Node.js utility library providing authentication, HTTP operations, URL processing, validation, datetime formatting, and template rendering. Designed as a lightweight alternative to heavy npm packages with comprehensive error handling and fail-closed security patterns.
+A Node.js utility library providing DateTime formatting, HTTP operations, URL processing, collections manipulation, batch processing, and performance utilities. Designed as a lightweight alternative to heavy npm packages with comprehensive error handling.
 
 ## Installation
 
@@ -14,9 +14,8 @@ npm install qgenutils
 ```javascript
 const utils = require('qgenutils');
 // or import specific functions
-const { formatDateTime, calculateContentLength, ensureProtocol } = require('qgenutils');
+const { formatDateTime, ensureProtocol, groupBy, chunk } = require('qgenutils');
 ```
-
 
 ```javascript
 const { logger } = require('qgenutils'); // Winston logger instance
@@ -24,14 +23,14 @@ const { logger } = require('qgenutils'); // Winston logger instance
 
 ## Features
 
-- 🕐 **DateTime Utilities** - Format dates and calculate durations
-- 🌐 **HTTP Utilities** - Content-length calculation, header management, response helpers
-- 📮 **Response Utilities** - Standardized JSON and error responses
-- 🔗 **URL Utilities** - Protocol handling, URL parsing and normalization
-- ✅ **Validation** - Field presence and format checking
-- 🔐 **Authentication** - Passport.js integration helpers
-- 📄 **View Rendering** - EJS template rendering with error handling
-- 📜 **Logging** - Winston logger with daily rotation
+- **DateTime Utilities** - Format dates, calculate durations, relative time
+- **HTTP Utilities** - Headers, timeouts, configuration builders
+- **URL Utilities** - Protocol handling, URL parsing and normalization
+- **Collections** - Array and object manipulation (groupBy, chunk, pick, omit, deepMerge, etc.)
+- **Batch Processing** - Concurrency control, retry with backoff
+- **Performance** - Memoize, throttle, debounce
+- **ID Generation** - Execution IDs, idempotency keys
+- **Logging** - Winston logger with daily rotation
 
 ## API Reference
 
@@ -63,101 +62,22 @@ console.log(formatDuration(start, end)); // "01:30:45"
 console.log(formatDuration(start)); // Duration from start to now
 ```
 
-### HTTP Utilities
-
-#### `calculateContentLength(body)`
-Calculates accurate content-length for HTTP requests.
+#### `formatRelativeTime(date)`
+Returns human-friendly relative time (e.g., "5 minutes ago").
 
 ```javascript
-const { calculateContentLength } = require('qgenutils');
+const { formatRelativeTime } = require('qgenutils');
 
-console.log(calculateContentLength('Hello World')); // 11
-console.log(calculateContentLength({ name: 'John' })); // JSON string length
-console.log(calculateContentLength(null)); // 0
-console.log(calculateContentLength(Buffer.from('Hi'))); // 2 // Buffer example
+console.log(formatRelativeTime(new Date(Date.now() - 60000))); // "1 minute ago"
 ```
 
-#### `buildCleanHeaders(headers, method, body)`
-Builds clean headers for HTTP requests, removing dangerous headers.
+#### `addDays(date, days)`
+Adds days to a date.
 
 ```javascript
-const { buildCleanHeaders } = require('qgenutils');
+const { addDays } = require('qgenutils');
 
-const headers = buildCleanHeaders({
-  'authorization': 'Bearer token',
-  'host': 'evil.com', // Will be removed
-  'content-type': 'application/json'
-}, 'POST', { data: 'test' });
-```
-
-#### `HEADERS_TO_REMOVE` constant
-List of headers stripped by `buildCleanHeaders` to prevent proxy leaks.
-
-```javascript
-const { HEADERS_TO_REMOVE } = require('qgenutils');
-
-console.log(HEADERS_TO_REMOVE.includes('host')); // true
-
-```
-
-#### `sendJsonResponse(res, statusCode, data)`
-Sends standardized JSON responses.
-
-```javascript
-const { sendJsonResponse } = require('qgenutils');
-
-sendJsonResponse(res, 200, { message: 'Success' });
-sendJsonResponse(res, 400, { error: 'Invalid input' });
-```
-
-#### `sendValidationError(res, message, additionalData?, statusCode?)`
-
-Sends a 400 error response when validation fails.
-
-
-```javascript
-const { sendValidationError } = require('qgenutils');
-
-sendValidationError(res, 'Missing name field');
-sendValidationError(res, 'Invalid email', { field: 'email' }, 422);
-```
-
-#### `sendAuthError(res, message?)`
-Sends a 401 response for authentication failures.
-
-
-```javascript
-const { sendAuthError } = require('qgenutils');
-
-
-if (!req.user) {
-  sendAuthError(res);
-}
-```
-
-#### `sendServerError(res, message?, error?, context?)`
-Sends a 500 response and logs the error internally.
-
-
-```javascript
-const { sendServerError } = require('qgenutils');
-
-try {
-  // risky operation
-} catch (err) {
-  sendServerError(res, 'Processing failed', err, 'createUser');
-
-}
-```
-
-#### `getRequiredHeader(req, res, headerName, statusCode, errorMessage)`
-Extracts required headers with automatic error handling.
-
-```javascript
-const { getRequiredHeader } = require('qgenutils');
-
-const auth = getRequiredHeader(req, res, 'authorization', 401, 'Auth header missing');
-if (!auth) return; // Response already sent with error
+const future = addDays(new Date(), 7); // 7 days from now
 ```
 
 ### URL Utilities
@@ -201,109 +121,123 @@ console.log(parseUrlParts('example.com/api/users?id=123'));
 // Output: { baseUrl: "https://example.com", endpoint: "/api/users?id=123" }
 ```
 
-### Validation Utilities
+### Collection Utilities
 
-#### `requireFields(obj, requiredFields, res?)`
-Validates required fields presence.
+#### Array Utilities
 
 ```javascript
-const { requireFields } = require('qgenutils');
+const { groupBy, partition, unique, chunk, flatten, sortBy, shuffle, take, skip } = require('qgenutils');
 
-const isValid = requireFields(
-  { name: 'John', email: 'john@example.com' },
-  ['name', 'email', 'age'],
-  res
-);
-// If invalid, automatically sends 400 response with missing fields
+// Group by key
+groupBy([{type: 'a', v: 1}, {type: 'b', v: 2}], x => x.type);
+// { a: [{type: 'a', v: 1}], b: [{type: 'b', v: 2}] }
+
+// Partition by predicate
+partition([1, 2, 3, 4], x => x % 2 === 0); // [[2, 4], [1, 3]]
+
+// Unique values
+unique([1, 2, 2, 3]); // [1, 2, 3]
+
+// Chunk array
+chunk([1, 2, 3, 4, 5], 2); // [[1, 2], [3, 4], [5]]
+
+// Flatten nested arrays
+flatten([[1, 2], [3, [4, 5]]]); // [1, 2, 3, 4, 5]
 ```
 
-### Input Validation Utilities
-
-#### `isValidObject(obj)`
-Checks if the value is a plain object.
+#### Object Utilities
 
 ```javascript
-const { isValidObject } = require('qgenutils/lib/input-validation');
+const { pick, omit, deepMerge, deepClone, getNestedValue, setNestedValue, isEqual } = require('qgenutils');
 
-console.log(isValidObject({ foo: 'bar' })); // true
-console.log(isValidObject(null)); // false
+// Pick specific keys
+pick({ a: 1, b: 2, c: 3 }, ['a', 'b']); // { a: 1, b: 2 }
+
+// Omit specific keys
+omit({ a: 1, b: 2, c: 3 }, ['c']); // { a: 1, b: 2 }
+
+// Deep merge objects
+deepMerge({ a: { b: 1 } }, { a: { c: 2 } }); // { a: { b: 1, c: 2 } }
+
+// Deep clone
+const clone = deepClone({ nested: { value: 1 } });
+
+// Get nested value safely
+getNestedValue({ a: { b: { c: 1 } } }, 'a.b.c'); // 1
+
+// Deep equality check
+isEqual({ a: 1 }, { a: 1 }); // true
 ```
 
-#### `isValidString(str)`
-Checks if the value is a non-empty string.
+### Batch Processing
 
 ```javascript
-const { isValidString } = require('qgenutils/lib/input-validation');
+const { createSemaphore, retryWithBackoff, processBatch } = require('qgenutils');
 
-console.log(isValidString('Hello')); // true
-console.log(isValidString('   ')); // false
+// Concurrency control
+const semaphore = createSemaphore(3); // max 3 concurrent
+await semaphore.acquire();
+// ... do work
+semaphore.release();
+
+// Retry with exponential backoff
+const result = await retryWithBackoff(async () => {
+  return await fetchData();
+}, { maxRetries: 3, initialDelay: 100 });
+
+// Process array with concurrency and progress tracking
+await processBatch(items, async (item) => {
+  return await processItem(item);
+}, { concurrency: 5, onProgress: (done, total) => console.log(`${done}/${total}`) });
 ```
 
-#### `hasMethod(obj, methodName)`
-Determines whether an object exposes the given method.
+### Performance Utilities
 
 ```javascript
-const { hasMethod } = require('qgenutils/lib/input-validation');
+const { memoize, throttle, debounce } = require('qgenutils');
 
-console.log(hasMethod(console, 'log')); // true
-console.log(hasMethod({}, 'push')); // false
+// Memoize expensive function
+const cachedFn = memoize((x) => expensiveCalculation(x));
+
+// Throttle to once per 1000ms
+const throttled = throttle(() => saveData(), 1000);
+
+// Debounce until 300ms of inactivity
+const debounced = debounce(() => search(query), 300);
 ```
 
-#### `isValidExpressResponse(res)`
-Validates that an object looks like an Express response.
+### HTTP Configuration
 
 ```javascript
-const { isValidExpressResponse } = require('qgenutils/lib/input-validation');
+const { createJsonHeaders, createBasicAuth, createHttpConfig, getContextualTimeout } = require('qgenutils');
 
-if (!isValidExpressResponse(res)) {
-  // handle invalid response object
-}
+// Create JSON headers
+const headers = createJsonHeaders({ 'X-Custom': 'value' });
+
+// Create basic auth
+const auth = createBasicAuth('user', 'pass');
+
+// Get contextual timeout
+const timeout = getContextualTimeout('payment'); // returns appropriate timeout for payment operations
+
+// Create complete HTTP config
+const config = createHttpConfig({
+  method: 'POST',
+  headers: { 'X-Api-Key': 'key' },
+  timeout: 5000
+});
 ```
 
-### Authentication Utilities
-
-#### `checkPassportAuth(req)`
-Checks if user is authenticated via Passport.js.
+### ID Generation
 
 ```javascript
-const { checkPassportAuth } = require('qgenutils');
+const { generateExecutionId, makeIdempotencyKey } = require('qgenutils');
 
-if (!checkPassportAuth(req)) {
-  return res.status(401).json({ error: 'Authentication required' });
-}
-```
+// Generate unique execution ID
+const execId = generateExecutionId(); // e.g., "exec_a1b2c3d4"
 
-#### `hasGithubStrategy()`
-Checks if GitHub OAuth strategy is configured.
-
-```javascript
-const { hasGithubStrategy } = require('qgenutils');
-
-// hasGithubStrategy reads global.passport to detect configuration
-if (hasGithubStrategy()) {
-  // Show GitHub login button
-}
-```
-
-### View Utilities
-
-#### `renderView(res, viewName, errorTitle)`
-Renders EJS templates with error handling.
-
-```javascript
-const { renderView } = require('qgenutils');
-
-renderView(res, 'dashboard', 'Error Rendering Dashboard');
-// If template fails, an error page is automatically sent
-```
-
-#### `registerViewRoute(routePath, viewName, errorTitle)`
-Registers Express routes for view rendering using the global `app` object.
-
-```javascript
-const { registerViewRoute } = require('qgenutils');
-
-registerViewRoute('/dashboard', 'dashboard', 'Error Rendering Dashboard');
+// Create idempotency key from parts
+const key = makeIdempotencyKey('user_123', 'payment', Date.now());
 ```
 
 ## Error Handling
@@ -312,25 +246,26 @@ All functions include robust error handling with:
 - Graceful fallback values for invalid inputs
 - Detailed error logging via `qerrors` integration
 - User-friendly error messages
-- Automatic HTTP error responses where appropriate
 
 ## Module Architecture
 
-The library is organized into focused modules:
+The library is organized into focused modules under `lib/utilities/`:
 
-- `lib/datetime.js` - Date and time utilities
-- `lib/http.js` - HTTP request/response helpers
-- `lib/url.js` - URL manipulation functions
-- `lib/validation.js` - Input validation utilities
-- `lib/auth.js` - Authentication helpers
-- `lib/logger.js` - Winston logger configuration
-- `lib/views.js` - Template rendering utilities
-- `lib/input-validation.js` - Common input sanity checks
-- `lib/response-utils.js` - Standardized HTTP response helpers
+- `datetime/` - Date and time utilities
+- `url/` - URL manipulation functions
+- `http/` - HTTP configuration helpers
+- `collections/` - Array and object utilities
+- `batch/` - Batch processing with concurrency
+- `performance/` - Memoize, throttle, debounce
+- `id-generation/` - ID and key generation
+- `string/` - String manipulation
+- `file/` - File utilities
+- `config/` - Configuration builders
+- `scheduling/` - Interval and job management
+- `validation/` - Input validation utilities
+- `security/` - Security utilities (rate limiting, API key handling)
 
 ## Testing
-
-Install dependencies with `npm install` before running tests.
 
 Run all unit and integration tests:
 
@@ -338,25 +273,14 @@ Run all unit and integration tests:
 npm test
 ```
 
-For targeted runs, additional scripts are available:
+For targeted runs:
 
 ```bash
 npm run test:unit       # run only unit tests
 npm run test:integration # run only integration tests
 npm run test:watch      # re-run tests on file changes
 npm run test:coverage   # generate coverage reports
-npm run test:verbose    # output detailed test information
 ```
-
-Common Jest flags:
-
-- `--watch` - re-run tests on file changes
-- `--coverage` - generate coverage reports
-- `--verbose` - output detailed test information
-
-Pass flags after `--` when using npm, for example `npm test -- --watch`.
-
-This command runs the entire test suite.
 
 ## Dependencies
 
@@ -364,7 +288,6 @@ This command runs the entire test suite.
 - `winston-daily-rotate-file` - Logging support
 - `@types/node` - TypeScript definitions
 - `qtests` - Test utilities
-
 
 ## License
 
