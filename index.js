@@ -165,6 +165,47 @@ const createTimeoutConfig = require('./lib/utilities/http/createTimeoutConfig');
 const createDynamicTimeout = require('./lib/utilities/http/createDynamicTimeout');
 const createHttpConfig = require('./lib/utilities/http/createHttpConfig');
 
+// Batch processing utilities - high-performance data processing
+const createSemaphore = require('./lib/utilities/batch/createSemaphore');
+const retryWithBackoff = require('./lib/utilities/batch/retryWithBackoff');
+const processBatch = require('./lib/utilities/batch/processBatch');
+
+// Array collection utilities - functional array manipulation
+const groupBy = require('./lib/utilities/collections/array/groupBy');
+const partition = require('./lib/utilities/collections/array/partition');
+const unique = require('./lib/utilities/collections/array/unique');
+const chunk = require('./lib/utilities/collections/array/chunk');
+const flatten = require('./lib/utilities/collections/array/flatten');
+const intersection = require('./lib/utilities/collections/array/intersection');
+const difference = require('./lib/utilities/collections/array/difference');
+const sortBy = require('./lib/utilities/collections/array/sortBy');
+const shuffle = require('./lib/utilities/collections/array/shuffle');
+const take = require('./lib/utilities/collections/array/take');
+const takeWhile = require('./lib/utilities/collections/array/takeWhile');
+const skip = require('./lib/utilities/collections/array/skip');
+const skipWhile = require('./lib/utilities/collections/array/skipWhile');
+
+// Object collection utilities - functional object manipulation
+const isPlainObject = require('./lib/utilities/collections/object/isPlainObject');
+const pick = require('./lib/utilities/collections/object/pick');
+const omit = require('./lib/utilities/collections/object/omit');
+const deepMerge = require('./lib/utilities/collections/object/deepMerge');
+const deepClone = require('./lib/utilities/collections/object/deepClone');
+const getNestedValue = require('./lib/utilities/collections/object/getNestedValue');
+const setNestedValue = require('./lib/utilities/collections/object/setNestedValue');
+const isEqual = require('./lib/utilities/collections/object/isEqual');
+const mapKeys = require('./lib/utilities/collections/object/mapKeys');
+const mapValues = require('./lib/utilities/collections/object/mapValues');
+const filterKeys = require('./lib/utilities/collections/object/filterKeys');
+const isEmpty = require('./lib/utilities/collections/object/isEmpty');
+const toQueryString = require('./lib/utilities/collections/object/toQueryString');
+const fromQueryString = require('./lib/utilities/collections/object/fromQueryString');
+
+// Performance utilities - function optimization
+const memoize = require('./lib/utilities/performance/memoize');
+const throttle = require('./lib/utilities/performance/throttle');
+const debounce = require('./lib/utilities/performance/debounce');
+
 
 /*
  * Export Strategy Explanation:
@@ -325,6 +366,47 @@ module.exports = {
   createTimeoutConfig, // build timeout config with multiplier support
   createDynamicTimeout, // scale timeout based on payload size
   createHttpConfig, // complete axios-compatible HTTP configuration
+  
+  // Batch processing utilities - high-performance data processing
+  createSemaphore, // concurrency control with permit-based limiting
+  retryWithBackoff, // retry async operations with exponential backoff
+  processBatch, // process arrays with concurrency, retries, progress tracking
+  
+  // Array collection utilities - functional array manipulation
+  groupBy, // group array elements by key function
+  partition, // split array into passing/failing groups
+  unique, // deduplicate with optional key function
+  chunk, // split array into fixed-size chunks
+  flatten, // flatten nested arrays recursively
+  intersection, // find common elements across arrays
+  difference, // find elements in first array not in others
+  sortBy, // multi-criteria sorting
+  shuffle, // Fisher-Yates random shuffle
+  take, // take first n elements
+  takeWhile, // take while predicate true
+  skip, // skip first n elements
+  skipWhile, // skip while predicate true
+  
+  // Object collection utilities - functional object manipulation
+  isPlainObject, // check if value is plain object (not array/Date/etc)
+  pick, // extract specified keys from object
+  omit, // exclude specified keys from object
+  deepMerge, // recursively merge objects
+  deepClone, // create independent copy of nested structure
+  getNestedValue, // safely access nested property with default
+  setNestedValue, // set nested property creating intermediates
+  isEqual, // deep equality comparison
+  mapKeys, // transform object keys
+  mapValues, // transform object values
+  filterKeys, // filter object by key/value predicate
+  isEmpty, // check if null/empty array/empty object
+  toQueryString, // convert object to URL query string
+  fromQueryString, // parse query string to object
+  
+  // Performance utilities - function optimization
+  memoize, // cache function results with optional LRU
+  throttle, // limit function calls to once per interval
+  debounce, // delay execution until activity stops
   
   // Logger - centralized logging infrastructure
   logger // winston-based logging with rotation and levels
