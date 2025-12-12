@@ -26,6 +26,10 @@ const formatDuration = require('./lib/utilities/datetime/formatDuration');
 const addDays = require('./lib/utilities/datetime/addDays');
 const formatDate = require('./lib/utilities/datetime/formatDate');
 const formatDateWithPrefix = require('./lib/utilities/datetime/formatDateWithPrefix');
+const createTimeProvider = require('./lib/utilities/datetime/createTimeProvider');
+const formatDateTimeWithProvider = require('./lib/utilities/datetime/formatDateTimeWithProvider');
+const formatDurationWithProvider = require('./lib/utilities/datetime/formatDurationWithProvider');
+const formatRelativeTime = require('./lib/utilities/datetime/formatRelativeTime');
 
 
 
@@ -139,6 +143,10 @@ module.exports = {
   addDays, // calculate future dates for business logic and expiration handling
   formatDate, // format date with locale support and fallback handling
   formatDateWithPrefix, // format date with contextual prefix (e.g., "Added 12/25/2023")
+  createTimeProvider, // injectable time provider for deterministic testing
+  formatDateTimeWithProvider, // locale formatting with custom options
+  formatDurationWithProvider, // duration with injectable time provider
+  formatRelativeTime, // user-friendly relative time (e.g., "5 minutes ago")
   
 
 
