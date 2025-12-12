@@ -74,6 +74,7 @@ const dedupeByLowercaseFirst = require('./lib/utilities/array/dedupeByLowercaseF
 
 // Advanced security utilities - individual functions following SRP
 const sanitizeHtml = require('./lib/security/sanitizeHtml');
+const escapeHtml = require('./lib/security/escapeHtml');
 const sanitizeSqlInput = require('./lib/security/sanitizeSqlInput'); 
 const validateInputRate = require('./lib/security/validateInputRate');
 const sanitizeObjectRecursively = require('./lib/security/sanitizeObjectRecursively');
@@ -225,6 +226,7 @@ module.exports = {
   
   // Advanced security utilities - comprehensive input protection
   sanitizeHtml, // strip XSS vulnerabilities from HTML content
+  escapeHtml, // encode dangerous chars to HTML entities (preserves content)
   sanitizeSqlInput, // prevent SQL injection in database queries
   validateInputRate, // rate limiting for DoS prevention
   sanitizeObjectRecursively, // recursively sanitize nested objects and arrays

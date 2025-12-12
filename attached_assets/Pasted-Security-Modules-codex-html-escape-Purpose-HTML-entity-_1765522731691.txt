@@ -1,0 +1,54 @@
+Security Modules
+@codex/html-escape
+Purpose: HTML entity escaping function for email content safety with dependency injection.
+
+Explanation:
+This module provides a secure HTML entity escaping function specifically designed for email content safety. It includes dependency injection support for custom sanitization functions, comprehensive entity escaping for XSS prevention, and validation of input types. The module is particularly valuable for applications that generate HTML content, email templates, or any scenario where user input needs to be safely displayed in HTML context.
+
+The escaping function handles various input types, applies optional sanitization before HTML escaping, and includes comprehensive entity replacement for maximum security.
+
+import validator from 'validator';
+import { z } from './common/validation.js';
+import { createServiceMeta, createRequiredStringValidator } from './common/serviceMeta.js';
+import { validationUtils } from './common/validation.js';
+/**
+ * Dependencies interface for HTML escaping functionality
+ * Rationale: Allows injection of custom sanitization functions for different security requirements
+ * Enables testing with mock implementations and customization of sanitization behavior
+ */
+interface EscapeHtmlDependencies { sanitizeString?: (input: unknown) => string; }
+/**
+ * HTML entity escaping function for email content safety
+ * Rationale: Prevents XSS attacks and HTML rendering issues by converting dangerous characters to safe entities
+ * The function is intentionally minified for performance but the logic handles string conversion, sanitization, and entity replacement
+ */
+const escapeHtml = ({data:{text},dependencies}:{data:{text:string};dependencies?:EscapeHtmlDependencies})=>{
+  // Ensure input is a string, convert other types to string representation
+  const rawText=typeof text==='string'?text:String(text??'');
+  
+  // Apply optional sanitization before HTML escaping (removes existing HTML tags)
+  const sanitizedCopy=dependencies?.sanitizeString?dependencies.sanitizeString(rawText):rawText;
+  
+  const escapedValue = validator.escape(sanitizedCopy);
+  const safeValue = escapedValue.replace(/&#x27;/g, '&#039;');
+  
+  return{result:{value:safeValue}};
+};
+const escapeHtmlMetaSchema = z.object({
+  data: z.object({ text: createRequiredStringValidator('Text payload for HTML escaping') }),
+  dependencies: z.object({ sanitizeString: z.function().args(z.unknown()).returns(z.string()).optional() }).optional(),
+});
+(escapeHtml as any).meta = createServiceMeta({
+  route: '/v1/email/utils/escape-html',
+  method: 'POST',
+  description: 'Escape reserved HTML entities to keep rendered email copy safe.',
+  requiredRole: 'public',
+  apiKeyRequired: false,
+  schema: escapeHtmlMetaSchema,
+  exampleInput: {
+    data: { text: `<span class="promo">Save & Enjoy > 50% off!</span>` },
+    dependencies: { sanitizeString: (value: unknown) => String(value ?? '').replace(/<\/?[^>]+>/g, '') },
+  },
+  plan: 'free',
+});
+export { escapeHtml, type EscapeHtmlDependencies };
