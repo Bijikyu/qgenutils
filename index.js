@@ -235,6 +235,16 @@ const createProcessingCapabilities = require('./lib/utilities/config/createProce
 const execHelperWrapper = require('./lib/utilities/function/execHelperWrapper');
 const createExecHelper = require('./lib/utilities/function/createExecHelper');
 
+// Password utilities - secure hashing and generation
+const hashPassword = require('./lib/utilities/password/hashPassword');
+const verifyPassword = require('./lib/utilities/password/verifyPassword');
+const generateSecurePassword = require('./lib/utilities/password/generateSecurePassword');
+
+// Secure config utilities - validation and credential protection
+const maskSensitiveValue = require('./lib/utilities/secure-config/maskSensitiveValue');
+const validateConfigValue = require('./lib/utilities/secure-config/validateConfigValue');
+const buildSecureConfig = require('./lib/utilities/secure-config/buildSecureConfig');
+
 // Module loader utilities - dynamic loading with CJS/ESM interop
 const loadAndFlattenModule = require('./lib/utilities/module-loader/loadAndFlattenModule');
 const createCachedLoader = require('./lib/utilities/module-loader/createCachedLoader');
@@ -490,6 +500,16 @@ module.exports = {
   // Exec helper utilities - function wrapping with error handling
   execHelperWrapper, // wrap functions with error handling and logging
   createExecHelper, // factory for exec helper instances
+  
+  // Password utilities - secure hashing and generation
+  hashPassword, // bcrypt hashing with 12 salt rounds
+  verifyPassword, // constant-time password comparison
+  generateSecurePassword, // cryptographically secure password generation
+  
+  // Secure config utilities - validation and credential protection
+  maskSensitiveValue, // mask credentials for safe logging
+  validateConfigValue, // validate config values against schema
+  buildSecureConfig, // build validated config using convict
   
   // Module loader utilities - dynamic loading with CJS/ESM interop
   loadAndFlattenModule, // dynamic import with CJS/ESM normalization
