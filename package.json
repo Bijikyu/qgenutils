@@ -2,15 +2,25 @@
   "name": "qgenutils",
   "version": "1.0.3",
   "description": "A security-first Node.js utility library providing authentication, HTTP operations, URL processing, validation, datetime formatting, and template rendering. Designed as a lightweight alternative to heavy npm packages with comprehensive error handling and fail-closed security patterns. Provides datetime formatting, HTTP helpers, URL manipulation, authentication checks, field validation, and view rendering with robust error handling",
-  "main": "index.js",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsc",
+    "prebuild": "rm -rf dist",
     "test": "node qtests-runner.mjs",
     "test:watch": "jest --watch --config tests/jest.config.js --rootDir .",
     "test:coverage": "jest --coverage --config tests/jest.config.js --rootDir .",
     "test:unit": "jest tests/unit --config tests/jest.config.js --rootDir .",
     "test:integration": "jest tests/integration --config tests/jest.config.js --rootDir .",
     "test:verbose": "jest --verbose --config tests/jest.config.js --rootDir .",
-    "pretest": "node scripts/clean-dist.mjs && node scripts/ensure-runner.mjs"
+    "pretest": "npm run build && node scripts/ensure-runner.mjs"
   },
   "keywords": [
     "utilities",
@@ -49,6 +59,7 @@
   "dependencies": {
     "@types/node": "^22.13.11",
     "axios": "^1.13.2",
+    "bash-language-server": "^5.6.0",
     "bcrypt": "^6.0.0",
     "convict": "^6.2.4",
     "date-fns": "^4.1.0",
