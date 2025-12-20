@@ -20,7 +20,8 @@
     "test:unit": "jest tests/unit --config tests/jest.config.js --rootDir .",
     "test:integration": "jest tests/integration --config tests/jest.config.js --rootDir .",
     "test:verbose": "jest --verbose --config tests/jest.config.js --rootDir .",
-    "pretest": "npm run build && node scripts/ensure-runner.mjs"
+    "pretest": "npm run build && node scripts/ensure-runner.mjs",
+    "start-demo": "node demo-server.js"
   },
   "keywords": [
     "utilities",

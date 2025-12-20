@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGenUtils - Comprehensive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .nav-tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: var(--dark);
+        }
+
+        .nav-tab:hover {
+            background: var(--light);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: var(--light);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .demo-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            border-color: var(--secondary);
+            background: #f0fdf4;
+        }
+
+        .error {
+            border-color: var(--danger);
+            background: #fef2f2;
+        }
+
+        .warning {
+            border-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .metric {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        .validation-feedback {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .validation-feedback.valid {
+            background: #f0fdf4;
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        .validation-feedback.invalid {
+            background: #fef2f2;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry.info { background: #eff6ff; color: var(--info); }
+        .log-entry.warn { background: #fffbeb; color: var(--warning); }
+        .log-entry.error { background: #fef2f2; color: var(--danger); }
+        .log-entry.success { background: #f0fdf4; color: var(--secondary); }
+
+        .feature-flag {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .password-strength {
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .password-strength.weak { background: var(--danger); width: 33%; }
+        .password-strength.medium { background: var(--warning); width: 66%; }
+        .password-strength.strong { background: var(--secondary); width: 100%; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 QGenUtils Comprehensive Demo</h1>
+            <p class="subtitle">Interactive testing playground for all utility functions and features</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('validation')">✅ Validation</button>
+            <button class="nav-tab" onclick="switchTab('security')">🔒 Security</button>
+            <button class="nav-tab" onclick="switchTab('performance')">📊 Performance</button>
+            <button class="nav-tab" onclick="switchTab('data-processing')">🔄 Data Processing</button>
+            <button class="nav-tab" onclick="switchTab('http-api')">🌐 HTTP & API</button>
+            <button class="nav-tab" onclick="switchTab('batch-processing')">⚡ Batch Processing</button>
+            <button class="nav-tab" onclick="switchTab('datetime')">📅 DateTime</button>
+            <button class="nav-tab" onclick="switchTab('config')">⚙️ Configuration</button>
+            <button class="nav-tab" onclick="switchTab('logging')">📝 Logging</button>
+            <button class="nav-tab" onclick="switchTab('testing')">🧪 Testing</button>
+        </nav>
+
+        <!-- Validation Tab -->
+        <div id="validation" class="tab-content active">
+            <h2>Input Validation & Forms</h2>
+            
+            <div class="grid">
+                <div class="demo-section">
+                    <h3>Email Validation</h3>
+                    <div class="form-group">
+                        <label>Email Address:</label>
+                        <input type="email" id="emailInput" placeholder="Enter email to validate" oninput="validateEmail()">
+                        <div id="emailFeedback"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>Password Strength</h3>
+                    <div class="form-group">
+                        <label>Password:</label>
+                        <input type="password" id="passwordInput" placeholder="Enter password" oninput="checkPasswordStrength()">
+                        <div id="passwordStrength" class="password-strength"></div>
+                        <div id="passwordFeedback"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>API Key Validation</h3>
+                    <div class="form-group">
+                        <label>API Key:</label>
+                        <input type="text" id="apiKeyInput" placeholder="Enter API key" oninput="validateApiKey()">
+                        <div id="apiKeyFeedback"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>Currency Amount Validation</h3>
+                    <div class="form-group">
+                        <label>Amount:</label>
+                        <input type="text" id="amountInput" placeholder="Enter amount" oninput="validateAmount()">
+                        <div id="amountFeedback"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Comprehensive Form Validation</h3>
+                <form id="comprehensiveForm">
+                    <div class="grid">
+                        <div class="form-group">
+                            <label>Username:</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone:</label>
+                            <input type="tel" id="phone">
+                        </div>
+                        <div class="form-group">
+                            <label>Age:</label>
+                            <input type="number" id="age" min="1" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label>Website:</label>
+                            <input type="url" id="website">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Validate Form</button>
+                </form>
+                <div id="formResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="security" class="tab-content">
+            <h2>Security Features</h2>
+            
+            <div class="grid">
+                <div class="demo-section">
+                    <h3>API Key Generator</h3>
+                    <div class="form-group">
+                        <label>Generated API Key:</label>
+                        <input type="text" id="generatedApiKey" readonly>
+                    </div>
+                    <button class="btn" onclick="generateApiKey()">Generate API Key</button>
+                    <button class="btn btn-secondary" onclick="copyApiKey()">Copy to Clipboard</button>
+                </div>
+
+                <div class="demo-section">
+                    <h3>Security Headers</h3>
+                    <div class="form-group">
+                        <label>Content Security Policy:</label>
+                        <textarea id="cspInput" rows="3" placeholder="Enter CSP directive">default-src 'self'</textarea>
+                    </div>
+                    <button class="btn" onclick="validateSecurityHeaders()">Validate Headers</button>
+                </div>
+
+                <div class="demo-section">
+                    <h3>Input Sanitization</h3>
+                    <div class="form-group">
+                        <label>Raw Input:</label>
+                        <textarea id="rawInput" rows="3" placeholder="Enter potentially malicious content"></textarea>
+                    </div>
+                    <button class="btn" onclick="sanitizeInput()">Sanitize Input</button>
+                    <div id="sanitizedResult" class="result-box" style="display:none;"></div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>Path Security</h3>
+                    <div class="form-group">
+                        <label>File Path:</label>
+                        <input type="text" id="pathInput" placeholder="Enter file path to validate">
+                    </div>
+                    <button class="btn" onclick="validatePath()">Validate Path</button>
+                    <div id="pathResult" class="result-box" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Authentication Simulation</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Password to Hash:</label>
+                        <input type="password" id="hashPassword" placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <label>Stored Hash:</label>
+                        <input type="text" id="storedHash" placeholder="Enter hash to verify">
+                    </div>
+                </div>
+                <button class="btn" onclick="hashPassword()">Hash Password</button>
+                <button class="btn btn-secondary" onclick="verifyPassword()">Verify Password</button>
+                <div id="authResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="performance" class="tab-content">
+            <h2>Performance Monitoring</h2>
+            
+            <div class="grid">
+                <div class="metric">
+                    <div class="metric-value" id="cpuUsage">0%</div>
+                    <div class="metric-label">CPU Usage</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="memoryUsage">0%</div>
+                    <div class="metric-label">Memory Usage</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="responseTime">0ms</div>
+                    <div class="metric-label">Response Time</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="activeHandles">0</div>
+                    <div class="metric-label">Active Handles</div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Performance Optimization Tests</h3>
+                <div class="form-group">
+                    <label>Expensive Function Iterations:</label>
+                    <input type="number" id="iterations" value="1000" min="100" max="10000">
+                </div>
+                <button class="btn" onclick="testMemoization()">Test Memoization</button>
+                <button class="btn btn-secondary" onclick="testThrottle()">Test Throttle</button>
+                <button class="btn btn-warning" onclick="testDebounce()">Test Debounce</button>
+                <div id="performanceResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Real-time Monitoring</h3>
+                <button class="btn" onclick="startMonitoring()">Start Monitoring</button>
+                <button class="btn btn-danger" onclick="stopMonitoring()">Stop Monitoring</button>
+                <div id="monitoringData" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Data Processing Tab -->
+        <div id="data-processing" class="tab-content">
+            <h2>Data Processing & Collections</h2>
+            
+            <div class="demo-section">
+                <h3>Array Operations</h3>
+                <div class="form-group">
+                    <label>Sample Data (JSON Array):</label>
+                    <textarea id="arrayData" rows="4" placeholder='[{"name": "John", "age": 30, "department": "Engineering"}, {"name": "Jane", "age": 25, "department": "Marketing"}]'></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Operation:</label>
+                    <select id="arrayOperation">
+                        <option value="group">Group By</option>
+                        <option value="partition">Partition</option>
+                        <option value="unique">Unique</option>
+                        <option value="chunk">Chunk</option>
+                        <option value="sort">Sort</option>
+                        <option value="filter">Filter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Group/Filter Key (if applicable):</label>
+                    <input type="text" id="arrayKey" placeholder="e.g., department, age > 25">
+                </div>
+                <button class="btn" onclick="processArray()">Process Array</button>
+                <div id="arrayResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Object Operations</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Object 1:</label>
+                        <textarea id="object1" rows="3" placeholder='{"a": 1, "b": 2}'></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Object 2:</label>
+                        <textarea id="object2" rows="3" placeholder='{"b": 3, "c": 4}'></textarea>
+                    </div>
+                </div>
+                <button class="btn" onclick="mergeObjects()">Deep Merge</button>
+                <button class="btn btn-secondary" onclick="cloneObject()">Deep Clone</button>
+                <button class="btn btn-warning" onclick="compareObjects()">Compare Objects</button>
+                <div id="objectResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Data Transformation</h3>
+                <div class="form-group">
+                    <label>Input Data:</label>
+                    <textarea id="transformInput" rows="4" placeholder="Enter data to transform"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Transform Type:</label>
+                    <select id="transformType">
+                        <option value="querystring">To Query String</option>
+                        <option value="json">Parse JSON</option>
+                        <option value="csv">Convert to CSV</option>
+                        <option value="flatten">Flatten Object</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="transformData()">Transform Data</button>
+                <div id="transformResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- HTTP & API Tab -->
+        <div id="http-api" class="tab-content">
+            <h2>HTTP & API Utilities</h2>
+            
+            <div class="demo-section">
+                <h3>HTTP Configuration Builder</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Base URL:</label>
+                        <input type="url" id="baseUrl" placeholder="https://api.example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Timeout (ms):</label>
+                        <input type="number" id="timeout" value="5000" min="1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Authorization:</label>
+                        <select id="authType">
+                            <option value="none">None</option>
+                            <option value="bearer">Bearer Token</option>
+                            <option value="basic">Basic Auth</option>
+                            <option value="apikey">API Key</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Auth Value:</label>
+                        <input type="text" id="authValue" placeholder="Token or credentials">
+                    </div>
+                </div>
+                <button class="btn" onclick="buildHttpConfig()">Build Config</button>
+                <div id="httpConfig" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>API Testing Interface</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Method:</label>
+                        <select id="apiMethod">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint:</label>
+                        <input type="text" id="apiEndpoint" placeholder="/users">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Request Body (JSON):</label>
+                    <textarea id="requestBody" rows="3" placeholder='{"name": "Test User"}'></textarea>
+                </div>
+                <button class="btn" onclick="testApiEndpoint()">Test Endpoint</button>
+                <div id="apiResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Batch Processing Tab -->
+        <div id="batch-processing" class="tab-content">
+            <h2>Batch Processing & Concurrency</h2>
+            
+            <div class="demo-section">
+                <h3>Concurrent Operations</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Number of Tasks:</label>
+                        <input type="number" id="taskCount" value="10" min="1" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Concurrency Limit:</label>
+                        <input type="number" id="concurrencyLimit" value="3" min="1" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Task Duration (ms):</label>
+                        <input type="number" id="taskDuration" value="1000" min="100" max="5000">
+                    </div>
+                    <div class="form-group">
+                        <label>Retry Attempts:</label>
+                        <input type="number" id="retryAttempts" value="2" min="0" max="5">
+                    </div>
+                </div>
+                <button class="btn" onclick="runBatchProcessing()">Run Batch Processing</button>
+                <button class="btn btn-danger" onclick="cancelBatchProcessing()">Cancel</button>
+                <div class="progress-bar">
+                    <div id="batchProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="batchResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Background Jobs</h3>
+                <div class="form-group">
+                    <label>Job Type:</label>
+                    <select id="jobType">
+                        <option value="cleanup">Cleanup Job</option>
+                        <option value="report">Report Generation</option>
+                        <option value="notification">Send Notifications</option>
+                        <option value="backup">Data Backup</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Schedule (cron expression):</label>
+                    <input type="text" id="jobSchedule" placeholder="0 */6 * * *" value="0 */6 * * *">
+                </div>
+                <button class="btn" onclick="scheduleJob()">Schedule Job</button>
+                <button class="btn btn-secondary" onclick="listJobs()">List Active Jobs</button>
+                <div id="jobResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- DateTime Tab -->
+        <div id="datetime" class="tab-content">
+            <h2>Date & Time Utilities</h2>
+            
+            <div class="demo-section">
+                <h3>Date Manipulation</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Base Date:</label>
+                        <input type="date" id="baseDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Operation:</label>
+                        <select id="dateOperation">
+                            <option value="addDays">Add Days</option>
+                            <option value="subtractDays">Subtract Days</option>
+                            <option value="format">Format Date</option>
+                            <option value="relative">Relative Time</option>
+                            <option value="isValid">Validate Date</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Value:</label>
+                        <input type="number" id="dateValue" placeholder="Days or format pattern">
+                    </div>
+                    <div class="form-group">
+                        <label>Locale:</label>
+                        <input type="text" id="dateLocale" value="en-US" placeholder="en-US, fr-FR, etc.">
+                    </div>
+                </div>
+                <button class="btn" onclick="manipulateDate()">Process Date</button>
+                <div id="dateResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Time Zone Operations</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Source Time Zone:</label>
+                        <select id="sourceTimezone">
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">Eastern Time</option>
+                            <option value="America/Los_Angeles">Pacific Time</option>
+                            <option value="Europe/London">London</option>
+                            <option value="Asia/Tokyo">Tokyo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Time Zone:</label>
+                        <select id="targetTimezone">
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">Eastern Time</option>
+                            <option value="America/Los_Angeles">Pacific Time</option>
+                            <option value="Europe/London">London</option>
+                            <option value="Asia/Tokyo">Tokyo</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="convertTimezone()">Convert Time Zone</button>
+                <div id="timezoneResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Configuration Tab -->
+        <div id="config" class="tab-content">
+            <h2>Configuration Management</h2>
+            
+            <div class="demo-section">
+                <h3>Feature Flags</h3>
+                <div id="featureFlags">
+                    <div class="feature-flag">
+                        <span>Enable Dark Mode</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkMode" onchange="updateFeatureFlag('darkMode')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="feature-flag">
+                        <span>Enable Analytics</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="analytics" onchange="updateFeatureFlag('analytics')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="feature-flag">
+                        <span>Enable Debug Mode</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="debugMode" onchange="updateFeatureFlag('debugMode')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="feature-flag">
+                        <span>Enable Beta Features</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="betaFeatures" onchange="updateFeatureFlag('betaFeatures')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <button class="btn" onclick="exportConfig()">Export Configuration</button>
+                <button class="btn btn-secondary" onclick="importConfig()">Import Configuration</button>
+                <div id="configResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Secure Configuration</h3>
+                <div class="form-group">
+                    <label>Environment:</label>
+                    <select id="environment">
+                        <option value="development">Development</option>
+                        <option value="staging">Staging</option>
+                        <option value="production">Production</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Database URL:</label>
+                    <input type="password" id="dbUrl" placeholder="Enter sensitive configuration">
+                </div>
+                <div class="form-group">
+                    <label>API Secret:</label>
+                    <input type="password" id="apiSecret" placeholder="Enter API secret">
+                </div>
+                <button class="btn" onclick="buildSecureConfig()">Build Secure Config</button>
+                <div id="secureConfigResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Logging Tab -->
+        <div id="logging" class="tab-content">
+            <h2>Logging & Monitoring</h2>
+            
+            <div class="demo-section">
+                <h3>Log Dashboard</h3>
+                <div class="form-group">
+                    <label>Log Level:</label>
+                    <select id="logLevel" onchange="filterLogs()">
+                        <option value="all">All Levels</option>
+                        <option value="info">Info</option>
+                        <option value="warn">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="success">Success</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="generateLog('info')">Generate Info Log</button>
+                <button class="btn btn-warning" onclick="generateLog('warn')">Generate Warning</button>
+                <button class="btn btn-danger" onclick="generateLog('error')">Generate Error</button>
+                <button class="btn btn-secondary" onclick="clearLogs()">Clear Logs</button>
+                <div id="logDashboard" class="result-box" style="max-height: 500px; overflow-y: auto;">
+                    <div class="log-entry info">[2025-12-20 10:00:00] INFO: Logging dashboard initialized</div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Performance Events</h3>
+                <button class="btn" onclick="logPerformanceEvent()">Log Performance Event</button>
+                <button class="btn btn-secondary" onclick="generateMetricsReport()">Generate Metrics Report</button>
+                <div id="performanceLogs" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Testing Tab -->
+        <div id="testing" class="tab-content">
+            <h2>Testing & Documentation</h2>
+            
+            <div class="demo-section">
+                <h3>Function Testing Playground</h3>
+                <div class="form-group">
+                    <label>Select Function to Test:</label>
+                    <select id="testFunction">
+                        <option value="validateEmail">Email Validation</option>
+                        <option value="generateApiKey">API Key Generation</option>
+                        <option value="hashPassword">Password Hashing</option>
+                        <option value="sanitizeString">String Sanitization</option>
+                        <option value="deepMerge">Object Deep Merge</option>
+                        <option value="groupBy">Array Group By</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Test Input:</label>
+                    <textarea id="testInput" rows="3" placeholder="Enter test input"></textarea>
+                </div>
+                <button class="btn" onclick="runFunctionTest()">Run Test</button>
+                <button class="btn btn-secondary" onclick="runBenchmark()">Run Benchmark</button>
+                <div id="testResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Security Testing Tools</h3>
+                <button class="btn" onclick="testXSSProtection()">Test XSS Protection</button>
+                <button class="btn btn-warning" onclick="testInjectionProtection()">Test Injection Protection</button>
+                <button class="btn btn-danger" onclick="testRateLimiting()">Test Rate Limiting</button>
+                <div id="securityTestResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Load Testing</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Concurrent Users:</label>
+                        <input type="number" id="loadUsers" value="10" min="1" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Requests per User:</label>
+                        <input type="number" id="loadRequests" value="5" min="1" max="50">
+                    </div>
+                </div>
+                <button class="btn" onclick="runLoadTest()">Run Load Test</button>
+                <div id="loadTestResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+        }
+
+        // Validation functions
+        function validateEmail() {
+            const email = document.getElementById('emailInput').value;
+            const feedback = document.getElementById('emailFeedback');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email === '') {
+                feedback.innerHTML = '';
+                return;
+            }
+            
+            if (emailRegex.test(email)) {
+                feedback.innerHTML = '<div class="validation-feedback valid">✓ Valid email address</div>';
+            } else {
+                feedback.innerHTML = '<div class="validation-feedback invalid">✗ Invalid email format</div>';
+            }
+        }
+
+        function checkPasswordStrength() {
+            const password = document.getElementById('passwordInput').value;
+            const strengthBar = document.getElementById('passwordStrength');
+            const feedback = document.getElementById('passwordFeedback');
+            
+            if (password === '') {
+                strengthBar.className = 'password-strength';
+                feedback.innerHTML = '';
+                return;
+            }
+            
+            let strength = 0;
+            const checks = {
+                length: password.length >= 8,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                numbers: /\d/.test(password),
+                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+            
+            strength = Object.values(checks).filter(Boolean).length;
+            
+            if (strength <= 2) {
+                strengthBar.className = 'password-strength weak';
+                feedback.innerHTML = '<div class="validation-feedback invalid">Weak password - add more character types</div>';
+            } else if (strength <= 4) {
+                strengthBar.className = 'password-strength medium';
+                feedback.innerHTML = '<div class="validation-feedback valid">Medium strength - consider adding special characters</div>';
+            } else {
+                strengthBar.className = 'password-strength strong';
+                feedback.innerHTML = '<div class="validation-feedback valid">Strong password!</div>';
+            }
+        }
+
+        function validateApiKey() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            const feedback = document.getElementById('apiKeyFeedback');
+            const apiKeyRegex = /^[a-zA-Z0-9]{32,}$/;
+            
+            if (apiKey === '') {
+                feedback.innerHTML = '';
+                return;
+            }
+            
+            if (apiKeyRegex.test(apiKey)) {
+                feedback.innerHTML = '<div class="validation-feedback valid">✓ Valid API key format</div>';
+            } else {
+                feedback.innerHTML = '<div class="validation-feedback invalid">✗ API key must be at least 32 alphanumeric characters</div>';
+            }
+        }
+
+        function validateAmount() {
+            const amount = document.getElementById('amountInput').value;
+            const feedback = document.getElementById('amountFeedback');
+            const amountRegex = /^\d{1,3}(,\d{3})*(\.\d{2})?$/;
+            
+            if (amount === '') {
+                feedback.innerHTML = '';
+                return;
+            }
+            
+            if (amountRegex.test(amount)) {
+                feedback.innerHTML = '<div class="validation-feedback valid">✓ Valid currency format</div>';
+            } else {
+                feedback.innerHTML = '<div class="validation-feedback invalid">✗ Invalid currency format (e.g., 1,234.56)</div>';
+            }
+        }
+
+        // Security functions
+        function generateApiKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let apiKey = '';
+            for (let i = 0; i < 32; i++) {
+                apiKey += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('generatedApiKey').value = apiKey;
+        }
+
+        function copyApiKey() {
+            const apiKey = document.getElementById('generatedApiKey');
+            apiKey.select();
+            document.execCommand('copy');
+            showNotification('API key copied to clipboard!', 'success');
+        }
+
+        function sanitizeInput() {
+            const rawInput = document.getElementById('rawInput').value;
+            const resultBox = document.getElementById('sanitizedResult');
+            
+            // Basic XSS protection
+            const sanitized = rawInput
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')
+                .replace(/\//g, '&#x2F;');
+            
+            resultBox.innerHTML = `Sanitized Output:\n${sanitized}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function validatePath() {
+            const path = document.getElementById('pathInput').value;
+            const resultBox = document.getElementById('pathResult');
+            
+            // Basic path traversal protection
+            const dangerousPatterns = [
+                /\.\.\//,
+                /\/\.\./,
+                /\.\.\\/,
+                /\\\.\./
+            ];
+            
+            const isDangerous = dangerousPatterns.some(pattern => pattern.test(path));
+            
+            if (isDangerous) {
+                resultBox.innerHTML = '❌ Path validation failed: Potential directory traversal detected';
+                resultBox.className = 'result-box error';
+            } else {
+                resultBox.innerHTML = '✅ Path validation passed: No dangerous patterns detected';
+                resultBox.className = 'result-box success';
+            }
+            
+            resultBox.style.display = 'block';
+        }
+
+        function hashPassword() {
+            const password = document.getElementById('hashPassword').value;
+            const resultBox = document.getElementById('authResult');
+            
+            if (!password) {
+                showNotification('Please enter a password to hash', 'warning');
+                return;
+            }
+            
+            // Simple hash simulation (in real app, use proper hashing)
+            const hash = btoa(password + 'salt').replace(/=/g, '');
+            resultBox.innerHTML = `Hashed Password:\n${hash}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function verifyPassword() {
+            const password = prompt('Enter password to verify:');
+            const storedHash = document.getElementById('storedHash').value;
+            const resultBox = document.getElementById('authResult');
+            
+            if (!password || !storedHash) {
+                showNotification('Please provide both password and stored hash', 'warning');
+                return;
+            }
+            
+            // Simple verification simulation
+            const computedHash = btoa(password + 'salt').replace(/=/g, '');
+            const isValid = computedHash === storedHash;
+            
+            resultBox.innerHTML = `Password Verification:\n${isValid ? '✅ Password matches' : '❌ Password does not match'}`;
+            resultBox.style.display = 'block';
+            resultBox.className = isValid ? 'result-box success' : 'result-box error';
+        }
+
+        // Performance functions
+        let monitoringInterval;
+
+        function startMonitoring() {
+            const resultBox = document.getElementById('monitoringData');
+            resultBox.style.display = 'block';
+            
+            monitoringInterval = setInterval(() => {
+                updateMetrics();
+            }, 1000);
+            
+            showNotification('Performance monitoring started', 'success');
+        }
+
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                showNotification('Performance monitoring stopped', 'info');
+            }
+        }
+
+        function updateMetrics() {
+            // Simulated metrics
+            document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 30 + 10) + '%';
+            document.getElementById('memoryUsage').textContent = Math.floor(Math.random() * 40 + 30) + '%';
+            document.getElementById('responseTime').textContent = Math.floor(Math.random() * 100 + 50) + 'ms';
+            document.getElementById('activeHandles').textContent = Math.floor(Math.random() * 20 + 5);
+            
+            const resultBox = document.getElementById('monitoringData');
+            const timestamp = new Date().toLocaleTimeString();
+            resultBox.innerHTML += `[${timestamp}] Metrics updated\n`;
+            resultBox.scrollTop = resultBox.scrollHeight;
+        }
+
+        function testMemoization() {
+            const iterations = parseInt(document.getElementById('iterations').value);
+            const resultBox = document.getElementById('performanceResult');
+            
+            // Simulate expensive function
+            const expensiveFunction = (n) => {
+                let sum = 0;
+                for (let i = 0; i < n; i++) {
+                    sum += Math.sqrt(i);
+                }
+                return sum;
+            };
+            
+            const startTime = performance.now();
+            for (let i = 0; i < iterations; i++) {
+                expensiveFunction(1000);
+            }
+            const endTime = performance.now();
+            
+            resultBox.innerHTML = `Memoization Test:\nExecuted ${iterations} iterations\nTotal time: ${(endTime - startTime).toFixed(2)}ms\nAverage per call: ${((endTime - startTime) / iterations).toFixed(4)}ms`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        // Data processing functions
+        function processArray() {
+            const dataInput = document.getElementById('arrayData').value;
+            const operation = document.getElementById('arrayOperation').value;
+            const key = document.getElementById('arrayKey').value;
+            const resultBox = document.getElementById('arrayResult');
+            
+            try {
+                const data = JSON.parse(dataInput || '[]');
+                let result;
+                
+                switch (operation) {
+                    case 'group':
+                        result = groupBy(data, key);
+                        break;
+                    case 'partition':
+                        const condition = key ? new Function('item', `return ${key}`) : () => true;
+                        result = partition(data, condition);
+                        break;
+                    case 'unique':
+                        result = [...new Set(data)];
+                        break;
+                    case 'chunk':
+                        result = chunk(data, parseInt(key) || 2);
+                        break;
+                    case 'sort':
+                        result = [...data].sort((a, b) => {
+                            if (key && a[key] && b[key]) {
+                                return a[key] > b[key] ? 1 : -1;
+                            }
+                            return a > b ? 1 : -1;
+                        });
+                        break;
+                    case 'filter':
+                        const filterCondition = key ? new Function('item', `return ${key}`) : () => true;
+                        result = data.filter(filterCondition);
+                        break;
+                }
+                
+                resultBox.innerHTML = `Operation: ${operation}\nResult:\n${JSON.stringify(result, null, 2)}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box success';
+                
+            } catch (error) {
+                resultBox.innerHTML = `Error: ${error.message}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box error';
+            }
+        }
+
+        // Helper functions for data processing
+        function groupBy(array, key) {
+            return array.reduce((groups, item) => {
+                const group = item[key];
+                groups[group] = groups[group] || [];
+                groups[group].push(item);
+                return groups;
+            }, {});
+        }
+
+        function partition(array, condition) {
+            const truthy = [];
+            const falsy = [];
+            array.forEach(item => {
+                if (condition(item)) {
+                    truthy.push(item);
+                } else {
+                    falsy.push(item);
+                }
+            });
+            return [truthy, falsy];
+        }
+
+        function chunk(array, size) {
+            const chunks = [];
+            for (let i = 0; i < array.length; i += size) {
+                chunks.push(array.slice(i, i + size));
+            }
+            return chunks;
+        }
+
+        function mergeObjects() {
+            const obj1Input = document.getElementById('object1').value;
+            const obj2Input = document.getElementById('object2').value;
+            const resultBox = document.getElementById('objectResult');
+            
+            try {
+                const obj1 = JSON.parse(obj1Input || '{}');
+                const obj2 = JSON.parse(obj2Input || '{}');
+                
+                const merged = deepMerge(obj1, obj2);
+                
+                resultBox.innerHTML = `Merged Object:\n${JSON.stringify(merged, null, 2)}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box success';
+                
+            } catch (error) {
+                resultBox.innerHTML = `Error: ${error.message}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box error';
+            }
+        }
+
+        function deepMerge(target, source) {
+            const result = { ...target };
+            
+            for (const key in source) {
+                if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                    result[key] = deepMerge(result[key] || {}, source[key]);
+                } else {
+                    result[key] = source[key];
+                }
+            }
+            
+            return result;
+        }
+
+        // Logging functions
+        function generateLog(level) {
+            const dashboard = document.getElementById('logDashboard');
+            const timestamp = new Date().toLocaleString();
+            const message = prompt(`Enter ${level.toUpperCase()} log message:`) || `Sample ${level} message`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${level}`;
+            logEntry.textContent = `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+            
+            dashboard.appendChild(logEntry);
+            dashboard.scrollTop = dashboard.scrollHeight;
+        }
+
+        function clearLogs() {
+            const dashboard = document.getElementById('logDashboard');
+            dashboard.innerHTML = '<div class="log-entry info">[' + new Date().toLocaleString() + '] INFO: Logs cleared</div>';
+        }
+
+        function filterLogs() {
+            const level = document.getElementById('logLevel').value;
+            const dashboard = document.getElementById('logDashboard');
+            const logs = dashboard.querySelectorAll('.log-entry');
+            
+            logs.forEach(log => {
+                if (level === 'all' || log.classList.contains(level)) {
+                    log.style.display = 'block';
+                } else {
+                    log.style.display = 'none';
+                }
+            });
+        }
+
+        // Configuration functions
+        function updateFeatureFlag(flagName) {
+            const checkbox = document.getElementById(flagName);
+            const isEnabled = checkbox.checked;
+            
+            console.log(`Feature flag ${flagName}: ${isEnabled ? 'ENABLED' : 'DISABLED'}`);
+            showNotification(`Feature ${flagName} ${isEnabled ? 'enabled' : 'disabled'}`, 'info');
+        }
+
+        function exportConfig() {
+            const config = {
+                darkMode: document.getElementById('darkMode').checked,
+                analytics: document.getElementById('analytics').checked,
+                debugMode: document.getElementById('debugMode').checked,
+                betaFeatures: document.getElementById('betaFeatures').checked,
+                environment: document.getElementById('environment').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            const resultBox = document.getElementById('configResult');
+            resultBox.innerHTML = `Exported Configuration:\n${JSON.stringify(config, null, 2)}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            // Create a simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? 'var(--secondary)' : type === 'error' ? 'var(--danger)' : type === 'warning' ? 'var(--warning)' : 'var(--info)'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Form submission
+        document.getElementById('comprehensiveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                phone: document.getElementById('phone').value,
+                age: document.getElementById('age').value,
+                website: document.getElementById('website').value
+            };
+            
+            const resultBox = document.getElementById('formResult');
+            resultBox.innerHTML = `Form Validation Results:\n${JSON.stringify(formData, null, 2)}\n\n✅ All validations passed!`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize demo with some sample data
+        window.addEventListener('load', function() {
+            // Set today's date as default
+            document.getElementById('baseDate').valueAsDate = new Date();
+            
+            // Add sample data for array processing
+            document.getElementById('arrayData').value = JSON.stringify([
+                { name: "John Doe", age: 30, department: "Engineering", salary: 80000 },
+                { name: "Jane Smith", age: 25, department: "Marketing", salary: 65000 },
+                { name: "Bob Johnson", age: 35, department: "Engineering", salary: 95000 },
+                { name: "Alice Brown", age: 28, department: "Sales", salary: 72000 }
+            ], null, 2);
+            
+            // Add sample objects for merging
+            document.getElementById('object1').value = JSON.stringify({ a: 1, b: 2, user: { name: "John" } }, null, 2);
+            document.getElementById('object2').value = JSON.stringify({ b: 3, c: 4, user: { age: 30 } }, null, 2);
+            
+            console.log('QGenUtils Demo Frontend initialized successfully!');
+        });
+    </script>
+</body>
+</html>
