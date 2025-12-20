@@ -93,7 +93,7 @@
     "loqatevars": "^1.0.6",
     "madge": "^8.0.0",
     "npmcontext": "^1.0.1",
-    "opencode-ai": "1.0.171",
+    "opencode-ai": "1.0.174",
     "qtests": "^2.0.0",
     "quantumagent": "^1.0.5",
     "ts-jest": "^29.4.4",
