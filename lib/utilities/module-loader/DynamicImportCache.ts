@@ -191,7 +191,9 @@ class DynamicImportCache {
     let oldestKey: string | null = null;
     let oldestTime = Date.now();
 
-    for (const [key, cached] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (let i = 0; i < entries.length; i++) {
+      const [key, cached] = entries[i];
       if (cached.lastAccessed < oldestTime) {
         oldestTime = cached.lastAccessed;
         oldestKey = key;
@@ -210,7 +212,9 @@ class DynamicImportCache {
     const now = Date.now();
     const expiredKeys: string[] = [];
 
-    for (const [key, cached] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (let i = 0; i < entries.length; i++) {
+      const [key, cached] = entries[i];
       if ((now - cached.loadTime) > this.cacheTimeoutMs) {
         expiredKeys.push(key);
       }
