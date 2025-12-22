@@ -8,14 +8,14 @@
  * @param {number} [options.cleanupInterval=60000] - Interval for cleanup in ms (0 to disable)
  * @returns {object} Rate limit store with consume, get, reset, and destroy methods
  */
-function createRateLimitStore(options = {}) {
-  const { cleanupInterval = 60000 }: any = options;
+function createRateLimitStore(options: any = {}) {
+  const { cleanupInterval = 60000 } = options;
   
-  const store: any = new Map(); // key -> { points, resetTime }
-  let cleanupTimer = null;
+  const store = new Map(); // key -> { points, resetTime }
+  let cleanupTimer: any = null;
 
   function cleanup() { // remove expired entries
-    const now: any = Date.now();
+    const now = Date.now();
     for (const [key, entry] of store.entries()) {
       if (now >= entry.resetTime) {
         store.delete(key);
@@ -23,9 +23,28 @@ function createRateLimitStore(options = {}) {
     }
   }
 
+  function destroy() {
+    if (cleanupTimer) {
+      clearInterval(cleanupTimer);
+      cleanupTimer = null;
+    }
+    store.clear();
+  }
+
   if (cleanupInterval > 0) { // start periodic cleanup
     cleanupTimer = setInterval(cleanup, cleanupInterval);
     if (cleanupTimer.unref) cleanupTimer.unref(); // don't block process exit
+  }
+
+  // Add automatic cleanup when store is garbage collected (if supported)
+  if (typeof FinalizationRegistry !== 'undefined') {
+    const registry = new FinalizationRegistry(() => {
+      if (cleanupTimer) {
+        clearInterval(cleanupTimer);
+        cleanupTimer = null;
+      }
+    });
+    registry.register(store, destroy);
   }
 
   return {
@@ -36,8 +55,8 @@ function createRateLimitStore(options = {}) {
      * @param {number} durationMs - Window duration in ms
      * @returns {{ consumed: number, remaining: number, resetTime: number, exceeded: boolean }}
      */
-    consume(key, points, durationMs) {
-      const now: any = Date.now();
+    consume(key: string, points: number, durationMs: number) {
+      const now = Date.now();
       let entry = store.get(key);
 
       if (!entry || now >= entry.resetTime) { // create new window if expired
@@ -62,10 +81,10 @@ function createRateLimitStore(options = {}) {
      * @param {string} key - Rate limit key
      * @returns {{ consumed: number, resetTime: number } | null}
      */
-    get(key) {
-      const entry: any = store.get(key);
+    get(key: string) {
+      const entry = store.get(key);
       if (!entry) return null;
-      const now: any = Date.now();
+      const now = Date.now();
       if (now >= entry.resetTime) { // expired
         store.delete(key);
         return null;
@@ -77,7 +96,7 @@ function createRateLimitStore(options = {}) {
      * Reset usage for a key
      * @param {string} key - Rate limit key
      */
-    reset(key) {
+    reset(key: string) {
       store.delete(key);
     },
 
@@ -92,13 +111,7 @@ function createRateLimitStore(options = {}) {
     /**
      * Destroy store and stop cleanup timer
      */
-    destroy() {
-      if (cleanupTimer) {
-        clearInterval(cleanupTimer);
-        cleanupTimer = null;
-      }
-      store.clear();
-    }
+    destroy
   };
 }
 
