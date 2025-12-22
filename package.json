@@ -72,7 +72,7 @@
     "helmet": "^8.1.0",
     "nanoid": "^3.3.7",
     "qerrors": "^1.2.7",
-    "qgenutils": "^1.0.3",
+    
     "safe-compare": "^1.1.4",
     "sanitize-html": "^2.17.0",
     "validator": "^13.15.23",
