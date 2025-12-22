@@ -18,8 +18,35 @@ const mime = {
 function serveFile(res, fullPath) {
   const ext = path.extname(fullPath);
   const type = mime[ext] || 'text/plain';
-  res.writeHead(200, { 'Content-Type': type });
-  fs.createReadStream(fullPath).pipe(res);
+  
+  // Add proper error handling for file operations
+  const readStream = fs.createReadStream(fullPath);
+  
+  // Set up error handling before piping
+  readStream.on('error', (err) => {
+    console.error('File read error:', err);
+    // Only send error response if headers haven't been sent yet
+    if (!res.headersSent) {
+      if (err.code === 'ENOENT') {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'File not found' }));
+      } else if (err.code === 'EACCES') {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Permission denied' }));
+      } else {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+      }
+    }
+  });
+  
+  readStream.on('open', () => {
+    // Only write headers if they haven't been sent yet
+    if (!res.headersSent) {
+      res.writeHead(200, { 'Content-Type': type });
+    }
+    readStream.pipe(res);
+  });
 }
 
 function sendJSON(res, data, statusCode = 200) {
@@ -290,25 +317,59 @@ const server = http.createServer(async (req, res) => {
   let reqPath = parsedUrl[0];
   const method = req.method;
   
-  // Handle API endpoints
+  // Handle API endpoints with enhanced error handling
   if (reqPath.startsWith('/api/')) {
     try {
       await handleApiRequest(req, res, reqPath, method);
     } catch (error) {
-      sendJSON(res, { error: 'Internal server error', message: error.message }, 500);
+      console.error('API request error:', error);
+      // Handle different error types appropriately
+      if (error.name === 'ValidationError') {
+        sendJSON(res, { error: 'Validation error', message: error.message }, 400);
+      } else if (error.code === 'ENOENT') {
+        sendJSON(res, { error: 'Resource not found', message: error.message }, 404);
+      } else if (error.code === 'EACCES') {
+        sendJSON(res, { error: 'Permission denied', message: error.message }, 403);
+      } else {
+        sendJSON(res, { error: 'Internal server error', message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong' }, 500);
+      }
     }
     return;
   }
   
-  // Serve static files
+  // Serve static files with enhanced error handling
   if (reqPath === '/') reqPath = '/demo.html';
   const fullPath = path.join(root, reqPath);
+  
+  // Security check: prevent directory traversal
+  if (reqPath.includes('..') || reqPath.includes('\\')) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid path' }));
+    return;
+  }
+  
   fs.stat(fullPath, (err, stat) => {
-    if (err || !stat.isFile()) {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
+      } else if (err.code === 'EACCES') {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('Forbidden');
+      } else {
+        console.error('File stat error:', err);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal Server Error');
+      }
+      return;
+    }
+    
+    if (!stat.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not Found');
       return;
     }
+    
     serveFile(res, fullPath);
   });
 });

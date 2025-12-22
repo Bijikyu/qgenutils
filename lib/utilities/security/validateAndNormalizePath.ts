@@ -14,27 +14,57 @@ const path: any = require('path');
  * const safePath: any = validateAndNormalizePath('uploads/image.png');
  * // Throws on '../../../etc/passwd'
  */
-function validateAndNormalizePath(inputPath, options = {}) { // validate path against traversal attacks
-  const maxLength: any = options.maxLength || 512;
-  const allowLeadingSlash: any = options.allowLeadingSlash || false;
+function validateAndNormalizePath(inputPath: string, options: { maxLength?: number; allowLeadingSlash?: boolean } = {}) { // validate path against traversal attacks
+  const maxLength: number = options.maxLength || 512;
+  const allowLeadingSlash: boolean = options.allowLeadingSlash || false;
 
   if (!inputPath || typeof inputPath !== 'string') {
     throw new Error('Invalid path: must be a non-empty string');
   }
 
-  const sanitizedPath: any = inputPath.replace(/[\x00-\x1F\x7F]/g, ''); // remove null bytes and control chars
+  // Remove control characters BEFORE decoding to prevent malformed decoding
+  const cleanPath: string = inputPath.replace(/[\x00-\x1F\x7F]/g, '');
+  
+  // Decode URL-encoded variants to catch encoded traversal attempts
+  let decodedPath: string;
+  try {
+    decodedPath = decodeURIComponent(cleanPath);
+  } catch (error) {
+    throw new Error('Path contains invalid URL encoding');
+  }
 
-  if (/\.\./.test(sanitizedPath)) { // check for parent directory traversal
-    throw new Error('Path contains dangerous traversal patterns');
+  const sanitizedPath: string = decodedPath; // already cleaned above
+
+  // Check for various traversal patterns including encoded variants
+  const traversalPatterns = [
+    /\.\./,                    // Basic ../
+    /\%2e\%2e\%2f/i,          // URL-encoded ../
+    /\%2e\%2e\\/i,            // URL-encoded ..\
+    /\.\.%2f/i,               // Mixed ../
+    /\.\.\\/i,                // Mixed ..\
+    /\%2e%2e%5c/i,            // Double-encoded ..\
+    /\.\.\//,                 // Multiple slashes
+    /\.\.\\/,                 // Windows backslashes
+  ];
+
+  for (const pattern of traversalPatterns) {
+    if (pattern.test(sanitizedPath)) {
+      throw new Error('Path contains dangerous traversal patterns');
+    }
   }
 
   if (/\\/.test(sanitizedPath)) { // check for windows path separators
     throw new Error('Path contains dangerous traversal patterns');
   }
 
-  const normalizedPath: any = path.normalize(sanitizedPath); // normalize using Node.js path
+  const normalizedPath: string = path.normalize(sanitizedPath); // normalize using Node.js path
 
-  if (normalizedPath.includes('..') || normalizedPath.includes('\\') || normalizedPath.includes('\0')) {
+  // Enhanced post-normalization checks
+  if (normalizedPath.includes('..') || 
+      normalizedPath.includes('\\') || 
+      normalizedPath.includes('\0') ||
+      normalizedPath.includes('%2e') ||
+      normalizedPath.includes('%2E')) {
     throw new Error('Normalized path contains dangerous characters');
   }
 

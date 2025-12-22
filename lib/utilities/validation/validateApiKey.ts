@@ -10,7 +10,7 @@
  * validateApiKey('sk_live_abc123...') // returns true (if >= 32 chars)
  * validateApiKey('test') // returns false (common test key rejected)
  */
-function validateApiKey(apiKey) { // comprehensive API key validation with format checking
+function validateApiKey(apiKey: string) { // comprehensive API key validation with format checking
   if (!apiKey || typeof apiKey !== 'string') { // check for API key presence and string type
     return false; // invalid input rejection
   }
@@ -27,8 +27,18 @@ function validateApiKey(apiKey) { // comprehensive API key validation with forma
     return false;
   }
 
-  const commonTestKeys: any = ['test', 'demo', 'example', 'sample']; // prevent common test keys in production
-  const isNotCommon: any = !commonTestKeys.includes(apiKey.toLowerCase());
+  // Enhanced validation to prevent common test keys as substrings
+  const commonTestKeys: string[] = [
+    'test', 'demo', 'example', 'sample', 'fake', 'mock', 
+    'sk_test_', 'pk_test_', 'sk_live_test', 'pk_live_test',
+    '1234567890', 'abcdefghij', 'abcdefghijklmnop'
+  ];
+  const apiKeyLower: string = apiKey.toLowerCase();
+  
+  // Check if any test key appears as substring (not just exact match)
+  const isNotCommon: boolean = !commonTestKeys.some(testKey => 
+    apiKeyLower.includes(testKey) || apiKeyLower.startsWith(testKey) || apiKeyLower.endsWith(testKey)
+  );
 
   return isNotCommon; // return API key validation result
 }

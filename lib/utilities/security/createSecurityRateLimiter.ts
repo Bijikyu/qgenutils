@@ -15,41 +15,91 @@ const SECURITY_CONFIG: any = require('./securityConfig');
  * @example
  * app.use(createSecurityRateLimiter({ windowMs: 60000, maxRequests: 30 }));
  */
-function createSecurityRateLimiter(options = {}) { // factory for security rate limiter
-  const windowMs: any = options.windowMs || SECURITY_CONFIG.RATE_LIMIT_WINDOW_MS;
-  const maxRequests: any = options.maxRequests || SECURITY_CONFIG.RATE_LIMIT_MAX_REQUESTS;
-  const blockDurationMs: any = options.blockDurationMs || SECURITY_CONFIG.BLOCK_DURATION_MS;
-  const keyGenerator: any = options.keyGenerator || defaultKeyGenerator;
-  const onLimitExceeded: any = options.onLimitExceeded || null;
+function createSecurityRateLimiter(options: {
+  windowMs?: number;
+  maxRequests?: number;
+  blockDurationMs?: number;
+  maxRequestSize?: number;
+  maxUrlLength?: number;
+  keyGenerator?: Function;
+  onLimitExceeded?: Function;
+} = {}) { // factory for security rate limiter
+  // Validate input parameters to prevent memory exhaustion
+  const maxRequestSize: number = options.maxRequestSize || 1024 * 1024; // 1MB default
+  const maxUrlLength: number = options.maxUrlLength || 2048; // 2KB default
+  
+  if (maxRequestSize > 100 * 1024 * 1024) { // 100MB max
+    throw new Error('maxRequestSize too large (max 100MB)');
+  }
+  if (maxUrlLength > 65536) { // 64KB max
+    throw new Error('maxUrlLength too large (max 64KB)');
+  }
+
+  const windowMs: number = options.windowMs || SECURITY_CONFIG.RATE_LIMIT_WINDOW_MS;
+  const maxRequests: number = options.maxRequests || SECURITY_CONFIG.RATE_LIMIT_MAX_REQUESTS;
+  const blockDurationMs: number = options.blockDurationMs || SECURITY_CONFIG.BLOCK_DURATION_MS;
+  const keyGenerator: Function = options.keyGenerator || defaultKeyGenerator;
+  const onLimitExceeded: Function | null = options.onLimitExceeded || null;
 
   const requestCounts: any = new Map(); // key -> { count, windowStart }
   const blockedKeys: any = new Map(); // key -> blockUntil timestamp
 
-  function defaultKeyGenerator(req) { // default: use client IP
+  function defaultKeyGenerator(req: any) { // default: use client IP
     return req.ip || req.socket?.remoteAddress || 'unknown';
   }
 
-  function cleanup() { // cleanup expired entries
-    const now: any = Date.now();
+  function cleanup() { // cleanup expired entries with memory leak prevention
+    const now: number = Date.now();
+    let cleanedCount = 0;
 
-    requestCounts.forEach((data, key: any): any => {
+    // Clean request counts
+    requestCounts.forEach((data: any, key: any): any => {
       if (now - data.windowStart > windowMs) {
         requestCounts.delete(key);
+        cleanedCount++;
       }
     });
 
-    blockedKeys.forEach((blockUntil, key: any): any => {
+    // Clean blocked keys
+    blockedKeys.forEach((blockUntil: any, key: any): any => {
       if (now >= blockUntil) {
         blockedKeys.delete(key);
+        cleanedCount++;
       }
     });
+
+    // Force cleanup if maps are getting too large (memory leak prevention)
+    if (requestCounts.size > 10000) {
+      const oldestAllowed = now - windowMs;
+      requestCounts.forEach((data: any, key: any): any => {
+        if (data.windowStart < oldestAllowed) {
+          requestCounts.delete(key);
+          cleanedCount++;
+        }
+      });
+    }
+
+    if (blockedKeys.size > 5000) {
+      const oldestAllowed = now - (blockDurationMs * 2);
+      blockedKeys.forEach((blockUntil: any, key: any): any => {
+        if (blockUntil < oldestAllowed) {
+          blockedKeys.delete(key);
+          cleanedCount++;
+        }
+      });
+    }
+
+    return cleanedCount;
   }
 
-  return function rateLimiterMiddleware(req, res, next) { // rate limiter middleware
+  return function rateLimiterMiddleware(req: any, res: any, next: any) { // rate limiter middleware
     const now: any = Date.now();
     const key: any = keyGenerator(req);
 
-    if (Math.random() < 0.01) cleanup(); // probabilistic cleanup
+    // Enhanced cleanup strategy to prevent memory leaks
+    if (Math.random() < 0.05 || requestCounts.size > 1000 || blockedKeys.size > 500) {
+      cleanup();
+    }
 
     const blockUntil: any = blockedKeys.get(key); // check if blocked
     if (blockUntil && now < blockUntil) {

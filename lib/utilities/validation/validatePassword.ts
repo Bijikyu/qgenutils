@@ -8,7 +8,7 @@
  * validatePassword('Weak') // returns { isValid: false, errors: ['too_short', ...], strength: 'very_weak' }
  * validatePassword('SecureP@ss1') // returns { isValid: true, errors: [], strength: 'strong' }
  */
-function validatePassword(password) { // comprehensive password validation with strength requirements
+function validatePassword(password: string) { // comprehensive password validation with strength requirements
   if (!password || typeof password !== 'string') { // check for password presence and string type
     return { isValid: false, errors: ['invalid_input'], strength: 'invalid' }; // invalid input rejection
   }
@@ -35,11 +35,11 @@ function validatePassword(password) { // comprehensive password validation with 
   if (!isValid) {
     strength = errors.length <= 2 ? 'weak' : 'very_weak'; // assess password strength based on error count
   } else {
-    // For valid passwords, assess strength based on remaining criteria
-    const passedCriteria = [hasMinLength, hasMaxLength, hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
-    if (passedCriteria >= 5) {
+    // For valid passwords, assess strength based on actual criteria (maxLength is a constraint, not strength indicator)
+    const strengthCriteria = [hasMinLength, hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
+    if (strengthCriteria >= 4) {
       strength = 'strong';
-    } else if (passedCriteria >= 4) {
+    } else if (strengthCriteria >= 3) {
       strength = 'medium';
     } else {
       strength = 'weak';
