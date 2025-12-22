@@ -33,10 +33,6 @@ function createSemaphore(permits: number) {
       nextResolve(release);
     } else if (availablePermits < permits) {
       availablePermits++;
-      // Prevent permit count from exceeding maximum
-      if (availablePermits > permits) {
-        availablePermits = permits;
-      }
     }
   }
 

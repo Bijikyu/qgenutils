@@ -10,13 +10,14 @@ const validator: any = require('validator'); // email validation library for ind
  * validateEmail('user@example.com') // returns true
  * validateEmail('invalid-email') // returns false
  */
-import { createFieldValidator } from './createFieldValidator';
+import createFieldValidator from './createFieldValidator';
 
-const validateEmail = createFieldValidator(
+const validateEmail = createFieldValidator.createFieldValidator(
   (email: any): any => {
     if (!email || typeof email !== 'string') return false;
     const trimmedEmail: any = email.trim();
-    return trimmedEmail.length === 0 || trimmedEmail.length > 254 ? false : validator.isEmail(trimmedEmail);
+    if (trimmedEmail.length === 0 || trimmedEmail.length > 254) return false;
+    return validator.isEmail(trimmedEmail);
   },
   'must be a valid email address'
 );
