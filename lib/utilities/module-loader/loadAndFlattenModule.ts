@@ -22,7 +22,8 @@ const loadAndFlattenModule = async (moduleName: string): Promise<any> => { // dy
     if (def && typeof def === 'object') return { ...def, ...namespace };
 
     return namespace;
-  } catch {
+  } catch (error) {
+    console.error(`Failed to load module ${moduleName}:`, error);
     return null;
   }
 };

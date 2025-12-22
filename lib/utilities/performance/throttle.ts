@@ -10,21 +10,23 @@
  */
 const throttle = (fn: any, delay: any): any => {
   let lastCall = 0, timeoutId: any = null, lastArgs: any = null;
+  let context: any = null;
   
   return (...args: any): any => {
     const now: any = Date.now();
     lastArgs = args;
+    context = this;
     
     if (now - lastCall >= delay) {
       lastCall = now;
-      return fn.apply(this, args);
+      return fn.apply(context, args);
     }
     
     timeoutId && clearTimeout(timeoutId);
     
     timeoutId = setTimeout((): any => {
       lastCall = Date.now();
-      fn.apply(this, lastArgs);
+      fn.apply(context, lastArgs);
       timeoutId = null;
     }, delay - (now - lastCall));
   };

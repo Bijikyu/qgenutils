@@ -9,13 +9,13 @@
  * validateAmount(-50) // returns { isValid: false, errors: ['negative_amount'] }
  * validateAmount('100') // returns { isValid: false, errors: ['not_number'] }
  */
-function validateAmount(amount) { // comprehensive monetary amount validation with business rules
-  if (amount === null || amount === undefined || typeof amount === 'string') { // reject null, undefined, and strings
-    return { isValid: false, errors: ['not_number'] }; // strings not allowed per business requirements
+function validateAmount(amount: number): { isValid: boolean, errors: string[] } { // comprehensive monetary amount validation with business rules
+  if (typeof amount !== 'number') { // check type first
+    return { isValid: false, errors: ['not_number'] }; // non-numeric rejection
   }
 
-  if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) { // check for valid numeric value
-    return { isValid: false, errors: ['not_number'] }; // non-numeric rejection
+  if (isNaN(amount) || !isFinite(amount)) { // check for valid numeric value
+    return { isValid: false, errors: ['not_number'] }; // invalid number rejection
   }
 
   const errors: any = []; // collect validation errors
