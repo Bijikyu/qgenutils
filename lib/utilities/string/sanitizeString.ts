@@ -24,8 +24,8 @@
  * @throws Never throws - returns empty string for null/undefined input
  */
 
-const sanitizeHtml: any = require('sanitize-html');
-import logger from '../../../logger.js';
+import sanitizeHtml from 'sanitize-html';
+import logger from '../../logger.js';
 
 const sanitizeString = (input: any): any => {
   logger.debug(`sanitizeString: starting sanitization`, { inputType: typeof input, inputLength: input ? String(input).length : 0 });
@@ -45,11 +45,11 @@ const sanitizeString = (input: any): any => {
       logger.debug(`sanitizeString: empty string input`);
       return ``;
     }
-    const sanitized: any = sanitizeHtml(str, { allowedTags: [], allowedAttributes: {}, textFilter: text => text, disallowedTagsMode: 'discard', enforceHtmlBoundary: false });
+    const sanitized: any = sanitizeHtml(str, { allowedTags: [], allowedAttributes: {}, textFilter: (text: any) => text, disallowedTagsMode: 'discard', enforceHtmlBoundary: false });
     logger.debug(`sanitizeString: sanitization completed`, { originalLength: str.length, sanitizedLength: sanitized.length, charactersRemoved: str.length - sanitized.length });
     return sanitized;
   } catch (error) {
-    logger.error(`sanitizeString failed with unexpected error`, { error: error.message, stack: error.stack, inputType: typeof input });
+    logger.error(`sanitizeString failed with unexpected error`, { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined, inputType: typeof input });
     return ``;
   }
 };

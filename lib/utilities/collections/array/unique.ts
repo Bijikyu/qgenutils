@@ -8,16 +8,16 @@
  * @param {Function} [keyFn] - Optional function to extract comparison key
  * @returns {Array} Array with unique elements
  */
-function unique(array, keyFn) {
+function unique(array: any[], keyFn?: (item: any) => any): any[] {
   if (!Array.isArray(array)) return [];
   
   if (!keyFn) {
     return [...new Set(array)];
   }
   
-  const seen: any = new Set();
+  const seen = new Set();
   return array.filter(item => {
-    const key: any = keyFn(item);
+    const key = keyFn(item);
     if (seen.has(key)) {
       return false;
     }

@@ -1,6 +1,4 @@
-'use strict';
-
-const bcrypt: any = require('bcrypt'); // bcrypt for secure hashing
+import bcrypt from 'bcrypt'; // bcrypt for secure hashing
 
 const BCRYPT_SALT_ROUNDS: any = 12; // OWASP recommended minimum
 
@@ -30,4 +28,4 @@ const hashPassword = async (password: any, options: any = {}): Promise<any> => {
 };
 
 export default hashPassword;
-module.exports.BCRYPT_SALT_ROUNDS = BCRYPT_SALT_ROUNDS;
+export { BCRYPT_SALT_ROUNDS };

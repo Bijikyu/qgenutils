@@ -8,7 +8,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
@@ -83,6 +84,9 @@
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
     "@bijikyu/csup": "^1.0.2",
+    "@types/bcrypt": "^6.0.0",
+    "@types/heap": "^0.2.35",
+    "@types/sanitize-html": "^2.16.0",
     "agentsqripts": "^1.1.0",
     "arqitect": "^1.1.1",
     "babel-jest": "^30.2.0",

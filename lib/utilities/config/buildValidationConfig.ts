@@ -3,10 +3,12 @@
  * 
  * Creates a validation configuration for input sanitization and limits.
  * 
- * @param {object} [options] - Validation configuration options
- * @returns {object} Validated validation configuration
+ * @param {ValidationConfigOptions} [options] - Validation configuration options
+ * @returns {ValidationConfig} Validated validation configuration
  */
-function buildValidationConfig(options = {}) {
+import { ValidationConfigOptions, ValidationConfig } from '../../../types/config-interfaces.js';
+
+function buildValidationConfig(options: ValidationConfigOptions = {}): ValidationConfig {
   const {
     strictMode = true,
     sanitizeHtml = true,

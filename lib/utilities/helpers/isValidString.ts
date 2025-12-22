@@ -3,6 +3,6 @@
  * @param {*} value - The value to check
  * @returns {boolean} True if value is a non-empty string
  */
-const isValidString: any = (value) => typeof value === 'string' && value.trim().length > 0;
+const isValidString = (value: any): boolean => typeof value === 'string' && value.trim().length > 0;
 
 export default isValidString;

@@ -3,10 +3,12 @@
  * 
  * Creates a configuration for performance metrics collection and reporting.
  * 
- * @param {object} [options] - Performance metrics options
- * @returns {object} Performance metrics configuration
+ * @param {PerformanceMetricsOptions} [options] - Performance metrics options
+ * @returns {PerformanceMetricsConfig} Performance metrics configuration
  */
-function createPerformanceMetrics(options = {}) {
+import { PerformanceMetricsOptions, PerformanceMetricsConfig } from '../../../types/config-interfaces.js';
+
+function createPerformanceMetrics(options: PerformanceMetricsOptions = {}): PerformanceMetricsConfig {
   const {
     enabled = true,
     interval = 60000,
