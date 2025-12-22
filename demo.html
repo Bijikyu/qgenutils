@@ -2505,7 +2505,12 @@ Node.js & Browser Ready
         }
 
         function testMemoization() {
-            const iterations = parseInt(document.getElementById('iterations').value);
+            const iterationsValue = document.getElementById('iterations').value;
+            const iterations = iterationsValue ? parseInt(iterationsValue) : 1000;
+            if (isNaN(iterations) || iterations < 1) {
+                showNotification('Please enter a valid number of iterations', 'error');
+                return;
+            }
             const resultBox = document.getElementById('performanceResult');
             
             // Simulate expensive function
@@ -2540,7 +2545,12 @@ Node.js & Browser Ready
         }
 
         function testThrottle() {
-            const iterations = parseInt(document.getElementById('iterations').value);
+            const iterationsValue = document.getElementById('iterations').value;
+            const iterations = iterationsValue ? parseInt(iterationsValue) : 100;
+            if (isNaN(iterations) || iterations < 1) {
+                showNotification('Please enter a valid number of iterations', 'error');
+                return;
+            }
             const resultBox = document.getElementById('performanceResult');
             
             let callCount = 0;
