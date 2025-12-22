@@ -1,6 +1,4 @@
-'use strict';
-
-const Heap: any = require('heap');
+import Heap from 'heap';
 
 /**
  * Min-Heap implementation using the heap npm module
@@ -13,17 +11,17 @@ const Heap: any = require('heap');
  * heap.push({ priority: 1 });
  * heap.pop(); // { priority: 1 }
  */
-function createMinHeap(compare) {
+function createMinHeap(compare: (a: any, b: any) => number) {
   if (typeof compare !== 'function') {
     throw new Error('Compare function is required');
   }
 
   // Create heap instance with the provided comparator
-  const heap: any = new Heap(compare);
+  const heap = new Heap(compare);
 
   // Return interface that matches the original API
   return {
-    push(item) {
+    push(item: any) {
       heap.push(item);
     },
 
