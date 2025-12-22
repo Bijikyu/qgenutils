@@ -1,0 +1,174 @@
+dynamic-import-cache
+Purpose: Cache and manage dynamic import() calls to avoid redundant module loading and provide lifecycle helpers around the cache. Explanation:
+Serverless functions, worker threads, or any long-running Node.js service can waste time reloading the same modules on each request; dynamic-import-cache centralizes the logic for asynchronously importing dependencies, caching them until they expire, and evicting the least recently used entry when the cache is full.
+It also provides helpers to pre-cache commonly used modules, treat database driver names uniformly, inspect cache stats, and clean up intervals, making it easy to drop into a new project that needs smarter module reuse without coupling to any specific backend.
+
+// Dynamic Import Cache Manager
+// Pre-caches and manages dynamic imports to eliminate per-request module loading overhead
+import path from 'path';
+import { resetIntervalHandle } from './timer-utils.js';
+interface CachedModule {
+  module: any;
+  loadTime: number;
+  lastAccessed: number;
+}
+class DynamicImportCache {
+  private cache = new Map<string, CachedModule>();
+  private readonly maxCacheSize: number;
+  private readonly cacheTimeoutMs: number;
+  private cleanupInterval?: NodeJS.Timeout;
+  private hitCount = 0;
+  private missCount = 0;
+  constructor(maxCacheSize = 100, cacheTimeoutMs = 5 * 60 * 1000) { // 5 minutes default timeout
+    this.maxCacheSize = maxCacheSize;
+    this.cacheTimeoutMs = cacheTimeoutMs;
+    
+    // Start periodic cleanup to prevent memory leaks
+    this.startCleanup();
+  }
+  // Pre-cache commonly used modules at startup
+  async preCacheModules(): Promise<void> {
+    const modulesToPreCache = [
+      'redis',
+      'pg',
+      'mysql2/promise',
+      'mongodb',
+      'net',
+      'fs/promises',
+      'child_process',
+      'crypto',
+      'zlib'
+    ];
+    const preCachePromises = modulesToPreCache.map(async (moduleName) => {
+      try {
+        const module = await this.getModule(moduleName);
+        // Also make available to workers via global for faster access
+        if (!(global as any).cachedModules) {
+          (global as any).cachedModules = {};
+        }
+        const shortName = moduleName.split('/')[0]; // Get base name for nested modules
+        (global as any).cachedModules[shortName] = module;
+        console.log(`[INFO] Pre-cached module: ${moduleName}`);
+      } catch (error) {
+        console.warn(`[WARN] Failed to pre-cache module ${moduleName}:`, (error as Error).message);
+      }
+    });
+    await Promise.allSettled(preCachePromises);
+  }
+  async getModule(moduleName: string): Promise<any> {
+    const cacheKey = moduleName;
+    const now = Date.now();
+    
+    // Check cache first
+    const cached = this.cache.get(cacheKey);
+    if (cached && (now - cached.loadTime) < this.cacheTimeoutMs) {
+      cached.lastAccessed = now;
+      this.hitCount++;
+      return cached.module;
+    }
+    
+    // Track cache miss
+    this.missCount++;
+    // Load module and cache it
+    try {
+      const module = await import(moduleName);
+      const cachedModule: CachedModule = {
+        module,
+        loadTime: now,
+        lastAccessed: now
+      };
+      // Add to cache (evict oldest if needed)
+      if (this.cache.size >= this.maxCacheSize) {
+        this.evictOldestModule();
+      }
+      
+      this.cache.set(cacheKey, cachedModule);
+      return module;
+    } catch (error) {
+      console.error(`[ERROR] Failed to load module ${moduleName}:`, error);
+      throw error;
+    }
+  }
+  // Get database-specific modules with proper error handling
+  async getDatabaseModule(dbType: string): Promise<any> {
+    const moduleMap: Record<string, string> = {
+      'redis': 'redis',
+      'postgresql': 'pg',
+      'postgres': 'pg',
+      'mysql': 'mysql2/promise',
+      'mongodb': 'mongodb',
+      'generic': 'net'
+    };
+    const moduleName = moduleMap[dbType] || 'net';
+    return await this.getModule(moduleName);
+  }
+  private evictOldestModule(): void {
+    let oldestKey: string | null = null;
+    let oldestTime = Date.now();
+    for (const [key, cached] of this.cache.entries()) {
+      if (cached.lastAccessed < oldestTime) {
+        oldestTime = cached.lastAccessed;
+        oldestKey = key;
+      }
+    }
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+    }
+  }
+  // Clean up expired entries
+  cleanup(): void {
+    const now = Date.now();
+    const expiredKeys: string[] = [];
+    for (const [key, cached] of this.cache.entries()) {
+      if ((now - cached.loadTime) > this.cacheTimeoutMs) {
+        expiredKeys.push(key);
+      }
+    }
+    expiredKeys.forEach(key => this.cache.delete(key));
+  }
+  private startCleanup(): void {
+    // Run cleanup every 2 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 2 * 60 * 1000);
+  }
+  // Get cache statistics
+  getStats(): { size: number; maxSize: number; hitRate: number; hitCount: number; missCount: number } {
+    const totalRequests = this.hitCount + this.missCount;
+    const hitRate = totalRequests > 0 ? (this.hitCount / totalRequests) * 100 : 0;
+    
+    return {
+      size: this.cache.size,
+      maxSize: this.maxCacheSize,
+      hitRate: Math.round(hitRate * 100) / 100, // Round to 2 decimal places
+      hitCount: this.hitCount,
+      missCount: this.missCount
+    };
+  }
+  // Clear cache (useful for testing)
+  clear(): void {
+    this.cache.clear();
+    this.hitCount = 0;
+    this.missCount = 0;
+  }
+  // Shutdown cleanup
+  shutdown(): void {
+    this.cleanupInterval = resetIntervalHandle(this.cleanupInterval);
+    this.clear();
+  }
+}
+// Singleton instance for the application
+const dynamicImportCache = new DynamicImportCache();
+// Export convenience functions
+export const getDynamicModule = (moduleName: string) => 
+  dynamicImportCache.getModule(moduleName);
+export const getDatabaseModule = (dbType: string) => 
+  dynamicImportCache.getDatabaseModule(dbType);
+export const preCacheDynamicModules = () => 
+  dynamicImportCache.preCacheModules();
+export const cleanupDynamicImportCache = () => 
+  dynamicImportCache.cleanup();
+export const clearDynamicImportCache = () => 
+  dynamicImportCache.clear();
+export const shutdownDynamicImportCache = () => 
+  dynamicImportCache.shutdown();
