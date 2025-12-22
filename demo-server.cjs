@@ -2,8 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// Import QGenUtils utilities
-const QGenUtils = require('./index.js');
+// Import QGenUtils utilities  
+const QGenUtils = require('./dist/index.js');
 
 const root = process.cwd();
 const mime = {

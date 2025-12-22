@@ -18,10 +18,13 @@ function measureEventLoopLag(callback: any) { // measure event loop delay using 
 
   setImmediate((): any => { // schedule check for next event loop tick
     const end: any = process.hrtime.bigint(); // capture end time
-    const lagNs: any = Number(end - start); // calculate difference in nanoseconds
-    const lagMs: any = lagNs / 1000000; // convert to milliseconds
-
-    callback(Math.round(lagMs * 100) / 100); // round to 2 decimals and call back
+const lagNs: any = end - start; // keep as BigInt
+  // Convert to milliseconds with bounds checking
+  const lagMs: any = Number(lagNs) / 1000000; // convert to milliseconds
+  
+  // Sanity check - if lag is unreasonably high, cap it
+  const safeLagMs = Math.min(Math.max(lagMs, 0), 60000); // cap at 60 seconds max
+  callback(Math.round(safeLagMs * 100) / 100); // round to 2 decimals and call back
   });
 }
 
