@@ -34,6 +34,16 @@ function validatePassword(password) { // comprehensive password validation with 
   let strength = 'strong'; // default to strong if valid
   if (!isValid) {
     strength = errors.length <= 2 ? 'weak' : 'very_weak'; // assess password strength based on error count
+  } else {
+    // For valid passwords, assess strength based on remaining criteria
+    const passedCriteria = [hasMinLength, hasMaxLength, hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
+    if (passedCriteria >= 5) {
+      strength = 'strong';
+    } else if (passedCriteria >= 4) {
+      strength = 'medium';
+    } else {
+      strength = 'weak';
+    }
   }
 
   return { isValid, errors, strength }; // return comprehensive validation result

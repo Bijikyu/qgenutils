@@ -13,8 +13,8 @@ function maskApiKey(apiKey, visibleChars = 4) {
     return '***';
   }
   
-  if (apiKey.length <= visibleChars) { // if key is shorter than visible chars, mask entirely
-    return '***';
+  if (apiKey.length <= visibleChars) { // if key is shorter than visible chars, show the entire key
+    return apiKey;
   }
   
   const visible: any = apiKey.substring(0, visibleChars); // extract visible portion

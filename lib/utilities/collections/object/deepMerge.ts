@@ -14,6 +14,11 @@ function deepMerge(...objects) {
     if (!obj || typeof obj !== 'object') return result;
     
     Object.keys(obj).forEach(key => {
+      // Prevent prototype pollution by blocking dangerous keys
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return;
+      }
+      
       const value: any = obj[key];
       const existingValue: any = result[key];
       
