@@ -1,3 +1,2 @@
-// Temporary CommonJS wrapper for demo server compatibility
-const QGenUtils = require('./dist/index.js');
-module.exports = QGenUtils.default || QGenUtils;
+// ES module entry point
+export { default } from './dist/index.js';

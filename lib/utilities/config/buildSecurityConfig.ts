@@ -7,7 +7,41 @@
  * @param {object} [options] - Security configuration options
  * @returns {object} Validated security configuration
  */
-function buildSecurityConfig(options: any = {}) {
+
+interface SecurityConfigOptions {
+  encryptionEnabled?: boolean;
+  encryptionAlgorithm?: string;
+  hashAlgorithm?: string;
+  sessionTimeout?: number;
+  maxLoginAttempts?: number;
+  lockoutDuration?: number;
+  passwordMinLength?: number;
+  passwordRequireUppercase?: boolean;
+  passwordRequireLowercase?: boolean;
+  passwordRequireNumbers?: boolean;
+  passwordRequireSpecialChars?: boolean;
+  jwtSecret?: string | null;
+  jwtExpiration?: string;
+  corsOrigins?: string[];
+  rateLimitEnabled?: boolean;
+  rateLimitWindowMs?: number;
+  rateLimitMax?: number;
+  headers?: Record<string, string>;
+  encryptionKeyRotationEnabled?: boolean;
+  hashIterations?: number;
+  jwtIssuer?: string | null;
+  jwtAudience?: string | null;
+  corsCredentials?: boolean;
+  corsMethods?: string[];
+  corsAllowedHeaders?: string[];
+  rateLimitSkipSuccessful?: boolean;
+  rateLimitSkipFailed?: boolean;
+  securityHeadersEnabled?: boolean;
+  httpsRedirect?: boolean;
+  trustProxy?: boolean;
+}
+
+function buildSecurityConfig(options: SecurityConfigOptions = {}) {
   const {
     encryptionEnabled = true,
     encryptionAlgorithm = 'aes-256-gcm',

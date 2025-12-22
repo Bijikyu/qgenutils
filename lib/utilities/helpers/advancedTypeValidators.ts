@@ -2,18 +2,18 @@
  * Advanced type detection and validation utilities
  */
 
-import { isString } from './stringValidators';
-import { isNumber } from './numberValidators';
-import { isArray } from './arrayValidators';
-import { isObject } from './objectValidators';
-import { isDate } from './primitiveValidators';
+import stringValidators from './stringValidators';
+import numberValidators from './numberValidators';
+import arrayValidators from './arrayValidators';
+import objectValidators from './objectValidators';
+import primitiveValidators from './primitiveValidators';
 
 /**
  * Gets type of a value in a more detailed way than typeof
  * @param {*} value - Value to check
  * @returns {string} Detailed type string
  */
-function getDetailedType(value) {
+function getDetailedType(value: any): string {
   if (value === null) return `null`;
   if (value === undefined) return `undefined`;
   if (Array.isArray(value)) return `array`;
@@ -29,7 +29,7 @@ function getDetailedType(value) {
  * @param {Array} allowedTypes - Array of allowed type strings
  * @returns {boolean} True if value matches any allowed type
  */
-function isValidType(value, allowedTypes) {
+function isValidType(value: any, allowedTypes: string[]): boolean {
   const actualType: any = getDetailedType(value);
   return allowedTypes.includes(actualType);
 }
@@ -40,10 +40,10 @@ function isValidType(value, allowedTypes) {
  * @param {Object} options - Validation options
  * @returns {Function} Validator function
  */
-function createTypeValidator(type, options = {}) {
-  const allowedTypes: any = Array.isArray(type) ? type : [type];
+function createTypeValidator(type: string | string[], options: Record<string, any> = {}) {
+  const allowedTypes: string[] = Array.isArray(type) ? type : [type];
   
-  return function(value, customOptions = {}) {
+  return function(value: any, customOptions: Record<string, any> = {}) {
     const mergedOptions: any = { ...options, ...customOptions };
     const actualType: any = getDetailedType(value);
     
@@ -59,27 +59,27 @@ function createTypeValidator(type, options = {}) {
     switch (actualType) {
       case `string`:
         return {
-          valid: isString(value, mergedOptions),
+          valid: stringValidators.isString(value, mergedOptions),
           value
         };
       case `number`:
         return {
-          valid: isNumber(value, mergedOptions),
+          valid: numberValidators.isNumber(value, mergedOptions),
           value
         };
       case `array`:
         return {
-          valid: isArray(value, mergedOptions),
+          valid: arrayValidators.isArray(value, mergedOptions),
           value
         };
       case `object`:
         return {
-          valid: isObject(value, mergedOptions),
+          valid: objectValidators.isObject(value, mergedOptions),
           value
         };
       case `date`:
         return {
-          valid: isDate(value, mergedOptions),
+          valid: primitiveValidators.isDate(value, mergedOptions),
           value
         };
       default:

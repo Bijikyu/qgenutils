@@ -2,33 +2,32 @@
  * JSON utility factory for creating customized JSON utilities
  */
 
-import { safeJsonParse } from './jsonParsing';
-import { safeJsonStringify } from './jsonStringification';
-import { safeDeepClone } from './jsonManipulation';
-import { isValidJson } from './jsonParsing';
-import { getJsonSize } from './jsonSizeUtils';
+import jsonParsing from './jsonParsing';
+import jsonStringification from './jsonStringification';
+import jsonManipulation from './jsonManipulation';
+import jsonSizeUtils from './jsonSizeUtils';
 
 /**
  * Creates a JSON utility object with custom defaults
  * @param {Object} defaults - Custom default values
  * @returns {Object} JSON utility object with custom defaults
  */
-function createJsonUtils(defaults = {}) {
+function createJsonUtils(defaults: Record<string, any> = {}) {
   const {
     parseDefault = null,
     stringifyDefault = '{}',
     cloneDefault = null
-  } = defaults;
+  }: Record<string, any> = defaults;
   
   return {
-    parse: (jsonString, defaultValue = parseDefault) => 
-      safeJsonParse(jsonString, defaultValue),
-    stringify: (value, defaultValue = stringifyDefault, options = {}) => 
-      safeJsonStringify(value, defaultValue, options),
-    clone: (value, defaultValue = cloneDefault) => 
-      safeDeepClone(value, defaultValue),
-    isValid: isValidJson,
-    getSize: getJsonSize
+    parse: (jsonString: string, defaultValue = parseDefault) => 
+      jsonParsing.safeJsonParse(jsonString, defaultValue),
+    stringify: (value: any, defaultValue = stringifyDefault, options = {}) => 
+      jsonStringification.safeJsonStringify(value, defaultValue, options),
+    clone: (value: any, defaultValue = cloneDefault) => 
+      jsonManipulation.safeDeepClone(value, defaultValue),
+    isValid: jsonParsing.isValidJson,
+    getSize: jsonSizeUtils.getJsonSize
   };
 }
 

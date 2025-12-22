@@ -72,7 +72,6 @@
     "helmet": "^8.1.0",
     "nanoid": "^3.3.7",
     "qerrors": "^1.2.7",
-    
     "safe-compare": "^1.1.4",
     "sanitize-html": "^2.17.0",
     "validator": "^13.15.23",
@@ -93,7 +92,7 @@
     "loqatevars": "^1.0.6",
     "madge": "^8.0.0",
     "npmcontext": "^1.0.1",
-    "opencode-ai": "1.0.185",
+    "opencode-ai": "1.0.186",
     "qtests": "^2.0.0",
     "quantumagent": "^1.0.5",
     "ts-jest": "^29.4.4",

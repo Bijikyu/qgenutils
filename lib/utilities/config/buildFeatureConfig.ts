@@ -14,7 +14,19 @@
  * @param {object} [options.conditions={}] - Activation conditions
  * @returns {object} Validated feature configuration
  */
-function buildFeatureConfig(options: any = {}) {
+
+interface FeatureConfigOptions {
+  name?: string;
+  enabled?: boolean;
+  version?: string;
+  environment?: string;
+  dependencies?: string[];
+  metadata?: Record<string, any>;
+  rolloutPercentage?: number;
+  conditions?: Record<string, any>;
+}
+
+function buildFeatureConfig(options: FeatureConfigOptions = {}) {
   const {
     name = '',
     enabled = false,

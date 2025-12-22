@@ -10,7 +10,7 @@
  * @param {boolean} options.allowWhitespaceOnly - Whether whitespace-only strings are allowed
  * @returns {boolean} True if value is a valid string
  */
-function isString(value, options = {}) {
+function isString(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, allowWhitespaceOnly = false }: any = options;
   
   if (typeof value !== `string`) {
