@@ -9,18 +9,38 @@
  */
 const isPlainObject: any = require('./isPlainObject');
 
-function deepMerge(...objects) {
+function deepMerge(...objects: any[]) {
   return objects.reduce((result, obj: any): any => {
     if (!obj || typeof obj !== 'object') return result;
     
-    Object.keys(obj).forEach(key => {
+    // Prevent prototype pollution by using Object.getOwnPropertyNames and filtering
+    const ownKeys = Object.getOwnPropertyNames(obj);
+    
+    ownKeys.forEach(key => {
       // Prevent prototype pollution by blocking dangerous keys
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      const dangerousKeys = [
+        '__proto__', 'constructor', 'prototype',
+        '__defineGetter__', '__defineSetter__', '__lookupGetter__', '__lookupSetter__',
+        '__eval__', '__function__', '__script__', 'constructor.prototype'
+      ];
+      
+      // Additional protection: check if key would modify prototype
+      if (dangerousKeys.includes(key) || key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return;
+      }
+      
+      // Ensure we only work with own properties, not prototype properties
+      if (!obj.hasOwnProperty(key)) {
         return;
       }
       
       const value: any = obj[key];
       const existingValue: any = result[key];
+      
+      // Additional check to prevent prototype pollution through Object.defineProperty
+      if (typeof value === 'function' && (key === '__defineGetter__' || key === '__defineSetter__')) {
+        return;
+      }
       
       if (isPlainObject(value) && isPlainObject(existingValue)) {
         result[key] = deepMerge(existingValue, value);
