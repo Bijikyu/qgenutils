@@ -8,8 +8,9 @@
  * @param {number} [visibleChars=4] - Number of characters to show at the start
  * @returns {string} Masked API key (e.g., "sk_l***")
  */
-function maskApiKey(apiKey, visibleChars = 4) {
-  if (typeof apiKey !== 'string' || apiKey.length === 0) { // validate input
+function maskApiKey(apiKey: any, visibleChars: number = 4) {
+  // Check for null, undefined, or non-string types
+  if (apiKey == null || typeof apiKey !== 'string' || apiKey.length === 0) {
     return '***';
   }
   

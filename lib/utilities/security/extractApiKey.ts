@@ -19,7 +19,7 @@
  * @param {string} [options.bodyField='api_key'] - Body field name for API key
  * @returns {string|null} The extracted API key, or null if not found
  */
-function extractApiKey(req, options = {}) {
+function extractApiKey(req: any, options: any = {}) {
   if (!req || typeof req !== 'object') { // validate request object
     return null;
   }
@@ -34,10 +34,13 @@ function extractApiKey(req, options = {}) {
 
   const headers: any = req.headers || {}; // normalize headers access
   
-  const authHeader: any = headers.authorization || headers.Authorization; // check Authorization header first
+  const authHeader = headers.authorization || headers.Authorization; // check Authorization header first
   if (authHeader && typeof authHeader === 'string') {
-    if (authHeader.startsWith(authPrefix)) {
-      const token: any = authHeader.slice(authPrefix.length).trim();
+    // Case-insensitive check for the auth prefix
+    const lowerAuthHeader = authHeader.toLowerCase();
+    const lowerAuthPrefix = authPrefix.toLowerCase();
+    if (lowerAuthHeader.startsWith(lowerAuthPrefix)) {
+      const token = authHeader.slice(authPrefix.length).trim();
       if (token) return token;
     }
   }

@@ -26,7 +26,10 @@ function validateAmount(amount: number): { isValid: boolean, errors: string[] } 
     errors.push('negative_amount');
   }
 
-  if ((amount * 100) % 1 !== 0) { // check decimal precision (max 2 decimal places)
+  // Check decimal precision using string conversion to avoid floating point issues
+  const amountStr = amount.toString();
+  const decimalIndex = amountStr.indexOf('.');
+  if (decimalIndex !== -1 && amountStr.length - decimalIndex - 1 > 2) {
     errors.push('too_many_decimals');
   }
 

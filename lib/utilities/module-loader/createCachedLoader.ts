@@ -34,9 +34,15 @@ const createCachedLoader = (options: any = {}): any => { // factory for cached a
         enableCache && (cachedModule = module);
         return module;
       } catch (error) {
-        console.warn(unavailableMessage, error);
-        pendingLoad = null;
+        console.warn(finalUnavailableMessage, error);
+        // Don't clear pendingLoad here - let it resolve so all concurrent calls get the same result
+        // The cache will remain null, allowing future calls to retry
         return fallbackValue;
+      } finally {
+        // Clear pendingLoad after the promise resolves/rejects to allow future retries
+        if (!cachedModule) {
+          pendingLoad = null;
+        }
       }
     })();
 

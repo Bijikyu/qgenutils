@@ -16,15 +16,15 @@ const createIpTracker: any = require('./createIpTracker');
  * @example
  * app.use(createSecurityMiddleware({ logAllRequests: true }));
  */
-function createSecurityMiddleware(options = {}) { // factory for security middleware
-  const logAllRequests: any = options.logAllRequests ?? SECURITY_CONFIG.LOG_ALL_REQUESTS;
-  const sensitiveEndpoints: any = options.sensitiveEndpoints || SECURITY_CONFIG.SENSITIVE_ENDPOINTS;
-  const logger: any = options.logger || console;
-  const ipTracker: any = options.ipTracker || createIpTracker();
+function createSecurityMiddleware(options: any = {}) { // factory for security middleware
+  const logAllRequests = options.logAllRequests ?? SECURITY_CONFIG.LOG_ALL_REQUESTS;
+  const sensitiveEndpoints = Array.isArray(options.sensitiveEndpoints) ? options.sensitiveEndpoints : SECURITY_CONFIG.SENSITIVE_ENDPOINTS;
+  const logger = options.logger || console;
+  const ipTracker = options.ipTracker || createIpTracker();
 
   ipTracker.startPeriodicCleanup(); // start automatic cleanup
 
-  return async function securityMiddleware(req, res, next) { // security monitoring middleware
+  return async function securityMiddleware(req: any, res: any, next: any) { // security monitoring middleware
     const clientIp: any = req.ip || req.socket?.remoteAddress || 'unknown';
     const now: any = Date.now();
 
@@ -72,9 +72,9 @@ function createSecurityMiddleware(options = {}) { // factory for security middle
       ipTracker.track(clientIp); // track normal request
     }
 
-    const isSensitive: any = sensitiveEndpoints.some(ep => req.path.startsWith(ep)); // check sensitive endpoint
+    const isSensitive = sensitiveEndpoints.some((ep: string) => req.path.startsWith(ep)); // check sensitive endpoint
     if (logAllRequests || isSensitive) { // log request
-      const logData = {
+      const logData: any = {
         ip: clientIp,
         method: req.method,
         url: req.url,
