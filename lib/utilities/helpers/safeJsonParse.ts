@@ -4,9 +4,22 @@
  * @param {*} defaultValue - Default value if parsing fails
  * @returns {*} Parsed object or default value
  */
-function safeJsonParse(jsonString, defaultValue = null) {
+function safeJsonParse(jsonString: string, defaultValue: any = null): any {
+  if (typeof jsonString !== 'string') {
+    return defaultValue;
+  }
+  
   try {
-    return JSON.parse(jsonString);
+    const parsed = JSON.parse(jsonString);
+    // Prevent prototype pollution
+    if (typeof parsed === 'object' && parsed !== null) {
+      if (parsed.hasOwnProperty('__proto__') || 
+          parsed.hasOwnProperty('constructor') || 
+          parsed.hasOwnProperty('prototype')) {
+        return defaultValue;
+      }
+    }
+    return parsed;
   } catch (error) {
     return defaultValue;
   }

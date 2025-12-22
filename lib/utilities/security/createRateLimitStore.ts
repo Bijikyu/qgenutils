@@ -16,7 +16,7 @@ function createRateLimitStore(options = {}) {
 
   function cleanup() { // remove expired entries
     const now: any = Date.now();
-    for (const [key, entry] of store) {
+    for (const [key, entry] of store.entries()) {
       if (now >= entry.resetTime) {
         store.delete(key);
       }

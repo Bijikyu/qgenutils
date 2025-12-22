@@ -24,7 +24,7 @@ const hashPassword = async (password: any, options: any = {}): Promise<any> => {
   try {
     return await bcrypt.hash(password, saltRounds);
   } catch (error) {
-    console.error('Password hashing failed:', error.name || 'Unknown error');
+    // Don't log error details for security
     throw new Error('Password hashing failed');
   }
 };
