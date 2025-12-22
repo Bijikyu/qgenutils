@@ -7,9 +7,9 @@
  * @param {*} obj - Value to clone
  * @returns {*} Deep cloned value
  */
-const isPlainObject: any = require('./isPlainObject');
+import isPlainObject from './isPlainObject.js';
 
-function deepClone(obj) {
+function deepClone(obj: any): any {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }

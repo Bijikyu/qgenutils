@@ -14,7 +14,7 @@ const maskSensitiveValue = (value: any, key: any): any => { // mask sensitive va
   if (typeof value !== 'string' || !value) return value;
   if (typeof key !== 'string') return value;
 
-  const isSensitive: any = SENSITIVE_KEYS.some(sensitive => key.toLowerCase().includes(sensitive));
+  const isSensitive: any = SENSITIVE_KEYS.some((sensitive: any) => key.toLowerCase().includes(sensitive));
 
   if (!isSensitive) return value;
 
