@@ -1525,6 +1525,7 @@ Node.js & Browser Ready
     </div>
 
     <script src="demo-test-runner.js"></script>
+    <script src="browser-utils.js"></script>
     <script>
         // Test Runner Management
         let testRunner = null;
@@ -1981,8 +1982,75 @@ Node.js & Browser Ready
             event.target.classList.add('active');
         }
 
-        // Mock implementations of utility functions (in real scenario, these would be imported)
-        const utils = {
+        // Import real QGenUtils functions for browser environment
+        let utils;
+        
+        try {
+            // Use real QGenUtils if available
+            if (typeof QGenUtils !== 'undefined') {
+                utils = QGenUtils;
+                console.log('✅ Loaded real QGenUtils from browser-utils.js');
+                showNotification('Backend utilities loaded successfully', 'success');
+            } else {
+                throw new Error('QGenUtils not available');
+            }
+            
+            // If real QGenUtils not available, show error
+            catch (error) {
+                console.error('❌ Failed to load QGenUtils:', error.message);
+                showNotification('Failed to load backend utilities. Using fallback implementations.', 'error');
+                
+                // Minimal fallback for demo to keep working
+                utils = {
+                    validateEmailFormat: (email) => ({ isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), errors: [] }),
+                    sanitizeInput: (input) => input.replace(/<[^>]*>/g, '').trim(),
+                    maskApiKey: (key) => key.length > 8 ? key.substring(0, 4) + '*'.repeat(key.length - 8) + key.substring(key.length - 4) : '******',
+                    groupBy: (arr, key) => arr.reduce((groups, item) => { const group = item[key]; groups[group] = groups[group] || []; groups[group].push(item); return groups; }, {}),
+                    chunk: (arr, size) => { const chunks = []; for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size)); return chunks; },
+                    unique: (arr) => [...new Set(arr)]
+                };
+            }
+                    // Basic email validation - in production would use real backend
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return {
+                        isValid: emailRegex.test(email),
+                        errors: emailRegex.test(email) ? [] : ['Invalid email format']
+                    };
+                },
+                
+                validatePasswordStrength: (password) => {
+                    // Basic password strength - in production would use real backend
+                    const checks = {
+                        length: password.length >= 8,
+                        uppercase: /[A-Z]/.test(password),
+                        lowercase: /[a-z]/.test(password),
+                        numbers: /\d/.test(password),
+                        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+                    };
+                    
+                    const strength = Object.values(checks).filter(Boolean).length;
+                    
+                    return {
+                        strength,
+                        score: strength / 5,
+                        checks,
+                        suggestions: strength < 3 ? ['Consider adding more character types'] : []
+                    };
+                },
+                
+                sanitizeInput: (input) => {
+                    // Basic sanitization - in production would use real backend
+                    return input
+                        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                        .replace(/<[^>]*>/g, '')
+                        .trim();
+                },
+                
+                // Security utilities
+                maskApiKey: (apiKey) => {
+                    if (apiKey.length <= 8) return '*'.repeat(apiKey.length);
+                    return apiKey.substring(0, 4) + '*'.repeat(apiKey.length - 8) + apiKey.substring(apiKey.length - 4);
+                },
             // Validation utilities
             validateEmailFormat: (email) => {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -2238,7 +2306,23 @@ Node.js & Browser Ready
                 
                 return `${size.toFixed(1)} ${units[unitIndex]}`;
             }
-        };
+        }
+        
+        // If real QGenUtils not available, show error
+        catch (error) {
+            console.error('❌ Failed to load QGenUtils:', error.message);
+            showNotification('Failed to load backend utilities. Using fallback implementations.', 'error');
+            
+            // Minimal fallback for demo to keep working
+            utils = {
+                validateEmailFormat: (email) => ({ isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), errors: [] }),
+                sanitizeInput: (input) => input.replace(/<[^>]*>/g, '').trim(),
+                maskApiKey: (key) => key.length > 8 ? key.substring(0, 4) + '*'.repeat(key.length - 8) + key.substring(key.length - 4) : '******',
+                groupBy: (arr, key) => arr.reduce((groups, item) => { const group = item[key]; groups[group] = groups[group] || []; groups[group].push(item); return groups; }, {}),
+                chunk: (arr, size) => { const chunks = []; for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size)); return chunks; },
+                unique: (arr) => [...new Set(arr)]
+            };
+        }
 
         // Overview Tab Functions
         function quickTestFunction() {
@@ -2261,8 +2345,25 @@ Node.js & Browser Ready
 
         function maskShowcaseKey() {
             const apiKey = document.getElementById('showcaseApiKey').value;
-            const masked = utils.maskApiKey(apiKey);
-            displayResult('apiKeyResult', { original: apiKey, masked: masked }, 'info');
+            if (!apiKey) {
+                showNotification('Please enter an API key', 'warning');
+                return;
+            }
+            
+            // Call real backend API
+            fetch('/api/security/mask-api-key', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ apiKey })
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResult('apiKeyResult', data.result, 'info');
+                showNotification('API key masked successfully', 'success');
+            })
+            .catch(error => {
+                showNotification(`API key masking failed: ${error.message}`, 'error');
+            });
         }
 
         function runPerformanceDemo() {
@@ -2288,12 +2389,26 @@ Node.js & Browser Ready
         // Validation functions
         function validateEmail() {
             const email = document.getElementById('emailInput').value;
-            const feedback = document.getElementById('emailFeedback');
-            
-            if (email === '') {
-                feedback.innerHTML = '';
+            if (!email) {
+                showNotification('Please enter an email address', 'warning');
                 return;
             }
+            
+            // Call real backend API
+            fetch('/api/validate/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResult('emailValidationResult', data.result, data.result.isValid ? 'success' : 'error');
+                showNotification(`Email validation: ${data.result.isValid ? 'Valid' : 'Invalid'}`, data.result.isValid ? 'success' : 'error');
+            })
+            .catch(error => {
+                showNotification(`Validation failed: ${error.message}`, 'error');
+            });
+        }
             
             const result = utils.validateEmailFormat(email);
             if (result.isValid) {
@@ -2305,14 +2420,26 @@ Node.js & Browser Ready
 
         function checkPasswordStrength() {
             const password = document.getElementById('passwordInput').value;
-            const strengthBar = document.getElementById('passwordStrength');
-            const feedback = document.getElementById('passwordFeedback');
-            
-            if (password === '') {
-                strengthBar.className = 'password-strength';
-                feedback.innerHTML = '';
+            if (!password) {
+                showNotification('Please enter a password', 'warning');
                 return;
             }
+            
+            // Call real backend API
+            fetch('/api/validate/password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResult('passwordStrengthResult', data.result, 'info');
+                showNotification('Password strength analysis complete', 'success');
+            })
+            .catch(error => {
+                showNotification(`Password validation failed: ${error.message}`, 'error');
+            });
+        }
             
             const result = utils.validatePasswordStrength(password);
             const strength = result.strength;
@@ -3165,20 +3292,34 @@ Node.js & Browser Ready
         // Collections Tab Functions
         function groupArray() {
             const groupInput = document.getElementById('groupArrayInput');
+            const keyInput = document.getElementById('groupByKey');
             const resultBox = document.getElementById('groupArrayResult');
             
-            if (!groupInput || !resultBox) {
+            if (!groupInput || !keyInput || !resultBox) {
                 showNotification('Required elements not found', 'error');
                 return;
             }
             
             try {
-                const arrayData = groupInput.value ? JSON.parse(groupInput.value) : [];
-                const key = document.getElementById('groupByKey').value;
-                const result = utils.groupBy(arrayData, key);
-                displayResult('groupArrayResult', result, 'success');
+                const arrayData = JSON.parse(groupInput.value);
+                const key = keyInput.value;
+                
+                // Call real backend API
+                fetch('/api/collections/group-by', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ array: arrayData, key })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayResult('groupArrayResult', data.result, 'success');
+                    showNotification('Array grouped successfully', 'success');
+                })
+                .catch(error => {
+                    showNotification(`Group array failed: ${error.message}`, 'error');
+                });
             } catch (e) {
-                displayResult('groupArrayResult', { error: 'Invalid JSON format' }, 'error');
+                showNotification('Invalid JSON format', 'error');
             }
         }
 
@@ -3829,44 +3970,75 @@ Node.js & Browser Ready
                 return;
             }
             
-            // For demo purposes, simulate API call since we don't have a real backend
+            // Make real API call to backend
             const startTime = performance.now();
             
-            // Simulate network delay
-            setTimeout(() => {
+            fetch(endpoint, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: method !== 'GET' && requestBody ? requestBody : undefined
+            })
+            .then(async response => {
                 const endTime = performance.now();
                 const duration = (endTime - startTime).toFixed(2);
                 
-                let body;
+                const responseText = await response.text();
+                let responseData;
                 try {
-                    body = requestBody ? JSON.parse(requestBody) : null;
+                    responseData = JSON.parse(responseText);
                 } catch (e) {
-                    body = requestBody;
+                    responseData = responseText;
                 }
                 
-                const mockResponse = {
+                const apiResponse = {
                     method,
                     endpoint,
                     url: `${window.location.origin}${endpoint}`,
+                    status: response.status,
+                    statusText: response.statusText,
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': response.headers.get('Content-Type'),
                         'User-Agent': 'QGenUtils Demo/1.0'
                     },
-                    body,
-                    timestamp: new Date().toISOString(),
                     duration: `${duration}ms`,
-                    status: 200,
-                    message: 'Mock API call - This would be a real API call to a backend server'
+                    timestamp: new Date().toISOString(),
+                    data: responseData,
+                    success: response.ok
                 };
                 
                 if (resultBox) {
-                    resultBox.innerHTML = `API Test Results:\n\n${JSON.stringify(mockResponse, null, 2)}`;
+                    resultBox.innerHTML = `API Test Results:\n\n${JSON.stringify(apiResponse, null, 2)}`;
                     resultBox.style.display = 'block';
-                    resultBox.className = 'result-box success';
+                    resultBox.className = response.ok ? 'result-box success' : 'result-box error';
                 }
                 
-                showNotification(`API test completed in ${duration}ms`, 'success');
-            }, Math.random() * 500 + 100); // Random delay 100-600ms
+                showNotification(`API test completed in ${duration}ms`, response.ok ? 'success' : 'error');
+            })
+            .catch(error => {
+                const endTime = performance.now();
+                const duration = (endTime - startTime).toFixed(2);
+                
+                const errorResponse = {
+                    method,
+                    endpoint,
+                    url: `${window.location.origin}${endpoint}`,
+                    error: error.message,
+                    duration: `${duration}ms`,
+                    timestamp: new Date().toISOString(),
+                    success: false
+                };
+                
+                if (resultBox) {
+                    resultBox.innerHTML = `API Test Results:\n\n${JSON.stringify(errorResponse, null, 2)}`;
+                    resultBox.style.display = 'block';
+                    resultBox.className = 'result-box error';
+                }
+                
+                showNotification(`API test failed: ${error.message}`, 'error');
+            });
         }
 
         function sanitizeUrl() {
