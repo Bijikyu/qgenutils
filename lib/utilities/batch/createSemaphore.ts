@@ -8,7 +8,7 @@
  * @param {number} permits - Maximum concurrent operations allowed
  * @returns {object} Semaphore with acquire, release, and waitForAll methods
  */
-function createSemaphore(permits) {
+function createSemaphore(permits: number) {
   if (!Number.isInteger(permits) || permits < 1) {
     throw new Error('Semaphore permits must be a positive integer');
   }
@@ -31,8 +31,12 @@ function createSemaphore(permits) {
     if (waitQueue.length > 0) {
       const nextResolve: any = waitQueue.shift();
       nextResolve(release);
-    } else {
+    } else if (availablePermits < permits) {
       availablePermits++;
+      // Prevent permit count from exceeding maximum
+      if (availablePermits > permits) {
+        availablePermits = permits;
+      }
     }
   }
 
