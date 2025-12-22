@@ -15,9 +15,9 @@
  */
 
 import { filesize } from 'filesize';
-import logger from '../../../logger.js';
+import logger from '../../logger.js';
 
-function formatFileSize(bytes, options = {}) {
+function formatFileSize(bytes: number, options: Record<string, any> = {}) {
   logger.debug(`formatFileSize formatting file size`, { bytes, options });
   
   try {
@@ -49,7 +49,7 @@ function formatFileSize(bytes, options = {}) {
     return result;
 
   } catch (error) {
-    logger.error(`formatFileSize failed with error`, { error: error.message, bytes });
+    logger.error(`formatFileSize failed with error`, { error: error instanceof Error ? error.message : String(error), bytes });
     
     // Return safe fallback value
     return `0 B`;

@@ -10,7 +10,7 @@
  * @param {boolean} options.allowInfinity - Whether Infinity is allowed
  * @returns {boolean} True if value is a valid number
  */
-function isNumber(value, options = {}) {
+function isNumber(value: any, options: Record<string, any> = {}) {
   const { allowNaN = false, allowInfinity = false }: any = options;
   
   if (typeof value !== `number`) {

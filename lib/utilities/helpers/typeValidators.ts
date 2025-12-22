@@ -4,38 +4,26 @@
  */
 
 // Import individual validator modules
-const {
-  isNullOrUndefined,
-  isNotNullOrUndefined
-} = require('./nullUndefinedValidators');
-
-import { isString } from './stringValidators';
-import { isNumber } from './numberValidators';
-import { isArray } from './arrayValidators';
-import { isObject } from './objectValidators';
-const {
-  isFunction,
-  isBoolean,
-  isDate
-} = require('./primitiveValidators');
-const {
-  getDetailedType,
-  isValidType,
-  createTypeValidator
-} = require('./advancedTypeValidators');
+import nullUndefinedValidators from './nullUndefinedValidators';
+import stringValidators from './stringValidators';
+import numberValidators from './numberValidators';
+import arrayValidators from './arrayValidators';
+import objectValidators from './objectValidators';
+import primitiveValidators from './primitiveValidators';
+import advancedTypeValidators from './advancedTypeValidators';
 
 // Export all validators for backward compatibility
 export default {
-  isNullOrUndefined,
-  isNotNullOrUndefined,
-  isString,
-  isNumber,
-  isBoolean,
-  isArray,
-  isObject,
-  isFunction,
-  isDate,
-  getDetailedType,
-  isValidType,
-  createTypeValidator
+  isNullOrUndefined: nullUndefinedValidators.isNullOrUndefined,
+  isNotNullOrUndefined: nullUndefinedValidators.isNotNullOrUndefined,
+  isString: stringValidators.isString,
+  isNumber: numberValidators.isNumber,
+  isBoolean: primitiveValidators.isBoolean,
+  isArray: arrayValidators.isArray,
+  isObject: objectValidators.isObject,
+  isFunction: primitiveValidators.isFunction,
+  isDate: primitiveValidators.isDate,
+  getDetailedType: advancedTypeValidators.getDetailedType,
+  isValidType: advancedTypeValidators.isValidType,
+  createTypeValidator: advancedTypeValidators.createTypeValidator
 };

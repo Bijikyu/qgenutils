@@ -10,7 +10,7 @@
  * @param {boolean} options.allowArray - Whether arrays should be considered objects
  * @returns {boolean} True if value is a valid object
  */
-function isObject(value, options = {}) {
+function isObject(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, allowArray = false }: any = options;
   
   if (typeof value !== `object` || value === null) {

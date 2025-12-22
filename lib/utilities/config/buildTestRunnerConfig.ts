@@ -6,7 +6,32 @@
  * @param {object} [options] - Test runner configuration options
  * @returns {object} Validated test runner configuration
  */
-function buildTestRunnerConfig(options = {}) {
+
+interface TestRunnerConfigOptions {
+  timeout?: number;
+  retries?: number;
+  parallel?: boolean;
+  maxWorkers?: number;
+  coverage?: boolean;
+  coverageThreshold?: number;
+  testMatch?: string[];
+  testIgnore?: string[];
+  reporters?: string[];
+  setupFiles?: string[];
+  teardownFiles?: string[];
+  environment?: string;
+  globals?: Record<string, any>;
+  verbose?: boolean;
+  bail?: boolean;
+  randomize?: boolean;
+  coverageReporters?: string[];
+  coverageDirectories?: string[];
+  coverageExclude?: string[];
+  watch?: boolean;
+  collectCoverageOnlyFrom?: string[];
+}
+
+function buildTestRunnerConfig(options: TestRunnerConfigOptions = {}) {
   const {
     timeout = 5000,
     retries = 0,

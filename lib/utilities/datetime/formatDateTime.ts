@@ -53,8 +53,14 @@ function formatDateTime(dateString: string): string {
     logger.debug(`formatDateTime is returning ${formatted}`);
     return formatted;
   } catch (err) {
-    qerrors(err, `formatDateTime`, dateString);
-    logger.error(`formatDateTime failed`, err);
+    if (err instanceof Error) {
+      qerrors(err, `formatDateTime`, dateString);
+      logger.error(`formatDateTime failed`, err);
+    } else {
+      const error = new Error(String(err));
+      qerrors(error, `formatDateTime`, dateString);
+      logger.error(`formatDateTime failed`, error);
+    }
     return `N/A`;
   }
 }

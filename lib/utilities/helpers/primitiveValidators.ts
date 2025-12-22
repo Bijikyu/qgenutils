@@ -7,7 +7,7 @@
  * @param {*} value - Value to check
  * @returns {boolean} True if value is a function
  */
-function isFunction(value) {
+function isFunction(value: any): boolean {
   return typeof value === `function`;
 }
 
@@ -16,7 +16,7 @@ function isFunction(value) {
  * @param {*} value - Value to check
  * @returns {boolean} True if value is a boolean
  */
-function isBoolean(value) {
+function isBoolean(value: any): boolean {
   return typeof value === `boolean`;
 }
 
@@ -27,7 +27,7 @@ function isBoolean(value) {
  * @param {boolean} options.allowInvalid - Whether invalid dates are allowed
  * @returns {boolean} True if value is a valid Date
  */
-function isDate(value, options = {}) {
+function isDate(value: any, options: Record<string, any> = {}): boolean {
   const { allowInvalid = false }: any = options;
   
   if (!(value instanceof Date)) {

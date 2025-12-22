@@ -11,7 +11,7 @@
  * @param {number} options.maxLength - Maximum array length
  * @returns {boolean} True if value is a valid array
  */
-function isArray(value, options = {}) {
+function isArray(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, minLength = null, maxLength = null }: any = options;
   
   if (!Array.isArray(value)) {
