@@ -1553,8 +1553,10 @@ Node.js & Browser Ready
                 initializeTestRunner();
             }
 
-            const suiteName = document.getElementById('testSuiteSelect').value;
+            const suiteSelect = document.getElementById('testSuiteSelect');
+            const suiteName = suiteSelect ? suiteSelect.value : 'validation';
             const runBtn = document.getElementById('runSuiteBtn');
+            if (!runBtn) return;
             
             if (suiteName === 'all') {
                 await runAllTestSuites();
@@ -1582,6 +1584,7 @@ Node.js & Browser Ready
             }
 
             const runAllBtn = document.getElementById('runAllBtn');
+            if (!runAllBtn) return;
             runAllBtn.disabled = true;
             runAllBtn.textContent = 'Running...';
 
@@ -1932,11 +1935,13 @@ Node.js & Browser Ready
                 .slice(0, 16);
             
             const dateInputs = document.querySelectorAll('input[type="datetime-local"], input[type="date"]');
-            dateInputs.forEach(input => {
-                if (!input.value) {
-                    input.type === 'datetime-local' ? input.value = localDateTime : input.value = localDateTime.split('T')[0];
-                }
-            });
+            if (dateInputs) {
+                dateInputs.forEach(input => {
+                    if (input && !input.value) {
+                        input.type === 'datetime-local' ? input.value = localDateTime : input.value = localDateTime.split('T')[0];
+                    }
+                });
+            }
 
             // Initialize test runner
             initializeTestRunner();
@@ -2582,7 +2587,12 @@ Node.js & Browser Ready
         }
 
         function testDebounce() {
-            const iterations = parseInt(document.getElementById('iterations').value);
+            const iterationsValue = document.getElementById('iterations').value;
+            const iterations = iterationsValue ? parseInt(iterationsValue) : 100;
+            if (isNaN(iterations) || iterations < 1) {
+                showNotification('Please enter a valid number of iterations', 'error');
+                return;
+            }
             const resultBox = document.getElementById('performanceResult');
             
             let callCount = 0;
@@ -2620,8 +2630,13 @@ Node.js & Browser Ready
             const key = document.getElementById('arrayKey').value;
             const resultBox = document.getElementById('arrayResult');
             
+            if (!resultBox) {
+                showNotification('Required elements not found', 'error');
+                return;
+            }
+            
             try {
-                const data = JSON.parse(dataInput || '[]');
+                const data = dataInput ? JSON.parse(dataInput) : [];
                 let result;
                 
                 switch (operation) {
@@ -2693,9 +2708,14 @@ Node.js & Browser Ready
             const obj2Input = document.getElementById('object2').value;
             const resultBox = document.getElementById('objectResult');
             
+            if (!resultBox) {
+                showNotification('Required elements not found', 'error');
+                return;
+            }
+            
             try {
-                const obj1 = JSON.parse(obj1Input || '{}');
-                const obj2 = JSON.parse(obj2Input || '{}');
+                const obj1 = obj1Input ? JSON.parse(obj1Input) : {};
+                const obj2 = obj2Input ? JSON.parse(obj2Input) : {};
                 
                 const merged = deepMerge(obj1, obj2);
                 
@@ -2788,6 +2808,11 @@ Node.js & Browser Ready
             const input = document.getElementById('testInput').value;
             const params = document.getElementById('testParams').value;
             const resultBox = document.getElementById('testResult');
+            
+            if (!resultBox) {
+                showNotification('Required elements not found', 'error');
+                return;
+            }
             
             try {
                 const parameters = params ? JSON.parse(params) : {};
@@ -3029,8 +3054,16 @@ Node.js & Browser Ready
 
         // Collections Tab Functions
         function groupArray() {
+            const groupInput = document.getElementById('groupArrayInput');
+            const resultBox = document.getElementById('groupArrayResult');
+            
+            if (!groupInput || !resultBox) {
+                showNotification('Required elements not found', 'error');
+                return;
+            }
+            
             try {
-                const arrayData = JSON.parse(document.getElementById('groupArrayInput').value || '[]');
+                const arrayData = groupInput.value ? JSON.parse(groupInput.value) : [];
                 const key = document.getElementById('groupByKey').value;
                 const result = utils.groupBy(arrayData, key);
                 displayResult('groupArrayResult', result, 'success');
@@ -3040,7 +3073,9 @@ Node.js & Browser Ready
         }
 
         function partitionArray() {
-            const arrayData = document.getElementById('partitionArrayInput').value.split(',').map(Number);
+            const arrayData = document.getElementById('partitionArrayInput').value.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
             const condition = document.getElementById('partitionCondition').value;
             
             let predicate;
@@ -3073,32 +3108,47 @@ Node.js & Browser Ready
         }
 
         function chunkArray() {
-            const arrayData = document.getElementById('chunkArrayInput').value.split(',').map(Number);
-            const size = parseInt(document.getElementById('chunkSize').value);
+            const arrayData = document.getElementById('chunkArrayInput').value.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
+            const sizeValue = document.getElementById('chunkSize').value;
+            const size = sizeValue ? parseInt(sizeValue) : 3;
+            if (isNaN(size) || size < 1) {
+                showNotification('Please enter a valid chunk size', 'error');
+                return;
+            }
             const result = utils.chunk(arrayData, size);
             displayResult('chunkArrayResult', result, 'success');
         }
 
         function shuffleArray() {
-            const arrayData = document.getElementById('shuffleArrayInput').value.split(',').map(Number);
+            const arrayData = document.getElementById('shuffleArrayInput').value.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
             const result = utils.shuffle(arrayData);
             displayResult('shuffleArrayResult', result, 'success');
         }
 
         function sortArray() {
-            const arrayData = document.getElementById('arrayOpsInput').value.split(',').map(Number);
+            const arrayData = document.getElementById('arrayOpsInput').value.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
             const result = arrayData.sort((a, b) => a - b);
             displayResult('arrayOpsResult', { sorted: result }, 'success');
         }
 
         function takeElements() {
-            const arrayData = document.getElementById('arrayOpsInput').value.split(',').map(Number);
+            const arrayData = document.getElementById('arrayOpsInput').value.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
             const result = utils.take(arrayData, 3);
             displayResult('arrayOpsResult', { taken: result }, 'success');
         }
 
         function skipElements() {
-            const arrayData = document.getElementById('arrayOpsInput').value.split(',').map(Number);
+            const arrayData = document.getElementById('arrayOpsInput').value.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
             const result = utils.skip(arrayData, 3);
             displayResult('arrayOpsResult', { skipped: result }, 'success');
         }
@@ -3115,7 +3165,12 @@ Node.js & Browser Ready
 
         // File Tab Functions
         function formatFileSize() {
-            const bytes = parseInt(document.getElementById('fileSizeInput').value);
+            const bytesValue = document.getElementById('fileSizeInput').value;
+            const bytes = bytesValue ? parseInt(bytesValue) : 0;
+            if (isNaN(bytes) || bytes < 0) {
+                showNotification('Please enter a valid file size', 'error');
+                return;
+            }
             const result = utils.formatFileSize(bytes);
             displayResult('fileSizeResult', {
                 bytes: bytes,
@@ -3740,7 +3795,8 @@ Node.js & Browser Ready
         }
 
         function insertHeapValue() {
-            const value = parseInt(document.getElementById('heapInsert').value);
+            const valueValue = document.getElementById('heapInsert').value;
+            const value = valueValue ? parseInt(valueValue) : 0;
             const resultBox = document.getElementById('heapVisualization');
             
             if (isNaN(value)) {
@@ -3757,7 +3813,12 @@ Node.js & Browser Ready
         }
 
         function extractHeapMin() {
-            const count = parseInt(document.getElementById('heapExtract').value);
+            const countValue = document.getElementById('heapExtract').value;
+            const count = countValue ? parseInt(countValue) : 1;
+            if (isNaN(count) || count < 1) {
+                showNotification('Please enter a valid count', 'error');
+                return;
+            }
             const resultBox = document.getElementById('heapVisualization');
             
             if (minHeap.length === 0) {
@@ -3809,7 +3870,12 @@ Node.js & Browser Ready
         }
 
         function generateRandomHeap() {
-            const size = parseInt(document.getElementById('randomDataSize').value);
+            const sizeValue = document.getElementById('randomDataSize').value;
+            const size = sizeValue ? parseInt(sizeValue) : 10;
+            if (isNaN(size) || size < 1) {
+                showNotification('Please enter a valid size', 'error');
+                return;
+            }
             const resultBox = document.getElementById('heapDemoResult');
             
             const randomValues = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
@@ -3826,7 +3892,12 @@ Node.js & Browser Ready
         }
 
         function heapSortDemo() {
-            const size = parseInt(document.getElementById('randomDataSize').value);
+            const sizeValue = document.getElementById('randomDataSize').value;
+            const size = sizeValue ? parseInt(sizeValue) : 100;
+            if (isNaN(size) || size < 1) {
+                showNotification('Please enter a valid size', 'error');
+                return;
+            }
             const resultBox = document.getElementById('heapDemoResult');
             
             const data = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
@@ -3858,7 +3929,12 @@ Node.js & Browser Ready
         }
 
         function heapPerformanceTest() {
-            const size = parseInt(document.getElementById('randomDataSize').value);
+            const sizeValue = document.getElementById('randomDataSize').value;
+            const size = sizeValue ? parseInt(sizeValue) : 1000;
+            if (isNaN(size) || size < 1) {
+                showNotification('Please enter a valid size', 'error');
+                return;
+            }
             const resultBox = document.getElementById('heapDemoResult');
             
             const iterations = 100;
@@ -3889,7 +3965,12 @@ Node.js & Browser Ready
 
         function addPriorityTask() {
             const name = document.getElementById('taskName').value;
-            const priority = parseInt(document.getElementById('taskPriority').value);
+            const priorityValue = document.getElementById('taskPriority').value;
+            const priority = priorityValue ? parseInt(priorityValue) : 5;
+            if (isNaN(priority) || priority < 1 || priority > 10) {
+                showNotification('Please enter a valid priority (1-10)', 'error');
+                return;
+            }
             const resultBox = document.getElementById('priorityQueueResult');
             
             if (!name) {
@@ -3947,8 +4028,14 @@ Node.js & Browser Ready
 
         // Load testing function
         function runLoadTest() {
-            const users = parseInt(document.getElementById('loadUsers').value);
-            const requests = parseInt(document.getElementById('loadRequests').value);
+            const usersValue = document.getElementById('loadUsers').value;
+            const requestsValue = document.getElementById('loadRequests').value;
+            const users = usersValue ? parseInt(usersValue) : 10;
+            const requests = requestsValue ? parseInt(requestsValue) : 100;
+            if (isNaN(users) || isNaN(requests) || users < 1 || requests < 1) {
+                showNotification('Please enter valid user and request counts', 'error');
+                return;
+            }
             const resultBox = document.getElementById('loadTestResult');
             
             const startTime = performance.now();
@@ -3995,7 +4082,10 @@ Node.js & Browser Ready
         // Initialize demo with some sample data
         window.addEventListener('load', function() {
             // Set today's date as default
-            document.getElementById('baseDate').valueAsDate = new Date();
+            const baseDateElement = document.getElementById('baseDate');
+            if (baseDateElement) {
+                baseDateElement.valueAsDate = new Date();
+            }
             
             // Add sample data for array processing
             document.getElementById('arrayData').value = JSON.stringify([
