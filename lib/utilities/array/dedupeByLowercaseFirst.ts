@@ -58,7 +58,7 @@ const dedupeByLowercaseFirst = (items, keyOf: any): any => {
     throw new TypeError(`Expected array for items parameter, got ${typeof items}`);
   }
   
-  if (typeof keyOf !== `function`) {
+  if (typeof keyOf !== 'function') {
     throw new TypeError(`Expected function for keyOf parameter, got ${typeof keyOf}`);
   }
   

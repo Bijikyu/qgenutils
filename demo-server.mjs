@@ -62,8 +62,17 @@ function sendJSON(res, data, statusCode = 200) {
 function parseRequestBody(req) {
   return new Promise((resolve) => {
     let body = '';
+    let totalSize = 0;
+    const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB limit
+    
     req.on('data', chunk => {
       body += chunk.toString();
+      totalSize += chunk.length;
+      if (totalSize > MAX_REQUEST_SIZE) {
+        req.destroy(); // Close connection to prevent memory exhaustion
+        resolve({ error: 'Request entity too large' });
+        return;
+      }
     });
     req.on('end', () => {
       try {
@@ -71,6 +80,9 @@ function parseRequestBody(req) {
       } catch {
         resolve({});
       }
+    });
+    req.on('error', () => {
+      resolve({ error: 'Request parsing failed' });
     });
   });
 }

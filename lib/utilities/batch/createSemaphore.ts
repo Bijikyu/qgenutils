@@ -36,10 +36,21 @@ function createSemaphore(permits: number) {
     }
   }
 
-  async function waitForAll() {
-    while (availablePermits < permits || waitQueue.length > 0) {
-      await new Promise(resolve => setTimeout(resolve, 10));
+  async function waitForAll(): Promise<void> {
+    if (availablePermits === permits && waitQueue.length === 0) {
+      return;
     }
+    
+    return new Promise<void>(resolve => {
+      const checkQueue = () => {
+        if (availablePermits === permits && waitQueue.length === 0) {
+          resolve();
+        } else {
+          setTimeout(checkQueue, 10);
+        }
+      };
+      checkQueue();
+    });
   }
 
   function getAvailablePermits() {
