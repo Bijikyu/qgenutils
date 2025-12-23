@@ -12,21 +12,35 @@
  * const { metrics, state }: any = collectPerformanceMetrics();
  * console.log(metrics.heapUsedPercent); // 45.2
  */
-function collectPerformanceMetrics(state: any = {}): any { // collect real-time performance metrics from Node.js process
-  const now: any = Date.now(); // current timestamp
-  const lastCpuUsage: any = state.lastCpuUsage || process.cpuUsage(); // get previous CPU usage or initialize
-  const responseTimes: any = state.responseTimes || []; // response times array
-  const requestTimestamps: any = state.requestTimestamps || []; // request timestamps for rolling throughput
-  const lastCollectionTime: any = state.lastCollectionTime || now; // last collection time
+// Add a module-level variable to track concurrent calls
+let inProgress = new Set<string>();
 
-  const memoryUsage: any = process.memoryUsage(); // get current memory usage
+function collectPerformanceMetrics(state: any = {}, callId?: string): any { // collect real-time performance metrics from Node.js process
+  // Generate unique call ID if not provided for race condition protection
+  const id = callId || Math.random().toString(36).substr(2, 9);
+  
+  // Check if this call is already in progress to prevent race conditions
+  if (inProgress.has(id)) {
+    throw new Error(`Concurrent call detected with ID: ${id}`);
+  }
+  
+  try {
+    inProgress.add(id);
+    
+    const now: any = Date.now(); // current timestamp
+    const lastCpuUsage: any = state.lastCpuUsage || process.cpuUsage(); // get previous CPU usage or initialize
+    const responseTimes: any = state.responseTimes || []; // response times array
+    const requestTimestamps: any = state.requestTimestamps || []; // request timestamps for rolling throughput
+    const lastCollectionTime: any = state.lastCollectionTime || now; // last collection time
 
-  const elapsedMs: number = Math.max(1, Math.abs(now - lastCollectionTime)); // elapsed time since last collection (min 1ms to avoid division by zero)
-  const currentCpuUsage: NodeJS.CpuUsage = process.cpuUsage(lastCpuUsage); // calculate CPU delta since last call
-  const totalCpuTime: number = currentCpuUsage.user + currentCpuUsage.system; // total CPU microseconds
-  const cpuUsage: number = Math.min(100, (totalCpuTime / (elapsedMs * 1000)) * 100); // normalize to percentage based on actual elapsed time
+    const memoryUsage: any = process.memoryUsage(); // get current memory usage
 
-  const heapUsedPercent: any = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100; // calculate heap utilization
+    const elapsedMs: number = Math.max(1, Math.abs(now - lastCollectionTime)); // elapsed time since last collection (min 1ms to avoid division by zero)
+    const currentCpuUsage: NodeJS.CpuUsage = process.cpuUsage(lastCpuUsage); // calculate CPU delta since last call
+    const totalCpuTime: number = currentCpuUsage.user + currentCpuUsage.system; // total CPU microseconds
+    const cpuUsage: number = Math.min(100, (totalCpuTime / (elapsedMs * 1000)) * 100); // normalize to percentage based on actual elapsed time
+
+    const heapUsedPercent: any = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100; // calculate heap utilization
 
   let activeHandles = 0; // count of active handles
   let activeRequests = 0; // count of active requests
@@ -52,25 +66,31 @@ function collectPerformanceMetrics(state: any = {}): any { // collect real-time 
   const recentRequests: number[] = requestTimestamps.filter((ts: number) => ts > oneMinuteAgo); // filter to last minute
   const throughput: any = recentRequests.length; // requests in the last minute (rolling window)
 
-  return {
-    metrics: {
-      eventLoopLag: 0, // will be measured async
-      cpuUsage: Math.round(cpuUsage * 100) / 100, // round to 2 decimals
-      memoryUsage,
-      activeHandles,
-      activeRequests,
-      heapUsedPercent: Math.round(heapUsedPercent * 100) / 100, // round to 2 decimals
-      responseTime: Math.round(responseTime * 100) / 100, // round to 2 decimals
-      throughput, // requests per minute (rolling window)
-      timestamp: now
-    },
-    state: {
-      lastCpuUsage: process.cpuUsage(), // store current for next delta
-      responseTimes,
-      requestTimestamps: recentRequests, // keep only recent timestamps
-      lastCollectionTime: now // store collection time for next CPU normalization
-    }
-  };
+    const result = {
+      metrics: {
+        eventLoopLag: 0, // will be measured async
+        cpuUsage: Math.round(cpuUsage * 100) / 100, // round to 2 decimals
+        memoryUsage,
+        activeHandles,
+        activeRequests,
+        heapUsedPercent: Math.round(heapUsedPercent * 100) / 100, // round to 2 decimals
+        responseTime: Math.round(responseTime * 100) / 100, // round to 2 decimals
+        throughput, // requests per minute (rolling window)
+        timestamp: now
+      },
+      state: {
+        lastCpuUsage: process.cpuUsage(), // store current for next delta
+        responseTimes,
+        requestTimestamps: recentRequests, // keep only recent timestamps
+        lastCollectionTime: now // store collection time for next CPU normalization
+      }
+    };
+    
+    return result;
+  } finally {
+    // Always clean up the in-progress flag
+    inProgress.delete(id);
+  }
 }
 
 export default collectPerformanceMetrics;

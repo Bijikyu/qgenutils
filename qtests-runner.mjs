@@ -305,4 +305,15 @@ runner.run().catch(error => {
   process.exit(1);
 });
 
+// Global error handlers to prevent unhandled promise rejections and uncaught exceptions
+process.on('unhandledRejection', (reason, promise) => {
+  console.error(`${colors.red}Unhandled Rejection at:${colors.reset}`, promise, `${colors.red}reason:${colors.reset}`, reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error(`${colors.red}Uncaught Exception:${colors.reset}`, error);
+  process.exit(1);
+});
+
 export default TestRunner;

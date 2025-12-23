@@ -22,14 +22,14 @@ const timingSafeCompare = (a: string, b: string): boolean => {
   try {
     return safeCompare(a, b);
   } catch (error) {
-    // If safe-compare fails for any reason, fall back to secure comparison
-    // This maintains security while providing robustness
-    if (a.length !== b.length) return false;
-    let result = 0;
-    for (let i = 0; i < a.length; i++) {
-      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    }
-    return result === 0;
+    // If safe-compare fails, we cannot securely fall back as it would expose timing information
+    // Log the error with proper context and monitoring for security issues
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`Security: safe-compare failed - ${errorMsg}`, { 
+      timestamp: new Date().toISOString(),
+      context: 'timing_safe_comparison_failure'
+    });
+    return false;
   }
 };
 

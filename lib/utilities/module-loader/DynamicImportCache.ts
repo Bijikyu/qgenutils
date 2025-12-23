@@ -40,6 +40,7 @@ class DynamicImportCache {
   private cleanupInterval?: ReturnType<typeof setInterval>;
   private hitCount = 0;
   private missCount = 0;
+  private preCachedModules: Record<string, any> = {};
 
   constructor(options: DynamicImportCacheOptions = {}) {
     const {
@@ -80,12 +81,10 @@ class DynamicImportCache {
     const preCachePromises = modulesToPreCache.map(async (moduleName) => {
       try {
         const module = await this.getModule(moduleName);
-        if (!(globalThis as any).cachedModules) {
-          (globalThis as any).cachedModules = {};
-        }
+        // Store in instance property instead of global state to prevent pollution
         const parts = moduleName.split('/');
         const shortName = parts.length > 0 ? parts[0] : moduleName;
-        (globalThis as any).cachedModules[shortName] = module;
+        this.preCachedModules[shortName] = module;
         console.log(`[INFO] Pre-cached module: ${moduleName}`);
       } catch (error) {
         console.warn(`[WARN] Failed to pre-cache module ${moduleName}:`, (error as Error).message);
@@ -103,10 +102,23 @@ class DynamicImportCache {
    * @param options - Optional loading options
    * @returns Loaded module or null if unavailable
    */
+  // Track module loading to prevent race conditions
+  private moduleLoading = new Map<string, Promise<any>>();
+
   async getModule<T = any>(moduleName: string, options: { flatten?: boolean } = {}): Promise<T | null> {
     const cacheKey = moduleName;
     const now = Date.now();
     const shouldFlatten = options.flatten ?? this.flattenModules;
+
+    // Check if module is currently being loaded (race condition protection)
+    if (this.moduleLoading.has(cacheKey)) {
+      try {
+        return await this.moduleLoading.get(cacheKey);
+      } catch {
+        // If loading failed, continue to retry
+        this.moduleLoading.delete(cacheKey);
+      }
+    }
 
     const cached = this.cache.get(cacheKey);
     if (cached && (now - cached.loadTime) < this.cacheTimeoutMs) {
@@ -117,7 +129,8 @@ class DynamicImportCache {
 
     this.missCount++;
 
-    try {
+    // Create loading promise to prevent concurrent loads
+    const loadingPromise = (async () => {
       let module: any;
       
       if (shouldFlatten) {
@@ -143,9 +156,17 @@ class DynamicImportCache {
 
       this.cache.set(cacheKey, cachedModule);
       return module;
-    } catch (error) {
-      console.error(`[ERROR] Failed to load module ${moduleName}:`, error);
-      return null;
+    })();
+
+    // Store loading promise and handle cleanup
+    this.moduleLoading.set(cacheKey, loadingPromise);
+    
+    try {
+      const result = await loadingPromise;
+      return result;
+    } finally {
+      // Always clean up loading promise
+      this.moduleLoading.delete(cacheKey);
     }
   }
 
@@ -225,12 +246,27 @@ class DynamicImportCache {
   }
 
   private startCleanup(intervalMs: number): void {
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup();
-    }, intervalMs);
+    try {
+      // Clear any existing interval to prevent memory leaks
+      if (this.cleanupInterval) {
+        clearInterval(this.cleanupInterval);
+      }
+      
+      this.cleanupInterval = setInterval(() => {
+        try {
+          this.cleanup();
+        } catch (error) {
+          console.error('Error during cache cleanup:', error instanceof Error ? error.message : String(error));
+        }
+      }, intervalMs);
 
-    if (this.cleanupInterval.unref) {
-      this.cleanupInterval.unref();
+      if (this.cleanupInterval.unref) {
+        this.cleanupInterval.unref();
+      }
+    } catch (error) {
+      console.error('Failed to start cleanup interval:', error instanceof Error ? error.message : String(error));
+      // Fallback: disable cleanup if interval creation fails
+      this.cleanupInterval = undefined;
     }
   }
 

@@ -51,12 +51,20 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
     try {
       await callback();
     } catch (error) {
+      // Log the error for debugging even if there's an error handler
+      console.error(`[scheduleInterval] Error in job ${jobId} (execution ${executionCount}):`, error instanceof Error ? error.message : String(error));
+      
       if (onError && typeof onError === 'function') {
         try {
           onError(error, { identifier: jobId, executionCount, intervalMs });
         } catch (handlerError) {
-          console.error('[scheduleInterval] Error handler threw:', handlerError);
+          console.error('[scheduleInterval] Error handler threw:', handlerError instanceof Error ? handlerError.message : String(handlerError));
+          // Re-throw to ensure errors are not silently swallowed
+          throw handlerError;
         }
+      } else {
+        // If no error handler, re-throw to ensure unhandled promise rejection
+        throw error;
       }
     }
   };

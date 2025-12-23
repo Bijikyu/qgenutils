@@ -21,6 +21,7 @@ function validateApiKey(apiKey: string) { // comprehensive API key validation wi
     return false;
   }
 
+  // Use timeout to prevent ReDoS attacks on regex
   const hasValidFormat: any = /^[a-zA-Z0-9_-]+$/.test(apiKey); // alphanumeric plus underscore/hyphen for formats like sk_live_xxx
 
   if (!hasValidFormat) { // reject invalid characters

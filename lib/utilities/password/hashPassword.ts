@@ -16,6 +16,11 @@ const hashPassword = async (password: string, options: { saltRounds?: number } =
   if (!password || typeof password !== 'string') throw new Error('Password is required and must be a string');
   if (password.length < 8) throw new Error('Password must be at least 8 characters long');
   if (password.length > 128) throw new Error('Password must not exceed 128 characters');
+  
+  // Additional character validation to prevent control characters and injection
+  if (/[\x00-\x1F\x7F]/.test(password)) {
+    throw new Error('Password contains invalid characters');
+  }
 
   const saltRounds: number = options.saltRounds || BCRYPT_SALT_ROUNDS;
 

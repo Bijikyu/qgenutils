@@ -106,7 +106,9 @@ function buildSecurityConfig(options: SecurityConfigOptions = {}) {
       audience: options.jwtAudience || null
     },
     cors: {
-      origins: Array.isArray(corsOrigins) ? corsOrigins : [String(corsOrigins)],
+      origins: Array.isArray(corsOrigins) 
+        ? corsOrigins.filter(origin => typeof origin === 'string').map(String)
+        : (typeof corsOrigins === 'string' ? [corsOrigins] : []),
       credentials: options.corsCredentials || false,
       methods: options.corsMethods || ['GET', 'POST', 'PUT', 'DELETE'],
       allowedHeaders: options.corsAllowedHeaders || ['Content-Type', 'Authorization']
