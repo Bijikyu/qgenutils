@@ -1,2 +1,2 @@
 // ES module entry point
-export { default } from './index.ts';
+export { default } from './dist/index.js';

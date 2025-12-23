@@ -71,9 +71,17 @@ class TestRunner {
   }
 
   // Discover all test files in the project (from current working directory)
-  discoverTests(dir = process.cwd(), depth = 0, maxDepth = 10) {
+  discoverTests(dir = process.cwd(), depth = 0, maxDepth = 10, visited = new Set()) {
     const testFiles = [];
     if (depth > maxDepth) return testFiles;
+    
+    // Prevent infinite loops with circular symlinks
+    const realPath = fs.realpathSync(dir);
+    if (visited.has(realPath)) {
+      return testFiles;
+    }
+    visited.add(realPath);
+    
     try {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       for (const entry of entries) {
@@ -88,8 +96,14 @@ class TestRunner {
         ) {
           continue;
         }
+        
+        // Skip symbolic links to prevent infinite loops
+        if (entry.isSymbolicLink()) {
+          continue;
+        }
+        
         if (entry.isDirectory()) {
-          testFiles.push(...this.discoverTests(fullPath, depth + 1, maxDepth));
+          testFiles.push(...this.discoverTests(fullPath, depth + 1, maxDepth, visited));
         } else if (entry.isFile()) {
           const isTestFile = TEST_PATTERNS.some(pattern => pattern.test(entry.name));
           if (!isTestFile) continue;
