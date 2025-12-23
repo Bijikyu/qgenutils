@@ -9,21 +9,46 @@
  * const qerrors: any = await loadAndFlattenModule('qerrors');
  * if (qerrors) qerrors.someMethod();
  */
+interface ModuleLoadError extends Error {
+  moduleName: string;
+  originalError: Error;
+}
+
 const loadAndFlattenModule = async (moduleName: string): Promise<any> => { // dynamically load module with CJS/ESM normalization
-  if (typeof moduleName !== 'string' || !moduleName.trim()) return null;
+  if (typeof moduleName !== 'string' || !moduleName.trim()) {
+    const error = new Error(`Invalid module name: ${moduleName}`);
+    (error as ModuleLoadError).moduleName = moduleName;
+    throw error;
+  }
 
   try {
-    const namespace: any = await import(moduleName);
+    const namespace = await import(moduleName);
 
-    if (!namespace) return null;
+    if (!namespace) {
+      const error = new Error(`Module ${moduleName} returned null/undefined namespace`);
+      (error as ModuleLoadError).moduleName = moduleName;
+      throw error;
+    }
 
-    const def: any = namespace.default;
+    const def = namespace.default;
 
     if (def && typeof def === 'object') return { ...def, ...namespace };
 
     return namespace;
   } catch (error) {
-    console.error(`Failed to load module ${moduleName}:`, error);
+    // Create a structured error with context
+    const moduleError = new Error(`Failed to load module ${moduleName}: ${error instanceof Error ? error.message : String(error)}`) as ModuleLoadError;
+    moduleError.moduleName = moduleName;
+    moduleError.originalError = error instanceof Error ? error : new Error(String(error));
+    
+    // Log the error with full context
+    console.error(`Module loading failed for '${moduleName}':`, {
+      moduleName,
+      error: moduleError.originalError,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Return null for backward compatibility, but the error is logged with full context
     return null;
   }
 };

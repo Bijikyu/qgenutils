@@ -17,10 +17,19 @@ function shuffle(array: any[]): any[] {
   if (shuffled.length <= 1) return shuffled;
   
   for (let i = shuffled.length - 1; i > 0; i--) {
-    // Use cryptographically secure random number generation
+    // Use cryptographically secure random number generation with fallback
     const max = i + 1;
-    const randomBytesBuffer = randomBytes(4);
-    const randomValue = randomBytesBuffer.readUInt32BE(0) / 0xFFFFFFFF;
+    let randomValue: number;
+    
+    try {
+      const randomBytesBuffer = randomBytes(4);
+      randomValue = randomBytesBuffer.readUInt32BE(0) / 0xFFFFFFFF;
+    } catch (error) {
+      // Fallback to Math.random() if crypto.randomBytes fails
+      console.warn('crypto.randomBytes failed, falling back to Math.random():', error);
+      randomValue = Math.random();
+    }
+    
     const j: number = Math.floor(randomValue * max);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
