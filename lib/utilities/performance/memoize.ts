@@ -14,15 +14,19 @@ const memoize = (fn, maxSize: any): any => {
   return (...args: any): any => {
     const key: any = JSON.stringify(args);
     
-    if (cache.has(key)) {
+if (cache.has(key)) {
       const value: any = cache.get(key);
-      cache.delete(key);cache.set(key, value);
+      // Move to end (LRU behavior) by deleting and re-inserting
+      cache.delete(key);
+      cache.set(key, value);
       return value;
     }
     
     const result: any = fn.apply(this, args);
     
-    maxSize && cache.size >= maxSize && cache.delete(cache.keys().next().value);
+    if (maxSize && cache.size >= maxSize) {
+      cache.delete(cache.keys().next().value);
+    }
     
     cache.set(key, result);
     return result;

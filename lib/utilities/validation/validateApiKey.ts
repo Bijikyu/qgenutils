@@ -27,20 +27,19 @@ function validateApiKey(apiKey: string) { // comprehensive API key validation wi
     return false;
   }
 
-  // Enhanced validation to prevent common test keys as substrings
-  const commonTestKeys: string[] = [
-    'test', 'demo', 'example', 'sample', 'fake', 'mock', 
-    'sk_test_', 'pk_test_', 'sk_live_test', 'pk_live_test',
-    '1234567890', 'abcdefghij', 'abcdefghijklmnop'
+  // Enhanced validation to prevent obvious test keys (but not too strict)
+  const obviousTestKeys: string[] = [
+    'test_key', 'demo_key', 'example_key', 'sample_key', 'fake_key', 'mock_key',
+    'sk_test_', 'pk_test_', 'sk_live_test', 'pk_live_test'
   ];
   const apiKeyLower: string = apiKey.toLowerCase();
   
-  // Check if any test key appears as substring (not just exact match)
-  const isNotCommon: boolean = !commonTestKeys.some(testKey => 
-    apiKeyLower.includes(testKey) || apiKeyLower.startsWith(testKey) || apiKeyLower.endsWith(testKey)
+  // Only check for exact matches of obvious test keys, not substrings
+  const isNotObviousTest: boolean = !obviousTestKeys.some(testKey => 
+    apiKeyLower === testKey
   );
 
-  return isNotCommon; // return API key validation result
+  return isNotObviousTest; // return API key validation result
 }
 
 export default validateApiKey;

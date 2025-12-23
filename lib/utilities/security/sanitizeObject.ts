@@ -52,6 +52,11 @@ function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number =
     const sanitized: any = {};
 
     for (const [key, value] of Object.entries(obj)) {
+      // Prevent prototype pollution by checking for dangerous keys
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        continue;
+      }
+      
       const lowerKey: any = key.toLowerCase();
       const shouldRedact = allRedactedFields.some(field => 
         lowerKey === field.toLowerCase() || lowerKey.includes(field.toLowerCase())

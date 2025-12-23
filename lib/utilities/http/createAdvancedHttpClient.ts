@@ -115,8 +115,10 @@ function createAdvancedHttpClient(config: Config = {}) {
           return Promise.reject(error);
         }
         
-        // Exponential backoff with jitter
-        const delay: any = retryDelay * Math.pow(2, originalRequest._retryCount) + Math.random() * 1000;
+        // Exponential backoff with jitter and minimum delay
+        const baseDelay: any = retryDelay * Math.pow(2, originalRequest._retryCount);
+        const jitter: any = Math.random() * 1000; // Always positive (0-1000)
+        const delay: any = Math.max(baseDelay + jitter, 100); // Minimum 100ms delay
         originalRequest._retryCount += 1;
         
         await sleep(delay);

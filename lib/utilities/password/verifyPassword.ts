@@ -17,7 +17,7 @@ const verifyPassword = async (password: string, hash: string): Promise<boolean> 
   try {
     return await bcrypt.compare(password, hash);
   } catch (error) {
-    console.error('Password verification failed:', error.name || 'Unknown error');
+    // Don't log error details in production for security
     return false;
   }
 };
