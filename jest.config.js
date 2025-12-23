@@ -1,1 +1,2 @@
-module.exports={testEnvironment:'node',setupFilesAfterEnv:['<rootDir>/tests/setup.js'],moduleFileExtensions:['js','json'],roots:['<rootDir>/lib','<rootDir>/tests'],testMatch:['**/tests/**/*.test.js','**/*.test.js'],collectCoverage:true,coverageDirectory:'coverage',collectCoverageFrom:['lib/**/*.js','index.js','!**/node_modules/**','!**/*.test.js'],testTimeout:10000,verbose:true};
+// Jest configuration removed - using tests/jest.config.js as primary config
+// This file was conflicting with the main test configuration

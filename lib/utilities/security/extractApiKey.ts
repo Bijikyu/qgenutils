@@ -34,6 +34,11 @@ function extractApiKey(req: any, options: any = {}) {
 
   const headers: any = req.headers || {}; // normalize headers access
   
+  // Check if headers object exists and has the authorization property
+  if (!headers || typeof headers !== 'object') {
+    return null;
+  }
+  
   const authHeader = headers.authorization || headers.Authorization; // check Authorization header first
   if (authHeader && typeof authHeader === 'string') {
     // Case-insensitive check for the auth prefix
