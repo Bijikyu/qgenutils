@@ -1,2 +1,2 @@
-// ES module entry point
-export { default } from './dist/index.js';
+// ES module entry point - redirect to dist/index.js
+export * from './dist/index.js';

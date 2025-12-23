@@ -24,8 +24,8 @@ function createSecurityMiddleware(options: any = {}) { // factory for security m
 
   ipTracker.startPeriodicCleanup(); // start automatic cleanup
 
-  return async function securityMiddleware(req: any, res: any, next: any) { // security monitoring middleware
-    const clientIp: any = req.ip || req.socket?.remoteAddress || 'unknown';
+  const middleware = async function securityMiddleware(req: any, res: any, next: any) { // security monitoring middleware
+    const clientIp: any = req?.ip || req?.socket?.remoteAddress || 'unknown';
     const now: any = Date.now();
 
     if (ipTracker.isBlocked(clientIp)) { // check if IP is blocked
@@ -92,6 +92,15 @@ function createSecurityMiddleware(options: any = {}) { // factory for security m
 
     next(); // continue to next middleware
   };
+
+  // Add cleanup method to middleware
+  middleware.cleanup = () => {
+    if (ipTracker.stopPeriodicCleanup) {
+      ipTracker.stopPeriodicCleanup();
+    }
+  };
+
+  return middleware;
 }
 
 export default createSecurityMiddleware;

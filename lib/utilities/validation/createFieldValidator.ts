@@ -133,7 +133,7 @@ function createCombinedValidator(validators: Function[]) {
   return (value: any, fieldName: string): any => {
     for (const validator of validators) {
       const result: any = validator(value, fieldName);
-      if (result) {
+      if (result && result.error) {
         return result; // Return first error encountered
       }
     }

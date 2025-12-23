@@ -92,8 +92,8 @@ function createIpTracker(config = {}) { // factory for IP tracking system
   function cleanup() { // cleanup expired entries
     const now: any = Date.now();
 
-    blockedIps.forEach((expires, ip: any): any => { // remove expired blocks
-      if (expires <= now) blockedIps.delete(ip);
+    blockedIps.forEach((blockUntil, ip: any): any => { // remove expired blocks
+      if (blockUntil <= now) blockedIps.delete(ip);
     });
 
     ipData.forEach((data, ip: any): any => { // remove stale IP data
