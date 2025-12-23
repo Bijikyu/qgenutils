@@ -14,13 +14,15 @@ function measureEventLoopLag(callback: any) { // measure event loop delay using 
     throw new Error('Callback must be a function');
   }
 
-  const start: any = process.hrtime.bigint(); // capture high-resolution start time
+  const start: bigint = process.hrtime.bigint(); // capture high-resolution start time
 
   setImmediate((): any => { // schedule check for next event loop tick
     const end: any = process.hrtime.bigint(); // capture end time
-const lagNs: any = end - start; // keep as BigInt
-  // Convert to milliseconds with bounds checking
-  const lagMs: number = Number(lagNs) / 1000000; // convert to milliseconds
+const lagNs: bigint = end - start; // keep as BigInt
+  // Convert to milliseconds with bounds checking - prevent overflow
+  const maxSafeBigInt = BigInt(Number.MAX_SAFE_INTEGER);
+  const clampedLagNs = lagNs > maxSafeBigInt ? maxSafeBigInt : lagNs < -maxSafeBigInt ? -maxSafeBigInt : lagNs;
+  const lagMs: number = Number(clampedLagNs) / 1000000; // convert to milliseconds
   
   // Sanity check - if lag is unreasonably high, cap it
   const safeLagMs = Math.min(Math.max(lagMs, 0), 60000); // cap at 60 seconds max

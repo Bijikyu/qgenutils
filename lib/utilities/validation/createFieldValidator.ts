@@ -14,7 +14,7 @@
  * validateBoolean(true, 'active'); // null
  * validateBoolean('yes', 'active'); // { error: 'active must be true or false' }
  */
-function createFieldValidator(validationFn, errorMessage, options = {}) {
+function createFieldValidator(validationFn: (value: any) => boolean, errorMessage: string, options: any = {}) {
   if (typeof validationFn !== 'function') {
     throw new Error('Validation function must be a function');
   }
@@ -24,7 +24,7 @@ function createFieldValidator(validationFn, errorMessage, options = {}) {
   
   const { allowEmptyStrings = true, transform }: any = options;
 
-  return (value, fieldName: any): any => {
+  return (value: any, fieldName: string): any => {
     let transformedValue = value;
     
     // Apply transform if provided
@@ -61,14 +61,14 @@ function createFieldValidator(validationFn, errorMessage, options = {}) {
  * @param {string} [customMessage] - Custom error message
  * @returns {Function} Type validator function
  */
-function createTypeValidator(type, customMessage) {
-  const typeCheckMap = {
-    string: (val) => typeof val === 'string',
-    number: (val) => typeof val === 'number' && !isNaN(val),
-    boolean: (val) => typeof val === 'boolean',
-    object: (val) => typeof val === 'object' && val !== null && !Array.isArray(val),
-    function: (val) => typeof val === 'function',
-    array: (val) => Array.isArray(val)
+function createTypeValidator(type: string, customMessage?: string) {
+  const typeCheckMap: Record<string, (val: any) => boolean> = {
+    string: (val: any) => typeof val === 'string',
+    number: (val: any) => typeof val === 'number' && !isNaN(val),
+    boolean: (val: any) => typeof val === 'boolean',
+    object: (val: any) => typeof val === 'object' && val !== null && !Array.isArray(val),
+    function: (val: any) => typeof val === 'function',
+    array: (val: any) => Array.isArray(val)
   };
 
   const validationFn: any = typeCheckMap[type];
@@ -86,9 +86,9 @@ function createTypeValidator(type, customMessage) {
  * @param {string} [customMessage] - Custom error message
  * @returns {Function} Pattern validator function
  */
-function createPatternValidator(pattern, customMessage) {
+function createPatternValidator(pattern: RegExp, customMessage?: string) {
   return createFieldValidator(
-    (value) => typeof value === 'string' && pattern.test(value),
+    (value: any) => typeof value === 'string' && pattern.test(value),
     customMessage || 'does not match required pattern'
   );
 }
@@ -100,9 +100,9 @@ function createPatternValidator(pattern, customMessage) {
  * @param {string} [customMessage] - Custom error message
  * @returns {Function} Range validator function
  */
-function createRangeValidator(min, max, customMessage) {
+function createRangeValidator(min?: number, max?: number, customMessage?: string) {
   return createFieldValidator(
-    (value) => typeof value === 'number' && 
+    (value: any) => typeof value === 'number' && 
               (min === undefined || value >= min) && 
               (max === undefined || value <= max),
     customMessage || (() => {
@@ -125,12 +125,12 @@ function createRangeValidator(min, max, customMessage) {
  * @param {Array<Function>} validators - Array of validator functions
  * @returns {Function} Combined validator function
  */
-function createCombinedValidator(validators) {
+function createCombinedValidator(validators: Function[]) {
   if (!Array.isArray(validators) || validators.length === 0) {
     throw new Error('Validators array is required');
   }
 
-  return (value, fieldName: any): any => {
+  return (value: any, fieldName: string): any => {
     for (const validator of validators) {
       const result: any = validator(value, fieldName);
       if (result) {

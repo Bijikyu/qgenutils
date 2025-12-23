@@ -83,7 +83,8 @@ class DynamicImportCache {
         if (!(globalThis as any).cachedModules) {
           (globalThis as any).cachedModules = {};
         }
-        const shortName = moduleName.split('/')[0];
+        const parts = moduleName.split('/');
+        const shortName = parts.length > 0 ? parts[0] : moduleName;
         (globalThis as any).cachedModules[shortName] = module;
         console.log(`[INFO] Pre-cached module: ${moduleName}`);
       } catch (error) {
@@ -189,13 +190,13 @@ class DynamicImportCache {
 
   private evictOldestModule(): void {
     let oldestKey: string | null = null;
-    let oldestTime = Date.now();
+    let oldestAccessed = Date.now();
 
     const entries = Array.from(this.cache.entries());
     for (let i = 0; i < entries.length; i++) {
       const [key, cached] = entries[i];
-      if (cached.lastAccessed < oldestTime) {
-        oldestTime = cached.lastAccessed;
+      if (cached.lastAccessed < oldestAccessed) {
+        oldestAccessed = cached.lastAccessed;
         oldestKey = key;
       }
     }
