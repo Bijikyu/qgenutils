@@ -21,7 +21,7 @@ function collectPerformanceMetrics(state: any = {}): any { // collect real-time 
 
   const memoryUsage: any = process.memoryUsage(); // get current memory usage
 
-  const elapsedMs: number = Math.max(1, now - lastCollectionTime); // elapsed time since last collection (min 1ms to avoid division by zero)
+  const elapsedMs: number = Math.max(1, Math.abs(now - lastCollectionTime)); // elapsed time since last collection (min 1ms to avoid division by zero)
   const currentCpuUsage: NodeJS.CpuUsage = process.cpuUsage(lastCpuUsage); // calculate CPU delta since last call
   const totalCpuTime: number = currentCpuUsage.user + currentCpuUsage.system; // total CPU microseconds
   const cpuUsage: number = Math.min(100, (totalCpuTime / (elapsedMs * 1000)) * 100); // normalize to percentage based on actual elapsed time

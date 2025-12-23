@@ -69,7 +69,7 @@ function requireAndValidate(value, name, type, options = {}) {
       break;
 
     case 'object':
-      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      if (value === null || typeof value !== 'object' || Array.isArray(value)) {
         throw new Error(`${name} must be an object`);
       }
       if (!allowEmpty && Object.keys(value).length === 0) {

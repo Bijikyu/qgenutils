@@ -13,12 +13,9 @@ function safeJsonParse(jsonString: string, defaultValue: any = null): any {
     const parsed = JSON.parse(jsonString);
     // Prevent prototype pollution by checking dangerous properties
     if (typeof parsed === 'object' && parsed !== null) {
-      if (parsed.__proto__ !== Object.prototype || 
-          parsed.constructor !== Object || 
-          parsed.prototype !== undefined ||
-          Object.prototype.hasOwnProperty.call(parsed, '__proto__') ||
-          Object.prototype.hasOwnProperty.call(parsed, 'constructor') ||
-          Object.prototype.hasOwnProperty.call(parsed, 'prototype')) {
+      if (parsed.hasOwnProperty('__proto__') || 
+          parsed.hasOwnProperty('constructor') || 
+          parsed.hasOwnProperty('prototype')) {
         return defaultValue;
       }
     }
