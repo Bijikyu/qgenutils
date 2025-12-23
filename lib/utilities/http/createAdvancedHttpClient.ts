@@ -99,12 +99,6 @@ function createAdvancedHttpClient(config: Config = {}) {
       
       // Implement retry logic for specific errors
       if (shouldRetry(error) && !originalRequest._retry && maxRetries > 0) {
-        originalRequest._retry = true;
-        
-        if (onRetry) {
-          onRetry(error, originalRequest);
-        }
-        
         // Initialize retry count if not set
         if (!originalRequest._retryCount) {
           originalRequest._retryCount = 0;
@@ -113,6 +107,12 @@ function createAdvancedHttpClient(config: Config = {}) {
         // Check if we've exceeded max retries before retrying
         if (originalRequest._retryCount >= maxRetries) {
           return Promise.reject(error);
+        }
+        
+        originalRequest._retry = true;
+        
+        if (onRetry) {
+          onRetry(originalRequest._retryCount, error);
         }
         
         // Exponential backoff with jitter and minimum delay

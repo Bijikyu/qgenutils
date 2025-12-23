@@ -141,10 +141,12 @@ function createCombinedValidator(validators) {
   };
 }
 
-export default {
+export {
   createFieldValidator,
   createTypeValidator,
   createPatternValidator,
   createRangeValidator,
   createCombinedValidator
 };
+
+export default createFieldValidator;
