@@ -1,9 +1,13 @@
 'use strict';
 
-const crypto: any = require('crypto'); // use crypto for secure randomness
+import * as crypto from 'crypto'; // use crypto for secure randomness
 
-const DEFAULT_LENGTH: any = 12; // default password length
-const MIN_LENGTH: any = 8; // minimum secure length
+const DEFAULT_LENGTH = 12; // default password length
+const MIN_LENGTH = 8; // minimum secure length
+
+interface PasswordOptions {
+  includeSpecial?: boolean;
+}
 
 /**
  * Generates a cryptographically secure random password
@@ -12,23 +16,31 @@ const MIN_LENGTH: any = 8; // minimum secure length
  * @param {boolean} [options.includeSpecial=false] - Include special characters
  * @returns {string} Secure random password
  * @example
- * const password: any = generateSecurePassword(16);
+ * const password = generateSecurePassword(16);
  */
-const generateSecurePassword = (length: any = DEFAULT_LENGTH, options: any = {}): any => { // generate secure random password
-  const effectiveLength: any = Math.max(length, MIN_LENGTH), includeSpecial = options.includeSpecial === true;
+const generateSecurePassword = (length: number = DEFAULT_LENGTH, options: PasswordOptions = {}): string => { // generate secure random password
+  const effectiveLength = Math.max(length, MIN_LENGTH);
+  const includeSpecial = options.includeSpecial === true;
 
-  const uppercase: any = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', lowercase = 'abcdefghijklmnopqrstuvwxyz', numbers = '0123456789', special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
   let allChars = uppercase + lowercase + numbers;
-  includeSpecial && (allChars += special);
+  if (includeSpecial) {
+    allChars += special;
+  }
 
-  const passwordChars: any = [];
+  const passwordChars: string[] = [];
 
   passwordChars.push(uppercase[secureRandomIndex(uppercase.length)]);
   passwordChars.push(lowercase[secureRandomIndex(lowercase.length)]);
   passwordChars.push(numbers[secureRandomIndex(numbers.length)]);
 
-  includeSpecial && passwordChars.push(special[secureRandomIndex(special.length)]);
+  if (includeSpecial) {
+    passwordChars.push(special[secureRandomIndex(special.length)]);
+  }
 
   while (passwordChars.length < effectiveLength) {
     passwordChars.push(allChars[secureRandomIndex(allChars.length)]);
@@ -37,8 +49,16 @@ const generateSecurePassword = (length: any = DEFAULT_LENGTH, options: any = {})
   return secureShuffleArray(passwordChars).join('');
 };
 
-const secureRandomIndex = (max: any): any => { // generate secure random index
-  const randomBytes: any = crypto.randomBytes(4), randomValue = randomBytes.readUInt32BE(0);
+const secureRandomIndex = (max: number): number => { // generate secure random index without modulo bias
+  // Use rejection sampling to avoid modulo bias
+  const min = Math.floor((0xFFFFFFFF + 1) % max);
+  let randomValue: number;
+  
+  do {
+    const randomBytes = crypto.randomBytes(4);
+    randomValue = randomBytes.readUInt32BE(0);
+  } while (randomValue < min);
+  
   return randomValue % max;
 };
 
