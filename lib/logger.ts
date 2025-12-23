@@ -46,11 +46,14 @@ async function addDailyRotateFileTransport(): Promise<void> {
     const winstonDailyRotateFile = await import('winston-daily-rotate-file');
     const DailyRotateFile = winstonDailyRotateFile.default;
     
-    loggerTransports.push(new DailyRotateFile({
+    const transport = new DailyRotateFile({
       filename: path.join(logDir, 'qgenutils-%DATE%.log'), // daily file path for rotation
       datePattern: 'YYYY-MM-DD', // rotate by day for manageable file size
       maxFiles: '14d' // keep two weeks to balance disk usage and history
-    }));
+    });
+    
+    loggerTransports.push(transport);
+    logger.add(transport); // Add to logger instance immediately
   } catch (err) {
     // Optional package is not installed in lightweight test environments
   }

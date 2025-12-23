@@ -70,6 +70,11 @@ function validateAndNormalizePath(inputPath: string, options: { maxLength?: numb
 
   const normalizedPath: string = path.normalize(sanitizedPath); // normalize using Node.js path
 
+  // Check if path.normalize returned null/undefined (edge case)
+  if (!normalizedPath) {
+    throw new Error('Path normalization failed');
+  }
+
   // Enhanced post-normalization checks
   if (normalizedPath.includes('..') || 
       normalizedPath.includes('\\') || 
