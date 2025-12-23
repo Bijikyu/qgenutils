@@ -21,10 +21,10 @@ function collectPerformanceMetrics(state: any = {}): any { // collect real-time 
 
   const memoryUsage: any = process.memoryUsage(); // get current memory usage
 
-  const elapsedMs: any = Math.max(1, now - lastCollectionTime); // elapsed time since last collection (min 1ms to avoid division by zero)
-  const currentCpuUsage: any = process.cpuUsage(lastCpuUsage); // calculate CPU delta since last call
-  const totalCpuTime: any = currentCpuUsage.user + currentCpuUsage.system; // total CPU microseconds
-  const cpuUsage: any = Math.min(100, (totalCpuTime / (elapsedMs * 1000)) * 100); // normalize to percentage based on actual elapsed time
+  const elapsedMs: number = Math.max(1, now - lastCollectionTime); // elapsed time since last collection (min 1ms to avoid division by zero)
+  const currentCpuUsage: NodeJS.CpuUsage = process.cpuUsage(lastCpuUsage); // calculate CPU delta since last call
+  const totalCpuTime: number = currentCpuUsage.user + currentCpuUsage.system; // total CPU microseconds
+  const cpuUsage: number = Math.min(100, (totalCpuTime / (elapsedMs * 1000)) * 100); // normalize to percentage based on actual elapsed time
 
   const heapUsedPercent: any = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100; // calculate heap utilization
 
@@ -45,11 +45,11 @@ function collectPerformanceMetrics(state: any = {}): any { // collect real-time 
 
   let responseTime = 0; // average response time
   if (responseTimes.length > 0) {
-    responseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length; // calculate average
+    responseTime = responseTimes.reduce((sum: number, time: number) => sum + time, 0) / responseTimes.length; // calculate average
   }
 
   const oneMinuteAgo: any = now - 60000; // timestamp one minute ago
-  const recentRequests: any = requestTimestamps.filter(ts => ts > oneMinuteAgo); // filter to last minute
+  const recentRequests: number[] = requestTimestamps.filter((ts: number) => ts > oneMinuteAgo); // filter to last minute
   const throughput: any = recentRequests.length; // requests in the last minute (rolling window)
 
   return {

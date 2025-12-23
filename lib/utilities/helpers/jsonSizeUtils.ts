@@ -7,7 +7,7 @@
  * @param {string} jsonString - JSON string
  * @returns {number} Size in bytes
  */
-function getJsonSize(jsonString) {
+function getJsonSize(jsonString: string): number {
   return Buffer.byteLength(jsonString, 'utf8');
 }
 
@@ -17,7 +17,7 @@ function getJsonSize(jsonString) {
  * @param {number} maxSize - Maximum size in bytes
  * @returns {string} Truncated JSON string
  */
-function truncateJson(jsonString, maxSize) {
+function truncateJson(jsonString: string, maxSize: number): string {
   if (getJsonSize(jsonString) <= maxSize) {
     return jsonString;
   }
@@ -38,7 +38,29 @@ function truncateJson(jsonString, maxSize) {
  * @param {number} maxSize - Maximum size in bytes
  * @returns {string} Truncated JSON string
  */
-function truncateObject(obj, maxSize) {
+function truncateObject(obj: any, maxSize: number): string {
+  // Check for circular references before stringifying
+  const seen = new WeakSet();
+  const hasCircularRef = (obj: any): boolean => {
+    if (obj && typeof obj === 'object') {
+      if (seen.has(obj)) {
+        return true;
+      }
+      seen.add(obj);
+      for (const key in obj) {
+        if (hasCircularRef(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+  
+  if (hasCircularRef(obj)) {
+    return JSON.stringify({ error: 'circular_reference_detected', truncated: true })
+      .substring(0, Math.max(0, maxSize - 3)) + '...';
+  }
+  
   // Simple truncation: remove properties until it fits
   let truncated = { ...obj };
   const keys: any = Object.keys(truncated).reverse();
