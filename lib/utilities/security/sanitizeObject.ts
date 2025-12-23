@@ -9,10 +9,15 @@ const REDACTED_FIELDS = [ // fields that should always be redacted
   'privateKey', 'secretKey', 'credentials', 'bearer'
 ];
 
+interface SanitizeOptions {
+  additionalFields?: string[];
+  maxDepth?: number;
+}
+
 /**
  * Recursively sanitizes an object by redacting sensitive fields
  * @param {*} obj - The object to sanitize
- * @param {Object} [options] - Configuration options
+ * @param {SanitizeOptions} [options] - Configuration options
  * @param {string[]} [options.additionalFields] - Additional fields to redact
  * @param {number} [options.maxDepth=10] - Maximum recursion depth
  * @returns {*} Sanitized object
@@ -20,7 +25,7 @@ const REDACTED_FIELDS = [ // fields that should always be redacted
  * sanitizeObject({ user: 'john', password: '123' });
  * // Returns: { user: 'john', password: '[REDACTED]' }
  */
-function sanitizeObject(obj, options = {}, depth = 0) { // recursively sanitize object
+function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number = 0, visited: WeakSet<any> = new WeakSet()) { // recursively sanitize object
   const additionalFields: any = options.additionalFields || [];
   const maxDepth: any = options.maxDepth || 10;
   const allRedactedFields: any = [...REDACTED_FIELDS, ...additionalFields];
@@ -29,12 +34,18 @@ function sanitizeObject(obj, options = {}, depth = 0) { // recursively sanitize 
     return obj;
   }
 
+  // Prevent circular reference infinite recursion
+  if (visited.has(obj)) {
+    return '[CIRCULAR_REFERENCE]';
+  }
+  visited.add(obj);
+
   if (depth > maxDepth) { // prevent infinite recursion
     return '[MAX_DEPTH_EXCEEDED]';
   }
 
   if (Array.isArray(obj)) { // handle arrays
-    return obj.map(item => sanitizeObject(item, options, depth + 1));
+    return obj.map(item => sanitizeObject(item, options, depth + 1, visited));
   }
 
   if (typeof obj === 'object') { // handle objects
@@ -49,7 +60,7 @@ function sanitizeObject(obj, options = {}, depth = 0) { // recursively sanitize 
       if (shouldRedact) {
         sanitized[key] = '[REDACTED]';
       } else {
-        sanitized[key] = sanitizeObject(value, options, depth + 1);
+        sanitized[key] = sanitizeObject(value, options, depth + 1, visited);
       }
     }
 

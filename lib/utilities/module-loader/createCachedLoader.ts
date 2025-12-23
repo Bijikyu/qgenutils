@@ -40,9 +40,7 @@ const createCachedLoader = (options: any = {}): any => { // factory for cached a
         return fallbackValue;
       } finally {
         // Clear pendingLoad after the promise resolves/rejects to allow future retries
-        if (!cachedModule) {
-          pendingLoad = null;
-        }
+        pendingLoad = null;
       }
     })();
 
