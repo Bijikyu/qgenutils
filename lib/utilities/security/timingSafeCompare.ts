@@ -5,9 +5,9 @@
  * Uses the safe-compare npm module which provides a specialized,
  * well-tested constant-time comparison implementation.
  * 
- * @param {string} a - First string to compare
- * @param {string} b - Second string to compare
- * @returns {boolean} True if strings are equal, false otherwise
+ * @param a - First string to compare
+ * @param b - Second string to compare
+ * @returns True if strings are equal, false otherwise
  */
 // @ts-ignore - safe-compare doesn't have TypeScript definitions
 const safeCompare: any = require('safe-compare'); // rationale: specialized constant-time comparison module

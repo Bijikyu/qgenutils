@@ -15,7 +15,34 @@
 // Add a module-level variable to track concurrent calls
 let inProgress = new Set<string>();
 
-function collectPerformanceMetrics(state: any = {}, callId?: string): any { // collect real-time performance metrics from Node.js process
+interface PerformanceState {
+  lastCpuUsage?: NodeJS.CpuUsage;
+  responseTimes?: number[];
+  requestTimestamps?: number[];
+  lastCollectionTime?: number;
+}
+
+interface PerformanceMetrics {
+  metrics: {
+    eventLoopLag: number;
+    cpuUsage: number;
+    memoryUsage: NodeJS.MemoryUsage;
+    activeHandles: number;
+    activeRequests: number;
+    heapUsedPercent: number;
+    responseTime: number;
+    throughput: number;
+    timestamp: number;
+  };
+  state: {
+    lastCpuUsage: NodeJS.CpuUsage;
+    responseTimes: number[];
+    requestTimestamps: number[];
+    lastCollectionTime: number;
+  };
+}
+
+function collectPerformanceMetrics(state: PerformanceState = {}, callId?: string): PerformanceMetrics { // collect real-time performance metrics from Node.js process
   // Generate unique call ID if not provided for race condition protection
   const id = callId || Math.random().toString(36).substr(2, 9);
   
@@ -27,11 +54,11 @@ function collectPerformanceMetrics(state: any = {}, callId?: string): any { // c
   try {
     inProgress.add(id);
     
-    const now: any = Date.now(); // current timestamp
-    const lastCpuUsage: any = state.lastCpuUsage || process.cpuUsage(); // get previous CPU usage or initialize
-    const responseTimes: any = state.responseTimes || []; // response times array
-    const requestTimestamps: any = state.requestTimestamps || []; // request timestamps for rolling throughput
-    const lastCollectionTime: any = state.lastCollectionTime || now; // last collection time
+    const now: number = Date.now(); // current timestamp
+    const lastCpuUsage: NodeJS.CpuUsage = state.lastCpuUsage || process.cpuUsage(); // get previous CPU usage or initialize
+    const responseTimes: number[] = state.responseTimes || []; // response times array
+    const requestTimestamps: number[] = state.requestTimestamps || []; // request timestamps for rolling throughput
+    const lastCollectionTime: number = state.lastCollectionTime || now; // last collection time
 
     const memoryUsage: any = process.memoryUsage(); // get current memory usage
 

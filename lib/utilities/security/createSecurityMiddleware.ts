@@ -1,22 +1,54 @@
-'use strict';
+import SECURITY_CONFIG from './securityConfig.js';
+import detectSuspiciousPatterns from './detectSuspiciousPatterns.js';
+import createIpTracker from './createIpTracker.js';
 
-const SECURITY_CONFIG: any = require('./securityConfig');
-const detectSuspiciousPatterns: any = require('./detectSuspiciousPatterns');
-const createIpTracker: any = require('./createIpTracker');
+interface SecurityMiddlewareOptions {
+  logAllRequests?: boolean;
+  sensitiveEndpoints?: string[];
+  logger?: Console | { log: (...args: any[]) => void; warn: (...args: any[]) => void; error: (...args: any[]) => void };
+  ipTracker?: {
+    startPeriodicCleanup: () => void;
+    isBlocked: (ip: string) => boolean;
+    getBlockExpiry: (ip: string) => number;
+    track: (ip: string, patterns?: string[]) => { shouldBlock: boolean };
+    block: (ip: string) => number;
+    stopPeriodicCleanup?: () => void;
+  };
+}
+
+interface Request {
+  ip?: string;
+  socket?: { remoteAddress?: string };
+  url?: string;
+  method?: string;
+  path?: string;
+  headers?: { 'user-agent'?: string };
+}
+
+interface Response {
+  setHeader: (name: string, value: string) => void;
+  status: (code: number) => Response;
+  json: (data: object) => void;
+}
+
+interface SecurityMiddleware {
+  (req: Request, res: Response, next: () => void): void;
+  cleanup: () => void;
+}
 
 /**
  * Creates security monitoring middleware for Express
  * Logs requests, detects suspicious patterns, and blocks malicious IPs
- * @param {Object} [options] - Configuration options
- * @param {boolean} [options.logAllRequests] - Log all requests
- * @param {string[]} [options.sensitiveEndpoints] - Endpoints to always log
- * @param {Function} [options.logger] - Custom logger function
- * @param {Object} [options.ipTracker] - Custom IP tracker instance
- * @returns {Function} Express middleware function
+ * @param options - Configuration options
+ * @param options.logAllRequests - Log all requests
+ * @param options.sensitiveEndpoints - Endpoints to always log
+ * @param options.logger - Custom logger function
+ * @param options.ipTracker - Custom IP tracker instance
+ * @returns Express middleware function
  * @example
  * app.use(createSecurityMiddleware({ logAllRequests: true }));
  */
-function createSecurityMiddleware(options: any = {}) { // factory for security middleware
+function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}): SecurityMiddleware {
   const logAllRequests = options.logAllRequests ?? SECURITY_CONFIG.LOG_ALL_REQUESTS;
   const sensitiveEndpoints = Array.isArray(options.sensitiveEndpoints) ? options.sensitiveEndpoints : SECURITY_CONFIG.SENSITIVE_ENDPOINTS;
   const logger = options.logger || console;
@@ -24,13 +56,13 @@ function createSecurityMiddleware(options: any = {}) { // factory for security m
 
   ipTracker.startPeriodicCleanup(); // start automatic cleanup
 
-  const middleware = async function securityMiddleware(req: any, res: any, next: any) { // security monitoring middleware
-    const clientIp: any = req?.ip || req?.socket?.remoteAddress || 'unknown';
-    const now: any = Date.now();
+  const middleware = async function securityMiddleware(req: Request, res: Response, next: () => void): Promise<void> {
+    const clientIp = req?.ip || req?.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
 
     if (ipTracker.isBlocked(clientIp)) { // check if IP is blocked
-      const blockExpiry: any = ipTracker.getBlockExpiry(clientIp);
-      const retryAfter: any = Math.ceil((blockExpiry - now) / 1000);
+      const blockExpiry = ipTracker.getBlockExpiry(clientIp);
+      const retryAfter = Math.ceil((blockExpiry - now) / 1000);
 
       res.setHeader('Retry-After', retryAfter.toString());
       res.status(403).json({
@@ -41,7 +73,7 @@ function createSecurityMiddleware(options: any = {}) { // factory for security m
       return;
     }
 
-    const suspiciousPatterns: any = detectSuspiciousPatterns(req); // detect suspicious patterns
+    const suspiciousPatterns = detectSuspiciousPatterns(req); // detect suspicious patterns
 
     if (suspiciousPatterns.length > 0) { // log and track suspicious activity
       logger.warn('Suspicious activity detected:', {
@@ -49,14 +81,14 @@ function createSecurityMiddleware(options: any = {}) { // factory for security m
         url: req.url,
         method: req.method,
         patterns: suspiciousPatterns,
-        userAgent: req.headers['user-agent']
+        userAgent: req.headers?.['user-agent']
       });
 
-      const trackResult: any = ipTracker.track(clientIp, suspiciousPatterns);
+      const trackResult = ipTracker.track(clientIp, suspiciousPatterns);
 
       if (trackResult.shouldBlock) { // block IP if threshold exceeded
-        const blockExpiry: any = ipTracker.block(clientIp);
-        const retryAfter: any = Math.ceil((blockExpiry - now) / 1000);
+        const blockExpiry = ipTracker.block(clientIp);
+        const retryAfter = Math.ceil((blockExpiry - now) / 1000);
 
         logger.warn(`IP ${clientIp} blocked due to repeated suspicious activity`);
 
@@ -72,14 +104,14 @@ function createSecurityMiddleware(options: any = {}) { // factory for security m
       ipTracker.track(clientIp); // track normal request
     }
 
-    const isSensitive = sensitiveEndpoints.some((ep: string) => req.path.startsWith(ep)); // check sensitive endpoint
+    const isSensitive = sensitiveEndpoints.some((ep: string) => req.path?.startsWith(ep)); // check sensitive endpoint
     if (logAllRequests || isSensitive) { // log request
       const logData: any = {
         ip: clientIp,
         method: req.method,
         url: req.url,
         path: req.path,
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers?.['user-agent'],
         timestamp: new Date().toISOString()
       };
 

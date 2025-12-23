@@ -10,29 +10,17 @@
  * skipped when tests stub the console transport. The logs directory is created
  * at runtime so deployment doesn't fail if the folder is missing.
  */
-import fs from 'fs'; // fs handles directory checks
-import path from 'path'; // path helper for file locations
-import { createLogger, format, transports } from 'winston'; // winston core
+import fs from 'fs';
+import path from 'path';
+import { createLogger, format, transports } from 'winston';
 import { fileURLToPath } from 'url';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Use dynamic requires for optional dependencies to avoid top-level await
-const logDir = (() => {
-  let LOG_DIR = null;
-  try {
-    // Try to get LOG_DIR from optional config
-    if (typeof require !== 'undefined') {
-      const localVars = require('loqatevars/config/localVars');
-      LOG_DIR = localVars.LOG_DIR;
-    }
-  } catch (err) {
-    LOG_DIR = null;
-  }
-  return LOG_DIR || path.join(__dirname, `..`, `logs`);
-})();
+// Use environment variable or fallback path for log directory
+const logDir = process.env.QGENUTILS_LOG_DIR || path.join(__dirname, '..', 'logs');
 
 // Ensure log directory exists synchronously before logger initialization
 try {
@@ -42,32 +30,35 @@ try {
 }
 
 // Create transports array
-const loggerTransports = [];
+const loggerTransports: any[] = [];
 
 // Add console transport if available
 if (transports.Console.prototype) {
   loggerTransports.push(new transports.Console({ 
-    level: `debug`, 
+    level: 'debug', 
     format: format.printf(({ level, message }) => `${level}: ${message}`) 
   }));
 }
 
-// Add DailyRotateFile if available
-try {
-  if (typeof require !== 'undefined') {
-    const DailyRotateFile = require('winston-daily-rotate-file');
+// Add DailyRotateFile if available - using dynamic import for optional dependency
+async function addDailyRotateFileTransport(): Promise<void> {
+  try {
+    const winstonDailyRotateFile = await import('winston-daily-rotate-file');
+    const DailyRotateFile = winstonDailyRotateFile.default;
+    
     loggerTransports.push(new DailyRotateFile({
-      filename: path.join(logDir, `qgenutils-%DATE%.log`), // daily file path for rotation
-      datePattern: `YYYY-MM-DD`, // rotate by day for manageable file size
-      maxFiles: `14d` // keep two weeks to balance disk usage and history
+      filename: path.join(logDir, 'qgenutils-%DATE%.log'), // daily file path for rotation
+      datePattern: 'YYYY-MM-DD', // rotate by day for manageable file size
+      maxFiles: '14d' // keep two weeks to balance disk usage and history
     }));
+  } catch (err) {
+    // Optional package is not installed in lightweight test environments
   }
-} catch (err) {
-  // Optional package is not installed in lightweight test environments
 }
 
+// Initialize logger with basic transports
 const logger = createLogger({
-  level: `info`, // `info` keeps warnings/errors without verbose debug noise
+  level: 'info', // 'info' keeps warnings/errors without verbose debug noise
   format: format.combine(
     format.timestamp(), // include timestamps for tracing events chronologically
     format.errors({ stack: true }), // attach stack traces when logging errors
@@ -77,4 +68,9 @@ const logger = createLogger({
   transports: loggerTransports
 });
 
-export default logger; // export configured logger
+// Try to add DailyRotateFile transport asynchronously
+addDailyRotateFileTransport().catch(() => {
+  // Silently ignore if DailyRotateFile is not available
+});
+
+export default logger;

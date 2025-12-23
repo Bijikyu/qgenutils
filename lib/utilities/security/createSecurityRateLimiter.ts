@@ -1,6 +1,4 @@
-'use strict';
-
-const SECURITY_CONFIG: any = require('./securityConfig');
+import SECURITY_CONFIG from './securityConfig.js';
 
 /**
  * Creates a security-focused rate limiter middleware for Express

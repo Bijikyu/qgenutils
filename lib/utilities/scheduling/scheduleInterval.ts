@@ -59,12 +59,11 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
           onError(error, { identifier: jobId, executionCount, intervalMs });
         } catch (handlerError) {
           console.error('[scheduleInterval] Error handler threw:', handlerError instanceof Error ? handlerError.message : String(handlerError));
-          // Re-throw to ensure errors are not silently swallowed
-          throw handlerError;
+          // Don't re-throw to prevent unhandled promise rejection
         }
       } else {
-        // If no error handler, re-throw to ensure unhandled promise rejection
-        throw error;
+        // If no error handler, log the error but don't re-throw to prevent unhandled promise rejection
+        console.error(`[scheduleInterval] Unhandled error in job ${jobId} (execution ${executionCount}):`, error instanceof Error ? error.message : String(error));
       }
     }
   };
