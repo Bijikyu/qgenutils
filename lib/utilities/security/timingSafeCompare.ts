@@ -16,11 +16,8 @@ const timingSafeCompare: any = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string') {
     return false;
   }
-  if (a.length === 0 || b.length === 0) {
-    return a === b; // Handle empty strings safely
-  }
-  // Remove length-based early exit to prevent timing attacks
-  // safeCompare will handle different lengths securely
+  // Always use safeCompare, even for empty strings, to prevent timing attacks
+  // safeCompare handles all cases including empty strings securely
   return safeCompare(a, b);
 };
 

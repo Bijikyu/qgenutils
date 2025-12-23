@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'; // bcrypt for secure hashing
 
-const BCRYPT_SALT_ROUNDS: any = 12; // OWASP recommended minimum
+const BCRYPT_SALT_ROUNDS: number = 12; // OWASP recommended minimum
 
 /**
  * Hashes a password using bcrypt with secure salt rounds
@@ -12,12 +12,12 @@ const BCRYPT_SALT_ROUNDS: any = 12; // OWASP recommended minimum
  * @example
  * const hash: any = await hashPassword('MySecurePass123');
  */
-const hashPassword = async (password: any, options: any = {}): Promise<any> => { // hash password with bcrypt
+const hashPassword = async (password: string, options: { saltRounds?: number } = {}): Promise<string> => { // hash password with bcrypt
   if (!password || typeof password !== 'string') throw new Error('Password is required and must be a string');
   if (password.length < 8) throw new Error('Password must be at least 8 characters long');
   if (password.length > 128) throw new Error('Password must not exceed 128 characters');
 
-  const saltRounds: any = options.saltRounds || BCRYPT_SALT_ROUNDS;
+  const saltRounds: number = options.saltRounds || BCRYPT_SALT_ROUNDS;
 
   try {
     return await bcrypt.hash(password, saltRounds);

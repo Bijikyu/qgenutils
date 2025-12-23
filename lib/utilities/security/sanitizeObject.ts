@@ -53,7 +53,13 @@ function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number =
 
     for (const [key, value] of Object.entries(obj)) {
       // Prevent prototype pollution by checking for dangerous keys
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      if (typeof key !== 'string' || 
+          key === '__proto__' || 
+          key === 'constructor' || 
+          key === 'prototype' ||
+          key.startsWith('__') ||
+          key.includes('proto') ||
+          key.includes('constructor')) {
         continue;
       }
       

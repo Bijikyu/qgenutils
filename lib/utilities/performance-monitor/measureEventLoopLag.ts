@@ -20,7 +20,7 @@ function measureEventLoopLag(callback: any) { // measure event loop delay using 
     const end: any = process.hrtime.bigint(); // capture end time
 const lagNs: any = end - start; // keep as BigInt
   // Convert to milliseconds with bounds checking
-  const lagMs: any = Number(lagNs) / 1000000; // convert to milliseconds
+  const lagMs: number = Number(lagNs) / 1000000; // convert to milliseconds
   
   // Sanity check - if lag is unreasonably high, cap it
   const safeLagMs = Math.min(Math.max(lagMs, 0), 60000); // cap at 60 seconds max
