@@ -71,22 +71,32 @@ function createSecurityRateLimiter(options: {
     // Force cleanup if maps are getting too large (memory leak prevention)
     if (requestCounts.size > 10000) {
       const oldestAllowed = now - windowMs;
+      // Use batch processing to avoid blocking on large maps
+      const toDelete: any[] = [];
       requestCounts.forEach((data: any, key: any): any => {
         if (data.windowStart < oldestAllowed) {
-          requestCounts.delete(key);
-          cleanedCount++;
+          toDelete.push(key);
         }
       });
+      toDelete.forEach(key => requestCounts.delete(key));
+      cleanedCount += toDelete.length;
+      // Clear array to prevent memory leak
+      toDelete.length = 0;
     }
 
     if (blockedKeys.size > 5000) {
       const oldestAllowed = now - (blockDurationMs * 2);
+      // Use batch processing to avoid blocking on large maps
+      const toDelete: any[] = [];
       blockedKeys.forEach((blockUntil: any, key: any): any => {
         if (blockUntil < oldestAllowed) {
-          blockedKeys.delete(key);
-          cleanedCount++;
+          toDelete.push(key);
         }
       });
+      toDelete.forEach(key => blockedKeys.delete(key));
+      cleanedCount += toDelete.length;
+      // Clear array to prevent memory leak
+      toDelete.length = 0;
     }
 
     return cleanedCount;

@@ -41,12 +41,22 @@ function createSemaphore(permits: number) {
       return;
     }
     
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve, reject) => {
+      let iterations = 0;
+      const maxIterations = 1000; // Prevent infinite loop
+      let backoffTime = 10;
+      
       const checkQueue = () => {
         if (availablePermits === permits && waitQueue.length === 0) {
           resolve();
+        } else if (iterations >= maxIterations) {
+          // Timeout after too many iterations - reject to prevent race conditions
+          reject(new Error(`Semaphore timeout after ${maxIterations} iterations. Permits: ${availablePermits}/${permits}, Queue: ${waitQueue.length}`));
         } else {
-          setTimeout(checkQueue, 10);
+          iterations++;
+          // Exponential backoff to prevent CPU spam
+          setTimeout(checkQueue, backoffTime);
+          backoffTime = Math.min(backoffTime * 1.5, 1000); // Max 1 second backoff
         }
       };
       checkQueue();

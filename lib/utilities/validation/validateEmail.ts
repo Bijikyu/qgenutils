@@ -1,6 +1,5 @@
-'use strict';
-
-const validator: any = require('validator'); // email validation library for industry-standard patterns
+import validator from 'validator'; // email validation library for industry-standard patterns
+import createFieldValidator from './createFieldValidator';
 
 /**
  * Validate email address format and structure using RFC 5322 compliant validation
@@ -10,7 +9,6 @@ const validator: any = require('validator'); // email validation library for ind
  * validateEmail('user@example.com') // returns true
  * validateEmail('invalid-email') // returns false
  */
-import createFieldValidator from './createFieldValidator';
 
 const validateEmail = createFieldValidator.createFieldValidator(
   (email: any): any => {

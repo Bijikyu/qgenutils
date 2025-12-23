@@ -35,23 +35,34 @@ function validateAndNormalizePath(inputPath: string, options: { maxLength?: numb
 
   const sanitizedPath: string = decodedPath; // already cleaned above
 
-  // Check for various traversal patterns including encoded variants
-  const traversalPatterns = [
-    /\.\./,                    // Basic ../
-    /\%2e\%2e\%2f/i,          // URL-encoded ../
-    /\%2e\%2e\\/i,            // URL-encoded ..\
-    /\.\.%2f/i,               // Mixed ../
-    /\.\.\\/i,                // Mixed ..\
-    /\%2e%2e%5c/i,            // Double-encoded ..\
-    /\.\.\//,                 // Multiple slashes
-    /\.\.\\/,                 // Windows backslashes
+  // Check for traversal patterns using string-based checks to avoid ReDoS
+  // Check both original and lowercase to catch all encoding variations
+  const dangerousPatterns = [
+    '..',                     // Basic traversal
+    '%2e%2e%2f',           // URL-encoded forward slash (lowercase)
+    '%2E%2E%2F',           // URL-encoded forward slash (uppercase)
+    '%2e%2e%5c',           // URL-encoded backslash (lowercase)
+    '%2E%2E%5C',           // URL-encoded backslash (uppercase)
+    '%2e%2e/',             // Mixed encoding (lowercase)
+    '%2E%2E/',             // Mixed encoding (uppercase)
+    '%2e%2e\\',            // Mixed encoding with backslash (lowercase)
+    '%2E%2E\\',            // Mixed encoding with backslash (uppercase)
+    '../',                  // With forward slash
+    '..\\',                 // With backslash
   ];
 
-  for (const pattern of traversalPatterns) {
-    if (pattern.test(sanitizedPath)) {
-      throw new Error('Path contains dangerous traversal patterns');
+  // Check both original and case variations
+  const checkPath = (path: string) => {
+    for (const pattern of dangerousPatterns) {
+      if (path.includes(pattern)) {
+        throw new Error('Path contains dangerous traversal patterns');
+      }
     }
-  }
+  };
+  
+  checkPath(sanitizedPath);
+  checkPath(sanitizedPath.toLowerCase());
+  checkPath(sanitizedPath.toUpperCase());
 
   if (/\\/.test(sanitizedPath)) { // check for windows path separators
     throw new Error('Path contains dangerous traversal patterns');

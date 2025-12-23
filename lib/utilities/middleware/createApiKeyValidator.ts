@@ -18,7 +18,19 @@ const extractApiKey: any = require('../security/extractApiKey'); // rationale: m
 const timingSafeCompare: any = require('../security/timingSafeCompare'); // rationale: prevent timing attacks
 const maskApiKey: any = require('../security/maskApiKey'); // rationale: safe logging
 
-function createApiKeyValidator(config = {}) {
+interface ApiKeyValidatorConfig {
+  apiKey: string | ((req: any) => string);
+  extractOptions?: any;
+  onMissing?: (data: any) => void;
+  onInvalid?: (data: any) => void;
+  onSuccess?: (data: any) => void;
+  responses?: {
+    missing?: any;
+    invalid?: any;
+  };
+}
+
+function createApiKeyValidator(config: ApiKeyValidatorConfig) {
   if (!config.apiKey) { // validate required configuration
     throw new Error('createApiKeyValidator requires an apiKey in config');
   }
@@ -52,8 +64,18 @@ function createApiKeyValidator(config = {}) {
   const missingResponse: any = { ...defaultResponses.missing, ...responses.missing }; // merge custom responses
   const invalidResponse: any = { ...defaultResponses.invalid, ...responses.invalid };
 
-  return function apiKeyValidator(req, res, next) { // return middleware function
-    const providedKey: any = extractApiKey(req, extractOptions); // extract key from request
+return function apiKeyValidator(req, res, next) { // return middleware function
+    let providedKey: any = null;
+    
+    try {
+      providedKey = extractApiKey(req, extractOptions); // extract key from request
+    } catch (error) {
+      // Handle extraction errors gracefully
+      if (onMissing) {
+        onMissing({ req, maskedKey: null, error });
+      }
+      return res.status(missingResponse.status).json(missingResponse.body);
+    }
 
     if (!providedKey) { // handle missing key
       if (onMissing) {

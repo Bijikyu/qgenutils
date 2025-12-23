@@ -21,13 +21,13 @@ function msToCron(ms) {
   const days: any = Math.floor(hours / 24);
 
   if (seconds < 60) { // every N seconds
-    return `*/${Math.max(1, seconds)} * * * * *`;
+    return `*/${Math.max(1, seconds)} * * * *`;
   } else if (minutes < 60) { // every N minutes
-    return `0 */${minutes} * * * *`;
+    return `0 */${minutes} * * *`;
   } else if (hours < 24) { // every N hours
-    return `0 0 */${hours} * * *`;
+    return `0 0 */${hours} * *`;
   } else { // every N days
-    return `0 0 0 */${Math.max(1, days)} * *`;
+    return `0 0 0 */${Math.max(1, days)} *`;
   }
 }
 
