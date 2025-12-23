@@ -5,7 +5,7 @@ import * as crypto from 'crypto'; // use crypto for secure randomness
 const DEFAULT_LENGTH = 12; // default password length
 const MIN_LENGTH = 8; // minimum secure length
 
-interface PasswordOptions {
+export interface PasswordOptions {
   includeSpecial?: boolean;
 }
 

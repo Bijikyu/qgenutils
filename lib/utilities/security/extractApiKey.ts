@@ -8,18 +8,23 @@
  * 1. Authorization header (Bearer token format) - most secure for HTTPS
  * 2. Custom header names (x-api-key, api-key, etc.)
  * 3. Query parameter - fallback for simple integrations
- * 4. Request body - optional, disabled by default
- * 
- * @param {object} req - Request object with headers, query, and optionally body
- * @param {object} [options] - Extraction options
- * @param {string[]} [options.headerNames=['x-api-key', 'api-key']] - Header names to check
- * @param {string} [options.queryParam='api_key'] - Query parameter name
- * @param {string} [options.authPrefix='Bearer '] - Authorization header prefix
- * @param {boolean} [options.checkBody=false] - Whether to check request body
- * @param {string} [options.bodyField='api_key'] - Body field name for API key
- * @returns {string|null} The extracted API key, or null if not found
- */
-function extractApiKey(req: any, options: any = {}) {
+  */
+
+interface ExtractApiKeyOptions {
+  headerNames?: string[];
+  queryParam?: string;
+  authPrefix?: string;
+  checkBody?: boolean;
+  bodyField?: string;
+}
+
+interface Request {
+  headers?: Record<string, string | string[] | undefined>;
+  query?: Record<string, string | string[] | undefined>;
+  body?: Record<string, unknown>;
+}
+
+function extractApiKey(req: Request, options: ExtractApiKeyOptions = {}) {
   if (!req || typeof req !== 'object') { // validate request object
     return null;
   }
@@ -32,7 +37,7 @@ function extractApiKey(req: any, options: any = {}) {
     bodyField = 'api_key'
   } = options;
 
-  const headers: any = req.headers || {}; // normalize headers access
+  const headers: Record<string, string | string[] | undefined> = req.headers || {}; // normalize headers access
   
   // Check if headers object exists and has the authorization property
   if (!headers || typeof headers !== 'object') {
@@ -51,24 +56,24 @@ function extractApiKey(req: any, options: any = {}) {
   }
 
   for (const headerName of headerNames) { // check custom header names
-    const lowerName: any = headerName.toLowerCase();
-    const value: any = headers[lowerName] || headers[headerName];
+    const lowerName: string = headerName.toLowerCase();
+    const value: string | string[] | undefined = headers[lowerName] || headers[headerName];
     if (value && typeof value === 'string') {
-      const trimmed: any = value.trim();
+      const trimmed: string = value.trim();
       if (trimmed) return trimmed;
     }
   }
 
-  const query: any = req.query || {}; // check query parameter
+  const query: Record<string, string | string[] | undefined> = req.query || {}; // check query parameter
   if (queryParam && query[queryParam]) {
-    const value: any = query[queryParam];
+    const value: string | string[] | undefined = query[queryParam];
     if (typeof value === 'string' && value.trim()) {
       return value.trim();
     }
   }
 
   if (checkBody && req.body && typeof req.body === 'object') { // check request body if enabled
-    const value: any = req.body[bodyField];
+    const value: unknown = req.body?.[bodyField];
     if (typeof value === 'string' && value.trim()) {
       return value.trim();
     }

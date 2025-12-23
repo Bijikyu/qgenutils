@@ -38,18 +38,26 @@ function truncateJson(jsonString: string, maxSize: number): string {
  * @param {number} maxSize - Maximum size in bytes
  * @returns {string} Truncated JSON string
  */
-function truncateObject(obj: any, maxSize: number): string {
+function truncateObject(obj: unknown, maxSize: number): string {
   // Check for circular references before stringifying
   const seen = new WeakSet();
-  const hasCircularRef = (obj: any): boolean => {
-    if (obj && typeof obj === 'object') {
-      if (seen.has(obj)) {
+  const hasCircularRef = (obj: unknown): boolean => {
+    if (obj && typeof obj === 'object' && obj !== null) {
+      if (seen.has(obj as object)) {
         return true;
       }
-      seen.add(obj);
-      for (const key in obj) {
-        if (hasCircularRef(obj[key])) {
-          return true;
+      seen.add(obj as object);
+      if (Array.isArray(obj)) {
+        for (let i = 0; i < (obj as unknown[]).length; i++) {
+          if (hasCircularRef((obj as unknown[])[i])) {
+            return true;
+          }
+        }
+      } else {
+        for (const key in obj as object) {
+          if (hasCircularRef((obj as Record<string, unknown>)[key])) {
+            return true;
+          }
         }
       }
     }
@@ -62,8 +70,8 @@ function truncateObject(obj: any, maxSize: number): string {
   }
   
   // Simple truncation: remove properties until it fits
-  let truncated = { ...obj };
-  const keys: any = Object.keys(truncated).reverse();
+  let truncated: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
+  const keys: string[] = Object.keys(truncated).reverse();
   
   for (const key of keys) {
     if (getJsonSize(JSON.stringify(truncated)) <= maxSize) {

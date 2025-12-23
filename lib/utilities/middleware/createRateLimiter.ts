@@ -18,31 +18,65 @@
  * @param {object} [config.store] - Custom store (MemoryStore, Redis, etc.)
  * @returns {Function} Express middleware function
  */
-const rateLimit: any = require('express-rate-limit');
-const buildRateLimitKey: any = require('../security/buildRateLimitKey'); // rationale: keep existing key building for compatibility
+import rateLimit from 'express-rate-limit';
+import buildRateLimitKey from '../security/buildRateLimitKey.js'; // rationale: keep existing key building for compatibility
 
-function createRateLimiter(config = {}) {
-  const {
-    windowMs = 60000,        // express-rate-limit naming
-    max = 100,                // express-rate-limit naming  
-    message = 'Too many requests',
-    standardHeaders = true,   // Use RateLimit-* headers (modern standard)
-    legacyHeaders = false,    // Don't use X-RateLimit-* headers (legacy)
-    keyGenerator = null,
-    skip = null,
-    onLimitReached = null,
-    handler = null,
-    store = null,
+interface RateLimiterConfig {
+  windowMs?: number;
+  max?: number;
+  message?: string;
+  standardHeaders?: boolean;
+  legacyHeaders?: boolean;
+  keyGenerator?: (req: any) => string;
+  skip?: (req: any) => boolean;
+  onLimitReached?: (req: any, res: any) => void;
+  handler?: (req: any, res: any) => void;
+  store?: any;
+  points?: number;
+  durationMs?: number;
+  strategy?: 'ip' | 'user' | 'apiKey' | 'custom';
+  prefix?: string;
+}
+
+interface ExpressRateLimitConfig {
+  windowMs: number;
+  max: number;
+  message: string;
+  standardHeaders: boolean;
+  legacyHeaders: boolean;
+  keyGenerator?: ((req: any) => string) | null;
+  skip?: ((req: any) => boolean) | null;
+  onLimitReached?: ((req: any, res: any) => void) | null;
+  handler?: ((req: any, res: any) => void) | null;
+  store?: any;
+  points?: number | null;
+  durationMs?: number | null;
+  strategy?: 'ip' | 'user' | 'apiKey' | 'custom';
+  prefix?: string;
+}
+
+function createRateLimiter(config: RateLimiterConfig = {}) {
+  const expressRateLimitConfig: ExpressRateLimitConfig = {
+    windowMs: config.windowMs || 60000,        // express-rate-limit naming
+    max: config.max || 100,                // express-rate-limit naming  
+    message: config.message || 'Too many requests',
+    standardHeaders: config.standardHeaders !== false,   // Use RateLimit-* headers (modern standard)
+    legacyHeaders: config.legacyHeaders || false,    // Don't use X-RateLimit-* headers (legacy)
+    keyGenerator: config.keyGenerator || null,
+    skip: config.skip || null,
+    onLimitReached: config.onLimitReached || null,
+    handler: config.handler || null,
+    store: config.store || null,
     // Legacy options for backward compatibility
-    points = null,
-    durationMs = null,
+    points: config.points || null,
+    durationMs: config.durationMs || null,
     strategy = 'ip',
     prefix = 'rl'
   } = config;
 
   // Handle legacy option names for backward compatibility
-  const finalWindowMs: any = windowMs || durationMs || 60000;
-  const finalMax: any = max || points || 100;
+  const finalWindowMs: number = expressRateLimitConfig.windowMs || expressRateLimitConfig.durationMs || 60000;
+  const finalMax: number = expressRateLimitConfig.max || expressRateLimitConfig.points || 100;
   
   // Validate configuration
   if (typeof finalWindowMs !== 'number' || finalWindowMs <= 0) {

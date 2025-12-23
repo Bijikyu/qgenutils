@@ -14,15 +14,31 @@
  * @param {object} [config.responses] - Custom response messages
  * @returns {Function} Express middleware function (req, res, next)
  */
-const extractApiKey: any = require('../security/extractApiKey'); // rationale: modular key extraction
-const timingSafeCompare: any = require('../security/timingSafeCompare'); // rationale: prevent timing attacks
-const maskApiKey: any = require('../security/maskApiKey'); // rationale: safe logging
+import extractApiKey from '../security/extractApiKey.js';
+import timingSafeCompare from '../security/timingSafeCompare.js';
+import maskApiKey from '../security/maskApiKey.js';
+
+interface Request {
+  headers?: Record<string, string | string[] | undefined>;
+  query?: Record<string, string | string[] | undefined>;
+  body?: Record<string, unknown>;
+  validatedApiKey?: string;
+}
+
+interface Response {
+  status: (code: number) => Response;
+  json: (data: object) => void;
+}
+
+interface NextFunction {
+  (error?: any): void;
+}
 
 interface ApiKeyValidatorConfig {
-  apiKey: string | ((req: any) => string);
-  extractOptions?: any;
-  onMissing?: (data: any) => void;
-  onInvalid?: (data: any) => void;
+  apiKey: string | ((req: Request) => string);
+  extractOptions?: object;
+  onMissing?: (data: { req: Request; res: Response; error?: any }) => void;
+  onInvalid?: (data: { req: Request; res: Response; apiKey: string; maskedKey: string }) => void;
   onSuccess?: (data: any) => void;
   responses?: {
     missing?: any;
@@ -64,22 +80,22 @@ function createApiKeyValidator(config: ApiKeyValidatorConfig) {
   const missingResponse: any = { ...defaultResponses.missing, ...responses.missing }; // merge custom responses
   const invalidResponse: any = { ...defaultResponses.invalid, ...responses.invalid };
 
-return function apiKeyValidator(req, res, next) { // return middleware function
-    let providedKey: any = null;
+return function apiKeyValidator(req: Request, res: Response, next: NextFunction) { // return middleware function
+    let providedKey: string | null = null;
     
     try {
       providedKey = extractApiKey(req, extractOptions); // extract key from request
     } catch (error) {
       // Handle extraction errors gracefully
       if (onMissing) {
-        onMissing({ req, maskedKey: null, error });
+        onMissing({ req, res, error });
       }
       return res.status(missingResponse.status).json(missingResponse.body);
     }
 
     if (!providedKey) { // handle missing key
       if (onMissing) {
-        onMissing({ req, maskedKey: null }); // call logging hook
+        onMissing({ req, res }); // call logging hook
       }
       return res.status(missingResponse.status).json(missingResponse.body);
     }
@@ -88,12 +104,12 @@ return function apiKeyValidator(req, res, next) { // return middleware function
       ? expectedKeyOrFn(req)
       : expectedKeyOrFn;
 
-    const isValid: any = timingSafeCompare(providedKey, expectedKey); // constant-time comparison
+    const isValid: boolean = timingSafeCompare(providedKey, expectedKey); // constant-time comparison
 
     if (!isValid) { // handle invalid key
-      const maskedKey: any = maskApiKey(providedKey);
+      const maskedKey: string = maskApiKey(providedKey);
       if (onInvalid) {
-        onInvalid({ req, maskedKey }); // call logging hook with masked key
+        onInvalid({ req, res, apiKey: providedKey, maskedKey }); // call logging hook with masked key
       }
       return res.status(invalidResponse.status).json(invalidResponse.body);
     }
