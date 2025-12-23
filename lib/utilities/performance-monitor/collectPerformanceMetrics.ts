@@ -12,8 +12,8 @@
  * const { metrics, state }: any = collectPerformanceMetrics();
  * console.log(metrics.heapUsedPercent); // 45.2
  */
-// Add a module-level variable to track concurrent calls
-let inProgress = new Set<string>();
+// Add a module-level variable to track concurrent calls with timestamps
+let inProgress = new Map<string, number>();
 
 interface PerformanceState {
   lastCpuUsage?: NodeJS.CpuUsage;
@@ -44,17 +44,23 @@ interface PerformanceMetrics {
 
 function collectPerformanceMetrics(state: PerformanceState = {}, callId?: string): PerformanceMetrics { // collect real-time performance metrics from Node.js process
   // Generate unique call ID if not provided for race condition protection
-  const id = callId || Math.random().toString(36).substr(2, 9);
+  const now: number = Date.now(); // current timestamp
+  const id = callId || `${now}-${Math.random().toString(36).substr(2, 9)}`;
   
   // Check if this call is already in progress to prevent race conditions
   if (inProgress.has(id)) {
     throw new Error(`Concurrent call detected with ID: ${id}`);
   }
   
+  // Clean up stale entries (older than 30 seconds) to prevent memory leaks
+  for (const [existingId, timestamp] of inProgress.entries()) {
+    if (now - timestamp > 30000) {
+      inProgress.delete(existingId);
+    }
+  }
+  
   try {
-    inProgress.add(id);
-    
-    const now: number = Date.now(); // current timestamp
+    inProgress.set(id, now);
     const lastCpuUsage: NodeJS.CpuUsage = state.lastCpuUsage || process.cpuUsage(); // get previous CPU usage or initialize
     const responseTimes: number[] = state.responseTimes || []; // response times array
     const requestTimestamps: number[] = state.requestTimestamps || []; // request timestamps for rolling throughput
