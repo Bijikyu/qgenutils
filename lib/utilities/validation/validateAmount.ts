@@ -26,9 +26,11 @@ function validateAmount(amount: number): { isValid: boolean, errors: string[] } 
     errors.push('negative_amount');
   }
 
-  // Check decimal precision using regex to avoid floating point string conversion issues
-  // This properly handles scientific notation and edge cases
-  if (!/^-?\d+(\.\d{1,2})?$/.test(amount.toString())) {
+  // Check decimal precision using reliable method to avoid floating point issues
+  // Convert to string using toFixed to ensure consistent decimal representation
+  const amountStr = amount.toFixed(10).replace(/\.?0+$/, ''); // Remove trailing zeros
+  const decimalIndex = amountStr.indexOf('.');
+  if (decimalIndex !== -1 && amountStr.length - decimalIndex - 1 > 2) {
     errors.push('too_many_decimals');
   }
 

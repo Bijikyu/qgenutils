@@ -32,7 +32,8 @@ function createFieldValidator(validationFn: (value: any) => boolean, errorMessag
       try {
         transformedValue = transform(value);
       } catch (err) {
-        return { error: `${fieldName || 'Value'} is invalid` };
+        const errorDetails = err instanceof Error ? err.message : String(err);
+        return { error: `${fieldName || 'Value'} transformation failed: ${errorDetails}` };
       }
     }
 

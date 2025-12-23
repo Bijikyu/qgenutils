@@ -58,9 +58,20 @@ function extractApiKey(req: Request, options: ExtractApiKeyOptions = {}) {
   for (const headerName of headerNames) { // check custom header names
     const lowerName: string = headerName.toLowerCase();
     const value: string | string[] | undefined = headers[lowerName] || headers[headerName];
-    if (value && typeof value === 'string') {
-      const trimmed: string = value.trim();
-      if (trimmed) return trimmed;
+    
+    if (value) {
+      if (typeof value === 'string') {
+        const trimmed: string = value.trim();
+        if (trimmed) return trimmed;
+      } else if (Array.isArray(value)) {
+        // Handle string arrays - take first non-empty string
+        for (const item of value) {
+          if (typeof item === 'string') {
+            const trimmed: string = item.trim();
+            if (trimmed) return trimmed;
+          }
+        }
+      }
     }
   }
 

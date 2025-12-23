@@ -37,7 +37,8 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
   const executeCallback = async (): Promise<any> => { // wrapper to handle async execution
     if (cancelled) return;
 
-    if (maxExecutions !== null && executionCount >= maxExecutions) { // check max executions before incrementing
+    // Check max executions before incrementing to prevent race condition
+    if (maxExecutions !== null && executionCount >= maxExecutions) {
       if (intervalId) {
         clearInterval(intervalId);
         intervalId = null;
@@ -46,6 +47,7 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
       return;
     }
 
+    // Increment execution count after the check to prevent race conditions
     executionCount++;
 
     try {

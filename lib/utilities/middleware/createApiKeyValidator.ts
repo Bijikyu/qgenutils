@@ -104,7 +104,17 @@ return function apiKeyValidator(req: Request, res: Response, next: NextFunction)
       ? expectedKeyOrFn(req)
       : expectedKeyOrFn;
 
-    const isValid: boolean = timingSafeCompare(providedKey, expectedKey); // constant-time comparison
+    let isValid: boolean = false;
+    try {
+      isValid = timingSafeCompare(providedKey, expectedKey); // constant-time comparison
+    } catch (error) {
+      // Handle timingSafeCompare failure securely
+      console.error('Security: timingSafeCompare failed in API key validation', {
+        timestamp: new Date().toISOString(),
+        context: 'api_key_validation_failure'
+      });
+      isValid = false;
+    }
 
     if (!isValid) { // handle invalid key
       const maskedKey: string = maskApiKey(providedKey);
