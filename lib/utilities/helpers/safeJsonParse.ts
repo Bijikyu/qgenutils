@@ -11,11 +11,14 @@ function safeJsonParse(jsonString: string, defaultValue: any = null): any {
   
   try {
     const parsed = JSON.parse(jsonString);
-    // Prevent prototype pollution
+    // Prevent prototype pollution by checking dangerous properties
     if (typeof parsed === 'object' && parsed !== null) {
-      if (parsed.hasOwnProperty('__proto__') || 
-          parsed.hasOwnProperty('constructor') || 
-          parsed.hasOwnProperty('prototype')) {
+      if (parsed.__proto__ !== Object.prototype || 
+          parsed.constructor !== Object || 
+          parsed.prototype !== undefined ||
+          Object.prototype.hasOwnProperty.call(parsed, '__proto__') ||
+          Object.prototype.hasOwnProperty.call(parsed, 'constructor') ||
+          Object.prototype.hasOwnProperty.call(parsed, 'prototype')) {
         return defaultValue;
       }
     }
