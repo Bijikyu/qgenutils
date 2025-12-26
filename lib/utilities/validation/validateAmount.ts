@@ -26,11 +26,10 @@ function validateAmount(amount: number): { isValid: boolean, errors: string[] } 
     errors.push('negative_amount');
   }
 
-  // Check decimal precision using reliable method to avoid floating point issues
-  // Convert to string using toFixed to ensure consistent decimal representation
-  const amountStr = amount.toFixed(10).replace(/\.?0+$/, ''); // Remove trailing zeros
-  const decimalIndex = amountStr.indexOf('.');
-  if (decimalIndex !== -1 && amountStr.length - decimalIndex - 1 > 2) {
+  // Check decimal precision using integer arithmetic to avoid floating point issues
+  // Multiply by 100 and check if it's a whole number to validate 2 decimal places
+  const cents = Math.round(amount * 100);
+  if (Math.abs((amount * 100) - cents) > 0.000001) {
     errors.push('too_many_decimals');
   }
 

@@ -36,7 +36,7 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
-const isValidString: any = require('../helpers/isValidString');
+import isValidString from '../helpers/isValidString.js';
 
 function stripProtocol(url) {
   logger.debug(`stripProtocol is running with ${url}`);
@@ -58,8 +58,8 @@ function stripProtocol(url) {
     return processed;
   } catch (error) {
     // Handle unexpected errors in string processing
-    qerrors(error, `stripProtocol`, { url });
-    logger.error(`stripProtocol failed with error: ${error.message}`);
+    qerrors(error, `stripProtocol`);
+    logger.error(`stripProtocol failed with error: ${error instanceof Error ? error.message : String(error)}`);
     return url; // fallback to input on failure
   }
 }

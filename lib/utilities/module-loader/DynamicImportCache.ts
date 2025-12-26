@@ -110,16 +110,7 @@ class DynamicImportCache {
     const now = Date.now();
     const shouldFlatten = options.flatten ?? this.flattenModules;
 
-    // Check if module is currently being loaded (race condition protection)
-    if (this.moduleLoading.has(cacheKey)) {
-      try {
-        return await this.moduleLoading.get(cacheKey);
-      } catch {
-        // If loading failed, continue to retry
-        this.moduleLoading.delete(cacheKey);
-      }
-    }
-
+    // Check cache first to avoid unnecessary loading
     const cached = this.cache.get(cacheKey);
     if (cached && (now - cached.loadTime) < this.cacheTimeoutMs) {
       cached.lastAccessed = now;
@@ -127,9 +118,19 @@ class DynamicImportCache {
       return cached.module;
     }
 
+    // Check if module is currently being loaded (race condition protection)
+    if (this.moduleLoading.has(cacheKey)) {
+      try {
+        return await this.moduleLoading.get(cacheKey);
+      } catch {
+        // If loading failed, clean up and continue to retry
+        this.moduleLoading.delete(cacheKey);
+      }
+    }
+
     this.missCount++;
 
-    // Create loading promise to prevent concurrent loads
+    // Create loading promise atomically to prevent race conditions
     const loadingPromise = (async () => {
       let module: any;
       

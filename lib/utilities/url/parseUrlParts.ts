@@ -42,7 +42,7 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
-const ensureProtocol: any = require('./ensureProtocol');
+import ensureProtocol from './ensureProtocol';
 
 function parseUrlParts(url) {
   logger.debug(`parseUrlParts is running with ${url}`);
@@ -70,8 +70,9 @@ function parseUrlParts(url) {
     return result;
   } catch (error) {
     // Handle URLs that can't be parsed by URL constructor
-    qerrors(error, `parseUrlParts`, { url });
-    logger.error(`parseUrlParts failed with error: ${error.message}`);
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    qerrors(errorObj, 'parseUrlParts');
+    logger.error(`parseUrlParts failed with error: ${errorObj.message}`);
     return null; // fail closed on parse error to avoid unsafe routing
   }
 }

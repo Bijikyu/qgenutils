@@ -41,8 +41,8 @@ const addDays = (days: number = 90): Date => {
     logger.debug(`addDays calculated date successfully: ${futureDate.toISOString()}`);
     return futureDate;
   } catch (error) {
-    qerrors(error as Error, `addDays`, String(days));
-    logger.error(`addDays failed with error: ${(error as Error).message}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), `addDays`);
+    logger.error(`addDays failed with error: ${error instanceof Error ? error.message : String(error)}`);
     return new Date();
   }
 };

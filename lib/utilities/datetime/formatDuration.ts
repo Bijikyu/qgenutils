@@ -65,7 +65,7 @@ function formatDuration(startDateString: string, endDateString?: string): string
     return formatted;
   } catch (err) {
     logger.error(`formatDuration failed`, err);
-    qerrors(err as Error, `formatDuration`, JSON.stringify({ startDateString, endDateString }));
+    qerrors(err instanceof Error ? err : new Error(String(err)), `formatDuration`);
     throw err;
   }
 }

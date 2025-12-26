@@ -49,8 +49,8 @@ function formatDate(date: string | Date | null | undefined, fallback: string = "
     
     return formatted;
   } catch (error) {
-    qerrors(error as Error, `formatDate`, JSON.stringify({ date, fallback }));
-    logger.error(`formatDate failed with error: ${(error as Error).message}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), `formatDate`);
+    logger.error(`formatDate failed with error: ${error instanceof Error ? error.message : String(error)}`);
     return fallback;
   }
 }

@@ -34,7 +34,7 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
-const isValidString: any = require('../helpers/isValidString');
+import isValidString from '../helpers/isValidString.js';
 
 const ensureProtocol = (url: any): any => {
   logger.debug(`ensureProtocol processing URL`, { inputUrl: url });
@@ -99,9 +99,9 @@ const ensureProtocol = (url: any): any => {
     return httpsUrl;
 
   } catch (error) {
-    qerrors(error, `ensureProtocol`, { inputUrl: url });
+    qerrors(error, `ensureProtocol`);
     logger.error(`ensureProtocol failed with error`, { 
-      error: error.message, 
+      error: error instanceof Error ? error.message : String(error), 
       inputUrl: url 
     });
     
