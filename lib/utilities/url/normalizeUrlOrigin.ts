@@ -36,7 +36,7 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
-const isValidString: any = require('../helpers/isValidString');
+import isValidString from '../helpers/isValidString.js';
 
 function normalizeUrlOrigin(url) {
   logger.debug(`normalizeUrlOrigin: starting URL origin normalization`, { 
@@ -65,10 +65,7 @@ function normalizeUrlOrigin(url) {
     try {
       urlObj = new URL(trimmedUrl);
     } catch (parseError) {
-      qerrors(parseError, `normalizeUrlOrigin-parse`, { 
-        url: trimmedUrl,
-        parseError: parseError.message
-      });
+      qerrors(parseError instanceof Error ? parseError : new Error(String(parseError)), `normalizeUrlOrigin-parse`);
       logger.warn(`normalizeUrlOrigin: URL parsing failed`, { 
         url: trimmedUrl,
         error: parseError.message
@@ -124,10 +121,7 @@ function normalizeUrlOrigin(url) {
 
   } catch (error) {
     // Handle any unexpected errors during normalization
-    qerrors(error, `normalizeUrlOrigin`, { 
-      url,
-      errorMessage: error.message
-    });
+    qerrors(error instanceof Error ? error : new Error(String(error)), `normalizeUrlOrigin`);
     logger.error(`normalizeUrlOrigin failed with error`, { 
       error: error.message,
       url,

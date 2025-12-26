@@ -37,7 +37,7 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
   const executeCallback = async (): Promise<any> => { // wrapper to handle async execution
     if (cancelled) return;
 
-    // Check max executions before incrementing to prevent race condition
+    // Check max executions and increment atomically to prevent race condition
     if (maxExecutions !== null && executionCount >= maxExecutions) {
       if (intervalId) {
         clearInterval(intervalId);
@@ -48,24 +48,33 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
     }
 
     // Increment execution count after the check to prevent race conditions
-    executionCount++;
+    const currentExecutionCount = ++executionCount;
+
+    // Check if we just reached max executions and need to stop
+    if (maxExecutions !== null && currentExecutionCount >= maxExecutions) {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      cancelled = true;
+    }
 
     try {
       await callback();
     } catch (error) {
       // Log the error for debugging even if there's an error handler
-      console.error(`[scheduleInterval] Error in job ${jobId} (execution ${executionCount}):`, error instanceof Error ? error.message : String(error));
+      console.error(`[scheduleInterval] Error in job ${jobId} (execution ${currentExecutionCount}):`, error instanceof Error ? error.message : String(error));
       
       if (onError && typeof onError === 'function') {
         try {
-          onError(error, { identifier: jobId, executionCount, intervalMs });
+          onError(error, { identifier: jobId, executionCount: currentExecutionCount, intervalMs });
         } catch (handlerError) {
           console.error('[scheduleInterval] Error handler threw:', handlerError instanceof Error ? handlerError.message : String(handlerError));
           // Don't re-throw to prevent unhandled promise rejection
         }
       } else {
         // If no error handler, log the error but don't re-throw to prevent unhandled promise rejection
-        console.error(`[scheduleInterval] Unhandled error in job ${jobId} (execution ${executionCount}):`, error instanceof Error ? error.message : String(error));
+        console.error(`[scheduleInterval] Unhandled error in job ${jobId} (execution ${currentExecutionCount}):`, error instanceof Error ? error.message : String(error));
       }
     }
   };

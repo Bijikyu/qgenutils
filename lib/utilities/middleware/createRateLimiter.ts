@@ -56,23 +56,40 @@ interface ExpressRateLimitConfig {
 }
 
 function createRateLimiter(config: RateLimiterConfig = {}) {
-  const expressRateLimitConfig: ExpressRateLimitConfig = {
-    windowMs: config.windowMs || 60000,        // express-rate-limit naming
-    max: config.max || 100,                // express-rate-limit naming  
-    message: config.message || 'Too many requests',
-    standardHeaders: config.standardHeaders !== false,   // Use RateLimit-* headers (modern standard)
-    legacyHeaders: config.legacyHeaders || false,    // Don't use X-RateLimit-* headers (legacy)
-    keyGenerator: config.keyGenerator || null,
-    skip: config.skip || null,
-    onLimitReached: config.onLimitReached || null,
-    handler: config.handler || null,
-    store: config.store || null,
+  const {
+    windowMs = 60000,
+    max = 100,
+    message = 'Too many requests',
+    standardHeaders = true,
+    legacyHeaders = false,
+    keyGenerator = null,
+    skip = null,
+    onLimitReached = null,
+    handler = null,
+    store = null,
     // Legacy options for backward compatibility
-    points: config.points || null,
-    durationMs: config.durationMs || null,
+    points = null,
+    durationMs = null,
     strategy = 'ip',
     prefix = 'rl'
   } = config;
+
+  const expressRateLimitConfig: ExpressRateLimitConfig = {
+    windowMs,
+    max,
+    message,
+    standardHeaders,
+    legacyHeaders,
+    keyGenerator,
+    skip,
+    onLimitReached,
+    handler,
+    store,
+    points,
+    durationMs,
+    strategy,
+    prefix
+  };
 
   // Handle legacy option names for backward compatibility
   const finalWindowMs: number = expressRateLimitConfig.windowMs || expressRateLimitConfig.durationMs || 60000;
@@ -87,36 +104,36 @@ function createRateLimiter(config: RateLimiterConfig = {}) {
   }
 
   // Build express-rate-limit configuration
-  const rateLimitConfig = {
+  const rateLimitConfig: any = {
     windowMs: finalWindowMs,
     max: finalMax,
-    message: typeof message === 'string' ? message : 'Rate limit exceeded. Please try again later.',
-    standardHeaders,
-    legacyHeaders,
-    store
+    message: typeof expressRateLimitConfig.message === 'string' ? expressRateLimitConfig.message : 'Rate limit exceeded. Please try again later.',
+    standardHeaders: expressRateLimitConfig.standardHeaders,
+    legacyHeaders: expressRateLimitConfig.legacyHeaders,
+    store: expressRateLimitConfig.store
   };
 
   // Add custom key generator if provided
-  if (keyGenerator) {
-    rateLimitConfig.keyGenerator = keyGenerator;
+  if (expressRateLimitConfig.keyGenerator) {
+    rateLimitConfig.keyGenerator = expressRateLimitConfig.keyGenerator;
   } else if (strategy && strategy !== 'ip') {
     // Use existing key building logic for backward compatibility
-    rateLimitConfig.keyGenerator = (req) => buildRateLimitKey(req, { strategy, prefix });
+    rateLimitConfig.keyGenerator = (req: any) => buildRateLimitKey(req, { strategy, prefix });
   }
 
   // Add skip function if provided
-  if (skip && typeof skip === 'function') {
-    rateLimitConfig.skip = skip;
+  if (expressRateLimitConfig.skip && typeof expressRateLimitConfig.skip === 'function') {
+    rateLimitConfig.skip = expressRateLimitConfig.skip;
   }
 
   // Add limit reached handler if provided
-  if (onLimitReached && typeof onLimitReached === 'function') {
-    rateLimitConfig.onLimitReached = onLimitReached;
+  if (expressRateLimitConfig.onLimitReached && typeof expressRateLimitConfig.onLimitReached === 'function') {
+    rateLimitConfig.onLimitReached = expressRateLimitConfig.onLimitReached;
   }
 
   // Add custom handler if provided
-  if (handler && typeof handler === 'function') {
-    rateLimitConfig.handler = handler;
+  if (expressRateLimitConfig.handler && typeof expressRateLimitConfig.handler === 'function') {
+    rateLimitConfig.handler = expressRateLimitConfig.handler;
   }
 
   // Create and return the rate limit middleware

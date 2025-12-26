@@ -75,10 +75,10 @@ function generateExecutionId() {
 
   } catch (error) {
     // Handle any unexpected errors during ID generation
-    qerrors(error, `generateExecutionId`, { errorMessage: error.message });
+    qerrors(error instanceof Error ? error : new Error(String(error)), `generateExecutionId`);
     logger.error(`generateExecutionId failed with error`, { 
-      error: error.message,
-      stack: error.stack
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : String(error)
     });
 
     // Generate fallback ID using timestamp and random number
