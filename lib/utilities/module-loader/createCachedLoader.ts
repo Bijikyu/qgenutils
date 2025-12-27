@@ -1,5 +1,7 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
+
 const loadAndFlattenModule: any = require('./loadAndFlattenModule'); // default flattening function
 
 /**
@@ -34,6 +36,7 @@ const createCachedLoader = (options: any = {}): any => { // factory for cached a
         enableCache && (cachedModule = module);
         return module;
       } catch (error) {
+        qerrors(error instanceof Error ? error : new Error(String(error)), 'createCachedLoader', `Cached module loading failed for: ${moduleName}`);
         console.warn(finalUnavailableMessage, error);
         // Don't clear pendingLoad here - let it resolve so all concurrent calls get the same result
         // The cache will remain null, allowing future calls to retry

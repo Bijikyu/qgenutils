@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Mask API Key for Logging
  * 
@@ -9,6 +11,7 @@
  * @returns {string} Masked API key (e.g., "sk_l***")
  */
 function maskApiKey(apiKey: any, visibleChars: number = 4) {
+  try {
   // Check for null, undefined, or non-string types
   if (apiKey == null || typeof apiKey !== 'string' || apiKey.length === 0) {
     return '***';
@@ -20,6 +23,10 @@ function maskApiKey(apiKey: any, visibleChars: number = 4) {
   
   const visible: any = apiKey.substring(0, visibleChars); // extract visible portion
   return `${visible}***`; // append mask
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'maskApiKey', `API key masking failed for key length: ${apiKey?.length}`);
+  return '***';
+  }
 }
 
 export default maskApiKey;

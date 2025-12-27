@@ -1,5 +1,7 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
+
 const sanitizeLogValue: any = require('./sanitizeLogValue');
 
 const REDACTED_FIELDS = [ // fields that should always be redacted
@@ -26,6 +28,7 @@ interface SanitizeOptions {
  * // Returns: { user: 'john', password: '[REDACTED]' }
  */
 function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number = 0, visited: WeakSet<any> = new WeakSet()) { // recursively sanitize object
+  try {
   const additionalFields: any = options.additionalFields || [];
   const maxDepth: any = options.maxDepth || 10;
   const allRedactedFields: any = [...REDACTED_FIELDS, ...additionalFields];
@@ -79,6 +82,10 @@ function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number =
   }
 
   return sanitizeLogValue(obj);
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'sanitizeObject', `Object sanitization failed at depth: ${depth}`);
+  return '[SANITIZATION_ERROR]';
+  }
 }
 
 sanitizeObject.REDACTED_FIELDS = REDACTED_FIELDS; // expose for extension

@@ -1,5 +1,7 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
+
 /**
  * Validate Braintree payment method nonce format
  * @param {string} nonce - Payment method nonce to validate
@@ -9,6 +11,7 @@
  * validatePaymentMethodNonce('fake-invalid-nonce') // returns false
  */
 function validatePaymentMethodNonce(nonce) { // comprehensive Braintree payment nonce validation
+  try {
   if (!nonce || typeof nonce !== 'string') { // check for nonce presence and string type
     return false; // invalid input rejection
   }
@@ -38,6 +41,10 @@ function validatePaymentMethodNonce(nonce) { // comprehensive Braintree payment 
   }
 
   return true; // nonce passed all validations
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'validatePaymentMethodNonce', `Payment method nonce validation failed for input length: ${nonce?.length}`);
+    return false;
+  }
 }
 
 export default validatePaymentMethodNonce;

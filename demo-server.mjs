@@ -167,7 +167,10 @@ async function handleValidation(req, res, action) {
         sendJSON(res, { error: 'Invalid validation action' }, 404);
     }
   } catch (error) {
-    sendJSON(res, { error: error.message }, 500);
+    if (qerrors) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'handleValidation', `Validation handler failed for action: ${action}`);
+    }
+    sendJSON(res, { error: 'Internal server error' }, 500);
   }
 }
 
@@ -189,7 +192,10 @@ async function handleSecurity(req, res, action) {
         sendJSON(res, { error: 'Invalid security action' }, 404);
     }
   } catch (error) {
-    sendJSON(res, { error: error.message }, 500);
+    if (qerrors) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'handleSecurity', `Security handler failed for action: ${action}`);
+    }
+    sendJSON(res, { error: 'Internal server error' }, 500);
   }
 }
 
@@ -207,7 +213,10 @@ async function handleCollections(req, res, action) {
         sendJSON(res, { error: 'Invalid collections action' }, 404);
     }
   } catch (error) {
-    sendJSON(res, { error: error.message }, 500);
+    if (qerrors) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'handleCollections', `Collections handler failed for action: ${action}`);
+    }
+    sendJSON(res, { error: 'Internal server error' }, 500);
   }
 }
 
