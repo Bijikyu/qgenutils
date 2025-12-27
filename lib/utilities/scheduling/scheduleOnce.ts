@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Schedule One-Time Job
  * 
@@ -35,7 +37,9 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
 
   const jobId: any = identifier || `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  const delayMs: any = executionDate.getTime() - Date.now(); // calculate delay
+  const currentTime = Date.now();
+  const scheduledTime = executionDate.getTime();
+  const delayMs = Math.max(0, scheduledTime - currentTime); // Ensure non-negative
 
   const executeCallback = async (): Promise<any> => {
     if (cancelled) return;
@@ -44,10 +48,13 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
     try {
       await callback();
     } catch (error) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleOnce', `One-time job execution failed for: ${jobId}`);
+      
       if (onError && typeof onError === 'function') {
         try {
           onError(error, { identifier: jobId, scheduledFor: executionDate });
         } catch (handlerError) {
+          qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleOnce', `Error handler failed for job: ${jobId}`);
           console.error('[scheduleOnce] Error handler threw:', handlerError);
         }
       }
@@ -73,7 +80,7 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
     },
 
     isRunning() { // check if job is pending
-      return !executed && !cancelled && (timeoutId !== null || delayMs <= 0);
+      return !executed && !cancelled && (timeoutId !== null);
     },
 
     getScheduledFor() { // get scheduled execution time

@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Creates basic authentication object for HTTP requests.
  *
@@ -9,11 +11,24 @@
  * @param {string} [username='anystring'] - Optional username (defaults to 'anystring')
  * @returns {{ username: string; password: string }} Basic authentication object
  */
-function createBasicAuth(apiKey, username = 'anystring') {
-  return {
-    username,
-    password: apiKey
-  };
+function createBasicAuth(apiKey: string, username: string = 'anystring') {
+  try {
+    if (!apiKey || typeof apiKey !== 'string') {
+      throw new Error('API key must be a non-empty string');
+    }
+    
+    if (!username || typeof username !== 'string') {
+      throw new Error('Username must be a non-empty string');
+    }
+
+    return {
+      username,
+      password: apiKey
+    };
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'createBasicAuth', `Basic auth creation failed for username: ${username || 'undefined'}`);
+    throw error;
+  }
 }
 
 export default createBasicAuth;

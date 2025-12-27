@@ -1,5 +1,7 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
+
 const convict: any = require('convict'); // robust config validation
 
 /**
@@ -26,7 +28,9 @@ const buildSecureConfig = (schema: any, env: any = process.env, overrides: any =
   try {
     config.validate({ allowed: 'strict' });
   } catch (error) {
-    throw new Error(`Configuration validation failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'buildSecureConfig', `Configuration validation failed for schema keys: ${Object.keys(schema).length}`);
+    throw new Error(`Configuration validation failed: ${errorMessage}`);
   }
 
   return config.getProperties();
