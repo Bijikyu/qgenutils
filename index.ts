@@ -1,83 +1,83 @@
 import logger from './lib/logger.js';
 
 // Data structures
-import createMinHeap from './lib/utilities/data-structures/MinHeap';
+import createMinHeap from './lib/utilities/data-structures/MinHeap.js';
 
 // Password utilities
-import hashPassword from './lib/utilities/password/hashPassword';
-import verifyPassword from './lib/utilities/password/verifyPassword';
-import generateSecurePassword from './lib/utilities/password/generateSecurePassword';
+import hashPassword from './lib/utilities/password/hashPassword.js';
+import verifyPassword from './lib/utilities/password/verifyPassword.js';
+import generateSecurePassword from './lib/utilities/password/generateSecurePassword.js';
 
 // Secure configuration utilities
-import maskSensitiveValue from './lib/utilities/secure-config/maskSensitiveValue';
-import validateConfigValue from './lib/utilities/secure-config/validateConfigValue';
-import buildSecureConfig from './lib/utilities/secure-config/buildSecureConfig';
+import maskSensitiveValue from './lib/utilities/secure-config/maskSensitiveValue.js';
+import validateConfigValue from './lib/utilities/secure-config/validateConfigValue.js';
+import buildSecureConfig from './lib/utilities/secure-config/buildSecureConfig.js';
 
 // Module loader utilities
-import loadAndFlattenModule from './lib/utilities/module-loader/loadAndFlattenModule';
-import createCachedLoader from './lib/utilities/module-loader/createCachedLoader';
-import createSimpleLoader from './lib/utilities/module-loader/createSimpleLoader';
-import createDirectLoader from './lib/utilities/module-loader/createDirectLoader';
+import loadAndFlattenModule from './lib/utilities/module-loader/loadAndFlattenModule.js';
+import createCachedLoader from './lib/utilities/module-loader/createCachedLoader.js';
+import createSimpleLoader from './lib/utilities/module-loader/createSimpleLoader.js';
+import createDirectLoader from './lib/utilities/module-loader/createDirectLoader.js';
 
 // Performance monitoring utilities
-import collectPerformanceMetrics from './lib/utilities/performance-monitor/collectPerformanceMetrics';
-import measureEventLoopLag from './lib/utilities/performance-monitor/measureEventLoopLag';
-import analyzePerformanceMetrics from './lib/utilities/performance-monitor/analyzePerformanceMetrics';
-import getPerformanceHealthStatus from './lib/utilities/performance-monitor/getPerformanceHealthStatus';
-import createPerformanceMonitor from './lib/utilities/performance-monitor/createPerformanceMonitor';
+import collectPerformanceMetrics from './lib/utilities/performance-monitor/collectPerformanceMetrics.js';
+import measureEventLoopLag from './lib/utilities/performance-monitor/measureEventLoopLag.js';
+import analyzePerformanceMetrics from './lib/utilities/performance-monitor/analyzePerformanceMetrics.js';
+import getPerformanceHealthStatus from './lib/utilities/performance-monitor/getPerformanceHealthStatus.js';
+import createPerformanceMonitor from './lib/utilities/performance-monitor/createPerformanceMonitor.js';
 
 // Validation utilities
-import validateEmailFormat from './lib/utilities/validation/validateEmail';
-import validatePasswordStrength from './lib/utilities/validation/validatePassword';
-import validateMonetaryAmount from './lib/utilities/validation/validateAmount';
-import validateApiKeyFormat from './lib/utilities/validation/validateApiKey';
-import validateCurrencyCode from './lib/utilities/validation/validateCurrency';
-import validatePaymentMethodNonce from './lib/utilities/validation/validatePaymentMethodNonce';
-import validateDateRange from './lib/utilities/validation/validateDateRange';
-import validateSubscriptionPlan from './lib/utilities/validation/validateSubscriptionPlan';
-import sanitizeInput from './lib/utilities/validation/sanitizeInput';
-import extractValidationErrors from './lib/utilities/validation/extractValidationErrors';
-import validateEnum from './lib/utilities/validation/validateEnum';
-import validateNumberRange from './lib/utilities/validation/validateNumberRange';
-import validateStringLength from './lib/utilities/validation/validateStringLength';
-import validateArray from './lib/utilities/validation/validateArray';
-import validatePattern from './lib/utilities/validation/validatePattern';
-import validateBoolean from './lib/utilities/validation/validateBoolean';
-import validateDate from './lib/utilities/validation/validateDate';
-import validateObjectId from './lib/utilities/validation/validateObjectId';
-import validatePagination from './lib/utilities/validation/validatePagination';
-import createValidator from './lib/utilities/validation/createValidator';
-import createResourceValidator from './lib/utilities/validation/createResourceValidator';
-import createValidationErrorHandler from './lib/utilities/validation/createValidationErrorHandler';
-import validateRequiredString from './lib/utilities/validation/validateRequiredString';
-import validateNumberInRange from './lib/utilities/validation/validateNumberInRange';
+import validateEmailFormat from './lib/utilities/validation/validateEmail.js';
+import validatePasswordStrength from './lib/utilities/validation/validatePassword.js';
+import validateMonetaryAmount from './lib/utilities/validation/validateAmount.js';
+import validateApiKeyFormat from './lib/utilities/validation/validateApiKey.js';
+import validateCurrencyCode from './lib/utilities/validation/validateCurrency.js';
+import validatePaymentMethodNonce from './lib/utilities/validation/validatePaymentMethodNonce.js';
+import validateDateRange from './lib/utilities/validation/validateDateRange.js';
+import validateSubscriptionPlan from './lib/utilities/validation/validateSubscriptionPlan.js';
+import sanitizeInput from './lib/utilities/validation/sanitizeInput.js';
+import extractValidationErrors from './lib/utilities/validation/extractValidationErrors.js';
+import validateEnum from './lib/utilities/validation/validateEnum.js';
+import validateNumberRange from './lib/utilities/validation/validateNumberRange.js';
+import validateStringLength from './lib/utilities/validation/validateStringLength.js';
+import validateArray from './lib/utilities/validation/validateArray.js';
+import validatePattern from './lib/utilities/validation/validatePattern.js';
+import validateBoolean from './lib/utilities/validation/validateBoolean.js';
+import validateDate from './lib/utilities/validation/validateDate.js';
+import validateObjectId from './lib/utilities/validation/validateObjectId.js';
+import validatePagination from './lib/utilities/validation/validatePagination.js';
+import createValidator from './lib/utilities/validation/createValidator.js';
+import createResourceValidator from './lib/utilities/validation/createResourceValidator.js';
+import createValidationErrorHandler from './lib/utilities/validation/createValidationErrorHandler.js';
+import validateRequiredString from './lib/utilities/validation/validateRequiredString.js';
+import validateNumberInRange from './lib/utilities/validation/validateNumberInRange.js';
 
 // Zod validation utilities
-import zodStringValidators from './lib/utilities/validation/zodStringValidators';
-import zodNumberValidators from './lib/utilities/validation/zodNumberValidators';
-import zodValidationUtils from './lib/utilities/validation/zodValidationUtils';
-import zodSchemaBuilders from './lib/utilities/validation/zodSchemaBuilders';
-import createApiKeyAuth from './lib/utilities/validation/createApiKeyAuth';
-import createCredentialSchema from './lib/utilities/validation/createCredentialSchema';
-import createServiceMeta from './lib/utilities/validation/createServiceMeta';
+import zodStringValidators from './lib/utilities/validation/zodStringValidators.js';
+import zodNumberValidators from './lib/utilities/validation/zodNumberValidators.js';
+import zodValidationUtils from './lib/utilities/validation/zodValidationUtils.js';
+import zodSchemaBuilders from './lib/utilities/validation/zodSchemaBuilders.js';
+import createApiKeyAuth from './lib/utilities/validation/createApiKeyAuth.js';
+import createCredentialSchema from './lib/utilities/validation/createCredentialSchema.js';
+import createServiceMeta from './lib/utilities/validation/createServiceMeta.js';
 
 // Configuration utilities
-import buildFeatureConfig from './lib/utilities/config/buildFeatureConfig';
-import buildSecurityConfig from './lib/utilities/config/buildSecurityConfig';
-import buildValidationConfig from './lib/utilities/config/buildValidationConfig';
-import buildTestRunnerConfig from './lib/utilities/config/buildTestRunnerConfig';
-import createPerformanceMetrics from './lib/utilities/config/createPerformanceMetrics';
-import createProcessingCapabilities from './lib/utilities/config/createProcessingCapabilities';
+import buildFeatureConfig from './lib/utilities/config/buildFeatureConfig.js';
+import buildSecurityConfig from './lib/utilities/config/buildSecurityConfig.js';
+import buildValidationConfig from './lib/utilities/config/buildValidationConfig.js';
+import buildTestRunnerConfig from './lib/utilities/config/buildTestRunnerConfig.js';
+import createPerformanceMetrics from './lib/utilities/config/createPerformanceMetrics.js';
+import createProcessingCapabilities from './lib/utilities/config/createProcessingCapabilities.js';
 
 // Scheduling utilities
-import msToCron from './lib/utilities/scheduling/msToCron';
-import scheduleInterval from './lib/utilities/scheduling/scheduleInterval';
-import scheduleOnce from './lib/utilities/scheduling/scheduleOnce';
-import cleanupJobs from './lib/utilities/scheduling/cleanupJobs';
+import msToCron from './lib/utilities/scheduling/msToCron.js';
+import scheduleInterval from './lib/utilities/scheduling/scheduleInterval.js';
+import scheduleOnce from './lib/utilities/scheduling/scheduleOnce.js';
+import cleanupJobs from './lib/utilities/scheduling/cleanupJobs.js';
 
 // Middleware utilities
-import createApiKeyValidator from './lib/utilities/middleware/createApiKeyValidator';
-import createRateLimiter from './lib/utilities/middleware/createRateLimiter';
+import createApiKeyValidator from './lib/utilities/middleware/createApiKeyValidator.js';
+import createRateLimiter from './lib/utilities/middleware/createRateLimiter.js';
 
 // Export everything
 export {
