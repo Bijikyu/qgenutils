@@ -1,4 +1,5 @@
-import bcrypt from 'bcrypt'; // bcrypt for secure hashing
+import * as bcrypt from 'bcrypt'; // bcrypt for secure hashing
+import { qerrors } from 'qerrors';
 
 const BCRYPT_SALT_ROUNDS: number = 12; // OWASP recommended minimum
 
@@ -27,6 +28,7 @@ const hashPassword = async (password: string, options: { saltRounds?: number } =
   try {
     return await bcrypt.hash(password, saltRounds);
   } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashPassword', 'Password hashing operation failed');
     // Don't log error details for security
     throw new Error('Password hashing failed');
   }

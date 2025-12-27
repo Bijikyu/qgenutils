@@ -1,9 +1,11 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Advanced HTTP Client using Axios
  * 
  * Provides enhanced HTTP client capabilities for complex operations including
  * request/response interceptors, automatic retries, timeout management,
- * and comprehensive error handling using the battle-tested axios library.
+ * and comprehensive error handling using to battle-tested axios library.
  * 
  * This is intended for complex HTTP operations. For simple requests,
  * consider using Node.js built-in fetch API or existing HTTP utilities.
@@ -70,6 +72,7 @@ function createAdvancedHttpClient(config: Config = {}) {
       return requestConfig;
     },
     (error: any): any => {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', 'HTTP request interceptor error');
       console.error('HTTP Request Error:', error);
       return Promise.reject(error);
     }
@@ -90,49 +93,57 @@ function createAdvancedHttpClient(config: Config = {}) {
       return response;
     },
     async (error: any): Promise<any> => {
-      const originalRequest: any = error.config;
-      
-      // Handle timeout errors
-      if (error.code === 'ECONNABORTED' && onTimeout) {
-        onTimeout(error);
+      try {
+        const originalRequest: any = error.config;
+        
+        // Handle timeout errors
+        if (error.code === 'ECONNABORTED' && onTimeout) {
+          onTimeout(error);
+        }
+        
+        // Implement retry logic for specific errors
+        if (shouldRetry(error) && !originalRequest._retry && maxRetries > 0) {
+          // Initialize retry count if not set
+          if (!originalRequest._retryCount) {
+            originalRequest._retryCount = 0;
+          }
+          
+          // Check if we've exceeded max retries before retrying
+          if (originalRequest._retryCount >= maxRetries) {
+            qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP request max retries exceeded for: ${originalRequest.url}`);
+            return Promise.reject(error);
+          }
+          
+          originalRequest._retry = true;
+          
+          if (onRetry) {
+            onRetry(originalRequest._retryCount, error);
+          }
+          
+          // Exponential backoff with jitter and minimum delay
+          const baseDelay: any = retryDelay * Math.pow(2, originalRequest._retryCount);
+          const jitter: any = Math.random() * 1000; // Always positive (0-1000)
+          const delay: any = Math.max(baseDelay + jitter, 100); // Minimum 100ms delay
+          originalRequest._retryCount += 1;
+          
+          await sleep(delay);
+          
+          return httpClient(originalRequest);
+        }
+        
+        // Enhance error information
+        error.isNetworkError = isNetworkError(error);
+        error.isTimeoutError = error.code === 'ECONNABORTED';
+        error.isServerError = error.response?.status >= 500;
+        error.isClientError = error.response?.status >= 400 && error.response?.status < 500;
+        
+        qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP response error for: ${originalRequest.url}`);
+        
+        return Promise.reject(error);
+      } catch (handlerError) {
+        qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'createAdvancedHttpClient', 'HTTP response interceptor error');
+        return Promise.reject(error);
       }
-      
-      // Implement retry logic for specific errors
-      if (shouldRetry(error) && !originalRequest._retry && maxRetries > 0) {
-        // Initialize retry count if not set
-        if (!originalRequest._retryCount) {
-          originalRequest._retryCount = 0;
-        }
-        
-        // Check if we've exceeded max retries before retrying
-        if (originalRequest._retryCount >= maxRetries) {
-          return Promise.reject(error);
-        }
-        
-        originalRequest._retry = true;
-        
-        if (onRetry) {
-          onRetry(originalRequest._retryCount, error);
-        }
-        
-        // Exponential backoff with jitter and minimum delay
-        const baseDelay: any = retryDelay * Math.pow(2, originalRequest._retryCount);
-        const jitter: any = Math.random() * 1000; // Always positive (0-1000)
-        const delay: any = Math.max(baseDelay + jitter, 100); // Minimum 100ms delay
-        originalRequest._retryCount += 1;
-        
-        await sleep(delay);
-        
-        return httpClient(originalRequest);
-      }
-      
-      // Enhance error information
-      error.isNetworkError = isNetworkError(error);
-      error.isTimeoutError = error.code === 'ECONNABORTED';
-      error.isServerError = error.response?.status >= 500;
-      error.isClientError = error.response?.status >= 400 && error.response?.status < 500;
-      
-      return Promise.reject(error);
     }
   );
 
@@ -159,6 +170,7 @@ function createAdvancedHttpClient(config: Config = {}) {
       const response: any = await httpClient.head(url || '/', { ...config, timeout: 5000 });
       return { healthy: true, status: response.status, response };
     } catch (error) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'healthCheck', `HTTP health check failed for: ${url || '/'}`);
       return { healthy: false, error: error.message };
     }
   };

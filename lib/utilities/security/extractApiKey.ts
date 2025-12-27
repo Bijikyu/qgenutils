@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Extract API Key from Request
  * 
@@ -8,7 +10,7 @@
  * 1. Authorization header (Bearer token format) - most secure for HTTPS
  * 2. Custom header names (x-api-key, api-key, etc.)
  * 3. Query parameter - fallback for simple integrations
-  */
+ */
 
 interface ExtractApiKeyOptions {
   headerNames?: string[];
@@ -25,9 +27,10 @@ interface Request {
 }
 
 function extractApiKey(req: Request, options: ExtractApiKeyOptions = {}) {
-  if (!req || typeof req !== 'object') { // validate request object
-    return null;
-  }
+  try {
+    if (!req || typeof req !== 'object') { // validate request object
+      return null;
+    }
 
   const {
     headerNames = ['x-api-key', 'api-key'],
@@ -91,6 +94,10 @@ function extractApiKey(req: Request, options: ExtractApiKeyOptions = {}) {
   }
 
   return null; // no API key found
+  } catch (err) {
+    qerrors(err, 'extractApiKey', 'API key extraction failed');
+    return null;
+  }
 }
 
 export default extractApiKey;

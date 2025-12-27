@@ -1,3 +1,6 @@
+import { qerrors } from 'qerrors';
+import { ValidationConfigOptions, ValidationConfig } from '../../../types/config-interfaces.js';
+
 /**
  * Build Validation Configuration
  * 
@@ -6,7 +9,6 @@
  * @param {ValidationConfigOptions} [options] - Validation configuration options
  * @returns {ValidationConfig} Validated validation configuration
  */
-import { ValidationConfigOptions, ValidationConfig } from '../../../types/config-interfaces.js';
 
 function buildValidationConfig(options: ValidationConfigOptions = {}): ValidationConfig {
   const {
@@ -41,12 +43,33 @@ function buildValidationConfig(options: ValidationConfigOptions = {}): Validatio
     },
     allowedContent: {
       htmlTags: Array.isArray(allowedTags) ? [...allowedTags] : [],
-      htmlAttributes: JSON.parse(JSON.stringify(allowedAttributes)),
+      htmlAttributes: (() => {
+        try {
+          return JSON.parse(JSON.stringify(allowedAttributes));
+        } catch (err) {
+          qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Allowed attributes serialization failed');
+          return {};
+        }
+      })(),
       fileTypes: options.allowedFileTypes ? [...options.allowedFileTypes] : [],
       mimeTypes: options.allowedMimeTypes ? [...options.allowedMimeTypes] : []
     },
-    customValidators: JSON.parse(JSON.stringify(customValidators)),
-    errorMessages: JSON.parse(JSON.stringify(errorMessages)),
+    customValidators: (() => {
+      try {
+        return JSON.parse(JSON.stringify(customValidators));
+      } catch (err) {
+        qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Custom validators serialization failed');
+        return {};
+      }
+    })(),
+    errorMessages: (() => {
+      try {
+        return JSON.parse(JSON.stringify(errorMessages));
+      } catch (err) {
+        qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Error messages serialization failed');
+        return {};
+      }
+    })(),
     localization: String(localization),
     dateFormat: options.dateFormat || 'YYYY-MM-DD',
     timezone: options.timezone || 'UTC'

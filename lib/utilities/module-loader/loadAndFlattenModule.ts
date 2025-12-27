@@ -1,5 +1,7 @@
 
 
+import { qerrors } from 'qerrors';
+
 /**
  * Generic dynamic module loader that normalizes CommonJS/ESM interop
  * Flattens default exports with named exports for consistent interface
@@ -41,12 +43,8 @@ const loadAndFlattenModule = async (moduleName: string): Promise<any> => { // dy
     moduleError.moduleName = moduleName;
     moduleError.originalError = error instanceof Error ? error : new Error(String(error));
     
-    // Log the error with full context
-    console.error(`Module loading failed for '${moduleName}':`, {
-      moduleName,
-      error: moduleError.originalError,
-      timestamp: new Date().toISOString()
-    });
+    // Use qerrors for consistent error reporting
+    qerrors(moduleError, 'loadAndFlattenModule', `Module loading failed for: ${moduleName}`);
     
     // Return null for backward compatibility, but the error is logged with full context
     return null;

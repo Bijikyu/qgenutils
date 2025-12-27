@@ -15,6 +15,15 @@ import path from 'path';
 import { createLogger, format, transports } from 'winston';
 import { fileURLToPath } from 'url';
 
+// Try to import qerrors for consistent error reporting
+let qerrors: any = null;
+try {
+  const qerrorsModule = await import('qerrors');
+  qerrors = qerrorsModule.qerrors;
+} catch {
+  // qerrors not available, continue without it
+}
+
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +35,10 @@ const logDir = process.env.QGENUTILS_LOG_DIR || path.join(__dirname, '..', 'logs
 try {
   fs.mkdirSync(logDir, { recursive: true });
 } catch (error) {
+  // Use qerrors if available for consistent error reporting
+  if (qerrors) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'logger', `Log directory creation failed for: ${logDir}`);
+  }
   // Directory creation failed, but don't block logger initialization
 }
 
@@ -55,6 +68,10 @@ async function addDailyRotateFileTransport(): Promise<void> {
     loggerTransports.push(transport);
     logger.add(transport); // Add to logger instance immediately
   } catch (err) {
+    // Use qerrors if available for consistent error reporting
+    if (qerrors) {
+      qerrors(err instanceof Error ? err : new Error(String(err)), 'logger', 'DailyRotateFile transport initialization failed');
+    }
     // Optional package is not installed in lightweight test environments
   }
 }

@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Schedule Interval with Job Tracking
  * 
@@ -59,9 +61,11 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
       cancelled = true;
     }
 
-    try {
+try {
       await callback();
     } catch (error) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleInterval', `Job execution failed for: ${jobId} (execution: ${currentExecutionCount})`);
+      
       // Log the error for debugging even if there's an error handler
       console.error(`[scheduleInterval] Error in job ${jobId} (execution ${currentExecutionCount}):`, error instanceof Error ? error.message : String(error));
       
@@ -69,11 +73,12 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) {
         try {
           onError(error, { identifier: jobId, executionCount: currentExecutionCount, intervalMs });
         } catch (handlerError) {
+          qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleInterval', `Error handler failed for job: ${jobId}`);
           console.error('[scheduleInterval] Error handler threw:', handlerError instanceof Error ? handlerError.message : String(handlerError));
           // Don't re-throw to prevent unhandled promise rejection
         }
       } else {
-        // If no error handler, log the error but don't re-throw to prevent unhandled promise rejection
+// If no error handler, log error but don't re-throw to prevent unhandled promise rejection
         console.error(`[scheduleInterval] Unhandled error in job ${jobId} (execution ${currentExecutionCount}):`, error instanceof Error ? error.message : String(error));
       }
     }

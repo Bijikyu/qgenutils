@@ -1,4 +1,5 @@
 import SECURITY_CONFIG from './securityConfig.js';
+import { qerrors } from 'qerrors';
 import detectSuspiciousPatterns from './detectSuspiciousPatterns.js';
 import createIpTracker from './createIpTracker.js';
 
@@ -73,33 +74,48 @@ function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}): Secu
       return;
     }
 
-    const suspiciousPatterns = detectSuspiciousPatterns(req); // detect suspicious patterns
+try {
+try {
+try {
+      const suspiciousPatterns = detectSuspiciousPatterns(req); // detect suspicious patterns
 
-    if (suspiciousPatterns.length > 0) { // log and track suspicious activity
-      logger.warn('Suspicious activity detected:', {
-        ip: clientIp,
-        url: req.url,
-        method: req.method,
-        patterns: suspiciousPatterns,
-        userAgent: req.headers?.['user-agent']
-      });
-
-      const trackResult = ipTracker.track(clientIp, suspiciousPatterns);
-
-      if (trackResult.shouldBlock) { // block IP if threshold exceeded
-        const blockExpiry = ipTracker.block(clientIp);
-        const retryAfter = Math.ceil((blockExpiry - now) / 1000);
-
-        logger.warn(`IP ${clientIp} blocked due to repeated suspicious activity`);
-
-        res.setHeader('Retry-After', retryAfter.toString());
-        res.status(403).json({
-          error: 'Forbidden',
-          message: 'Access denied due to suspicious activity',
-          retryAfter
+      if (suspiciousPatterns.length > 0) { // log and track suspicious activity
+        logger.warn('Suspicious activity detected:', {
+          ip: clientIp,
+          url: req.url,
+          method: req.method,
+          patterns: suspiciousPatterns,
+          userAgent: req.headers?.['user-agent']
         });
-        return;
+
+        const trackResult = ipTracker.track(clientIp, suspiciousPatterns);
+
+        if (trackResult.shouldBlock) { // block IP if threshold exceeded
+          const blockExpiry = ipTracker.block(clientIp);
+          const retryAfter = Math.ceil((blockExpiry - now) / 1000);
+
+          qerrors(new Error(`IP blocked: ${clientIp}`), 'createSecurityMiddleware', `Suspicious activity blocking for IP: ${clientIp}, patterns: ${suspiciousPatterns.length}`);
+          logger.warn(`IP ${clientIp} blocked due to repeated suspicious activity`);
+
+          res.setHeader('Retry-After', retryAfter.toString());
+          res.status(403).json({
+            error: 'Forbidden',
+            message: 'Access denied due to suspicious activity',
+            retryAfter
+          });
+
+          return;
+        }
       }
+    } catch (error) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'createSecurityMiddleware', `Security pattern detection failed for IP: ${clientIp}`);
+      // Continue to next middleware even if security check fails
+    }
+      }
+    } catch (error) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'createSecurityMiddleware', `Security pattern detection failed for IP: ${clientIp}`);
+      // Continue to next middleware even if security check fails
+    }
     } else {
       ipTracker.track(clientIp); // track normal request
     }

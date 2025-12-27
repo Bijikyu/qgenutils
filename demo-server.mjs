@@ -10,6 +10,9 @@ const __dirname = path.dirname(__filename);
 // Import QGenUtils utilities  
 import QGenUtils from './dist/index.js';
 
+// Import qerrors for consistent error reporting
+const { qerrors } = await QGenUtils.loadAndFlattenModule('qerrors') || {};
+
 const root = process.cwd();
 const mime = {
   '.html': 'text/html',
@@ -21,29 +24,34 @@ const mime = {
 };
 
 function serveFile(res, fullPath) {
-  const ext = path.extname(fullPath);
-  const type = mime[ext] || 'text/plain';
-  
-  // Add proper error handling for file operations
-  const readStream = fs.createReadStream(fullPath);
-  
-  // Set up error handling before piping
-  readStream.on('error', (err) => {
-    console.error('File read error:', err);
-    // Only send error response if headers haven't been sent yet
-    if (!res.headersSent) {
-      if (err.code === 'ENOENT') {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'File not found' }));
-      } else if (err.code === 'EACCES') {
-        res.writeHead(403, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Permission denied' }));
+  try {
+    const ext = path.extname(fullPath);
+    const type = mime[ext] || 'text/plain';
+    
+    // Add proper error handling for file operations
+    const readStream = fs.createReadStream(fullPath);
+    
+    // Set up error handling before piping
+    readStream.on('error', (err) => {
+      if (qerrors) {
+        qerrors(err, 'serveFile', `File read error for: ${path.basename(fullPath)}`);
       } else {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Internal server error' }));
+        console.error('File read error:', err);
       }
-    }
-  });
+      // Only send error response if headers haven't been sent yet
+      if (!res.headersSent) {
+        if (err.code === 'ENOENT') {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'File not found' }));
+        } else if (err.code === 'EACCES') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Permission denied' }));
+        } else {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+      }
+    });
   
   readStream.on('open', () => {
     // Only write headers if they haven't been sent yet
@@ -52,6 +60,16 @@ function serveFile(res, fullPath) {
     }
     readStream.pipe(res);
   });
+  } catch (err) {
+    if (qerrors) {
+      qerrors(err instanceof Error ? err : new Error(String(err)), 'serveFile', 'File stream creation failed');
+    }
+    // Send error response if headers haven't been sent
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+  }
 }
 
 function sendJSON(res, data, statusCode = 200) {
@@ -77,7 +95,10 @@ function parseRequestBody(req) {
     req.on('end', () => {
       try {
         resolve(JSON.parse(body));
-      } catch {
+      } catch (parseError) {
+        if (qerrors) {
+          qerrors(parseError instanceof Error ? parseError : new Error(String(parseError)), 'parseRequestBody', `JSON parsing failed for body length: ${body.length}`);
+        }
         resolve({});
       }
     });

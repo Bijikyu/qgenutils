@@ -1,18 +1,9 @@
+import { qerrors } from 'qerrors';
+
 /**
- * Build Feature Configuration
- * 
- * Creates a validated feature flag configuration with defaults and timestamps.
- * 
- * @param {object} options - Feature configuration options
- * @param {string} options.name - Feature name (required)
- * @param {boolean} [options.enabled=false] - Whether feature is enabled
- * @param {string} [options.version='1.0.0'] - Feature version
- * @param {string} [options.environment='development'] - Target environment
- * @param {string[]} [options.dependencies=[]] - Feature dependencies
- * @param {object} [options.metadata={}] - Additional metadata
- * @param {number} [options.rolloutPercentage=100] - Rollout percentage (0-100)
- * @param {object} [options.conditions={}] - Activation conditions
- * @returns {object} Validated feature configuration
+ * Builds a comprehensive feature configuration object with validation
+ * @param {Object} params - Feature configuration parameters
+ * @returns {Object} Validated feature configuration object
  */
 
 interface FeatureConfigOptions {
@@ -56,18 +47,23 @@ function buildFeatureConfig(options: FeatureConfigOptions = {}) {
 
   const timestamp: any = new Date().toISOString();
 
-  return {
-    name: name.trim(),
-    enabled,
-    version: String(version),
-    environment: String(environment),
-    dependencies: [...dependencies].map(dep => String(dep)),
-    metadata: JSON.parse(JSON.stringify(metadata)),
-    rolloutPercentage,
-    conditions: JSON.parse(JSON.stringify(conditions)),
-    createdAt: timestamp,
-    updatedAt: timestamp
-  };
+try {
+    return {
+      name,
+      enabled,
+      version: String(version),
+      environment: String(environment),
+      dependencies: [...dependencies].map(dep => String(dep)),
+      metadata: JSON.parse(JSON.stringify(metadata)),
+      rolloutPercentage,
+      conditions: JSON.parse(JSON.stringify(conditions)),
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+  } catch (err) {
+    qerrors(err instanceof Error ? err : new Error(String(err)), 'buildFeatureConfig', `Feature config serialization failed for: ${name}`);
+    throw new Error(`Failed to build feature configuration for ${name}`);
+  }
 }
 
 export default buildFeatureConfig;

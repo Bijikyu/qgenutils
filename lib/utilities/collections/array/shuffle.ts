@@ -8,6 +8,7 @@
  * @returns {Array} New shuffled array (does not mutate original)
  */
 import { randomBytes } from 'crypto';
+import { qerrors } from 'qerrors';
 
 function shuffle(array: any[]): any[] {
   if (!Array.isArray(array)) return [];
@@ -25,8 +26,8 @@ function shuffle(array: any[]): any[] {
       const randomBytesBuffer = randomBytes(4);
       randomValue = randomBytesBuffer.readUInt32BE(0) / 0xFFFFFFFF;
     } catch (error) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'shuffle', 'Crypto random bytes generation failed, using fallback');
       // Fallback to Math.random() if crypto.randomBytes fails
-      console.warn('crypto.randomBytes failed, falling back to Math.random():', error);
       randomValue = Math.random();
     }
     
