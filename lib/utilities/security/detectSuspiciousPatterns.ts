@@ -11,7 +11,12 @@ const SECURITY_CONFIG: any = require('./securityConfig');
  * const patterns: any = detectSuspiciousPatterns(req);
  * if (patterns.length > 0) console.warn('Suspicious:', patterns);
  */
-function detectSuspiciousPatterns(req, config = {}) { // detect attack patterns in request
+interface DetectSuspiciousPatternsOptions {
+  maxRequestSize?: number;
+  maxUrlLength?: number;
+}
+
+function detectSuspiciousPatterns(req: any, config: DetectSuspiciousPatternsOptions = {}) { // detect attack patterns in request
   const maxRequestSize: any = config.maxRequestSize || SECURITY_CONFIG.MAX_REQUEST_SIZE;
   const maxUrlLength: any = config.maxUrlLength || SECURITY_CONFIG.MAX_URL_LENGTH;
   const patterns: any = [];

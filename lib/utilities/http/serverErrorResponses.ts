@@ -2,7 +2,8 @@
  * Server error response utilities (5xx status codes)
  */
 
-import { sendErrorResponse } from './coreErrorResponse';
+import coreErrorResponse from './coreErrorResponse';
+const { sendErrorResponse } = coreErrorResponse;
 
 /**
  * Sends server error responses

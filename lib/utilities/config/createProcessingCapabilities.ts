@@ -1,12 +1,33 @@
+interface ProcessingCapabilitiesOptions {
+  maxConcurrentTasks?: number;
+  taskTimeout?: number;
+  queueSize?: number;
+  retryAttempts?: number;
+  retryDelay?: number;
+  deadLetterQueue?: boolean;
+  priorityLevels?: string[];
+  loadBalancing?: string;
+  retryBackoffMultiplier?: number;
+  retryMaxDelay?: number;
+  maxRetriesBeforeDLQ?: number;
+  dlqSize?: number;
+  defaultPriority?: string;
+  priorityWeightings?: Record<string, number>;
+  loadBalancingHealthCheck?: boolean;
+  healthCheckInterval?: number;
+}
+
 /**
- * Create Processing Capabilities Configuration
- * 
- * Creates a configuration for task processing with concurrency, retries, and load balancing.
- * 
+ * Creates processing capabilities configuration for background tasks
+ *
+ * PURPOSE: Define system capabilities for task processing, including
+ * concurrency limits, retry policies, and queue management. Essential for
+ * worker threads, background jobs, and batch processing systems.
+ *
  * @param {object} [options] - Processing capabilities options
  * @returns {object} Processing capabilities configuration
  */
-function createProcessingCapabilities(options = {}) {
+function createProcessingCapabilities(options: ProcessingCapabilitiesOptions = {}) {
   const {
     maxConcurrentTasks = 10,
     taskTimeout = 30000,

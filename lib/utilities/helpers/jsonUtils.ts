@@ -26,7 +26,7 @@ const {
   truncateObject
 } = require('./jsonSizeUtils');
 
-import { createJsonUtils } from './jsonFactory';
+import createJsonUtils from './jsonFactory';
 
 // Export all utilities for backward compatibility
 export default {

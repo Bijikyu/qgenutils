@@ -18,8 +18,10 @@ const {
   getFirstError
 } = require('./resultAnalyzers');
 
-import { ERROR_MESSAGES } from './validationConstants';
-import { createTypeValidator } from './typeValidatorFactory';
+import validationConstants from './validationConstants';
+import typeValidatorFactory from './typeValidatorFactory';
+const { ERROR_MESSAGES } = validationConstants;
+const { createTypeValidator } = typeValidatorFactory;
 
 // Export all validation utilities for backward compatibility
 export default {

@@ -38,6 +38,17 @@ function calculateMemoryMetrics(memoryUsage) {
   };
 }
 
+interface CpuUsage {
+  user: number;
+  system: number;
+}
+
+interface CpuMetrics {
+  userPercent: number;
+  systemPercent: number;
+  totalPercent: number;
+}
+
 /**
  * Calculates CPU usage percentage
  * @param {Object} currentCpuUsage - Current CPU usage from process.cpuUsage()
@@ -45,7 +56,7 @@ function calculateMemoryMetrics(memoryUsage) {
  * @param {number} elapsedMs - Elapsed time in milliseconds
  * @returns {Object} CPU usage metrics
  */
-function calculateCpuMetrics(currentCpuUsage, previousCpuUsage = null, elapsedMs = 1000) {
+function calculateCpuMetrics(currentCpuUsage: CpuUsage, previousCpuUsage: CpuUsage | null = null, elapsedMs = 1000) {
   if (!previousCpuUsage) {
     return {
       userPercent: 0,
@@ -95,7 +106,24 @@ function calculateTimeMetrics(startTime, endTime = Date.now()) {
  * @param {Object} options - Metrics collection options
  * @returns {Object} Standardized performance metrics
  */
-function createPerformanceMetrics(options = {}) {
+interface PerformanceMetricsOptions {
+  startTime?: number;
+  lastCpuUsage?: CpuUsage;
+  includeMemory?: boolean;
+  includeCpu?: boolean;
+}
+
+interface PerformanceMetrics {
+  timestamp: string;
+  endTime: number;
+  elapsedMs: number;
+  elapsedSeconds: number;
+  elapsedMinutes: number;
+  memory?: any;
+  cpu?: CpuMetrics;
+}
+
+function createPerformanceMetrics(options: PerformanceMetricsOptions = {}) {
   const {
     startTime = Date.now(),
     lastCpuUsage = null,
@@ -103,7 +131,7 @@ function createPerformanceMetrics(options = {}) {
     includeCpu = true
   } = options;
 
-  const metrics = {
+  const metrics: PerformanceMetrics = {
     timestamp: new Date().toISOString(),
     ...calculateTimeMetrics(startTime)
   };
@@ -113,7 +141,7 @@ function createPerformanceMetrics(options = {}) {
   }
 
   if (includeCpu) {
-    const currentCpuUsage: any = process.cpuUsage(lastCpuUsage);
+    const currentCpuUsage: CpuUsage = process.cpuUsage(lastCpuUsage || undefined);
     metrics.cpu = calculateCpuMetrics(currentCpuUsage, lastCpuUsage, metrics.elapsedMs);
   }
 
@@ -126,7 +154,13 @@ function createPerformanceMetrics(options = {}) {
  * @param {Object} thresholds - Health threshold values
  * @returns {string} Health status: 'healthy', 'warning', or 'critical'
  */
-function determineHealthStatus(metrics, thresholds = {}) {
+interface HealthThresholds {
+  memoryThreshold?: number;
+  cpuThreshold?: number;
+  responseTimeThreshold?: number;
+}
+
+function determineHealthStatus(metrics: any, thresholds: HealthThresholds = {}) {
   const {
     memoryThreshold = 80,
     cpuThreshold = 70,

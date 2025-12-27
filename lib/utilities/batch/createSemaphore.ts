@@ -16,7 +16,7 @@ function createSemaphore(permits: number) {
   let availablePermits = permits;
   const waitQueue: any = [];
 
-  function acquire() {
+  function acquire(signal?: AbortSignal) {
     return new Promise(resolve => {
       if (availablePermits > 0) {
         availablePermits--;
@@ -46,19 +46,24 @@ function createSemaphore(permits: number) {
       const maxIterations = 1000; // Prevent infinite loop
       let backoffTime = 10;
       
-      const checkQueue = () => {
-        if (availablePermits === permits && waitQueue.length === 0) {
-          resolve();
-        } else if (iterations >= maxIterations) {
-          // Timeout after too many iterations - reject to prevent race conditions
-          reject(new Error(`Semaphore timeout after ${maxIterations} iterations. Permits: ${availablePermits}/${permits}, Queue: ${waitQueue.length}`));
-        } else {
-          iterations++;
-          // Exponential backoff to prevent CPU spam
-          setTimeout(checkQueue, backoffTime);
-          backoffTime = Math.min(backoffTime * 1.5, 1000); // Max 1 second backoff
-        }
-      };
+        const checkQueue = () => {
+          if (signal?.aborted) {
+            reject(new Error('Semaphore operation aborted'));
+            return;
+          }
+          
+          if (availablePermits === permits && waitQueue.length === 0) {
+            resolve();
+          } else if (iterations >= maxIterations) {
+            // Timeout after too many iterations - reject to prevent race conditions
+            reject(new Error(`Semaphore timeout after ${maxIterations} iterations. Permits: ${availablePermits}/${permits}, Queue: ${waitQueue.length}`));
+          } else {
+            iterations++;
+            // Exponential backoff to prevent CPU spam
+            setTimeout(checkQueue, backoffTime);
+            backoffTime = Math.min(backoffTime * 1.5, 1000); // Max 1 second backoff
+          }
+        };
       checkQueue();
     });
   }

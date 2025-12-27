@@ -11,7 +11,17 @@
  * @returns {*} The validated value
  * @throws {Error} If validation fails
  */
-function requireAndValidate(value, name, type, options = {}) {
+interface RequireAndValidateOptions {
+  required?: boolean;
+  allowNull?: boolean;
+  allowEmpty?: boolean;
+  minLength?: number | null;
+  maxLength?: number | null;
+  min?: number | null;
+  max?: number | null;
+}
+
+function requireAndValidate(value: any, name: string, type: string, options: RequireAndValidateOptions = {}) {
   const {
     required = true,
     allowNull = false,

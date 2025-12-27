@@ -22,7 +22,18 @@ async function handleValidationFailure(options) { // send validation failure res
     throw new Error('Valid Express response object required');
   }
 
-  const errorPayload = { // build error payload
+  interface ValidationErrorPayload {
+    success: boolean;
+    error: {
+      type: string;
+      message: string;
+      field: string | null;
+      context: any;
+      details?: any;
+    };
+  }
+
+  const errorPayload: ValidationErrorPayload = { // build error payload
     success: false,
     error: {
       type: 'VALIDATION_ERROR',

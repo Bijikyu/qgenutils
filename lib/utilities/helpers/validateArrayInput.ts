@@ -9,7 +9,15 @@
  * @param {string} options.fieldName - Name of the field for error messages
  * @returns {Object} Validation result with valid, value, and error properties
  */
-function validateArrayInput(value, options = {}) {
+interface ValidateArrayInputOptions {
+  required?: boolean;
+  defaultValue?: any[];
+  minLength?: number | null;
+  maxLength?: number | null;
+  fieldName?: string;
+}
+
+function validateArrayInput(value: any, options: ValidateArrayInputOptions = {}) {
   const {
     required = false,
     defaultValue = [],

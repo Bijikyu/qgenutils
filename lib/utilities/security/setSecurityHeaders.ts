@@ -13,7 +13,16 @@
  * @example
  * app.use(setSecurityHeaders({ hsts: true }));
  */
-function setSecurityHeaders(options = {}) { // factory for security headers middleware
+interface SecurityHeadersOptions {
+  contentSecurityPolicy?: boolean;
+  xssProtection?: boolean;
+  noSniff?: boolean;
+  frameOptions?: boolean;
+  hsts?: boolean;
+  referrerPolicy?: string;
+}
+
+function setSecurityHeaders(options: SecurityHeadersOptions = {}) { // factory for security headers middleware
   const {
     contentSecurityPolicy = true,
     xssProtection = true,

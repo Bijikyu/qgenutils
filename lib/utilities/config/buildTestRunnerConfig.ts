@@ -28,6 +28,7 @@ interface TestRunnerConfigOptions {
   coverageDirectories?: string[];
   coverageExclude?: string[];
   watch?: boolean;
+  cache?: boolean;
   collectCoverageOnlyFrom?: string[];
 }
 

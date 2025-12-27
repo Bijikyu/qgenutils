@@ -16,7 +16,11 @@ const SENSITIVE_PARAMS = [ // query params to remove
  * sanitizeUrl('/api/users?token=abc123&page=1');
  * // Returns: '/api/users?page=1'
  */
-function sanitizeUrl(url, options = {}) { // remove sensitive URL params
+interface SanitizeUrlOptions {
+  additionalParams?: string[];
+}
+
+function sanitizeUrl(url: any, options: SanitizeUrlOptions = {}) { // remove sensitive URL params
   if (!url || typeof url !== 'string') {
     return '';
   }
