@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Groups array elements by a key function.
  *
@@ -13,6 +15,7 @@ const groupBy = <T, K extends string | number>(
   array: T[],
   keyFn: (item: T) => K
 ): Record<K, T[]> => {
+  try {
   if (!Array.isArray(array)) {
     throw new Error('groupBy requires an array');
   }
@@ -29,6 +32,10 @@ const groupBy = <T, K extends string | number>(
     groups[key].push(item);
     return groups;
   }, {} as Record<K, T[]>);
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'groupBy', `Array grouping failed for array length: ${array?.length}`);
+    return {} as Record<K, T[]>;
+  }
 };
 
 export default groupBy;

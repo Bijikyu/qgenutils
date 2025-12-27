@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Returns unique array elements using optional key function.
  *
@@ -9,6 +11,7 @@
  * @returns {Array} Array with unique elements
  */
 function unique(array: any[], keyFn?: (item: any) => any): any[] {
+  try {
   if (!Array.isArray(array)) return [];
   
   if (!keyFn) {
@@ -24,6 +27,10 @@ function unique(array: any[], keyFn?: (item: any) => any): any[] {
     seen.add(key);
     return true;
   });
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'unique', `Array deduplication failed for array length: ${array?.length}`);
+    return [];
+  }
 }
 
 export default unique;

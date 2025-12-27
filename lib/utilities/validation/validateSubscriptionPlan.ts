@@ -1,5 +1,7 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
+
 const SUPPORTED_PLANS: any = ['basic', 'premium', 'enterprise', 'trial']; // supported subscription plans
 
 /**
@@ -12,6 +14,7 @@ const SUPPORTED_PLANS: any = ['basic', 'premium', 'enterprise', 'trial']; // sup
  * validateSubscriptionPlan('unknown') // returns false
  */
 function validateSubscriptionPlan(planId) { // comprehensive subscription plan validation
+  try {
   if (!planId || typeof planId !== 'string') { // check for plan ID presence and string type
     return false; // invalid input rejection
   }
@@ -19,6 +22,10 @@ function validateSubscriptionPlan(planId) { // comprehensive subscription plan v
   const normalizedPlan: any = planId.toLowerCase().trim(); // normalize plan format for comparison
 
   return SUPPORTED_PLANS.includes(normalizedPlan); // validate against supported plans
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'validateSubscriptionPlan', `Subscription plan validation failed for input: ${typeof planId}`);
+    return false;
+  }
 }
 
 export default validateSubscriptionPlan;

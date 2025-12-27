@@ -2,6 +2,8 @@
  * Core error response functionality
  */
 
+import { qerrors } from 'qerrors';
+
 /**
  * Sends standardized error responses for HTTP requests
  * @param {Object} res - Express response object
@@ -13,7 +15,8 @@
  * @param {Object} options.metadata - Additional error metadata
  * @returns {Object} Express response object
  */
-function sendErrorResponse(res, options = {}) {
+function sendErrorResponse(res, options: any = {}) {
+  try {
   const {
     status = 400,
     type = 'ERROR',
@@ -33,6 +36,16 @@ function sendErrorResponse(res, options = {}) {
   };
 
   return res.status(status).json(payload);
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'sendErrorResponse', `Error response creation failed for status: ${(options as any)?.status || 400}`);
+  return res.status(500).json({
+    success: false,
+    error: {
+      type: 'INTERNAL_ERROR',
+      message: 'Internal server error'
+    }
+  });
+  }
 }
 
 export default {

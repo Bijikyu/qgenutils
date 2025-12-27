@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Chunks array into smaller arrays of specified size.
  *
@@ -10,6 +12,7 @@
  * @throws {Error} If size is not positive
  */
 function chunk(array: any[], size: number): any[][] {
+  try {
   if (!Array.isArray(array)) return [];
   if (size <= 0) {
     throw new Error('Chunk size must be greater than 0');
@@ -20,6 +23,10 @@ function chunk(array: any[], size: number): any[][] {
     chunks.push(array.slice(i, i + size));
   }
   return chunks;
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'chunk', `Array chunking failed for array length: ${array?.length}, chunk size: ${size}`);
+    return [];
+  }
 }
 
 export default chunk;
