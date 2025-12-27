@@ -1,9 +1,21 @@
 'use strict';
 
 import { qerrors } from 'qerrors';
-import { createMetricsCollector, measureEventLoopLag } from './metricCollectionUtils'; // unified metric collection
-const analyzePerformanceMetrics: any = require('./analyzePerformanceMetrics'); // analysis
+import metricCollectionUtils from './metricCollectionUtils'; // unified metric collection
+const { createMetricsCollector, measureEventLoopLag } = metricCollectionUtils; // analysis
 const getPerformanceHealthStatus: any = require('./getPerformanceHealthStatus'); // health status
+const analyzePerformanceMetrics: any = require('./analyzePerformanceMetrics'); // analysis
+
+interface PerformanceMonitorOptions {
+  intervalMs?: number;
+  onAlert?: ((alert: any) => void) | null;
+  logger?: Console;
+  maxEventLoopLag?: number;
+  maxCpuUsage?: number;
+  maxMemoryUsage?: number;
+  maxResponseTime?: number;
+  minThroughput?: number;
+}
 
 const DEFAULT_THRESHOLDS = { // default performance thresholds
   maxEventLoopLag: 25, // 25ms max lag
@@ -32,7 +44,7 @@ const DEFAULT_THRESHOLDS = { // default performance thresholds
  * const health: any = monitor.getHealthStatus();
  * monitor.stop();
  */
-function createPerformanceMonitor(options = {}) { // factory for performance monitor instance
+function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // factory for performance monitor instance
   const thresholds: any = { ...DEFAULT_THRESHOLDS }; // initialize thresholds
   const intervalMs: any = options.intervalMs || 5000; // monitoring interval
   const onAlert: any = options.onAlert || null; // alert callback
@@ -45,18 +57,19 @@ function createPerformanceMonitor(options = {}) { // factory for performance mon
   if (typeof options.minThroughput === 'number') thresholds.minThroughput = options.minThroughput;
 
   const metricsCollector: any = createMetricsCollector(); // unified metric collection
-  let monitoringInterval = null; // interval timer
-  let metrics = null; // current metrics
-  let alerts = []; // alert history
+  let monitoringInterval: NodeJS.Timeout | null = null; // interval timer
+  let metrics: any = null; // current metrics
+  let alerts: any[] = []; // alert history
 
   function collectAndAnalyze() { // collect metrics and analyze
     metrics = metricsCollector.collect(); // collect current metrics
 
     measureEventLoopLag((lag: any): any => { // measure event loop async
-      metrics.eventLoopLag = lag; // update lag
+      // Don't modify metrics directly - return new metrics object
+      const updatedMetrics = { ...metrics, eventLoopLag: lag };
 
       const state: any = metricsCollector.getState();
-      const newAlerts: any = analyzePerformanceMetrics(metrics, thresholds, state.requestCount); // analyze
+      const newAlerts: any = analyzePerformanceMetrics(updatedMetrics || {}, thresholds, state.requestCount); // analyze
 
       for (const alert of newAlerts) { // process each new alert
         alerts.push(alert); // add to history

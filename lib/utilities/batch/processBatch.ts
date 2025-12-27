@@ -67,12 +67,12 @@ async function processBatch(items: any, processor: any, options: any = {}) {
       const release: any = await semaphore.acquire();
 
       try {
-        try {
+        let timeoutHandle: NodeJS.Timeout | undefined = undefined;
         const wrappedProcessor = async (): Promise<any> => {
           return Promise.race([
             processor(item, globalIndex),
             new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Timeout')), timeout)
+              timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeout)
             )
           ]);
         };
@@ -82,6 +82,11 @@ async function processBatch(items: any, processor: any, options: any = {}) {
           baseDelay: retryDelay
         });
 
+        // Clear timeout if operation completed to prevent resource leaks
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
+
         if (retryResult.ok) {
           return { success: true, item, result: retryResult.value, index: globalIndex, retries: retryResult.attempts - 1 };
         } else {
@@ -89,6 +94,11 @@ async function processBatch(items: any, processor: any, options: any = {}) {
           return { success: false, item, error: retryResult.error, index: globalIndex, retries: retryResult.attempts - 1 };
         }
       } catch (processorError) {
+        // Clear timeout if error occurred
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
+        
         qerrors(processorError instanceof Error ? processorError : new Error(String(processorError)), 'processBatch', `Batch item processing failed for index: ${globalIndex}`);
         return { success: false, item, error: processorError, index: globalIndex, retries: 0 };
       } finally {
@@ -122,7 +132,7 @@ async function processBatch(items: any, processor: any, options: any = {}) {
     if (progress.processed > 0) {
       const elapsed: any = Date.now() - startTime;
       const rate: any = progress.processed / elapsed;
-      progress.eta = (progress.total - progress.processed) / rate;
+      progress.eta = rate > 0 ? (progress.total - progress.processed) / rate : 0;
     }
 
     onProgress({ ...progress });

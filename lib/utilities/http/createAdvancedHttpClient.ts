@@ -24,6 +24,14 @@ import axios from 'axios';
 import { setTimeout as sleep } from 'timers/promises';
 const localVars: any = require('../../../config/localVars');
 
+interface ExtendedAxiosInstance {
+  getWithRetry(url: any, config?: any): any;
+  postWithRetry(url: any, data?: any, config?: any): any;
+  putWithRetry(url: any, data?: any, config?: any): any;
+  deleteWithRetry(url: any, config?: any): any;
+  healthCheck(config?: any): any;
+}
+
 interface Config {
   timeout?: number;
   maxRetries?: number;
@@ -148,24 +156,25 @@ function createAdvancedHttpClient(config: Config = {}) {
   );
 
   // Add convenience methods
-  httpClient.getWithRetry = (url: any, config: any = {}): any => {
+  const extendedClient = httpClient as unknown as ExtendedAxiosInstance;
+  extendedClient.getWithRetry = (url: any, config: any = {}): any => {
     return httpClient.get(url, { ...config, _retry: false, _retryCount: 0 });
   };
 
-  httpClient.postWithRetry = (url: any, data: any, config: any = {}): any => {
+  extendedClient.postWithRetry = (url: any, data: any, config: any = {}): any => {
     return httpClient.post(url, data, { ...config, _retry: false, _retryCount: 0 });
   };
 
-  httpClient.putWithRetry = (url: any, data: any, config: any = {}): any => {
+  extendedClient.putWithRetry = (url: any, data: any, config: any = {}): any => {
     return httpClient.put(url, data, { ...config, _retry: false, _retryCount: 0 });
   };
 
-  httpClient.deleteWithRetry = (url: any, config: any = {}): any => {
+  extendedClient.deleteWithRetry = (url: any, config: any = {}): any => {
     return httpClient.delete(url, { ...config, _retry: false, _retryCount: 0 });
   };
 
   // Health check method
-  httpClient.healthCheck = async (url: any, config: any = {}): Promise<any> => {
+  extendedClient.healthCheck = async (url: any, config: any = {}): Promise<any> => {
     try {
       const response: any = await httpClient.head(url || '/', { ...config, timeout: 5000 });
       return { healthy: true, status: response.status, response };
@@ -175,7 +184,7 @@ function createAdvancedHttpClient(config: Config = {}) {
     }
   };
 
-  return httpClient;
+  return extendedClient;
 }
 
 // Helper function to generate request IDs

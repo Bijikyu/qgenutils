@@ -7,23 +7,36 @@ const ALLOWED_HEADERS = [ // headers safe to log
   'user-agent', 'accept-language', 'accept-encoding'
 ];
 
+interface SafeLoggingContextOptions {
+  allowedHeaders?: string[];
+}
+
+interface SafeLoggingContext {
+  method: any;
+  url: any;
+  path: any;
+  ip: any;
+  timestamp: string;
+  [key: string]: any; // Allow dynamic properties
+}
+
 /**
- * Creates a safe logging context that excludes sensitive request data
+ * Creates a safe logging context from Express request
+ *
+ * PURPOSE: Extracts and sanitizes request information for secure logging.
+ * Filters out sensitive headers and data while preserving essential
+ * debugging information. Essential for audit trails and security monitoring.
+ *
  * @param {Object} req - Express request object
  * @param {Object} [options] - Configuration options
- * @param {string[]} [options.allowedHeaders] - Additional headers to include
- * @returns {Object} Safe logging context object
+ * @returns {Object} Safe logging context
  * @example
- * app.use((req, res, next: any): any => {
- *   const context: any = createSafeLoggingContext(req);
- *   logger.info('Request received', context);
- *   next();
- * });
+ * const context = createSafeLoggingContext(req, { allowedHeaders: ['x-request-id'] });
  */
-function createSafeLoggingContext(req, options = {}) { // create safe Express request context
+function createSafeLoggingContext(req: any, options: SafeLoggingContextOptions = {}) { // create safe Express request context
   const allowedHeaders: any = [...ALLOWED_HEADERS, ...(options.allowedHeaders || [])];
 
-  const context = { // base context
+  const context: any = { // base context
     method: req.method,
     url: sanitizeUrl(req.url || req.originalUrl),
     path: req.path,

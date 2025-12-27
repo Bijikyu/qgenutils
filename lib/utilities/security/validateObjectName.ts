@@ -10,7 +10,11 @@
  * validateObjectName('images/photo.jpg'); // passes
  * validateObjectName('..'); // throws
  */
-function validateObjectName(objectName, options = {}) { // validate cloud storage object name
+interface ValidateObjectNameOptions {
+  maxLength?: number;
+}
+
+function validateObjectName(objectName: any, options: ValidateObjectNameOptions = {}) { // validate cloud storage object name
   const maxLength: any = options.maxLength || 1024;
 
   if (!objectName || typeof objectName !== 'string') {

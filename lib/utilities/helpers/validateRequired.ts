@@ -8,7 +8,14 @@
  * @param {boolean} options.allowEmptyObject - Whether empty objects are allowed
  * @returns {Object} Validation result with valid, errors, and value properties
  */
-function validateRequired(value, options = {}) {
+interface ValidateRequiredOptions {
+  fieldName?: string;
+  allowEmptyString?: boolean;
+  allowEmptyArray?: boolean;
+  allowEmptyObject?: boolean;
+}
+
+function validateRequired(value: any, options: ValidateRequiredOptions = {}) {
   const {
     fieldName = 'value',
     allowEmptyString = false,

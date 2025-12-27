@@ -6,14 +6,14 @@ import createIpTracker from './createIpTracker.js';
 interface SecurityMiddlewareOptions {
   logAllRequests?: boolean;
   sensitiveEndpoints?: string[];
-  logger?: Console | { log: (...args: any[]) => void; warn: (...args: any[]) => void; error: (...args: any[]) => void };
+  logger?: Console;
   ipTracker?: {
     startPeriodicCleanup: () => void;
+    stopPeriodicCleanup?: () => void;
     isBlocked: (ip: string) => boolean;
     getBlockExpiry: (ip: string) => number;
     track: (ip: string, patterns?: string[]) => { shouldBlock: boolean };
-    block: (ip: string) => number;
-    stopPeriodicCleanup?: () => void;
+    cleanup?: () => void;
   };
 }
 
@@ -57,7 +57,7 @@ function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}): Secu
 
   ipTracker.startPeriodicCleanup(); // start automatic cleanup
 
-  const middleware = async function securityMiddleware(req: Request, res: Response, next: () => void): Promise<void> {
+  async function securityMiddleware(req: Request, res: Response, next: () => void): void {
     const clientIp = req?.ip || req?.socket?.remoteAddress || 'unknown';
     const now = Date.now();
 
@@ -73,14 +73,13 @@ function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}): Secu
       });
       return;
     }
+    else {
+      let suspiciousPatterns: string[] = [];
+      try {
+        suspiciousPatterns = detectSuspiciousPatterns(req); // detect suspicious patterns
 
-try {
-try {
-try {
-      const suspiciousPatterns = detectSuspiciousPatterns(req); // detect suspicious patterns
-
-      if (suspiciousPatterns.length > 0) { // log and track suspicious activity
-        logger.warn('Suspicious activity detected:', {
+        if (suspiciousPatterns.length > 0) { // log and track suspicious activity
+          logger.warn('Suspicious activity detected:', {
           ip: clientIp,
           url: req.url,
           method: req.method,
@@ -106,19 +105,16 @@ try {
 
           return;
         }
+        }
       }
+      try {
     } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'createSecurityMiddleware', `Security pattern detection failed for IP: ${clientIp}`);
-      // Continue to next middleware even if security check fails
-    }
+        qerrors(error instanceof Error ? error : new Error(String(error)), 'createSecurityMiddleware', `Security pattern detection failed for IP: ${clientIp}`);
+        // Continue to next middleware even if security check fails
       }
-    } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'createSecurityMiddleware', `Security pattern detection failed for IP: ${clientIp}`);
-      // Continue to next middleware even if security check fails
-    }
-    } else {
-      ipTracker.track(clientIp); // track normal request
-    }
+
+      // Track normal requests  
+      ipTracker.track(clientIp);
 
     const isSensitive = sensitiveEndpoints.some((ep: string) => req.path?.startsWith(ep)); // check sensitive endpoint
     if (logAllRequests || isSensitive) { // log request
@@ -131,14 +127,15 @@ try {
         timestamp: new Date().toISOString()
       };
 
-      if (suspiciousPatterns.length > 0) {
-        logData.suspiciousPatterns = suspiciousPatterns;
-      }
-
-      logger.log('Security Request:', JSON.stringify(logData));
+    // Log request after try-catch block
+    if (suspiciousPatterns && suspiciousPatterns.length > 0) {
+      logData.suspiciousPatterns = suspiciousPatterns;
     }
 
+    logger.log('Security Request:', JSON.stringify(logData));
+
     next(); // continue to next middleware
+    }
   };
 
   // Add cleanup method to middleware

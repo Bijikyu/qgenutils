@@ -1,5 +1,9 @@
 'use strict';
 
+interface ValidationErrorHandlerOptions {
+  sendError?: (res: any, errorPayload: any) => Promise<void>;
+}
+
 /**
  * Creates a validation error handler for a specific controller
  * Provides standardized validation error responses
@@ -11,7 +15,7 @@
  * const handleError: any = createValidationErrorHandler('UserController');
  * handleError(res, 'Email is required', 'email');
  */
-function createValidationErrorHandler(controllerName, options = {}) { // factory for validation error handlers
+function createValidationErrorHandler(controllerName: string, options: ValidationErrorHandlerOptions = {}) { // factory for validation error handlers
   if (typeof controllerName !== 'string' || !controllerName.trim()) {
     throw new Error('controllerName is required');
   }
@@ -23,7 +27,18 @@ function createValidationErrorHandler(controllerName, options = {}) { // factory
       throw new Error('Valid Express response object required');
     }
 
-    const errorPayload = { // build error payload
+    interface ValidationErrorPayload {
+      success: boolean;
+      error: {
+        type: string;
+        message: string;
+        field: string | null;
+        controller: string;
+        metadata?: any;
+      };
+    }
+
+    const errorPayload: ValidationErrorPayload = { // build error payload
       success: false,
       error: {
         type: 'VALIDATION_ERROR',

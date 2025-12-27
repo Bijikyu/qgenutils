@@ -11,7 +11,12 @@
  * @param {Object} options.logger - Logger instance for outputting alerts
  * @returns {Array} Updated alerts array
  */
-function processAlerts(alerts, newAlerts, options = {}) {
+interface AlertProcessorOptions {
+  maxAlerts?: number;
+  logger?: Console;
+}
+
+function processAlerts(alerts: any[], newAlerts: any[], options: AlertProcessorOptions = {}) {
   const {
     maxAlerts = 50,
     logger = console
@@ -54,14 +59,19 @@ function processAlerts(alerts, newAlerts, options = {}) {
  * @returns {Object} Standardized alert object
  */
 function createAlert(message, severity = 'warning', metadata = null, timestamp = Date.now()) {
-  return {
+  const alert: any = {
     id: `alert_${timestamp}_${Math.random().toString(36).substring(2, 11)}`,
     message,
     severity,
     timestamp,
-    createdAt: new Date(timestamp).toISOString(),
-    ...(metadata && { metadata })
+    createdAt: new Date(timestamp).toISOString()
   };
+  
+  if (metadata && typeof metadata === 'object') {
+    alert.metadata = metadata;
+  }
+  
+  return alert;
 }
 
 /**

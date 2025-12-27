@@ -204,7 +204,7 @@ function safeRemoveNonAlphaNumeric(value, defaultValue = ``) {
  * @param {string} defaultValue - Default value if input is not a string
  * @returns {string} Transformed string or default value
  */
-function safeTransform(value, transformations = [], defaultValue = ``) {
+function safeTransform(value: any, transformations: ((value: any) => any)[] = [], defaultValue = ``) {
   if (typeof value !== `string`) {
     return defaultValue;
   }
@@ -222,7 +222,12 @@ function safeTransform(value, transformations = [], defaultValue = ``) {
  * @param {Array} steps - Transformation steps with functions and options
  * @returns {Function} Pipeline function
  */
-function createStringPipeline(steps = []) {
+interface TransformStep {
+  fn: (value: any) => any;
+  [key: string]: any;
+}
+
+function createStringPipeline(steps: TransformStep[] = []) {
   return function(value, defaultValue = ``) {
     return safeTransform(value, steps.map(step => step.fn), defaultValue);
   };

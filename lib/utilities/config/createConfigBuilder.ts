@@ -1,5 +1,11 @@
 'use strict';
 
+interface ConfigBuilderOptions {
+  deepClone?: boolean;
+  addTimestamps?: boolean;
+  errorHandler?: ((error: Error, inputOptions: any) => any) | null;
+}
+
 /**
  * Creates a generic configuration builder with validation and defaults
  * @param {Object} schema - Configuration schema definition
@@ -20,7 +26,7 @@
  *   }
  * });
  */
-function createConfigBuilder(schema, options = {}) {
+function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
   const { 
     deepClone = true,
     addTimestamps = true,
@@ -226,9 +232,11 @@ function buildSchema(fieldDefinitions) {
     
     validators[fieldName] = schema.validator;
     
-    if (schema.transformer) {
-      transformers[fieldName] = schema.transformer;
-    }
+     if (schema.transformer) {
+        transformers[fieldName] = schema.transformer;
+      } else if (schema.transformers && schema.transformers[fieldName]) {
+        transformers[fieldName] = schema.transformers[fieldName];
+      }
   }
 
   return { defaults, validators, transformers };

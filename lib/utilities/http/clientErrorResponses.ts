@@ -2,7 +2,8 @@
  * Client error response utilities (4xx status codes)
  */
 
-import { sendErrorResponse } from './coreErrorResponse';
+import coreErrorResponse from './coreErrorResponse';
+const { sendErrorResponse } = coreErrorResponse;
 
 /**
  * Sends validation error responses

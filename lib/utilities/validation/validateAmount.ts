@@ -32,7 +32,7 @@ function validateAmount(amount: number): { isValid: boolean, errors: string[] } 
   // Check decimal precision using integer arithmetic to avoid floating point issues
   // Multiply by 100 and check if it's a whole number to validate 2 decimal places
   const cents = Math.round(amount * 100);
-  if (Math.abs((amount * 100) - cents) > 0.000001) {
+  if (!Number.isFinite(cents) || Math.abs((amount * 100) - cents) > 0.000001) {
     errors.push('too_many_decimals');
   }
 

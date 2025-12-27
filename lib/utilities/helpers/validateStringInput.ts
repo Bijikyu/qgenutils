@@ -8,7 +8,14 @@
  * @param {string} options.fieldName - Name of the field for error messages
  * @returns {Object} Validation result with valid, value, and error properties
  */
-function validateStringInput(value, options = {}) {
+interface ValidateStringInputOptions {
+  required?: boolean;
+  allowNull?: boolean;
+  trim?: boolean;
+  fieldName?: string;
+}
+
+function validateStringInput(value: any, options: ValidateStringInputOptions = {}) {
   const {
     required = false,
     allowNull = false,

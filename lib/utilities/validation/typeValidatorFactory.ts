@@ -2,7 +2,8 @@
  * Type validation factory utilities
  */
 
-import { createSuccessResult, createErrorResult } from './resultCreators';
+import resultCreators from './resultCreators';
+const { createSuccessResult, createErrorResult } = resultCreators;
 
 /**
  * Creates type validation functions
