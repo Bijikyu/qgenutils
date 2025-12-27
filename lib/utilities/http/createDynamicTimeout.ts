@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Creates dynamic timeout based on payload size.
  *
@@ -15,14 +17,25 @@
  * @param {number} payloadSize - Size of payload in bytes
  * @returns {number} Adjusted timeout based on payload size
  */
-function createDynamicTimeout(baseTimeout, payloadSize) {
-  if (typeof payloadSize !== 'number' || !Number.isFinite(payloadSize) || payloadSize <= 0) {
-    return baseTimeout;
+function createDynamicTimeout(baseTimeout: number, payloadSize: number): number {
+  try {
+    if (typeof baseTimeout !== 'number' || !Number.isFinite(baseTimeout) || baseTimeout <= 0) {
+      throw new Error('Base timeout must be a positive number');
+    }
+    
+    if (typeof payloadSize !== 'number' || !Number.isFinite(payloadSize) || payloadSize <= 0) {
+      return baseTimeout;
+    }
+    
+    const sizeMB: number = payloadSize / (1024 * 1024);
+    const additionalTime: number = Math.min(sizeMB * 10000, 120000);
+    return baseTimeout + additionalTime;
+  } catch (error) {
+    const safeBaseTimeout = typeof baseTimeout === 'number' && Number.isFinite(baseTimeout) ? baseTimeout : 'invalid';
+    const safePayloadSize = typeof payloadSize === 'number' && Number.isFinite(payloadSize) ? payloadSize : 'invalid';
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'createDynamicTimeout', `Dynamic timeout calculation failed for baseTimeout: ${safeBaseTimeout}, payloadSize: ${safePayloadSize}`);
+    return 30000; // Return safe default timeout
   }
-  
-  const sizeMB: any = payloadSize / (1024 * 1024);
-  const additionalTime: any = Math.min(sizeMB * 10000, 120000);
-  return baseTimeout + additionalTime;
 }
 
 export default createDynamicTimeout;

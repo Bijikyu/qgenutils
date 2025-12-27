@@ -34,6 +34,8 @@ function checkPrototypePollution(obj: any, visited = new WeakSet()): boolean {
   return false;
 }
 
+import { qerrors } from 'qerrors';
+
 /**
  * Safely parses JSON string with error handling
  * @param {string} jsonString - JSON string to parse
@@ -51,11 +53,14 @@ function safeJsonParse(jsonString: string, defaultValue: any = null): any {
     if (typeof parsed === 'object' && parsed !== null) {
       const hasDangerousProps = checkPrototypePollution(parsed);
       if (hasDangerousProps) {
+        const prototypeError = new Error('Prototype pollution detected in JSON');
+        qerrors(prototypeError, 'safeJsonParse', `JSON parsing blocked due to prototype pollution for string length: ${jsonString.length}`);
         return defaultValue;
       }
     }
     return parsed;
   } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'safeJsonParse', `JSON parsing failed for string length: ${jsonString.length}`);
     return defaultValue;
   }
 }

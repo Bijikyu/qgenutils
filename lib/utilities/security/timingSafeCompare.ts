@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Constant-Time String Comparison
  * 
@@ -24,11 +26,7 @@ const timingSafeCompare = (a: string, b: string): boolean => {
   } catch (error) {
     // If safe-compare fails, we cannot securely fall back as it would expose timing information
     // Log the error with proper context and monitoring for security issues
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error(`Security: safe-compare failed - ${errorMsg}`, { 
-      timestamp: new Date().toISOString(),
-      context: 'timing_safe_comparison_failure'
-    });
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'timingSafeCompare', `Constant-time comparison failed for string types: ${typeof a}, ${typeof b}`);
     return false;
   }
 };
