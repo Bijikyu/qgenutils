@@ -26,7 +26,10 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "suppressImplicitAnyIndexErrors": false,
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": false,
+    "allowArbitraryExtensions": true,
+    "rootDir": "./",
+    "allowArbitraryExtensions": true
   },
   "include": [
     "**/*.ts",
