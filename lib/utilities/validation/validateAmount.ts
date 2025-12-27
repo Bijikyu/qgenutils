@@ -1,5 +1,7 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
+
 /**
  * Validate monetary amount format and business rules
  * @param {number} amount - Amount to validate (must be a number, not string)
@@ -10,6 +12,7 @@
  * validateAmount('100') // returns { isValid: false, errors: ['not_number'] }
  */
 function validateAmount(amount: number): { isValid: boolean, errors: string[] } { // comprehensive monetary amount validation with business rules
+  try {
   if (typeof amount !== 'number') { // check type first
     return { isValid: false, errors: ['not_number'] }; // non-numeric rejection
   }
@@ -38,6 +41,10 @@ function validateAmount(amount: number): { isValid: boolean, errors: string[] } 
   }
 
   return { isValid: errors.length === 0, errors }; // return validation result
+  } catch (err) {
+    qerrors(err, 'validateAmount', `Amount validation failed for input: ${typeof amount}`);
+    return { isValid: false, errors: ['validation_error'] };
+  }
 }
 
 export default validateAmount;

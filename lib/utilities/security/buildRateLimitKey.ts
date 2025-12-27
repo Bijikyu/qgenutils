@@ -16,20 +16,12 @@ interface RequestObject {
   [key: string]: any;
 }
 
+import { createHash } from 'crypto';
+import { qerrors } from 'qerrors';
+
 /**
- * Build Rate Limit Key
- * 
- * Generates a unique key for rate limiting based on configurable strategies.
- * Supports IP-based, user-based, API key-based, and custom strategies.
- * 
- * @param {RequestObject} req - Request object
- * @param {RateLimitOptions} [options={}] - Key generation options
- * @param {string} [options.strategy='ip'] - Strategy: 'ip', 'user', 'apiKey', or 'custom'
- * @param {string} [options.prefix='rl'] - Key prefix
- * @param {Function} [options.customKeyFn] - Custom key generator function
- * @param {string} [options.userIdPath='user.id'] - Path to user ID in request
- * @param {string} [options.apiKeyPath='validatedApiKey'] - Path to API key in request
- * @returns {string} Rate limit key
+ * Builds rate limit keys from requests with configurable strategies
+ * Supports IP-based, user-based, API key-based, and custom key generation
  */
 function buildRateLimitKey(req: RequestObject, options: RateLimitOptions = {}): string {
   // Input validation
@@ -97,9 +89,10 @@ function getNestedValue(obj: any, path: string): any { // helper to get nested p
 
 function hashKey(key: string): string { // secure hash for privacy using crypto
   try {
-    const hash = crypto.createHash('sha256').update(key).digest('hex');
+    const hash = createHash('sha256').update(key).digest('hex');
     return `key_${hash.substring(0, 16)}`;
   } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashKey', `Secure hash generation failed for key length: ${key.length}`);
     // Fallback to simple hash if crypto fails
     let hash = 0;
     for (let i = 0; i < key.length; i++) {

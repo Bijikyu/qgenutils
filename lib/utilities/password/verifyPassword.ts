@@ -1,6 +1,7 @@
 
 
-import bcrypt from 'bcrypt'; // bcrypt for constant-time comparison
+import * as bcrypt from 'bcrypt'; // bcrypt for constant-time comparison
+import { qerrors } from 'qerrors';
 
 /**
  * Compares a plain text password against a bcrypt hash using constant-time comparison
@@ -17,6 +18,7 @@ const verifyPassword = async (password: string, hash: string): Promise<boolean> 
   try {
     return await bcrypt.compare(password, hash);
   } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', 'Password verification operation failed');
     // Don't log error details in production for security
     return false;
   }

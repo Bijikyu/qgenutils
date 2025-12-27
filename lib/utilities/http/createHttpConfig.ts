@@ -16,19 +16,25 @@
 const createJsonHeaders: any = require('./createJsonHeaders');
 const createBasicAuth: any = require('./createBasicAuth');
 const getContextualTimeout: any = require('./getContextualTimeout');
+const { qerrors } = require('qerrors');
 
-function createHttpConfig(apiKey, additionalHeaders, customTimeout) {
-  const config = {
-    timeout: customTimeout || getContextualTimeout('http-api')
-  };
-  
-  if (apiKey) {
-    config.auth = createBasicAuth(apiKey);
+function createHttpConfig(apiKey: string, additionalHeaders: Record<string, string>, customTimeout: number) {
+  try {
+    const config: any = {
+      timeout: customTimeout || getContextualTimeout('http-api')
+    };
+    
+    if (apiKey) {
+      config.auth = createBasicAuth(apiKey);
+    }
+    
+    config.headers = createJsonHeaders(additionalHeaders);
+    
+    return config;
+  } catch (err) {
+    qerrors(err, 'createHttpConfig', 'HTTP config creation failed');
+    throw err;
   }
-  
-  config.headers = createJsonHeaders(additionalHeaders);
-  
-  return config;
 }
 
 export default createHttpConfig;

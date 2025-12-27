@@ -1,5 +1,6 @@
 'use strict';
 
+import { qerrors } from 'qerrors';
 import { createMetricsCollector, measureEventLoopLag } from './metricCollectionUtils'; // unified metric collection
 const analyzePerformanceMetrics: any = require('./analyzePerformanceMetrics'); // analysis
 const getPerformanceHealthStatus: any = require('./getPerformanceHealthStatus'); // health status
@@ -74,6 +75,7 @@ function createPerformanceMonitor(options = {}) { // factory for performance mon
           try {
             onAlert(alert);
           } catch (err) {
+            qerrors(err instanceof Error ? err : new Error(String(err)), 'createPerformanceMonitor', 'Performance alert callback failed');
             logger.error('[performance] Alert callback error:', err);
           }
         }

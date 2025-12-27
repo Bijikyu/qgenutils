@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * JSON size and truncation utilities
  */
@@ -22,12 +24,13 @@ function truncateJson(jsonString: string, maxSize: number): string {
     return jsonString;
   }
   
-  try {
-    // Try to parse and truncate the object
+try {
+    // Try to parse and truncate object
     const parsed: any = JSON.parse(jsonString);
     return truncateObject(parsed, maxSize);
   } catch (error) {
-    // If parsing fails, just truncate the string
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateJson', `JSON parsing failed for size: ${jsonString.length}`);
+    // If parsing fails, just truncate string
     return jsonString.substring(0, Math.max(0, maxSize - 3)) + '...';
   }
 }
@@ -64,8 +67,14 @@ function truncateObject(obj: unknown, maxSize: number): string {
     return false;
   };
   
-  if (hasCircularRef(obj)) {
-    return JSON.stringify({ error: 'circular_reference_detected', truncated: true })
+  try {
+    if (hasCircularRef(obj)) {
+      return JSON.stringify({ error: 'circular_reference_detected', truncated: true })
+        .substring(0, Math.max(0, maxSize - 3)) + '...';
+    }
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', 'Circular reference detection failed');
+    return JSON.stringify({ error: 'truncation_failed', truncated: true })
       .substring(0, Math.max(0, maxSize - 3)) + '...';
   }
   
@@ -73,21 +82,27 @@ function truncateObject(obj: unknown, maxSize: number): string {
   let truncated: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
   const keys: string[] = Object.keys(truncated).reverse();
   
-  for (const key of keys) {
-    if (getJsonSize(JSON.stringify(truncated)) <= maxSize) {
-      break;
+  try {
+    for (const key of keys) {
+      if (getJsonSize(JSON.stringify(truncated)) <= maxSize) {
+        break;
+      }
+      delete truncated[key];
     }
-    delete truncated[key];
+    
+    const jsonString: any = JSON.stringify(truncated);
+    if (getJsonSize(jsonString) <= maxSize) {
+      return jsonString;
+    }
+    
+    // If still too big, return truncated string representation
+    return JSON.stringify({ truncated: true, size: getJsonSize(JSON.stringify(obj)) })
+      .substring(0, Math.max(0, maxSize - 3)) + '...';
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', 'Object truncation failed');
+    return JSON.stringify({ error: 'truncation_failed', truncated: true })
+      .substring(0, Math.max(0, maxSize - 3)) + '...';
   }
-  
-  const jsonString: any = JSON.stringify(truncated);
-  if (getJsonSize(jsonString) <= maxSize) {
-    return jsonString;
-  }
-  
-  // If still too big, return truncated string representation
-  return JSON.stringify({ truncated: true, size: getJsonSize(JSON.stringify(obj)) })
-    .substring(0, Math.max(0, maxSize - 3)) + '...';
 }
 
 export default {

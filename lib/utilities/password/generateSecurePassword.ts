@@ -1,6 +1,7 @@
 'use strict';
 
 import * as crypto from 'crypto'; // use crypto for secure randomness
+import { qerrors } from 'qerrors';
 
 const DEFAULT_LENGTH = 12; // default password length
 const MIN_LENGTH = 8; // minimum secure length
@@ -54,10 +55,16 @@ const secureRandomIndex = (max: number): number => { // generate secure random i
   const min = Math.floor((0xFFFFFFFF + 1) % max);
   let randomValue: number;
   
-  do {
-    const randomBytes = crypto.randomBytes(4);
-    randomValue = randomBytes.readUInt32BE(0);
-  } while (randomValue < min);
+  try {
+    do {
+      const randomBytes = crypto.randomBytes(4);
+      randomValue = randomBytes.readUInt32BE(0);
+    } while (randomValue < min);
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'secureRandomIndex', `Secure random generation failed for max: ${max}`);
+    // Fallback to less secure Math.random() if crypto fails
+    return Math.floor(Math.random() * max);
+  }
   
   return randomValue % max;
 };

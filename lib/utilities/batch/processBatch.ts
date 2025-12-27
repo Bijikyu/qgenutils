@@ -1,3 +1,5 @@
+import { qerrors } from 'qerrors';
+
 /**
  * Processes items in batches with concurrency control and progress tracking.
  *
@@ -65,6 +67,7 @@ async function processBatch(items: any, processor: any, options: any = {}) {
       const release: any = await semaphore.acquire();
 
       try {
+        try {
         const wrappedProcessor = async (): Promise<any> => {
           return Promise.race([
             processor(item, globalIndex),
@@ -85,6 +88,9 @@ async function processBatch(items: any, processor: any, options: any = {}) {
           onError(retryResult.error, item, globalIndex);
           return { success: false, item, error: retryResult.error, index: globalIndex, retries: retryResult.attempts - 1 };
         }
+      } catch (processorError) {
+        qerrors(processorError instanceof Error ? processorError : new Error(String(processorError)), 'processBatch', `Batch item processing failed for index: ${globalIndex}`);
+        return { success: false, item, error: processorError, index: globalIndex, retries: 0 };
       } finally {
         release();
       }
