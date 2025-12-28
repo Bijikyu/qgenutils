@@ -1,12 +1,45 @@
 /**
- * String transformation utilities for common string operations
+ * String Transformation Utilities - Safe, Type-Checked String Operations
+ * 
+ * PURPOSE: This module provides a comprehensive set of string transformation utilities
+ * that prioritize type safety and predictable behavior. All functions include built-in
+ * validation to prevent runtime errors when handling non-string inputs.
+ * 
+ * SECURITY CONSIDERATIONS: These utilities are designed to safely handle user input
+ * and malformed data without throwing exceptions. Each function returns a sensible
+ * default value when the input is not a string, making them ideal for data processing
+ * pipelines where input validation may not be complete.
+ * 
+ * DESIGN PATTERNS: 
+ * - All functions follow the "safe" prefix convention to indicate they include type checking
+ * - Consistent parameter ordering: (value, defaultValue, additionalOptions)
+ * - Immutable operations that never modify the original input
+ * - Composable design allowing functions to be chained or used in pipelines
+ * 
+ * PERFORMANCE CONSIDERATIONS: These utilities are optimized for common use cases
+ * while maintaining readability and safety. They avoid unnecessary object creation
+ * and use efficient string manipulation techniques.
  */
 
 /**
- * Safely trims a string with type checking
- * @param {*} value - Value to trim
- * @param {string} defaultValue - Default value if input is not a string
- * @returns {string} Trimmed string or default value
+ * Safely trims whitespace from both ends of a string with comprehensive type checking
+ * 
+ * PURPOSE: Removes leading and trailing whitespace from strings while safely handling
+ * non-string inputs. This is essential for cleaning user input and form data where
+ * the input type may not be guaranteed.
+ * 
+ * SECURITY: Prevents runtime errors when processing malformed data by returning
+ * a default value instead of throwing exceptions. This makes the function suitable
+ * for use in data validation pipelines.
+ * 
+ * @param {*} value - Value to trim (any type accepted for safety)
+ * @param {string} defaultValue - Default value if input is not a string (defaults to empty string)
+ * @returns {string} Trimmed string or default value if input is invalid
+ * 
+ * @example
+ * safeTrim('  hello world  ') // returns 'hello world'
+ * safeTrim(123) // returns ''
+ * safeTrim(null, 'default') // returns 'default'
  */
 function safeTrim(value, defaultValue = ``) {
   if (typeof value !== `string`) {
@@ -16,10 +49,26 @@ function safeTrim(value, defaultValue = ``) {
 }
 
 /**
- * Safely converts string to lowercase with type checking
- * @param {*} value - Value to convert
- * @param {string} defaultValue - Default value if input is not a string
- * @returns {string} Lowercase string or default value
+ * Safely converts string to lowercase with comprehensive type checking
+ * 
+ * PURPOSE: Converts strings to lowercase for case-insensitive comparisons and
+ * data normalization. Handles non-string inputs gracefully to prevent runtime
+ * errors in data processing pipelines.
+ * 
+ * USE CASES: Ideal for email normalization, username processing, search term
+ * preparation, and any scenario where case-insensitive handling is required.
+ * 
+ * INTERNATIONALIZATION: Uses JavaScript's built-in toLowerCase() method which
+ * handles Unicode characters appropriately for most common use cases.
+ * 
+ * @param {*} value - Value to convert (any type accepted for safety)
+ * @param {string} defaultValue - Default value if input is not a string (defaults to empty string)
+ * @returns {string} Lowercase string or default value if input is invalid
+ * 
+ * @example
+ * safeToLower('HELLO WORLD') // returns 'hello world'
+ * safeToLower('Mixed CASE') // returns 'mixed case'
+ * safeToLower(456) // returns ''
  */
 function safeToLower(value, defaultValue = ``) {
   if (typeof value !== `string`) {
@@ -93,10 +142,29 @@ function safeNormalizeWhitespace(value, defaultValue = ``) {
 }
 
 /**
- * Converts string to camelCase
- * @param {*} value - Value to convert
- * @param {string} defaultValue - Default value if input is not a string
- * @returns {string} camelCase string or default value
+ * Converts string to camelCase format with comprehensive type checking
+ * 
+ * PURPOSE: Transforms strings from various formats (snake_case, kebab-case,
+ * Title Case, etc.) into camelCase for JavaScript property names and variable
+ * naming conventions. Essential for API response processing and data mapping.
+ * 
+ * ALGORITHM: Uses a sophisticated regex-based approach that:
+ * 1. Identifies word boundaries (spaces, hyphens, underscores, capital letters)
+ * 2. Capitalizes the first letter of each word except the first
+ * 3. Removes all separators to create the camelCase format
+ * 
+ * EDGE CASES: Handles multiple consecutive separators, mixed case input,
+ * and strings with no separators. Preserves Unicode characters appropriately.
+ * 
+ * @param {*} value - Value to convert (any type accepted for safety)
+ * @param {string} defaultValue - Default value if input is not a string (defaults to empty string)
+ * @returns {string} camelCase string or default value if input is invalid
+ * 
+ * @example
+ * safeToCamelCase('hello_world') // returns 'helloWorld'
+ * safeToCamelCase('hello-world') // returns 'helloWorld'
+ * safeToCamelCase('Hello World') // returns 'helloWorld'
+ * safeToCamelCase('alreadyCamelCase') // returns 'alreadyCamelCase'
  */
 function safeToCamelCase(value, defaultValue = ``) {
   if (typeof value !== `string`) {
@@ -198,11 +266,31 @@ function safeRemoveNonAlphaNumeric(value, defaultValue = ``) {
 }
 
 /**
- * Performs multiple string transformations in sequence
- * @param {*} value - Value to transform
- * @param {Array} transformations - Array of transformation functions
- * @param {string} defaultValue - Default value if input is not a string
- * @returns {string} Transformed string or default value
+ * Performs multiple string transformations in sequence with pipeline pattern
+ * 
+ * PURPOSE: Enables composition of multiple string operations into a single
+ * transformation pipeline. This is powerful for complex data processing where
+ * multiple transformations need to be applied in a specific order.
+ * 
+ * DESIGN PATTERN: Uses the functional programming pipeline pattern with
+ * Array.reduce() to chain transformations. Each transformation receives
+ * the output of the previous one as its input.
+ * 
+ * ERROR HANDLING: Gracefully handles transformation functions that return
+ * null/undefined by falling back to the default value, ensuring the pipeline
+ * never breaks due to unexpected function behavior.
+ * 
+ * PERFORMANCE: Efficiently processes transformations without creating
+ * intermediate arrays, using a single pass through the transformation array.
+ * 
+ * @param {*} value - Value to transform (any type accepted for safety)
+ * @param {Array} transformations - Array of transformation functions to apply in sequence
+ * @param {string} defaultValue - Default value if input is not a string (defaults to empty string)
+ * @returns {string} Transformed string or default value if input is invalid
+ * 
+ * @example
+ * const pipeline = [safeTrim, safeToLower, safeToCamelCase];
+ * safeTransform('  HELLO WORLD  ', pipeline) // returns 'helloWorld'
  */
 function safeTransform(value: any, transformations: ((value: any) => any)[] = [], defaultValue = ``) {
   if (typeof value !== `string`) {
@@ -234,7 +322,24 @@ function createStringPipeline(steps: TransformStep[] = []) {
 }
 
 /**
- * Common transformation presets
+ * Common transformation presets for frequently used string operations
+ * 
+ * PURPOSE: Provides ready-to-use transformation functions for the most common
+ * string processing scenarios. These presets eliminate the need to create
+ * inline functions and enable consistent string processing across the application.
+ * 
+ * ARCHITECTURE: Each preset is a curried function that can be used directly
+ * or composed into larger transformation pipelines. They follow the same
+ * safety patterns as the individual transformation functions.
+ * 
+ * USAGE PATTERNS: These presets are designed for:
+ * - Data normalization (trim, normalize)
+ * - Case conversion (lower, upper, capitalize)
+ * - Format conversion (camelCase, snakeCase, kebabCase)
+ * - Combined operations (trimLower, trimUpper)
+ * 
+ * EXTENSIBILITY: New presets can be easily added by composing existing
+ * transformation functions, ensuring consistency and reusability.
  */
 const TRANSFORM_PRESETS = {
   trim: (value) => safeTrim(value),
