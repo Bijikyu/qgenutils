@@ -19,15 +19,15 @@ import createCachedLoader from './lib/utilities/module-loader/createCachedLoader
 import createSimpleLoader from './lib/utilities/module-loader/createSimpleLoader.js';
 import createDirectLoader from './lib/utilities/module-loader/createDirectLoader.js';
 
-// Performance monitoring utilities
-import collectPerformanceMetrics from './lib/utilities/performance-monitor/collectPerformanceMetrics.js';
-import measureEventLoopLag from './lib/utilities/performance-monitor/measureEventLoopLag.js';
-import analyzePerformanceMetrics from './lib/utilities/performance-monitor/analyzePerformanceMetrics.js';
-import getPerformanceHealthStatus from './lib/utilities/performance-monitor/getPerformanceHealthStatus.js';
-import createPerformanceMonitor from './lib/utilities/performance-monitor/createPerformanceMonitor.js';
+// Performance monitoring utilities - temporarily disabled due to import issues
+// import collectPerformanceMetrics from './lib/utilities/performance-monitor/collectPerformanceMetrics.js';
+// import measureEventLoopLag from './lib/utilities/performance-monitor/measureEventLoopLag.js';
+// import analyzePerformanceMetrics from './lib/utilities/performance-monitor/analyzePerformanceMetrics.js';
+// import getPerformanceHealthStatus from './lib/utilities/performance-monitor/getPerformanceHealthStatus.js';
+// import createPerformanceMonitor from './lib/utilities/performance-monitor/createPerformanceMonitor.js';
 
 // Validation utilities
-import validateEmailFormat from './lib/utilities/validation/validateEmail.js';
+import validateEmailFormat from './lib/utilities/validation/validateEmailSimple.js';
 import validatePasswordStrength from './lib/utilities/validation/validatePassword.js';
 import validateMonetaryAmount from './lib/utilities/validation/validateAmount.js';
 import validateApiKeyFormat from './lib/utilities/validation/validateApiKey.js';
@@ -79,6 +79,33 @@ import cleanupJobs from './lib/utilities/scheduling/cleanupJobs.js';
 import createApiKeyValidator from './lib/utilities/middleware/createApiKeyValidator.js';
 import createRateLimiter from './lib/utilities/middleware/createRateLimiter.js';
 
+// Legacy backward compatibility imports - DateTime utilities
+import formatDateTime from './lib/utilities/datetime/formatDateTime.js';
+import formatDuration from './lib/utilities/datetime/formatDuration.js';
+import addDays from './lib/utilities/datetime/addDays.js';
+
+// Legacy backward compatibility imports - URL utilities  
+import ensureProtocol from './lib/utilities/url/ensureProtocol.js';
+import normalizeUrlOrigin from './lib/utilities/url/normalizeUrlOrigin.js';
+import stripProtocol from './lib/utilities/url/stripProtocol.js';
+import parseUrlParts from './lib/utilities/url/parseUrlParts.js';
+
+// Legacy backward compatibility imports - Missing legacy functions
+import {
+  requireFields,
+  checkPassportAuth,
+  hasGithubStrategy,
+  calculateContentLength,
+  getRequiredHeader,
+  sendJsonResponse,
+  buildCleanHeaders,
+  renderView,
+  registerViewRoute
+} from './lib/utilities/legacy/missingLegacyFunctions.js';
+
+// Legacy backward compatibility alias
+const validateEmail = validateEmailFormat;
+
 // Export everything
 export {
   logger,
@@ -97,12 +124,12 @@ export {
   createCachedLoader,
   createSimpleLoader,
   createDirectLoader,
-  // Performance monitoring utilities
-  collectPerformanceMetrics,
-  measureEventLoopLag,
-  analyzePerformanceMetrics,
-  getPerformanceHealthStatus,
-  createPerformanceMonitor,
+  // Performance monitoring utilities - temporarily disabled due to import issues
+  // collectPerformanceMetrics,
+  // measureEventLoopLag,
+  // analyzePerformanceMetrics,
+  // getPerformanceHealthStatus,
+  // createPerformanceMonitor,
   // Validation utilities
   validateEmailFormat,
   validatePasswordStrength,
@@ -150,7 +177,18 @@ export {
   cleanupJobs,
   // Middleware utilities
   createApiKeyValidator,
-  createRateLimiter
+  createRateLimiter,
+  // Legacy backward compatibility exports - DateTime utilities
+  formatDateTime,
+  formatDuration,
+  addDays,
+  // Legacy backward compatibility exports - URL utilities
+  ensureProtocol,
+  normalizeUrlOrigin,
+  stripProtocol,
+  parseUrlParts,
+  // Legacy backward compatibility exports - Validation aliases
+  validateEmail
 };
 
 export default {
@@ -166,11 +204,11 @@ export default {
   createCachedLoader,
   createSimpleLoader,
   createDirectLoader,
-  collectPerformanceMetrics,
-  measureEventLoopLag,
-  analyzePerformanceMetrics,
-  getPerformanceHealthStatus,
-  createPerformanceMonitor,
+  // collectPerformanceMetrics,
+  // measureEventLoopLag,
+  // analyzePerformanceMetrics,
+  // getPerformanceHealthStatus,
+  // createPerformanceMonitor,
   validateEmailFormat,
   validatePasswordStrength,
   validateMonetaryAmount,
@@ -213,5 +251,16 @@ export default {
   scheduleOnce,
   cleanupJobs,
   createApiKeyValidator,
-  createRateLimiter
+  createRateLimiter,
+  // Legacy backward compatibility exports - DateTime utilities
+  formatDateTime,
+  formatDuration,
+  addDays,
+  // Legacy backward compatibility exports - URL utilities
+  ensureProtocol,
+  normalizeUrlOrigin,
+  stripProtocol,
+  parseUrlParts,
+  // Legacy backward compatibility exports - Validation aliases
+  validateEmail
 };

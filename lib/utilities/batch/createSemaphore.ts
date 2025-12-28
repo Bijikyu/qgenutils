@@ -36,7 +36,7 @@ function createSemaphore(permits: number) {
     }
   }
 
-  async function waitForAll(): Promise<void> {
+  async function waitForAll(signal?: AbortSignal): Promise<void> {
     if (availablePermits === permits && waitQueue.length === 0) {
       return;
     }
