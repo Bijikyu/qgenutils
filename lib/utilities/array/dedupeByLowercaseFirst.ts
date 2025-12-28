@@ -30,9 +30,9 @@
  * - Preserves input order for first occurrences
  * - Memory efficient with Map data structure
  * 
- * @param {Array} items - Array of items to deduplicate
- * @param {Function} keyOf - Function to extract comparison key from each item
- * @returns {Array} Deduplicated array preserving first occurrences
+ * @param {T[]} items - Array of items to deduplicate
+ * @param {(item: T) => K} keyOf - Function to extract comparison key from each item
+ * @returns {T[]} Deduplicated array preserving first occurrences
  * @throws {TypeError} When items is not iterable or keyOf is not a function
  * 
  * @example
@@ -43,7 +43,7 @@
  *   { id: 3, email: 'jane@example.com' }
  * ];
  * 
- * const deduped: any = dedupeByLowercaseFirst(users, user => user.email);
+ * const deduped = dedupeByLowercaseFirst(users, user => user.email);
  * // Result: [{ id: 1, email: 'John@example.com' }, { id: 3, email: 'jane@example.com' }]
  * ```
  * 
@@ -52,7 +52,10 @@
  * @author QGenUtils Team
  */
 
-const dedupeByLowercaseFirst = (items, keyOf: any): any => {
+const dedupeByLowercaseFirst = <T, K extends string>(
+  items: T[], 
+  keyOf: (item: T) => K
+): T[] => {
   // Input validation for robustness
   if (!Array.isArray(items)) {
     throw new TypeError(`Expected array for items parameter, got ${typeof items}`);
@@ -62,13 +65,14 @@ const dedupeByLowercaseFirst = (items, keyOf: any): any => {
     throw new TypeError(`Expected function for keyOf parameter, got ${typeof keyOf}`);
   }
   
-  const seen: any = new Map();
+  const seen = new Map<string, T>();
   
   for (const item of items) {
-    const raw: any = (keyOf(item) ?? ``).trim();
+    const keyValue = keyOf(item);
+    const raw = String(keyValue ?? '').trim();
     if (!raw) continue;
     
-    const key: any = raw.toLowerCase();
+    const key = raw.toLowerCase();
     !seen.has(key) && seen.set(key, item);
   }
   

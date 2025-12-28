@@ -42,3 +42,4 @@ function validateApiKey(apiKey: string): boolean {
 }
 
 export default validateApiKey;
+export { validateApiKey as validateApiKeyFormat };

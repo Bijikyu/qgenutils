@@ -1,7 +1,7 @@
 
-# QGenUtils - Utilities Library
+# QGenUtils - Comprehensive Security-First Utilities Library
 
-A Node.js utility library providing DateTime formatting, HTTP operations, URL processing, collections manipulation, batch processing, and performance utilities. Designed as a lightweight alternative to heavy npm packages with comprehensive error handling.
+A production-ready Node.js utility library providing comprehensive functionality for authentication, HTTP operations, URL processing, validation, datetime formatting, password security, and performance monitoring. Designed as a lightweight alternative to heavy npm packages with fail-closed security patterns and comprehensive error handling.
 
 ## Installation
 
@@ -23,14 +23,41 @@ const { logger } = require('qgenutils'); // Winston logger instance
 
 ## Features
 
-- **DateTime Utilities** - Format dates, calculate durations, relative time
-- **HTTP Utilities** - Headers, timeouts, configuration builders
-- **URL Utilities** - Protocol handling, URL parsing and normalization
-- **Collections** - Array and object manipulation (groupBy, chunk, pick, omit, deepMerge, etc.)
-- **Batch Processing** - Concurrency control, retry with backoff
-- **Performance** - Memoize, throttle, debounce
-- **ID Generation** - Execution IDs, idempotency keys
-- **Logging** - Winston logger with daily rotation
+### 🔐 Security-First Utilities
+- **Password Security** - OWASP-compliant hashing, verification, and secure generation
+- **Input Validation** - Comprehensive validation with RFC 5322 email compliance
+- **API Security** - Timing-safe comparisons, API key masking, rate limiting
+- **Data Sanitization** - XSS prevention and injection-safe string processing
+
+### 📡 HTTP & Network Utilities  
+- **HTTP Configuration** - Dynamic timeouts, retry logic, header management
+- **URL Processing** - Protocol enforcement, normalization, parsing
+- **Authentication** - Basic auth, API key validation, middleware
+
+### 📅 DateTime Utilities
+- **Date Formatting** - ISO to locale conversion with timezone support
+- **Duration Calculation** - Precise time interval formatting
+- **Relative Time** - Human-friendly time display
+
+### 📊 Collections & Data Structures
+- **Array Manipulation** - groupBy, chunk, partition, unique, shuffle
+- **Object Utilities** - deepMerge, pick, omit, nested value access
+- **Data Structures** - Min-heap implementation for priority queues
+
+### ⚡ Performance & Concurrency
+- **Batch Processing** - Semaphore-based concurrency control
+- **Retry Logic** - Exponential backoff with jitter
+- **Performance Monitoring** - Event loop lag, metrics collection
+- **Optimization** - Memoize, throttle, debounce utilities
+
+### 🛠️ Configuration & Module Management
+- **Secure Configuration** - Sensitive value masking and validation
+- **Module Loading** - Dynamic imports with caching
+- **ID Generation** - Cryptographically secure identifiers
+
+### 📝 Logging & Monitoring
+- **Structured Logging** - Winston-based with daily rotation
+- **Error Tracking** - Comprehensive error handling with qerrors integration
 
 ## API Reference
 
@@ -291,21 +318,39 @@ import { formatDateTime, ensureProtocol, validateEmailFormat } from 'qgenutils';
 
 ## Module Architecture
 
-The library is organized into focused modules under `lib/utilities/`:
+The library is organized into security-focused modules under `lib/utilities/`:
 
-- `datetime/` - Date and time utilities
-- `url/` - URL manipulation functions
-- `http/` - HTTP configuration helpers
-- `collections/` - Array and object utilities
-- `batch/` - Batch processing with concurrency
-- `performance/` - Memoize, throttle, debounce
-- `id-generation/` - ID and key generation
-- `string/` - String manipulation
-- `file/` - File utilities
-- `config/` - Configuration builders
-- `scheduling/` - Interval and job management
-- `validation/` - Input validation utilities
-- `security/` - Security utilities (rate limiting, API key handling)
+### 🔐 Security Modules
+- `security/` - Authentication, API key handling, timing-safe comparisons
+- `validation/` - Comprehensive input validation with Zod schemas
+- `password/` - OWASP-compliant password hashing and verification
+- `middleware/` - Express security middleware (rate limiting, API validation)
+
+### 📡 Network & HTTP Modules  
+- `http/` - HTTP configuration, timeouts, retry logic
+- `url/` - URL processing, validation, and normalization
+
+### 📊 Data Processing Modules
+- `collections/` - Array and object manipulation utilities
+- `batch/` - Concurrent batch processing with semaphore control
+- `performance/` - Optimization utilities (memoize, throttle, debounce)
+- `data-structures/` - Efficient algorithms (Min-heap, etc.)
+
+### ⚙️ Configuration & System Modules
+- `config/` - Application configuration builders
+- `secure-config/` - Sensitive configuration value handling
+- `module-loader/` - Dynamic module loading with caching
+- `scheduling/` - Job scheduling and interval management
+
+### 📅 Utility Modules
+- `datetime/` - Date and time manipulation
+- `string/` - Secure string processing and sanitization
+- `file/` - File size and path utilities
+- `id-generation/` - Cryptographically secure identifier generation
+
+### 📊 Monitoring Modules
+- `performance-monitor/` - Event loop lag and system metrics
+- `logger/` - Structured logging with Winston integration
 
 ## Testing
 
@@ -326,10 +371,22 @@ npm run test:coverage   # generate coverage reports
 
 ## Dependencies
 
-- `qerrors` - Error tracking and analysis
-- `winston-daily-rotate-file` - Logging support
-- `@types/node` - TypeScript definitions
-- `qtests` - Test utilities
+### Core Dependencies
+- `qerrors` - Comprehensive error tracking and analysis
+- `winston` & `winston-daily-rotate-file` - Production logging support
+- `bcrypt` - Secure password hashing (OWASP compliant)
+- `validator` - Industry-standard input validation
+- `axios` - HTTP client with retry capabilities
+- `date-fns` - Reliable date manipulation
+- `sanitize-html` - XSS-safe HTML sanitization
+- `express-rate-limit` & `helmet` - Security middleware
+- `zod` - Schema-based validation with TypeScript integration
+
+### Development Dependencies
+- `@types/node` - Complete TypeScript definitions
+- `qtests` - Comprehensive test utilities
+- `typescript` - Type checking and compilation
+- `jest` - Testing framework with coverage reporting
 
 ## License
 

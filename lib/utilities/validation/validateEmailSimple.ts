@@ -95,4 +95,4 @@ function validateEmail(email: any): boolean {
 }
 
 export default validateEmail;
-export { validateEmail };
+export { validateEmail as validateEmailFormat };

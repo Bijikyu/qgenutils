@@ -1,32 +1,90 @@
-'use strict';
-
-const SECURITY_CONFIG: any = require('./securityConfig');
-
 /**
- * Detects suspicious patterns in HTTP requests
- * @param {Object} req - Express request object
- * @param {Object} [config] - Optional config overrides
- * @returns {string[]} Array of detected suspicious pattern names
+ * HTTP Request Security Pattern Detection Utility
+ * 
+ * PURPOSE: Analyzes HTTP requests for common attack patterns and suspicious
+ * characteristics. This utility provides early detection of potential security
+ * threats including SQL injection, XSS attacks, path traversal, and oversized
+ * requests that could indicate denial of service attempts.
+ * 
+ * SECURITY THREATS DETECTED:
+ * - Oversized Requests: Extremely large content-Length headers for DoS protection
+ * - URL Length Attacks: Excessively long URLs that could overwhelm servers
+ * - Path Traversal: Directory traversal attempts using relative paths
+ * - XSS Injection: Cross-site scripting attack patterns in URLs
+ * - SQL Injection: Common SQL injection attack patterns
+ * - Command Injection: System command execution attempts
+ * 
+ * IMPLEMENTATION STRATEGY:
+ * - Multi-Pattern Detection: Simultaneous checking for multiple attack vectors
+ * - Configurable Thresholds: Adjustable limits for different environments
+ * - Non-Blocking: Returns detected patterns without throwing exceptions
+ * - Performance Optimized: Simple string operations for minimal overhead
+ * - False Positive Reduction: Careful regex patterns to minimize noise
+ * 
+ * INTEGRATION POINTS:
+ * - Express middleware: Pre-request validation
+ * - API Gateway: Request screening before routing
+ * - Load Balancer: Request analysis before forwarding
+ * - Security Monitoring: Logging and alerting systems
+ * - Rate Limiting: Enhanced detection when combined with rate limiting
+ * 
+ * @param {any} req - Express request object containing headers, URL, and other request data
+ * @param {DetectSuspiciousPatternsOptions} [config] - Optional configuration overrides for thresholds
+ * @returns {string[]} Array of detected suspicious pattern names for logging/alerting
+ * 
  * @example
- * const patterns: any = detectSuspiciousPatterns(req);
- * if (patterns.length > 0) console.warn('Suspicious:', patterns);
+ * ```typescript
+ * // Basic usage in Express middleware
+ * app.use((req, res, next) => {
+ *   const suspiciousPatterns = detectSuspiciousPatterns(req);
+ *   if (suspiciousPatterns.length > 0) {
+ *     logger.warn('Suspicious request detected', { 
+ *       ip: req.ip, 
+ *       url: req.url, 
+ *       patterns: suspiciousPatterns 
+ *     });
+ *     // Take action: block, log, or monitor
+ *   }
+ *   next();
+ * });
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Custom configuration for stricter security
+ * const patterns = detectSuspiciousPatterns(req, {
+ *   maxRequestSize: 1024 * 1024, // 1MB limit
+ *   maxUrlLength: 1000          // Shorter URL limit
+ * });
+ * ```
  */
+
+import { qerrors } from 'qerrors';
+
 interface DetectSuspiciousPatternsOptions {
+  /** Maximum allowed request body size in bytes (default from security config) */
   maxRequestSize?: number;
+  /** Maximum allowed URL length in characters (default from security config) */
   maxUrlLength?: number;
 }
 
-function detectSuspiciousPatterns(req: any, config: DetectSuspiciousPatternsOptions = {}) { // detect attack patterns in request
-  const maxRequestSize: any = config.maxRequestSize || SECURITY_CONFIG.MAX_REQUEST_SIZE;
-  const maxUrlLength: any = config.maxUrlLength || SECURITY_CONFIG.MAX_URL_LENGTH;
-  const patterns: any = [];
+// Security configuration with safe defaults
+const SECURITY_CONFIG = {
+  MAX_REQUEST_SIZE: 10 * 1024 * 1024, // 10MB default
+  MAX_URL_LENGTH: 2048                // 2KB default
+};
 
-  const contentLength: any = parseInt(req.headers?.['content-length'] || '0', 10); // check content length
+function detectSuspiciousPatterns(req: any, config: DetectSuspiciousPatternsOptions = {}) {
+  const maxRequestSize = config.maxRequestSize || SECURITY_CONFIG.MAX_REQUEST_SIZE;
+  const maxUrlLength = config.maxUrlLength || SECURITY_CONFIG.MAX_URL_LENGTH;
+  const patterns: string[] = [];
+
+  const contentLength = parseInt(req.headers?.['content-length'] || '0', 10); // check content length
   if (contentLength > maxRequestSize) {
     patterns.push('oversized_request');
   }
 
-  const url: any = req.url || ''; // check URL length
+  const url = req.url || ''; // check URL length
   if (url.length > maxUrlLength) {
     patterns.push('long_url');
   }
@@ -35,7 +93,7 @@ function detectSuspiciousPatterns(req: any, config: DetectSuspiciousPatternsOpti
     patterns.push('path_traversal');
   }
 
-  const urlLower: any = url.toLowerCase(); // XSS patterns
+  const urlLower = url.toLowerCase(); // XSS patterns
   if (/<script/i.test(url) || 
       urlLower.includes('javascript:') || 
       urlLower.includes('data:text/html') || 
