@@ -1,69 +1,119 @@
-import validator from 'validator'; // email validation library for industry-standard patterns
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
-
 /**
- * Validate email address format and structure using RFC 5322 compliant validation
- * @param {string} email - Email address to validate
- * @returns {boolean} True if email is valid, false otherwise
- * @example
- * validateEmail('user@example.com') // returns true
- * validateEmail('invalid-email') // returns false
+ * EMAIL VALIDATION UTILITY
+ * 
+ * PURPOSE: Provides comprehensive email address validation following RFC 5322 standards.
+ * This utility is designed to be robust, secure, and production-ready with proper error
+ * handling and extensive input sanitization.
+ * 
+ * SECURITY CONSIDERATIONS:
+ * - Never throws exceptions, always returns boolean for consistent behavior
+ * - Handles malicious input gracefully without exposing internal details
+ * - Uses industry-standard validation patterns to prevent edge cases
+ * - Includes length limits to prevent DoS attacks via extremely long inputs
+ * 
+ * VALIDATION CRITERIA:
+ * - RFC 5322 compliant email format validation
+ * - Length restrictions (max 254 characters per RFC 5322)
+ * - Proper handling of whitespace and empty inputs
+ * - Type safety for TypeScript usage
+ * 
+ * PERFORMANCE NOTES:
+ * - Uses optimized validator library for industry-standard patterns
+ * - Early returns for common invalid cases to minimize processing
+ * - Minimal string operations for better performance
  */
 
+import validator from 'validator'; // Email validation library implementing RFC 5322 standards
+import { qerrors } from 'qerrors'; // Centralized error handling system
+import logger from '../../logger.js'; // Structured logging for debugging and monitoring
+
+/**
+ * Validates an email address format and structure using RFC 5322 compliant validation.
+ * 
+ * This function performs comprehensive email validation including format checking,
+ * length validation, and proper handling of edge cases. It's designed to be
+ * defensive against malicious input while providing clear feedback about validity.
+ * 
+ * @param email - The email address to validate. Can be any type but only strings
+ *                can be valid. Non-string inputs are automatically rejected.
+ * 
+ * @returns boolean - Returns true if the email is valid according to RFC 5322 standards,
+ *                    false otherwise. Never throws exceptions.
+ * 
+ * @example
+ * ```typescript
+ * // Valid emails
+ * validateEmail('user@example.com')        // returns true
+ * validateEmail('john.doe+tag@domain.co.uk') // returns true
+ * validateEmail('   spaced@example.com   ') // returns true (whitespace trimmed)
+ * 
+ * // Invalid emails
+ * validateEmail('invalid-email')           // returns false
+ * validateEmail('')                        // returns false
+ * validateEmail(null)                      // returns false
+ * validateEmail(undefined)                 // returns false
+ * validateEmail(123)                       // returns false
+ * validateEmail('a'.repeat(300))           // returns false (too long)
+ * ```
+ * 
+ * @see RFC 5322 for email address specifications
+ * @see validator library for implementation details
+ */
 function validateEmail(email: any): boolean {
-  logger.debug(`validateEmail is running with ${email}`);
+  // Log input for debugging purposes (scrubbed in production)
+  logger.debug(`validateEmail is running with input of type: ${typeof email}`);
   
   try {
-    // Handle null/undefined/non-string inputs
+    // DEFENSIVE PROGRAMMING: Handle null/undefined/non-string inputs early
+    // This prevents type errors and provides predictable behavior for any input type
     if (!email || typeof email !== 'string') {
-      logger.debug(`validateEmail is returning false (invalid input type)`);
+      logger.debug(`validateEmail is returning false (invalid input type: ${typeof email})`);
       return false;
     }
     
-    // Trim whitespace for validation
+    // NORMALIZATION: Trim whitespace to handle user input common issues
+    // Users often accidentally add leading/trailing spaces when copying/pasting
     const trimmedEmail: string = email.trim();
     
-    // Check for empty string
+    // EMPTY INPUT CHECK: Reject empty strings after trimming
+    // Empty emails are never valid in real-world scenarios
     if (trimmedEmail.length === 0) {
-      logger.debug(`validateEmail is returning false (empty string)`);
+      logger.debug(`validateEmail is returning false (empty string after trimming)`);
       return false;
     }
     
-    // Check length limits (RFC 5322: max 254 characters)
+    // LENGTH VALIDATION: Enforce RFC 5322 maximum length
+    // RFC 5322 specifies maximum email length of 254 characters including @ and domain
+    // This prevents DoS attacks via extremely long inputs and maintains compliance
     if (trimmedEmail.length > 254) {
-      logger.debug(`validateEmail is returning false (too long: ${trimmedEmail.length})`);
+      logger.debug(`validateEmail is returning false (too long: ${trimmedEmail.length} chars, max 254)`);
       return false;
     }
     
-    // Use validator library for industry-standard email validation
+    // CORE VALIDATION: Use industry-standard validator library
+    // The validator library implements comprehensive RFC 5322 validation including:
+    // - Local part rules (username, dots, quotes, etc.)
+    // - Domain part validation (subdomains, IP addresses, etc.)
+    // - Special character handling
+    // - International domain name support
     const isValid: boolean = validator.isEmail(trimmedEmail);
     
-    logger.debug(`validateEmail is returning ${isValid}`);
+    // Log result for monitoring and debugging
+    logger.debug(`validateEmail is returning ${isValid} for email: ${trimmedEmail.substring(0, 50)}${trimmedEmail.length > 50 ? '...' : ''}`);
     return isValid;
     
   } catch (err) {
-    // Log error but don't throw to maintain "never throw" policy
-    qerrors(err instanceof Error ? err : new Error(String(err)), 'validateEmail', `Email validation failed for input: ${email}`);
-    logger.error(`validateEmail failed: ${err instanceof Error ? err.message : String(err)}`);
-    return false;
+    // ERROR HANDLING: Never throw exceptions to maintain predictable behavior
+    // Log errors for monitoring but always return false for invalid states
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    qerrors(
+      err instanceof Error ? err : new Error(String(err)), 
+      'validateEmail', 
+      `Email validation failed for input: ${typeof email === 'string' ? email.substring(0, 50) : String(email)}`
+    );
+    logger.error(`validateEmail failed: ${errorMessage}`);
+    return false; // Fail safe - return false for any validation errors
   }
 }
-  (email: string): boolean => {
-    try {
-      if (!email || typeof email !== 'string') return false;
-      const trimmedEmail: string = email.trim();
-      if (trimmedEmail.length === 0 || trimmedEmail.length > 254) return false;
-      return validator.isEmail(trimmedEmail);
-    } catch (err) {
-      qerrors(err, 'validateEmail', `Email validation failed for input length: ${email?.length}`);
-      return false;
-    }
-  },
-  'must be a valid email address',
-  { allowEmptyStrings: false }  // Allow empty strings but return false
-);
 
 export default validateEmail;

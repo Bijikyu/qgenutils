@@ -8,7 +8,7 @@
  * @param {boolean} options.allowEmptyObject - Whether empty objects are allowed
  * @returns {Object} Validation result with valid, errors, and value properties
  */
-interface ValidateRequiredOptions {
+export interface ValidateRequiredOptions {
   fieldName?: string;
   allowEmptyString?: boolean;
   allowEmptyArray?: boolean;

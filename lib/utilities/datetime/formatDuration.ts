@@ -43,30 +43,30 @@ function formatDuration(startDateString: string, endDateString?: string): string
       return `00:00:00`;
     }
 
-    const startDate: any = parseISO(startDateString);
+    const startDate = parseISO(startDateString);
     if (!isValid(startDate)) {
-      throw new Error(`Invalid start date`);
+      return `00:00:00`;
     }
 
-    const endTime: any = endDateString ? parseISO(endDateString) : new Date();
+    const endTime = endDateString ? parseISO(endDateString) : new Date();
 
     if (endDateString && !isValid(endTime)) {
-      throw new Error(`Invalid end date`);
+      return `00:00:00`;
     }
 
-    const durationMs: any = Math.abs(differenceInMilliseconds(endTime, startDate));
+    const durationMs = Math.abs(differenceInMilliseconds(endTime, startDate));
 
-    const hours: any = Math.floor(durationMs / (1000 * 60 * 60));
-    const minutes: any = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds: any = Math.floor((durationMs % (1000 * 60)) / 1000);
+    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
 
-    const formatted: any = `${hours.toString().padStart(2, `0`)}:${minutes.toString().padStart(2, `0`)}:${seconds.toString().padStart(2, `0`)}`;
+    const formatted = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     logger.debug(`formatDuration is returning ${formatted}`);
     return formatted;
   } catch (err) {
     logger.error(`formatDuration failed`, err);
     qerrors(err instanceof Error ? err : new Error(String(err)), `formatDuration`);
-    throw err;
+    return `00:00:00`;
   }
 }
 

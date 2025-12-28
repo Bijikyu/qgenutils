@@ -310,7 +310,7 @@ function safeTransform(value: any, transformations: ((value: any) => any)[] = []
  * @param {Array} steps - Transformation steps with functions and options
  * @returns {Function} Pipeline function
  */
-interface TransformStep {
+export interface TransformStep {
   fn: (value: any) => any;
   [key: string]: any;
 }

@@ -27,3 +27,4 @@ function validateCurrency(currency) { // comprehensive currency validation using
 }
 
 export default validateCurrency;
+export { validateCurrency as validateCurrencyCode };

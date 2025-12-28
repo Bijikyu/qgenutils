@@ -11,7 +11,7 @@
  * @returns {*} The validated value
  * @throws {Error} If validation fails
  */
-interface RequireAndValidateOptions {
+export interface RequireAndValidateOptions {
   required?: boolean;
   allowNull?: boolean;
   allowEmpty?: boolean;
