@@ -65,13 +65,14 @@ async function processBatch(items: any, processor: any, options: any = {}) {
     const promises = batch.map(async (item, batchIndex: any): Promise<any> => {
       const globalIndex: any = i + batchIndex;
       const release: any = await semaphore.acquire();
+      let timeoutHandle: NodeJS.Timeout | undefined = undefined;
 
       try {
-        let timeoutHandle: NodeJS.Timeout | undefined = undefined;
+        
         const wrappedProcessor = async (): Promise<any> => {
           return Promise.race([
             processor(item, globalIndex),
-            new Promise((_, reject) => 
+            new Promise<never>((_, reject) => 
               timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeout)
             )
           ]);

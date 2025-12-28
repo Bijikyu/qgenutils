@@ -247,6 +247,48 @@ All functions include robust error handling with:
 - Detailed error logging via `qerrors` integration
 - User-friendly error messages
 
+## Backward Compatibility
+
+This library maintains full backward compatibility with legacy systems. All previously available functions continue to work without any changes required.
+
+### Legacy Functions Supported
+
+The following legacy functions are available for backward compatibility:
+
+#### DateTime Utilities
+- `formatDateTime(dateString)` - Format ISO dates to locale display
+- `formatDuration(startDate, endDate?)` - Calculate duration in HH:MM:SS
+- `addDays(date, days)` - Add days to a date
+
+#### URL Utilities  
+- `ensureProtocol(url)` - Add HTTPS protocol if missing
+- `normalizeUrlOrigin(url)` - Normalize URL to lowercase origin
+- `stripProtocol(url)` - Remove protocol from URL
+- `parseUrlParts(url)` - Parse URL into base and endpoint parts
+
+#### Validation Utilities
+- `validateEmail(email)` - Alias for `validateEmailFormat`
+
+### Migration Path
+
+While legacy functions continue to work, new projects should use the modern API:
+
+```javascript
+// Legacy (still supported)
+const { formatDateTime, ensureProtocol, validateEmail } = require('qgenutils');
+
+// Modern (recommended)
+import { formatDateTime, ensureProtocol, validateEmailFormat } from 'qgenutils';
+```
+
+### Compatibility Guarantees
+
+- ✅ No breaking changes to existing APIs
+- ✅ All legacy functions continue to work
+- ✅ Same function signatures and return types
+- ✅ Comprehensive error handling maintained
+- ✅ Performance characteristics preserved
+
 ## Module Architecture
 
 The library is organized into focused modules under `lib/utilities/`:

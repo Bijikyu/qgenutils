@@ -1,7 +1,7 @@
 'use strict';
 
 import { qerrors } from 'qerrors';
-import metricCollectionUtils from './metricCollectionUtils'; // unified metric collection
+import * as metricCollectionUtils from './metricCollectionUtils'; // unified metric collection
 const { createMetricsCollector, measureEventLoopLag } = metricCollectionUtils; // analysis
 const getPerformanceHealthStatus: any = require('./getPerformanceHealthStatus'); // health status
 const analyzePerformanceMetrics: any = require('./analyzePerformanceMetrics'); // analysis
@@ -61,43 +61,42 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
   let metrics: any = null; // current metrics
   let alerts: any[] = []; // alert history
 
-  function collectAndAnalyze() { // collect metrics and analyze
+  async function collectAndAnalyze() { // collect metrics and analyze
     metrics = metricsCollector.collect(); // collect current metrics
 
-    measureEventLoopLag((lag: any): any => { // measure event loop async
-      // Don't modify metrics directly - return new metrics object
-      const updatedMetrics = { ...metrics, eventLoopLag: lag };
+    const lag = await measureEventLoopLag(); // measure event loop async
+    // Don't modify metrics directly - return new metrics object
+    const updatedMetrics = { ...metrics, eventLoopLag: lag };
 
-      const state: any = metricsCollector.getState();
-      const newAlerts: any = analyzePerformanceMetrics(updatedMetrics || {}, thresholds, state.requestCount); // analyze
+    const state: any = metricsCollector.getState();
+    const newAlerts: any = analyzePerformanceMetrics(updatedMetrics || {}, thresholds, state.requestCount); // analyze
 
-      for (const alert of newAlerts) { // process each new alert
-        alerts.push(alert); // add to history
+    for (const alert of newAlerts) { // process each new alert
+      alerts.push(alert); // add to history
 
-        if (alerts.length > 50) { // limit history
-          alerts.shift();
-        }
-
-        if (alert.severity === 'critical') { // log critical alerts
-          logger.error(`[performance] CRITICAL: ${alert.message}`);
-        } else {
-          logger.warn(`[performance] WARNING: ${alert.message}`);
-        }
-
-        if (onAlert && typeof onAlert === 'function') { // call alert callback
-          try {
-            onAlert(alert);
-          } catch (err) {
-            qerrors(err instanceof Error ? err : new Error(String(err)), 'createPerformanceMonitor', 'Performance alert callback failed');
-            logger.error('[performance] Alert callback error:', err);
-          }
-        }
+      if (alerts.length > 50) { // limit history
+        alerts.shift();
       }
 
-      if (newAlerts.some(a => a.severity === 'critical' && a.type === 'memory')) { // memory optimization
-        optimizeMemory();
+      if (alert.severity === 'critical') { // log critical alerts
+        logger.error(`[performance] CRITICAL: ${alert.message}`);
+      } else {
+        logger.warn(`[performance] WARNING: ${alert.message}`);
       }
-    });
+
+      if (onAlert && typeof onAlert === 'function') { // call alert callback
+        try {
+          onAlert(alert);
+        } catch (err) {
+          qerrors(err instanceof Error ? err : new Error(String(err)), 'createPerformanceMonitor', 'Performance alert callback failed');
+          logger.error('[performance] Alert callback error:', err);
+        }
+      }
+    }
+
+    if (newAlerts.some(a => a.severity === 'critical' && a.type === 'memory')) { // memory optimization
+      optimizeMemory();
+    }
   }
 
   function optimizeMemory() { // attempt garbage collection if available

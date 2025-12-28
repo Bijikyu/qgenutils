@@ -1,6 +1,9 @@
+/**
+ * Direct Email Validation Implementation
+ * Bypasses the complex createFieldValidator for simplicity and reliability
+ */
+
 import validator from 'validator'; // email validation library for industry-standard patterns
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
 
@@ -12,7 +15,6 @@ import logger from '../../logger.js';
  * validateEmail('user@example.com') // returns true
  * validateEmail('invalid-email') // returns false
  */
-
 function validateEmail(email: any): boolean {
   logger.debug(`validateEmail is running with ${email}`);
   
@@ -51,19 +53,6 @@ function validateEmail(email: any): boolean {
     return false;
   }
 }
-  (email: string): boolean => {
-    try {
-      if (!email || typeof email !== 'string') return false;
-      const trimmedEmail: string = email.trim();
-      if (trimmedEmail.length === 0 || trimmedEmail.length > 254) return false;
-      return validator.isEmail(trimmedEmail);
-    } catch (err) {
-      qerrors(err, 'validateEmail', `Email validation failed for input length: ${email?.length}`);
-      return false;
-    }
-  },
-  'must be a valid email address',
-  { allowEmptyStrings: false }  // Allow empty strings but return false
-);
 
 export default validateEmail;
+export { validateEmail };
