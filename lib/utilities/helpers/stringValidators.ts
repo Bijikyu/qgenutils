@@ -13,15 +13,15 @@
 function isString(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, allowWhitespaceOnly = false }: any = options;
   
-  if (typeof value !== `string`) {
+  if (typeof value !== 'string') {
     return false;
   }
   
-  if (!allowEmpty && value === ``) {
+  if (!allowEmpty && value === '') {
     return false;
   }
   
-  if (!allowWhitespaceOnly && value.trim() === ``) {
+  if (!allowWhitespaceOnly && value.trim() === '') {
     return false;
   }
   
