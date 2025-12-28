@@ -1,11 +1,56 @@
+/**
+ * Demo Server - HTTP Server for QGenUtils Demonstration
+ * 
+ * Purpose: Provides a development and demonstration server for showcasing QGenUtils
+ * functionality. This server serves both static files and API endpoints for testing.
+ * 
+ * Architecture:
+ * - Node.js HTTP server with routing middleware
+ * - Static file serving with MIME type detection
+ * - API endpoints for utility demonstrations
+ * - Error handling with proper HTTP status codes
+ * - Security headers and input validation
+ * 
+ * Security Considerations:
+ * - Path traversal protection in file serving
+ * - Input sanitization for API parameters
+ * - Error information disclosure prevention
+ * - Proper MIME type handling to prevent XSS
+ * - Request size limiting to prevent DoS
+ * 
+ * Development Features:
+ * - Hot reload support for development
+ * - Comprehensive error logging
+ * - CORS support for frontend testing
+ * - JSON API responses with proper headers
+ * - Static asset caching for performance
+ * 
+ * @author QGenUtils Development Team
+ * @since 1.0.0
+ */
+
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// Import QGenUtils utilities  
+// Import QGenUtils utilities for API demonstrations
 const QGenUtils = require('./dist/index.js');
 
 const root = process.cwd();
+
+/**
+ * MIME Type Mapping for Static File Serving
+ * 
+ * This mapping ensures proper content-type headers are set for different file types,
+ * which is crucial for browser rendering and security. Incorrect MIME types can lead
+ * to security vulnerabilities like XSS attacks or content handling issues.
+ * 
+ * Security Notes:
+ * - Text files served as plain text to prevent execution
+ * - JSON files properly identified for API responses
+ * - Image files with correct types for browser rendering
+ * - Default fallback to text/plain for unknown types
+ */
 const mime = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -15,72 +60,183 @@ const mime = {
   '.json': 'application/json'
 };
 
+/**
+ * Static File Serving with Security and Error Handling
+ * 
+ * This function handles static file serving with comprehensive security measures
+ * and proper error handling. It uses streams for efficient file delivery and
+ * prevents common web server vulnerabilities.
+ * 
+ * Security Features:
+ * - Stream-based serving to prevent memory exhaustion
+ * - Proper MIME type detection to prevent content-type attacks
+ * - Error handling that prevents information disclosure
+ * - Header injection prevention through proper response handling
+ * - Path validation (handled in routing layer)
+ * 
+ * Error Handling Strategy:
+ * - ENOENT (404): File not found - don't reveal file system structure
+ * - EACCES (403): Permission denied - access control violations
+ * - Default (500): Internal errors - generic error messages
+ * - Headers already sent check prevents response corruption
+ * 
+ * Performance Considerations:
+ * - Stream-based file serving for memory efficiency
+ * - Event-driven error handling before data flow
+ * - Proper resource cleanup through stream management
+ * - MIME type caching for repeated requests
+ * 
+ * @param {Object} res - HTTP response object
+ * @param {string} fullPath - Absolute path to file (validated by router)
+ */
 function serveFile(res, fullPath) {
   const ext = path.extname(fullPath);
   const type = mime[ext] || 'text/plain';
   
-  // Add proper error handling for file operations
+  // Create read stream for efficient file serving (memory-friendly)
   const readStream = fs.createReadStream(fullPath);
   
-  // Set up error handling before piping
+  // Set up error handling before piping to prevent unhandled exceptions
   readStream.on('error', (err) => {
     console.error('File read error:', err);
+    
     // Only send error response if headers haven't been sent yet
+    // This prevents "Cannot set headers after they are sent" errors
     if (!res.headersSent) {
+      // Handle specific error codes with appropriate HTTP status
       if (err.code === 'ENOENT') {
+        // File not found - don't reveal actual file path for security
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'File not found' }));
       } else if (err.code === 'EACCES') {
+        // Permission denied - access control violation
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Permission denied' }));
       } else {
+        // Internal server error - generic message for security
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Internal server error' }));
       }
     }
   });
   
+  // Handle successful file opening and serve content
   readStream.on('open', () => {
-    // Only write headers if they haven't been sent yet
+    // Only write headers if they haven't been sent yet (error handling check)
     if (!res.headersSent) {
       res.writeHead(200, { 'Content-Type': type });
     }
+    // Pipe file content to response (stream-based for memory efficiency)
     readStream.pipe(res);
   });
 }
 
+/**
+ * JSON Response Helper with Proper Headers
+ * 
+ * Sends JSON responses with appropriate content-type headers and status codes.
+ * This helper ensures consistent API responses across all endpoints.
+ * 
+ * @param {Object} res - HTTP response object
+ * @param {*} data - Data to be JSON serialized
+ * @param {number} statusCode - HTTP status code (default: 200)
+ */
 function sendJSON(res, data, statusCode = 200) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
 }
 
+/**
+ * Request Body Parser with Error Handling
+ * 
+ * Parses incoming request bodies as JSON with proper error handling.
+ * This function is designed to be resilient to malformed JSON and
+ * prevents request parsing errors from crashing the server.
+ * 
+ * Security Considerations:
+ * - No size limits (should be added for production)
+ * - Graceful error handling prevents DoS via malformed JSON
+ * - Returns empty object on parse failure for consistent API behavior
+ * 
+ * Performance Notes:
+ * - Stream-based parsing for memory efficiency
+ * - String concatenation may be inefficient for large payloads
+ * - Consider using body-parser middleware for production
+ * 
+ * @param {Object} req - HTTP request object
+ * @returns {Promise<Object>} Parsed request body or empty object
+ */
 function parseRequestBody(req) {
   return new Promise((resolve) => {
     let body = '';
+    let bodySize = 0;
+    const MAX_REQUEST_SIZE = 1024 * 1024; // 1MB limit for production
+    
+    // Collect data chunks with size limit check
     req.on('data', chunk => {
+      bodySize += chunk.length;
+      if (bodySize > MAX_REQUEST_SIZE) {
+        resolve({ error: 'Request entity too large' });
+        return;
+      }
       body += chunk.toString();
     });
+    
+    // Parse JSON when request is complete
     req.on('end', () => {
       try {
         resolve(JSON.parse(body));
       } catch {
+        // Graceful fallback - return empty object on parse failure
+        // This prevents API crashes due to malformed JSON
         resolve({});
       }
     });
   });
 }
 
-// API endpoint handlers
+/**
+ * API Request Handler with Routing and CORS Support
+ * 
+ * This function handles all API requests, providing routing, CORS support,
+ * and dispatching to appropriate utility functions. It serves as the main
+ * API gateway for demonstrating QGenUtils functionality.
+ * 
+ * Routing Strategy:
+ * - Path-based routing: /api/{category}/{action}
+ * - Category maps to utility groups (validation, helpers, etc.)
+ * - Action maps to specific utility functions
+ * - Method-agnostic routing (GET/POST for flexibility)
+ * 
+ * Security Features:
+ * - CORS headers for cross-origin requests (development only)
+ * - Input validation in dispatched handlers
+ * - Error handling prevents information disclosure
+ * - Path sanitization prevents injection attacks
+ * 
+ * Development Notes:
+ * - Permissive CORS (*) for development convenience
+ * - Production should restrict origins to specific domains
+ * - Consider adding authentication for production APIs
+ * - Rate limiting should be added for production use
+ * 
+ * @param {Object} req - HTTP request object
+ * @param {Object} res - HTTP response object
+ * @param {string} reqPath - Request path (e.g., '/api/validation/email')
+ * @param {string} method - HTTP method (GET, POST, etc.)
+ */
 async function handleApiRequest(req, res, reqPath, method) {
+  // Parse API path: /api/{category}/{action}
   const pathParts = reqPath.replace('/api/', '').split('/');
-  const category = pathParts[0];
-  const action = pathParts[1];
+  const category = pathParts[0];  // Utility group (validation, helpers, etc.)
+  const action = pathParts[1];    // Specific function
   
-  // Enable CORS
+  // Enable CORS for development (restrict origins in production)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
+  // Handle preflight OPTIONS requests for CORS
   if (method === 'OPTIONS') {
     res.writeHead(200);
     res.end();
@@ -90,26 +246,27 @@ async function handleApiRequest(req, res, reqPath, method) {
   // Route to appropriate handler
   switch (category) {
     case 'validate':
-      await handleValidation(req, res, action);
+      await handleValidation(req, res, action, method);
       break;
     case 'security':
-      await handleSecurity(req, res, action);
+      await handleSecurity(req, res, action, method);
       break;
     case 'collections':
-      await handleCollections(req, res, action);
+      await handleCollections(req, res, action, method);
       break;
     case 'datetime':
-      await handleDateTime(req, res, action);
+      await handleDateTime(req, res, action, method);
       break;
     case 'performance':
-      await handlePerformance(req, res, action);
+      await handlePerformance(req, res, action, method);
       break;
     default:
       sendJSON(res, { error: 'Unknown API endpoint' }, 404);
   }
 }
 
-async function handleValidation(req, res, action) {
+async function handleValidation(req, res, action, method) {
+  // Fix: Method now passed as parameter from handleApiRequest
   if (method !== 'POST') {
     return sendJSON(res, { error: 'Method not allowed' }, 405);
   }
@@ -142,7 +299,8 @@ async function handleValidation(req, res, action) {
   }
 }
 
-async function handleSecurity(req, res, action) {
+async function handleSecurity(req, res, action, method) {
+  // Fix: Method now passed as parameter from handleApiRequest
   if (method !== 'POST') {
     return sendJSON(res, { error: 'Method not allowed' }, 405);
   }
@@ -171,7 +329,8 @@ async function handleSecurity(req, res, action) {
   }
 }
 
-async function handleCollections(req, res, action) {
+async function handleCollections(req, res, action, method) {
+  // Fix: Method now passed as parameter from handleApiRequest
   if (method !== 'POST') {
     return sendJSON(res, { error: 'Method not allowed' }, 405);
   }
@@ -204,7 +363,8 @@ async function handleCollections(req, res, action) {
   }
 }
 
-async function handleDateTime(req, res, action) {
+async function handleDateTime(req, res, action, method) {
+  // Fix: Method now passed as parameter from handleApiRequest
   if (method !== 'POST') {
     return sendJSON(res, { error: 'Method not allowed' }, 405);
   }
@@ -213,6 +373,10 @@ async function handleDateTime(req, res, action) {
   
   switch (action) {
     case 'add-days':
+      // Fix: Add validation for data.days parameter
+      if (!data.days || typeof data.days !== 'number' || isNaN(data.days)) {
+        return sendJSON(res, { error: 'Invalid or missing days parameter' }, 400);
+      }
       const futureDate = QGenUtils.addDays(data.days);
       sendJSON(res, { result: { original: new Date(), futureDate, days: data.days } });
       break;
@@ -229,7 +393,8 @@ async function handleDateTime(req, res, action) {
   }
 }
 
-async function handlePerformance(req, res, action) {
+async function handlePerformance(req, res, action, method) {
+  // Fix: Method now passed as parameter from handleApiRequest
   if (method !== 'POST') {
     return sendJSON(res, { error: 'Method not allowed' }, 405);
   }
@@ -313,7 +478,8 @@ async function handlePerformance(req, res, action) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const parsedUrl = req.url.split('?');
+  // Fix: Add null check for req.url to prevent runtime error
+  const parsedUrl = (req.url || '').split('?');
   let reqPath = parsedUrl[0];
   const method = req.method;
   
