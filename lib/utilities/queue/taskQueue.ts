@@ -78,6 +78,8 @@ class TaskQueue extends EventEmitter {
   private isRunning = false;
   private pollInterval: NodeJS.Timeout | null = null;
   private taskCounter = 0;
+  private maxCacheSize: number = 10000; // Prevent memory leaks
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(config: TaskQueueConfig) {
     super();
@@ -114,6 +116,61 @@ class TaskQueue extends EventEmitter {
       throughput: 0,
       errorsByType: new Map()
     };
+
+    // Start cleanup interval to prevent memory leaks
+    this.startCleanupInterval();
+  }
+
+  private startCleanupInterval(): void {
+    // Clean up every 30 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredData();
+    }, 30 * 60 * 1000);
+  }
+
+  private cleanupExpiredData(): void {
+    // Limit tasks size
+    if (this.tasks.size > this.maxCacheSize) {
+      const entries = Array.from(this.tasks.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([taskId]) => this.tasks.delete(taskId));
+    }
+
+    // Limit handlers size
+    if (this.handlers.size > this.maxCacheSize) {
+      const entries = Array.from(this.handlers.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([taskType]) => this.handlers.delete(taskType));
+    }
+
+    // Limit dead letter queue size
+    if (this.deadLetterQueue.length > this.maxCacheSize) {
+      this.deadLetterQueue = this.deadLetterQueue.slice(-this.maxCacheSize);
+    }
+
+    // Clean up old completed tasks (older than 2 hours)
+    const now = Date.now();
+    const maxAge = 2 * 60 * 60 * 1000; // 2 hours
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.status === 'completed' && task.completedAt && (now - task.completedAt) > maxAge) {
+        this.tasks.delete(taskId);
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+    this.tasks.clear();
+    this.handlers.clear();
+    this.processing.clear();
+    this.deadLetterQueue.length = 0;
   }
 
   /**

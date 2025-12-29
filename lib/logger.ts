@@ -65,20 +65,29 @@ const __dirname = path.dirname(__filename);
 // Fallback path ensures the logger works out-of-the-box for local development
 const logDir = QGENUTILS_LOG_DIR || path.join(__dirname, '..', 'logs');
 
-// Ensure log directory exists synchronously before logger initialization
+// Ensure log directory exists asynchronously before logger initialization
 // This prevents runtime errors when transports try to write to non-existent directories
 // The recursive option creates parent directories as needed for flexible deployment
-try {
-  fs.mkdirSync(logDir, { recursive: true });
-} catch (error) {
-  // Use qerrors if available for consistent error reporting across the application
-  if (qerrors) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'logger', `Log directory creation failed for: ${logDir}`);
+// Using async operation prevents event loop blocking during startup
+let logDirReady = false;
+async function ensureLogDirectory(): Promise<void> {
+  if (logDirReady) return;
+  try {
+    await fs.promises.mkdir(logDir, { recursive: true });
+    logDirReady = true;
+  } catch (error) {
+    // Use qerrors if available for consistent error reporting across the application
+    if (qerrors) {
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'logger', `Log directory creation failed for: ${logDir}`);
+    }
+    // Directory creation failed, but don't block logger initialization
+    // The logger will still work with console transport and can retry file operations
+    // This graceful degradation ensures logging doesn't become a single point of failure
   }
-  // Directory creation failed, but don't block logger initialization
-  // The logger will still work with console transport and can retry file operations
-  // This graceful degradation ensures logging doesn't become a single point of failure
 }
+
+// Initialize directory creation asynchronously
+ensureLogDirectory().catch(() => {});
 
 // Create transports array
 const loggerTransports: any[] = [];

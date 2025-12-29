@@ -177,7 +177,7 @@ class ProductionAudit {
     try {
       // Check bundle size
       if (existsSync('dist/index.js')) {
-        const stats = require('fs').statSync('dist/index.js');
+        const stats = await fs.promises.stat('dist/index.js');
         const sizeKB = stats.size / 1024;
         
         if (sizeKB < 500) {
@@ -358,7 +358,7 @@ class ProductionAudit {
     }
   }
 
-  generateReport() {
+  async generateReport() {
     console.log('\n📋 Production Readiness Report');
     console.log('================================');
     
@@ -439,7 +439,7 @@ class ProductionAudit {
     };
     
     try {
-      require('fs').writeFileSync(
+      await fs.promises.writeFile(
         'production-audit-report.json',
         JSON.stringify(report, null, 2)
       );

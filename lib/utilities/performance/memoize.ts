@@ -39,7 +39,7 @@
  * Configuration options for memoization behavior.
  */
 interface MemoizeOptions {
-  /** Maximum number of cached entries (undefined for unlimited) */
+  /** Maximum number of cached entries (default: 1000 to prevent memory leaks) */
   maxSize?: number;
   /** Custom key generator function (default: JSON.stringify) */
   keyGenerator?: (...args: any[]) => string;
@@ -129,7 +129,7 @@ const memoize = <T extends (...args: any[]) => any>(
 ): MemoizedFunction<T> => {
   // OPTIONS CONFIGURATION: Extract memoization settings
   const {
-    maxSize,                           // Maximum cache entries
+    maxSize = 1000,                    // Default maximum cache entries to prevent memory leaks
     keyGenerator = JSON.stringify,     // Default key generation
     enableStats = false                // Performance tracking
   } = options;

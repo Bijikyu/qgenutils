@@ -85,10 +85,11 @@ class EventBus {
   private isProcessing = false;
   private batchTimer: NodeJS.Timeout | null = null;
   private eventStore: Map<string, Event> = new Map();
+  private maxCacheSize: number = 5000; // Prevent memory leaks
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(config: EventBusConfig) {
     this.config = {
-      name: config.name,
       enablePersistence: config.enablePersistence || false,
       enableMetrics: config.enableMetrics !== false,
       maxQueueSize: config.maxQueueSize || 10000,
@@ -113,6 +114,56 @@ class EventBus {
     };
 
     this.startBatchProcessing();
+
+    // Start cleanup interval to prevent memory leaks
+    this.startCleanupInterval();
+  }
+
+  private startCleanupInterval(): void {
+    // Clean up every 15 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredData();
+    }, 15 * 60 * 1000);
+  }
+
+  private cleanupExpiredData(): void {
+    // Limit subscriptions size
+    if (this.subscriptions.size > this.maxCacheSize) {
+      const entries = Array.from(this.subscriptions.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.subscriptions.delete(key));
+    }
+
+    // Limit event store size
+    if (this.eventStore.size > this.maxCacheSize) {
+      const entries = Array.from(this.eventStore.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.eventStore.delete(key));
+    }
+
+    // Clean up old events from event store (older than 1 hour)
+    const now = Date.now();
+    const maxAge = 60 * 60 * 1000; // 1 hour
+    for (const [eventId, event] of this.eventStore.entries()) {
+      if ((now - event.timestamp) > maxAge) {
+        this.eventStore.delete(eventId);
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer);
+      this.batchTimer = null;
+    }
+    this.subscriptions.clear();
+    this.eventStore.clear();
+    this.deadLetterQueue.length = 0;
+    this.eventQueue.length = 0;
   }
 
   /**
@@ -315,7 +366,7 @@ class EventBus {
         pattern.events.push(event);
         
         // Maintain window size
-        if (pattern.events.length > pattern.windowSize) {
+        if (pattern.events.length > (pattern.windowSize ?? 100)) {
           pattern.events.shift();
         }
         

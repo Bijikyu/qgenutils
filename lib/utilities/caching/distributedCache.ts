@@ -74,6 +74,8 @@ interface DistributedCacheMetrics {
 class DistributedCache<T = any> {
   private config: Required<DistributedCacheConfig>;
   private nodes: Map<string, CacheNode> = new Map();
+  private maxCacheSize: number = 10000; // Prevent memory leaks
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private ring: ConsistentHashRing;
   private metrics: DistributedCacheMetrics;
   private healthCheckInterval: NodeJS.Timeout | null = null;
@@ -109,6 +111,46 @@ class DistributedCache<T = any> {
 
     this.initializeNodes();
     this.startHealthChecks();
+
+    // Start cleanup interval to prevent memory leaks
+    this.startCleanupInterval();
+  }
+
+  private startCleanupInterval(): void {
+    // Clean up every 20 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredData();
+    }, 20 * 60 * 1000);
+  }
+
+  private cleanupExpiredData(): void {
+    // Limit nodes size
+    if (this.nodes.size > this.maxCacheSize) {
+      const entries = Array.from(this.nodes.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.nodes.delete(key));
+    }
+
+    // Clean up old node metrics
+    if (this.metrics.nodeMetrics.size > this.maxCacheSize) {
+      const entries = Array.from(this.metrics.nodeMetrics.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.metrics.nodeMetrics.delete(key));
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
+    }
+    this.nodes.clear();
+    this.metrics.nodeMetrics.clear();
+    this.metrics.keyDistribution.clear();
   }
 
   /**
@@ -124,14 +166,7 @@ class DistributedCache<T = any> {
       
       if (!nodeId) {
         this.metrics.totalMisses++;
-        return false;
-      }
-      
-      const node = this.nodes.get(nodeId);
-      
-      if (!node || !node.isHealthy) {
-        this.metrics.totalMisses++;
-        return false;
+        return undefined;
       }
       
       const node = this.nodes.get(nodeId);
@@ -173,9 +208,17 @@ class DistributedCache<T = any> {
 
     try {
       const fullKey = this.getFullKey(key);
-      const node = this.ring.getNode(fullKey);
+      const nodeId = this.ring.getNode(fullKey);
+      
+      if (!nodeId) {
+        this.metrics.totalMisses++;
+        return false;
+      }
+      
+      const node = this.nodes.get(nodeId);
       
       if (!node || !node.isHealthy) {
+        this.metrics.totalMisses++;
         return false;
       }
 
@@ -220,9 +263,17 @@ class DistributedCache<T = any> {
 
     try {
       const fullKey = this.getFullKey(key);
-      const node = this.ring.getNode(fullKey);
+      const nodeId = this.ring.getNode(fullKey);
+      
+      if (!nodeId) {
+        this.metrics.totalMisses++;
+        return false;
+      }
+      
+      const node = this.nodes.get(nodeId);
       
       if (!node || !node.isHealthy) {
+        this.metrics.totalMisses++;
         return false;
       }
 
@@ -684,7 +735,7 @@ class DistributedCache<T = any> {
    */
   private shouldCompress(value: T): boolean {
     if (typeof value !== 'string') return false;
-    return value.length > this.config.options.compressionThreshold;
+    return (value?.length ?? 0) > this.config.options.compressionThreshold;
   }
 
   /**

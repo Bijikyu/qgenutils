@@ -89,6 +89,8 @@ class APIGateway extends EventEmitter {
   private config: Required<GatewayConfig>;
   private routes: Map<string, Route[]> = new Map();
   private circuitBreakers: Map<string, CircuitBreaker<any, any>> = new Map();
+  private maxCacheSize: number = 5000; // Prevent memory leaks
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private tracer?: DistributedTracer;
   private healthChecker?: HealthChecker;
   private metrics: GatewayMetrics;
@@ -145,6 +147,12 @@ class APIGateway extends EventEmitter {
         serviceName: `${this.config.name}-gateway`,
         serviceVersion: this.config.version,
         environment: this.config.environment,
+        enableSampling: true,
+        samplingRate: 0.1,
+        maxSpansPerTrace: 1000,
+        enableBaggagePropagation: true,
+        enableLinkPropagation: true,
+        enableMetrics: true,
         exporters: ['console']
       });
     }
@@ -158,6 +166,44 @@ class APIGateway extends EventEmitter {
 
     // Initialize middleware
     this.initializeMiddleware();
+
+    // Start cleanup interval to prevent memory leaks
+    this.startCleanupInterval();
+  }
+
+  private startCleanupInterval(): void {
+    // Clean up every 10 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredData();
+    }, 10 * 60 * 1000);
+  }
+
+  private cleanupExpiredData(): void {
+    // Limit routes size
+    if (this.routes.size > this.maxCacheSize) {
+      const entries = Array.from(this.routes.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.routes.delete(key));
+    }
+
+    // Limit circuit breakers size
+    if (this.circuitBreakers.size > this.maxCacheSize) {
+      const entries = Array.from(this.circuitBreakers.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.circuitBreakers.delete(key));
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.routes.clear();
+    this.circuitBreakers.clear();
+    if (this.tracer) {
+      this.tracer.destroy();
+    }
   }
 
   /**
