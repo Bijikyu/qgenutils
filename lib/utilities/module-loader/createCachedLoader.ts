@@ -55,7 +55,7 @@
 
 import { qerrors } from 'qerrors';
 
-const loadAndFlattenModule: any = require('./loadAndFlattenModule'); // default flattening function
+import loadAndFlattenModule from './loadAndFlattenModule.js'; // default flattening function
 
 const createCachedLoader = (options: any = {}): any => { // factory for cached async module loaders with performance optimization
   const { moduleName, enableCache = true, flattenFn = loadAndFlattenModule, fallbackValue = null, unavailableMessage } = options;

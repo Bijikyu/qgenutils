@@ -212,7 +212,7 @@ function createSemaphore(permits: number) {
     // POLLING STRATEGY: Use exponential backoff to wait for idle state
     // This prevents busy-waiting and reduces CPU usage
     return new Promise<void>((resolve, reject) => {
-      const iterations = 0;
+      let iterations = 0;
       const maxIterations = 1000; // Prevent infinite loops
       let backoffTime = 10;      // Start with 10ms backoff
       
@@ -231,6 +231,8 @@ function createSemaphore(permits: number) {
           resolve(); // Semaphore is idle
           return;
         }
+        
+        iterations++; // Increment counter to prevent infinite loop
         
         // TIMEOUT PROTECTION: Prevent infinite waiting
         if (iterations >= maxIterations) {

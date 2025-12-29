@@ -28,7 +28,12 @@ function sanitizeInput(input: string, options: SanitizeInputOptions = {}): strin
 
   const finalOptions = { ...defaultOptions, ...options };
 
-  return sanitizeHtml(input, finalOptions);
+  try {
+    return sanitizeHtml(input, finalOptions);
+  } catch (error) {
+    // Fallback to basic sanitization if sanitize-html fails
+    return input.replace(/<[^>]*>/g, '').trim();
+  }
 }
 
 export default sanitizeInput;

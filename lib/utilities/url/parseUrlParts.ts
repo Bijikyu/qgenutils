@@ -42,7 +42,7 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
-import ensureProtocol from './ensureProtocol';
+import ensureProtocol from './ensureProtocol.js';
 
 function parseUrlParts(url) {
   logger.debug(`parseUrlParts is running with ${url}`);

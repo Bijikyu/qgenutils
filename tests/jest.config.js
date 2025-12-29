@@ -1,7 +1,7 @@
 
 // Jest configuration for QGenUtils test suite. This file defines how tests are
 // discovered, the coverage requirements, and other runtime behaviors for Jest.
-module.exports = {
+export default {
   // Test environment
   testEnvironment: 'node',
   

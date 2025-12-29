@@ -22,7 +22,8 @@ import { qerrors } from 'qerrors';
  */
 import axios from 'axios';
 import { setTimeout as sleep } from 'timers/promises';
-const localVars: any = require('../../../config/localVars');
+import { setSecurityHeaders } from '../security/index.js';
+import localVars from '../../../config/localVars.js';
 
 interface ExtendedAxiosInstance {
   getWithRetry(url: any, config?: any): any;
@@ -53,12 +54,13 @@ function createAdvancedHttpClient(config: Config = {}) {
     onTimeout = null
   } = config;
 
-  // Create axios instance with default configuration
+  // Create axios instance with default configuration and security headers
   const httpClient = axios.create({
     timeout,
     headers: {
       'Content-Type': 'application/json',
       'User-Agent': 'qgenutils-http-client/1.0.0',
+      ...setSecurityHeaders(),
       ...headers
     }
   });
