@@ -5,6 +5,7 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
+import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../../../config/localVars.js';
 
 /**
  * Validate that required fields are present in data object
@@ -92,7 +93,7 @@ function hasGithubStrategy(): boolean {
     logger.warn('hasGithubStrategy: stub implementation - needs actual Passport configuration access');
     
     // Fallback: assume GitHub strategy exists if in environment
-    const hasGithubInEnv = process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET;
+    const hasGithubInEnv = GITHUB_CLIENT_ID && GITHUB_CLIENT_SECRET;
     
     logger.debug(`hasGithubStrategy: GitHub strategy detected: ${!!hasGithubInEnv}`);
     return !!hasGithubInEnv;
