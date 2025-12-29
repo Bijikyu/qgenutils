@@ -28,6 +28,126 @@
 
 import bcrypt from 'bcrypt'; // bcrypt for secure hashing
 import { qerrors } from 'qerrors';
+import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
+
+interface HashWorkerData {
+  password: string;
+  saltRounds: number;
+}
+
+interface HashWorkerResult {
+  hash?: string;
+  error?: string;
+}
+
+class PasswordHasher {
+  private workerPool: Worker[] = [];
+  private readonly MAX_WORKER_POOL_SIZE = 4;
+  private taskQueue: Array<{
+    password: string;
+    saltRounds: number;
+    resolve: (hash: string) => void;
+    reject: (error: Error) => void;
+  }> = [];
+  private currentTaskIndex = 0;
+
+  constructor() {
+    this.initializeWorkerPool();
+  }
+
+  /**
+   * Initialize worker pool for password hashing
+   */
+  private initializeWorkerPool(): void {
+    if (!isMainThread) return;
+
+    for (let i = 0; i < this.MAX_WORKER_POOL_SIZE; i++) {
+      const worker = new Worker(__filename, {
+        workerData: { isWorker: true }
+      });
+      
+      worker.on('message', (result: HashWorkerResult) => {
+        const task = this.taskQueue[this.currentTaskIndex];
+        if (task) {
+          if (result.error) {
+            task.reject(new Error(result.error));
+          } else {
+            task.resolve(result.hash!);
+          }
+          this.taskQueue.splice(this.currentTaskIndex, 1);
+          this.currentTaskIndex = 0;
+        }
+      });
+
+      worker.on('error', (error) => {
+        const task = this.taskQueue[this.currentTaskIndex];
+        if (task) {
+          task.reject(error);
+          this.taskQueue.splice(this.currentTaskIndex, 1);
+          this.currentTaskIndex = 0;
+        }
+      });
+
+      this.workerPool.push(worker);
+    }
+  }
+
+  /**
+   * Hash password using worker thread to avoid blocking
+   */
+  async hashWithWorker(password: string, saltRounds: number): Promise<string> {
+    if (!isMainThread || this.workerPool.length === 0) {
+      // Fallback to main thread if workers not available
+      return await bcrypt.hash(password, saltRounds);
+    }
+
+    return new Promise((resolve, reject) => {
+      const task = {
+        password,
+        saltRounds,
+        resolve,
+        reject
+      };
+
+      this.taskQueue.push(task);
+
+      // Assign task to next available worker
+      const workerIndex = this.taskQueue.length % this.workerPool.length;
+      const worker = this.workerPool[workerIndex];
+      
+      if (worker) {
+        worker.postMessage({ password, saltRounds });
+      }
+    });
+  }
+
+  /**
+   * Destroy worker pool
+   */
+  destroy(): void {
+    for (const worker of this.workerPool) {
+      worker.terminate();
+    }
+    this.workerPool = [];
+    this.taskQueue = [];
+  }
+}
+
+// Worker thread execution
+if (!isMainThread && workerData?.isWorker) {
+  parentPort?.on('message', async (data: HashWorkerData) => {
+    try {
+      const hash = await bcrypt.hash(data.password, data.saltRounds);
+      parentPort?.postMessage({ hash });
+    } catch (error) {
+      parentPort?.postMessage({ 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+}
+
+const passwordHasher = new PasswordHasher();
 
 /**
  * OWASP-Recommended Salt Rounds Configuration
@@ -108,33 +228,19 @@ const BCRYPT_SALT_ROUNDS: number = 12; // OWASP recommended minimum
 // Cache for password hashes to avoid re-hashing same passwords (security note: only hash results, not passwords)
 const passwordHashCache = new Map<string, string>();
 const MAX_PASSWORD_CACHE_SIZE = 100;
-
-const hashPassword = async (password: string, options: { saltRounds?: number; useCache?: boolean } = {}): Promise<string> => {
-  const { useCache = false } = options;
+): Promise<string> => {
+  const { saltRounds = BCRYPT_SALT_ROUNDS, useCache = true } = options || {};
   
-  // Input Validation - Type and Presence Check
-  if (!password || typeof password !== 'string') {
-    throw new Error('Password is required and must be a string');
-  }
-  
-  // Length Validation - NIST Guidelines Compliance
-  if (password.length < 8) {
-    throw new Error('Password must be at least 8 characters long');
-  }
-  if (password.length > 128) {
-    throw new Error('Password must not exceed 128 characters');
-  }
-  
-  // Character Validation - Injection and Control Character Prevention
-  // Blocks ASCII control characters (0-31, 127) to prevent injection attacks
-  if (/[\x00-\x1F\x7F]/.test(password)) {
-    throw new Error('Password contains invalid characters');
-  }
-
-  // Salt Rounds Configuration - Security vs Performance Balance
-  const saltRounds: number = options.saltRounds || BCRYPT_SALT_ROUNDS;
-
   try {
+    // Input Validation
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+    
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+    
     // For testing/development only - check cache if enabled
     if (useCache && process.env.NODE_ENV !== 'production') {
       const cacheKey = `${password}:${saltRounds}`;
@@ -143,8 +249,35 @@ const hashPassword = async (password: string, options: { saltRounds?: number; us
       }
     }
     
-    // Secure Password Hashing with bcrypt
-    const hash = await bcrypt.hash(password, saltRounds);
+    // Secure Password Hashing with bcrypt (optimized with worker threads for performance)
+    const hash = await passwordHasher.hashWithWorker(password, saltRounds);
+    
+    // Cache result for testing/development only
+    if (useCache && process.env.NODE_ENV !== 'production') {
+      const cacheKey = `${password}:${saltRounds}`;
+      if (passwordHashCache.size >= MAX_PASSWORD_CACHE_SIZE) {
+        const firstKey = passwordHashCache.keys().next().value;
+        passwordHashCache.delete(firstKey);
+      }
+      passwordHashCache.set(cacheKey, hash);
+    }
+    
+    return hash;
+  } catch (error) {
+    // Secure Error Logging - No Information Disclosure
+    qerrors(
+      error instanceof Error ? error : new Error(String(error)), 
+      'hashPassword', 
+      'Password hashing operation failed'
+    );
+    
+    // Generic Error Message - Prevents Information Disclosure
+    throw new Error('Password hashing failed');
+  }
+};
+    
+    // Secure Password Hashing with bcrypt (optimized with worker threads for performance)
+    const hash = await passwordHasher.hashWithWorker(password, saltRounds);
     
     // Cache result for testing/development only
     if (useCache && process.env.NODE_ENV !== 'production') {
@@ -170,5 +303,72 @@ const hashPassword = async (password: string, options: { saltRounds?: number; us
   }
 };
 
+/**
+ * Hash password using optimized worker thread implementation
+ */
+const hashPassword = async (
+  password: string,
+  options?: {
+    saltRounds?: number;
+    useCache?: boolean;
+  }
+): Promise<string> => {
+  const { saltRounds = BCRYPT_SALT_ROUNDS, useCache = true } = options || {};
+  
+  try {
+    // Input Validation
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+    
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+    
+    // Password Strength Check
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(password)) {
+      throw new Error('Password must contain uppercase, lowercase, numbers, and special characters');
+    }
+    
+    // Cache key for testing/development (not production)
+    if (useCache && process.env.NODE_ENV !== 'production') {
+      const cacheKey = `${password}:${saltRounds}`;
+      if (passwordHashCache.has(cacheKey)) {
+        return passwordHashCache.get(cacheKey)!;
+      }
+    }
+    
+    // Secure Password Hashing with bcrypt (optimized with worker threads for performance)
+    const hash = await passwordHasher.hashWithWorker(password, saltRounds);
+    
+    // Cache result for testing/development only
+    if (useCache && process.env.NODE_ENV !== 'production') {
+      const cacheKey = `${password}:${saltRounds}`;
+      if (passwordHashCache.size >= MAX_PASSWORD_CACHE_SIZE) {
+        const firstKey = passwordHashCache.keys().next().value;
+        passwordHashCache.delete(firstKey);
+      }
+      passwordHashCache.set(cacheKey, hash);
+    }
+    
+    return hash;
+  } catch (error) {
+    // Secure Error Logging - No Information Disclosure
+    qerrors(
+      error instanceof Error ? error : new Error(String(error)), 
+      'hashPassword', 
+      'Password hashing operation failed'
+    );
+    
+    // Generic Error Message - Prevents Information Disclosure
+    throw new Error('Password hashing failed');
+  }
+};
+
+// Cleanup worker pool on process exit
+process.on('exit', () => {
+  passwordHasher.destroy();
+});
+
 export default hashPassword;
-export { BCRYPT_SALT_ROUNDS };
+export { BCRYPT_SALT_ROUNDS, PasswordHasher };

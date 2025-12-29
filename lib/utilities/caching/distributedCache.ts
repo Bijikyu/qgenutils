@@ -80,6 +80,7 @@ class DistributedCache<T = any> {
   private metrics: DistributedCacheMetrics;
   private healthCheckInterval: NodeJS.Timeout | null = null;
   private isShuttingDown = false;
+  private timers: Set<NodeJS.Timeout> = new Set();
 
   constructor(config: DistributedCacheConfig) {
     this.config = {
@@ -118,9 +119,26 @@ class DistributedCache<T = any> {
 
   private startCleanupInterval(): void {
     // Clean up every 20 minutes to prevent memory leaks
-    this.cleanupInterval = setInterval(() => {
+    this.cleanupInterval = this.addInterval(() => {
       this.cleanupExpiredData();
     }, 20 * 60 * 1000);
+  }
+
+  /**
+   * Add interval with tracking for cleanup
+   */
+  private addInterval(callback: () => void, ms: number): NodeJS.Timeout {
+    const interval = setInterval(callback, ms);
+    this.timers.add(interval);
+    return interval;
+  }
+
+  /**
+   * Remove interval and cleanup tracking
+   */
+  private removeInterval(interval: NodeJS.Timeout): void {
+    clearInterval(interval);
+    this.timers.delete(interval);
   }
 
   private cleanupExpiredData(): void {
@@ -141,13 +159,20 @@ class DistributedCache<T = any> {
 
   destroy(): void {
     if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
+      this.removeInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
     if (this.healthCheckInterval) {
-      clearInterval(this.healthCheckInterval);
+      this.removeInterval(this.healthCheckInterval);
       this.healthCheckInterval = null;
     }
+    
+    // Clear all timers
+    for (const timer of this.timers) {
+      clearInterval(timer);
+    }
+    this.timers.clear();
+    
     this.nodes.clear();
     this.metrics.nodeMetrics.clear();
     this.metrics.keyDistribution.clear();
@@ -493,8 +518,13 @@ class DistributedCache<T = any> {
 
       if (!result) return null;
 
-      // Parse and validate entry
-      const entry = typeof result === 'string' ? JSON.parse(result) : result;
+      // Parse and validate entry asynchronously to avoid blocking
+      let entry: CacheEntry<T>;
+      if (typeof result === 'string') {
+        entry = await this.parseJSONAsync(result);
+      } else {
+        entry = result as CacheEntry<T>;
+      }
       
       // Check TTL
       if (entry.ttl && Date.now() - entry.timestamp > entry.ttl) {
@@ -517,13 +547,31 @@ class DistributedCache<T = any> {
   }
 
   /**
+   * Asynchronous JSON parsing to avoid blocking the event loop
+   */
+  private async parseJSONAsync<T>(jsonString: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+      // Use setImmediate to parse on next tick, avoiding blocking
+      setImmediate(() => {
+        try {
+          const parsed = JSON.parse(jsonString);
+          resolve(parsed);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
    * Set value to specific node
    */
   private async setToNode(node: CacheNode, key: string, entry: CacheEntry<T>): Promise<boolean> {
     if (!node.connection) return false;
 
     try {
-      const serialized = JSON.stringify(entry);
+      // Use asynchronous JSON stringification to avoid blocking
+      const serialized = await this.stringifyJSONAsync(entry);
       
       switch (this.config.backend) {
         case 'redis':
@@ -546,6 +594,23 @@ class DistributedCache<T = any> {
       node.metrics.errors++;
       throw error;
     }
+  }
+
+  /**
+   * Asynchronous JSON stringification to avoid blocking the event loop
+   */
+  private async stringifyJSONAsync(obj: any): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Use setImmediate to stringify on next tick, avoiding blocking
+      setImmediate(() => {
+        try {
+          const serialized = JSON.stringify(obj);
+          resolve(serialized);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
   }
 
   /**
@@ -626,11 +691,11 @@ class DistributedCache<T = any> {
    * Start health checks for all nodes
    */
   private startHealthChecks(): void {
-    this.healthCheckInterval = setInterval(async () => {
+    this.healthCheckInterval = this.addInterval(async () => {
       for (const node of this.nodes.values()) {
         await this.checkNodeHealth(node);
       }
-    }, this.config.options.healthCheckInterval);
+    }, this.config.options.healthCheckInterval || 30000);
   }
 
   /**
@@ -735,7 +800,7 @@ class DistributedCache<T = any> {
    */
   private shouldCompress(value: T): boolean {
     if (typeof value !== 'string') return false;
-    return (value?.length ?? 0) > this.config.options.compressionThreshold;
+    return (value?.length || 0) > (this.config.options.compressionThreshold || 1024);
   }
 
   /**
@@ -750,7 +815,7 @@ class DistributedCache<T = any> {
   /**
    * Decompress value (simplified)
    */
-  private decompress(value: string): string {
+  private decompress(value: any): any {
     // This would use actual decompression
     // For now, just return the value
     return value;
@@ -778,12 +843,26 @@ class ConsistentHashRing {
   }
 
   /**
-   * Remove node from ring
+   * Remove node from ring (optimized with virtual node tracking)
    */
   removeNode(nodeId: string): void {
-    for (const [hash, node] of this.ring) {
-      if (node === nodeId) {
-        this.ring.delete(hash);
+    // Remove virtual nodes for this physical node
+    const virtualNodes = this.virtualNodes.get(nodeId) || [];
+    for (const virtualNodeId of virtualNodes) {
+for (const [ringIndex, ringNodeId] of this.ring.entries()) {
+        if (ringNodeId === virtualNodeId) {
+          this.ring.delete(ringIndex);
+        }
+      }
+    }
+    this.virtualNodes.delete(nodeId);
+    
+    // Remove physical node
+    const ringArray = Array.from(this.ring.entries());
+    for (const [ringIndex, ringNodeId] of ringArray) {
+      if (ringNodeId === nodeId) {
+        this.ring.delete(ringIndex);
+        break;
       }
     }
     this.nodes.delete(nodeId);

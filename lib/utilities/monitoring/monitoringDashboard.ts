@@ -105,10 +105,29 @@ class MonitoringDashboard extends EventEmitter {
   private isCollecting = false;
   private collectionInterval: NodeJS.Timeout | null = null;
   private subscribers: Map<string, (metrics: DashboardMetrics) => void> = new Map();
+  private timers: Set<NodeJS.Timeout> = new Set();
+  private maxCacheSize: number = 5000; // Prevent memory leaks
 
   constructor() {
     super();
     this.lastMetrics = this.initializeMetrics();
+  }
+
+  /**
+   * Add interval with tracking for cleanup
+   */
+  private addInterval(callback: () => void, ms: number): NodeJS.Timeout {
+    const interval = setInterval(callback, ms);
+    this.timers.add(interval);
+    return interval;
+  }
+
+  /**
+   * Remove interval and cleanup tracking
+   */
+  private removeInterval(interval: NodeJS.Timeout): void {
+    clearInterval(interval);
+    this.timers.delete(interval);
   }
 
   /**
@@ -119,7 +138,7 @@ class MonitoringDashboard extends EventEmitter {
 
     this.isCollecting = true;
     
-    this.collectionInterval = setInterval(() => {
+    this.collectionInterval = this.addInterval(() => {
       this.collectMetrics();
     }, intervalMs);
 
@@ -137,12 +156,34 @@ class MonitoringDashboard extends EventEmitter {
 
     this.isCollecting = false;
     
-    if (this.collectionInterval) {
-      clearInterval(this.collectionInterval);
+if (this.collectionInterval) {
+      this.removeInterval(this.collectionInterval);
       this.collectionInterval = null;
     }
 
     this.emit('dashboard:stopped');
+  }
+
+  /**
+   * Destroy dashboard and cleanup all resources
+   */
+  destroy(): void {
+    this.stopMonitoring();
+    
+    // Clear all timers
+    for (const timer of this.timers) {
+      clearInterval(timer);
+    }
+    this.timers.clear();
+    
+    // Clear all maps to prevent memory leaks
+    this.widgets.clear();
+    this.metrics.clear();
+    this.alertRules.clear();
+    this.activeAlerts.clear();
+    this.subscribers.clear();
+    
+    this.emit('dashboard:destroyed');
   }
 
   /**
@@ -252,6 +293,29 @@ class MonitoringDashboard extends EventEmitter {
     const cutoff = Date.now() - (hours * 60 * 60 * 1000);
 
     return metrics.filter(m => m.timestamp >= cutoff);
+  }
+
+  /**
+   * Cleanup old metrics to prevent memory leaks
+   */
+  private cleanupOldMetrics(): void {
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    
+    for (const [metricName, metricList] of this.metrics.entries()) {
+      const filteredMetrics = metricList.filter(m => (now - m.timestamp) <= maxAge);
+      
+      if (filteredMetrics.length !== metricList.length) {
+        this.metrics.set(metricName, filteredMetrics);
+      }
+    }
+    
+    // Limit total number of metric types
+    if (this.metrics.size > this.maxCacheSize) {
+      const entries = Array.from(this.metrics.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.metrics.delete(key));
+    }
   }
 
   /**
@@ -403,7 +467,7 @@ class MonitoringDashboard extends EventEmitter {
   private async collectMetrics(): Promise<void> {
     try {
       // Collect system metrics
-      this.collectSystemMetrics();
+      await this.collectSystemMetrics();
       
       // Collect service metrics
       await this.collectServiceMetrics();
@@ -416,6 +480,11 @@ class MonitoringDashboard extends EventEmitter {
       
       // Check alert rules
       this.checkAlertRules();
+      
+      // Cleanup old metrics periodically
+      if (Math.random() < 0.01) { // 1% chance to run cleanup
+        this.cleanupOldMetrics();
+      }
       
       // Notify subscribers
       this.notifySubscribers();
@@ -434,9 +503,9 @@ class MonitoringDashboard extends EventEmitter {
   /**
    * Collect system metrics
    */
-  private collectSystemMetrics(): void {
+  private async collectSystemMetrics(): Promise<void> {
     const memUsage = process.memoryUsage();
-    const cpuUsage = this.getCpuUsage();
+    const cpuUsage = await this.getCpuUsage();
     const uptime = process.uptime();
 
     this.lastMetrics.system = {
