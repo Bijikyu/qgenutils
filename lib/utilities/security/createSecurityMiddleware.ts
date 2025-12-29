@@ -37,6 +37,7 @@ const detectSuspiciousPatterns = (req: any): string[] => {
 const createIpTracker = () => {
   const tracker = {
     blockedIps: new Map(),
+    cleanupInterval: undefined as NodeJS.Timeout | undefined,
     
     isBlocked: (ip: string): boolean => {
       const block = tracker.blockedIps.get(ip);
@@ -57,11 +58,22 @@ const createIpTracker = () => {
     },
     
     startPeriodicCleanup: () => {
-      // Stub for cleanup
+      if (tracker.cleanupInterval) return;
+      tracker.cleanupInterval = setInterval(() => {
+        const now = Date.now();
+        for (const [ip, block] of tracker.blockedIps.entries()) {
+          if (block.expiry <= now) {
+            tracker.blockedIps.delete(ip);
+          }
+        }
+      }, 300000); // Cleanup every 5 minutes
     },
     
     stopPeriodicCleanup: () => {
-      // Stub for cleanup
+      if (tracker.cleanupInterval) {
+        clearInterval(tracker.cleanupInterval);
+        tracker.cleanupInterval = undefined;
+      }
     }
   };
   
@@ -151,9 +163,7 @@ function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}) {
 
   // Add cleanup method to middleware
   (securityMiddleware as any).cleanup = () => {
-    if (ipTracker.stopPeriodicCleanup) {
-      ipTracker.stopPeriodicCleanup();
-    }
+    ipTracker.stopPeriodicCleanup();
   };
 
   return securityMiddleware;

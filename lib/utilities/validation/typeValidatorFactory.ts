@@ -2,7 +2,7 @@
  * Type validation factory utilities
  */
 
-import resultCreators from './resultCreators';
+import resultCreators from './resultCreators.js';
 const { createSuccessResult, createErrorResult } = resultCreators;
 
 /**

@@ -1,8 +1,8 @@
 'use strict';
 
-const { createSuccessResult, createErrorResult } = require('./validationResultBuilder');
-const { ERROR_MESSAGES } = require('./validationConstants');
-const { createStandardUnifiedValidator } = require('./createUnifiedValidator');
+const { createSuccessResult, createErrorResult } = require('./validationResultBuilder.js');
+const { ERROR_MESSAGES } = require('./validationConstants.js');
+const { createStandardUnifiedValidator } = require('./createUnifiedValidator.js');
 
 /**
  * Core number validation logic

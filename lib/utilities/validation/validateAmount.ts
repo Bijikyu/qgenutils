@@ -110,16 +110,21 @@ function validateAmount(amount: number): AmountValidationResult {
       errors.push('negative_amount');
     }
 
-    // DECIMAL PRECISION: Validate currency precision using integer arithmetic
+    // DECIMAL PRECISION: Validate currency precision using string-based approach
     // This prevents floating point precision errors that are common in financial calculations
-    // Approach: Convert to cents (multiply by 100) and check for exact conversion
-    const cents = Math.round(amount * 100);
+    // Approach: Convert to string and validate decimal places directly
+    const amountStr = amount.toString();
+    const decimalIndex = amountStr.indexOf('.');
     
-    // Use epsilon comparison to handle floating point arithmetic limitations
-    // 0.000001 is small enough for financial precision but accounts for floating point errors
-    const decimalPrecision = Math.abs((amount * 100) - cents);
-    if (!Number.isFinite(cents) || decimalPrecision > 0.000001) {
+    // Check if more than 2 decimal places (standard currency precision)
+    if (decimalIndex !== -1 && amountStr.length - decimalIndex - 1 > 2) {
       errors.push('too_many_decimals');
+    }
+    
+    // Additional check using integer arithmetic for safety
+    const cents = Math.round(amount * 100);
+    if (!Number.isFinite(cents) || Math.abs(cents) > 99999999) { // Max $999,999.99 in cents
+      errors.push('invalid_amount');
     }
 
     // BUSINESS LIMIT: Maximum amount validation

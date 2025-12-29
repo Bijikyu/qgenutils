@@ -43,65 +43,65 @@
  */
 
 // Core validation utilities
-import validateEmailFormat from './validateEmailSimple';
-import validatePasswordStrength from './validatePassword';
-import validateMonetaryAmount from './validateAmount';
-import validateApiKeyFormat from './validateApiKey';
-import validateCurrencyCode from './validateCurrency';
-import sanitizeInput from './sanitizeInput';
-import extractValidationErrors from './extractValidationErrors';
+import validateEmailFormat from './validateEmailSimple.js';
+import validatePasswordStrength from './validatePassword.js';
+import validateMonetaryAmount from './validateAmount.js';
+import validateApiKeyFormat from './validateApiKey.js';
+import validateCurrencyCode from './validateCurrency.js';
+import sanitizeInput from './sanitizeInput.js';
+import extractValidationErrors from './extractValidationErrors.js';
 
 // Type validators
-import validateRequired from './validateRequired';
-import validateArray from './validateArray';
-import validateBoolean from './validateBoolean';
-import validateDate from './validateDate';
-import validateObjectId from './validateObjectId';
-import validatePagination from './validatePagination';
-import validatePattern from './validatePattern';
-import validateStringLength from './validateStringLength';
-import validateEnum from './validateEnum';
+import validateRequired from './validateRequired.js';
+import validateArray from './validateArray.js';
+import validateBoolean from './validateBoolean.js';
+import validateDate from './validateDate.js';
+import validateObjectId from './validateObjectId.js';
+import validatePagination from './validatePagination.js';
+import validatePattern from './validatePattern.js';
+import validateStringLength from './validateStringLength.js';
+import validateEnum from './validateEnum.js';
 
 // Specialized validators
-import validatePaymentMethodNonce from './validatePaymentMethodNonce';
-import validateDateRange from './validateDateRange';
-import validateSubscriptionPlan from './validateSubscriptionPlan';
-import validateNumberRange from './validateNumberRange';
-import validateNumberInRange from './validateNumberInRange';
-import validateNumberUnified from './validateNumberUnified';
-import validateBooleanUnified from './validateBooleanUnified';
-import validateBooleanField from './validateBooleanField';
-import validateRequiredString from './validateRequiredString';
+import validatePaymentMethodNonce from './validatePaymentMethodNonce.js';
+import validateDateRange from './validateDateRange.js';
+import validateSubscriptionPlan from './validateSubscriptionPlan.js';
+import validateNumberRange from './validateNumberRange.js';
+import validateNumberInRange from './validateNumberInRange.js';
+import validateNumberUnified from './validateNumberUnified.js';
+import validateBooleanUnified from './validateBooleanUnified.js';
+import validateBooleanField from './validateBooleanField.js';
+import validateRequiredString from './validateRequiredString.js';
 
 // Zod-based validation
-import zodStringValidators from './zodStringValidators';
-import zodNumberValidators from './zodNumberValidators';
-import zodValidationUtils from './zodValidationUtils';
-import zodSchemaBuilders from './zodSchemaBuilders';
+import zodStringValidators from './zodStringValidators.js';
+import zodNumberValidators from './zodNumberValidators.js';
+import zodValidationUtils from './zodValidationUtils.js';
+import zodSchemaBuilders from './zodSchemaBuilders.js';
 
 // Validation builders
-import createValidator from './createValidator';
-import createResourceValidator from './createResourceValidator';
-import createFieldValidator from './createFieldValidator';
-import createValidationMiddleware from './createValidationMiddleware';
-import createValidationErrorHandler from './createValidationErrorHandler';
-import createUnifiedValidator from './createUnifiedValidator';
-import createApiKeyAuth from './createApiKeyAuth';
-import createCredentialSchema from './createCredentialSchema';
-import createServiceMeta from './createServiceMeta';
+import createValidator from './createValidator.js';
+import createResourceValidator from './createResourceValidator.js';
+import createFieldValidator from './createFieldValidator.js';
+import createValidationMiddleware from './createValidationMiddleware.js';
+import createValidationErrorHandler from './createValidationErrorHandler.js';
+import createUnifiedValidator from './createUnifiedValidator.js';
+import createApiKeyAuth from './createApiKeyAuth.js';
+import createCredentialSchema from './createCredentialSchema.js';
+import createServiceMeta from './createServiceMeta.js';
 
 // Test helpers
-import testHelpers from './testHelpers';
+import testHelpers from './testHelpers.js';
 
 // Type validators
-import typeValidatorFactory from './typeValidatorFactory';
+import typeValidatorFactory from './typeValidatorFactory.js';
 
 // Result utilities
-import resultAnalyzers from './resultAnalyzers';
-import resultCreators from './resultCreators';
-import validationResultBuilder from './validationResultBuilder';
-import validationConstants from './validationConstants';
-import handleValidationFailure from './handleValidationFailure';
+import resultAnalyzers from './resultAnalyzers.js';
+import resultCreators from './resultCreators.js';
+import validationResultBuilder from './validationResultBuilder.js';
+import validationConstants from './validationConstants.js';
+import handleValidationFailure from './handleValidationFailure.js';
 
 // Named exports for better tree-shaking support
 export {

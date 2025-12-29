@@ -1,6 +1,6 @@
 'use strict';
 
-import { createTypeValidator } from './createFieldValidator';
+import { createTypeValidator } from './createFieldValidator.js';
 
 /**
  * Validates boolean field

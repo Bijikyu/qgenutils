@@ -131,9 +131,19 @@ function createEnhancedConfigBuilder(schema, options = {}) {
 
   // Common transformers
   const transformers = {
-    string: (value) => String(value),
-    number: (value) => Number(value),
-    boolean: (value) => Boolean(value),
+    string: (value) => {
+      if (value === null || value === undefined) return '';
+      return String(value);
+    },
+    number: (value) => {
+      const num = Number(value);
+      if (!Number.isFinite(num)) throw new Error('Invalid number');
+      return num;
+    },
+    boolean: (value) => {
+      if (value === null || value === undefined) return false;
+      return Boolean(value);
+    },
     array: (value) => Array.isArray(value) ? value : [value],
     trim: (value) => typeof value === 'string' ? value.trim() : value,
     lowercase: (value) => typeof value === 'string' ? value.toLowerCase() : value,

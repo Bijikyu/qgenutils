@@ -1,6 +1,6 @@
 'use strict';
 
-import { createFieldValidator } from './createFieldValidator';
+import { createFieldValidator } from './createFieldValidator.js';
 
 /**
  * Validates date field
