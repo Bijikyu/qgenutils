@@ -133,13 +133,33 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
    * - Conditional memory optimization reduces overhead
    */
   async function collectAndAnalyze() {
-    // Step 1: Collect current system metrics
-    metrics = metricsCollector.collect();
+    // Step 1: Collect current system metrics with validation
+    try {
+      const rawMetrics = metricsCollector.collect();
+      
+      // Validate metrics to prevent injection attacks
+      if (typeof rawMetrics !== 'object' || rawMetrics === null) {
+        throw new Error('Invalid metrics data received');
+      }
+      
+      metrics = rawMetrics;
+    } catch (error) {
+      logger.error('[performance] Failed to collect metrics:', error);
+      return; // Skip this iteration
+    }
 
     // Step 2: Measure event loop lag asynchronously (non-blocking)
     const lag = await measureEventLoopLag();
+    
+    // Validate lag value
+    let validLag = lag;
+    if (typeof lag !== 'number' || !isFinite(lag) || lag < 0) {
+      logger.warn('[performance] Invalid event loop lag detected, using fallback');
+      validLag = 0;
+    }
+    
     // Create immutable metrics object to prevent unintended mutations
-    const updatedMetrics = { ...metrics, eventLoopLag: lag };
+    const updatedMetrics = { ...metrics, eventLoopLag: validLag };
 
     // Step 3: Analyze metrics against thresholds to generate alerts
     const state: any = metricsCollector.getState();

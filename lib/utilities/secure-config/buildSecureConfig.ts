@@ -2,7 +2,7 @@
 
 import { qerrors } from 'qerrors';
 
-const convict: any = require('convict'); // robust config validation
+import convict from 'convict'; // robust config validation
 
 /**
  * Builds a validated configuration object using convict

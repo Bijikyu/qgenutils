@@ -13,21 +13,28 @@ function deepMerge(...objects: any[]) {
   return objects.reduce((result, obj: any): any => {
     if (!obj || typeof obj !== 'object') return result;
     
-    // Prevent prototype pollution by using Object.getOwnPropertyNames and filtering
-    const ownKeys = Object.getOwnPropertyNames(obj);
+  // Prevent prototype pollution by using Object.getOwnPropertyNames and filtering
+  const ownKeys = Object.getOwnPropertyNames(obj);
+  
+  ownKeys.forEach(key => {
+    // Prevent prototype pollution by blocking dangerous keys
+    const dangerousKeys = [
+      '__proto__', 'constructor', 'prototype',
+      '__defineGetter__', '__defineSetter__', '__lookupGetter__', '__lookupSetter__',
+      '__eval__', '__function__', '__script__', 'constructor.prototype',
+      'constructor.prototype', '__proto__', '__defineGetter__', '__defineSetter__'
+    ];
     
-    ownKeys.forEach(key => {
-      // Prevent prototype pollution by blocking dangerous keys
-      const dangerousKeys = [
-        '__proto__', 'constructor', 'prototype',
-        '__defineGetter__', '__defineSetter__', '__lookupGetter__', '__lookupSetter__',
-        '__eval__', '__function__', '__script__', 'constructor.prototype'
-      ];
-      
-      // Additional protection: check if key would modify prototype
-      if (dangerousKeys.includes(key) || key === '__proto__' || key === 'constructor' || key === 'prototype') {
-        return;
-      }
+    // Additional protection: check if key would modify prototype
+    if (dangerousKeys.includes(key) || 
+        key === '__proto__' || 
+        key === 'constructor' || 
+        key === 'prototype' ||
+        key.startsWith('__') ||
+        key.includes('proto') ||
+        key.includes('constructor')) {
+      return;
+    }
       
       // Ensure we only work with own properties, not prototype properties
       if (!obj.hasOwnProperty(key)) {

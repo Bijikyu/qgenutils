@@ -1,6 +1,6 @@
 'use strict';
 
-const createCachedLoader: any = require('./createCachedLoader'); // base cached loader
+import createCachedLoader from './createCachedLoader.js'; // base cached loader
 
 /**
  * Creates a simple non-cached loader function

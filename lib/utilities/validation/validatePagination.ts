@@ -1,6 +1,6 @@
 'use strict';
 
-const validateNumberRange: any = require('./validateNumberRange.js'); // reuse range validator
+import validateNumberRange from './validateNumberRange.js'; // reuse range validator
 
 /**
  * Validates pagination parameters

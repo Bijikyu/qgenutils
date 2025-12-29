@@ -16,7 +16,7 @@
  * @returns {string} Normalized URL with protocol
  */
 
-const ensureProtocol: any = require('./ensureProtocol');
+import ensureProtocol from './ensureProtocol.js';
 
 function ensureProtocolUrl(data) {
   if (!data || typeof data !== 'object') {

@@ -12,14 +12,98 @@ npm install qgenutils
 ## Quick Start
 
 ```javascript
+// CommonJS
 const utils = require('qgenutils');
-// or import specific functions
 const { formatDateTime, ensureProtocol, groupBy, chunk } = require('qgenutils');
+
+// ES Modules
+import { formatDateTime, ensureProtocol, groupBy, chunk } from 'qgenutils';
+import { logger } from 'qgenutils'; // Winston logger instance
 ```
 
+## Usage
+
+### Basic Examples
+
 ```javascript
-const { logger } = require('qgenutils'); // Winston logger instance
+// DateTime formatting
+const formatted = formatDateTime('2023-12-25T10:30:00.000Z');
+console.log(formatted); // "12/25/2023, 10:30:00 AM"
+
+// URL handling
+const secureUrl = ensureProtocol('example.com');
+console.log(secureUrl); // "https://example.com"
+
+// Input validation
+const isValid = validateEmailFormat('user@example.com');
+console.log(isValid); // true
+
+// Collection utilities
+const users = [
+  { name: 'Alice', role: 'admin' },
+  { name: 'Bob', role: 'user' },
+  { name: 'Charlie', role: 'user' }
+];
+
+const grouped = groupBy(users, user => user.role);
+console.log(grouped);
+// { admin: [{ name: 'Alice', role: 'admin' }], 
+//   user: [{ name: 'Bob', role: 'user' }, { name: 'Charlie', role: 'user' }] }
 ```
+
+### Advanced Examples
+
+```javascript
+// Password security
+import { hashPassword, verifyPassword } from 'qgenutils';
+
+const { hash, salt } = await hashPassword('securePassword123!');
+const isValid = await verifyPassword('securePassword123!', hash, salt);
+
+// API configuration
+import { createHttpConfig, createBasicAuth } from 'qgenutils';
+
+const config = createHttpConfig({
+  method: 'POST',
+  headers: createJsonHeaders({ 'Authorization': createBasicAuth('user', 'pass') }),
+  timeout: 5000
+});
+
+// Performance optimization
+import { memoize, throttle, debounce } from 'qgenutils';
+
+const expensiveFn = memoize((n) => heavyComputation(n));
+const throttledSave = throttle(saveData, 1000);
+const debouncedSearch = debounce(performSearch, 300);
+```
+
+## Examples
+
+The library includes comprehensive examples for various use cases:
+
+### Web Development
+- Input validation and sanitization
+- API request configuration
+- URL processing and validation
+- Error handling and logging
+
+### Security
+- Password hashing and verification
+- Input sanitization against XSS
+- API key validation
+- Rate limiting middleware
+
+### Performance
+- Memoization for expensive operations
+- Throttling and debouncing
+- Batch processing with concurrency control
+- Event loop monitoring
+
+### Data Processing
+- Array and object manipulation
+- Date and time formatting
+- Collection utilities
+- Deep cloning and merging
 
 ## Features
 

@@ -96,6 +96,39 @@ function validatePassword(password: string): PasswordValidationResult {
   const hasLowerCase: boolean = /[a-z]/.test(password); // Lowercase letter requirement
   const hasNumbers: boolean = /\d/.test(password);    // Numeric character requirement
   const hasSpecialChar: boolean = /[!@#$%^&*(),.?":{}|<>]/.test(password); // Special character requirement
+  
+  // Additional security checks
+  if (password.includes(' ') || password.includes('\t') || password.includes('\n')) {
+    errors.push('contains_whitespace');
+  }
+  
+  // Check for common weak passwords
+  const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein', 'welcome'];
+  if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
+    errors.push('common_password');
+  }
+  
+  // Check for repeated characters (weak password pattern)
+  if (/(.)\1{2,}/.test(password)) {
+    errors.push('repeated_characters');
+  }
+  
+  // Check for sequential characters
+  const hasSequential = (str: string): boolean => {
+    for (let i = 0; i < str.length - 2; i++) {
+      const char1 = str.charCodeAt(i);
+      const char2 = str.charCodeAt(i + 1);
+      const char3 = str.charCodeAt(i + 2);
+      if (char2 === char1 + 1 && char3 === char2 + 1) {
+        return true;
+      }
+    }
+    return false;
+  };
+  
+  if (hasSequential(password)) {
+    errors.push('sequential_characters');
+  }
 
   // ERROR COLLECTION: Add specific error codes for each failed requirement
   // These codes are intentionally user-friendly and translatable
