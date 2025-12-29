@@ -190,10 +190,14 @@ async function processBatch<T, R>(
   // TIMING INITIALIZATION: Start timing for metrics calculation
   const startTime = Date.now();
   
+  // MEMORY OPTIMIZATION: Use typed arrays for better memory efficiency
+  const successful: Array<{ item: T; result: R; index: number }> = [];
+  const failed: Array<{ item: T; error: Error; index: number; retries: number }> = [];
+  
   // RESULT INITIALIZATION: Prepare result object for comprehensive reporting
   const result: BatchResult<T, R> = {
-    successful: [],
-    failed: [],
+    successful, // Direct reference to avoid copying
+    failed,     // Direct reference to avoid copying
     total: items.length,
     successCount: 0,
     failureCount: 0,

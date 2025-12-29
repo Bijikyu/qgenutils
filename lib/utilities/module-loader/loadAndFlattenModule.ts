@@ -59,12 +59,21 @@ interface ModuleLoadError extends Error {
   originalError: Error;
 }
 
+// Module cache to prevent repeated dynamic imports
+const moduleCache = new Map<string, any>();
+const MAX_MODULE_CACHE_SIZE = 50;
+
 const loadAndFlattenModule = async (moduleName: string): Promise<any> => { // dynamically load module with CJS/ESM normalization and robust error handling
   // Validate module name to prevent runtime errors and provide clear error messages
   if (typeof moduleName !== 'string' || !moduleName.trim()) {
     const error = new Error(`Invalid module name: ${moduleName}`);
     (error as ModuleLoadError).moduleName = moduleName;
     throw error;
+  }
+
+  // Check cache first to avoid repeated dynamic imports
+  if (moduleCache.has(moduleName)) {
+    return moduleCache.get(moduleName);
   }
 
   try {
@@ -83,10 +92,16 @@ const loadAndFlattenModule = async (moduleName: string): Promise<any> => { // dy
 
     // If default export exists and is an object, merge with named exports
     // This creates a flattened namespace where both default and named exports are available
-    if (def && typeof def === 'object') return { ...def, ...namespace };
+    const result = def && typeof def === 'object' ? { ...def, ...namespace } : namespace;
 
-    // Return the namespace as-is if no default export exists
-    return namespace;
+    // Cache the result to prevent repeated imports
+    if (moduleCache.size >= MAX_MODULE_CACHE_SIZE) {
+      const firstKey = moduleCache.keys().next().value;
+      moduleCache.delete(firstKey);
+    }
+    moduleCache.set(moduleName, result);
+
+    return result;
   } catch (error) {
     // Create a structured error with full context for debugging and monitoring
     const moduleError = new Error(`Failed to load module ${moduleName}: ${error instanceof Error ? error.message : String(error)}`) as ModuleLoadError;
