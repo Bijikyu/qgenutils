@@ -52,6 +52,7 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
   const ipData: Map<string, IpData> = new Map(); // IP -> tracking data
   const blockedIps: Map<string, number> = new Map(); // IP -> block expiry timestamp
   let cleanupTimer: ReturnType<typeof setInterval> | null = null;
+  const maxCacheSize: number = 50000; // Prevent memory leaks
 
   function getIpData(ip: string): IpData { // get or create IP tracking data
     if (!ipData.has(ip)) {
@@ -134,6 +135,14 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
         .sort(([, a]: [string, IpData], [, b]: [string, IpData]) => a.lastRequest - b.lastRequest);
       const toRemove: [string, IpData][] = sorted.slice(0, ipData.size - maxTrackedIps);
       toRemove.forEach(([ip]: [string, IpData]) => ipData.delete(ip));
+    }
+
+    // Also enforce maximum cache size for blocked IPs
+    if (blockedIps.size > maxCacheSize) {
+      const sorted = Array.from(blockedIps.entries())
+        .sort(([, a]: [string, number], [, b]: [string, number]) => a - b);
+      const toRemove: [string, number][] = sorted.slice(0, blockedIps.size - maxCacheSize);
+      toRemove.forEach(([ip]: [string, number]) => blockedIps.delete(ip));
     }
   }
 

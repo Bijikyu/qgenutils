@@ -82,6 +82,8 @@ class DistributedTracer extends EventEmitter {
   private activeSpans: Map<string, Span> = new Map();
   private traces: Map<string, Trace> = new Map();
   private baggage: Map<string, Record<string, string>> = new Map();
+  private maxCacheSize: number = 10000; // Prevent memory leaks
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private metrics: {
     tracesCreated: number;
     spansCreated: number;
@@ -116,6 +118,52 @@ class DistributedTracer extends EventEmitter {
       errorRate: 0,
       samplingRate: this.config.samplingRate
     };
+
+    // Start cleanup interval to prevent memory leaks
+    this.startCleanupInterval();
+  }
+
+  private startCleanupInterval(): void {
+    // Clean up every 5 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredData();
+    }, 5 * 60 * 1000);
+  }
+
+  private cleanupExpiredData(): void {
+    // Remove old completed traces to prevent memory leaks
+    const now = Date.now();
+    const maxAge = 30 * 60 * 1000; // 30 minutes
+
+    for (const [traceId, trace] of this.traces.entries()) {
+      if (trace.endTime && (now - trace.endTime) > maxAge) {
+        this.traces.delete(traceId);
+      }
+    }
+
+    // Limit active spans size
+    if (this.activeSpans.size > this.maxCacheSize) {
+      const entries = Array.from(this.activeSpans.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([spanId]) => this.activeSpans.delete(spanId));
+    }
+
+    // Limit baggage size
+    if (this.baggage.size > this.maxCacheSize) {
+      const entries = Array.from(this.baggage.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.baggage.delete(key));
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.activeSpans.clear();
+    this.traces.clear();
+    this.baggage.clear();
   }
 
   /**

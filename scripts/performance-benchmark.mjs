@@ -320,11 +320,14 @@ class PerformanceBenchmark {
     
     try {
       import('fs').then(fs => {
-        fs.writeFileSync(
+        fs.promises.writeFile(
           join(process.cwd(), 'performance-report.json'),
           JSON.stringify(reportData, null, 2)
-        );
-        console.log('\n📄 Detailed report saved to performance-report.json');
+        ).then(() => {
+          console.log('\n📄 Detailed report saved to performance-report.json');
+        }).catch(error => {
+          console.log('⚠️  Could not save detailed report:', error.message);
+        });
       });
     } catch (error) {
       console.log('⚠️  Could not save detailed report:', error.message);

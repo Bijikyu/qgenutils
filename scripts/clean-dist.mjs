@@ -166,13 +166,17 @@ function rmDirSafe(p) {
  * 
  * @param {string} root - Root directory path (typically process.cwd())
  */
-function cleanDist(root) {
+async function cleanDist(root) {
   // Construct dist directory path with cross-platform compatibility
   const dist = path.join(root, 'dist');
   
   // Validate dist directory existence and accessibility
   try {
-    if (!fs.existsSync(dist)) return;
+    try {
+      await fs.promises.access(dist);
+    } catch {
+      return;
+    }
   } catch (error) {
     if (qerrors) {
       qerrors(
@@ -192,7 +196,7 @@ function cleanDist(root) {
     
     // Read directory contents with file type information
     try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
+      entries = await fs.promises.readdir(dir, { withFileTypes: true });
     } catch (error) {
       if (qerrors) {
         qerrors(
