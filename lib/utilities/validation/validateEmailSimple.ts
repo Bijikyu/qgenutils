@@ -47,14 +47,14 @@ import validator from 'validator'; // email validation library for industry-stan
 import { qerrors } from 'qerrors'; // standardized error reporting and logging across the application
 import logger from '../../logger.js'; // centralized logging for debugging and monitoring
 
+// Cache for validated emails to improve performance
+const emailCache = new Map<string, boolean>();
+const MAX_CACHE_SIZE = 1000;
+
 function validateEmail(email: any): boolean {
-  // Log the start of validation for debugging and monitoring purposes
-  logger.debug(`validateEmail is running with ${email}`);
-  
   try {
     // Input type validation - ensure we're working with a string
     if (!email || typeof email !== 'string') {
-      logger.debug(`validateEmail is returning false (invalid input type)`);
       return false;
     }
     
@@ -63,31 +63,37 @@ function validateEmail(email: any): boolean {
     
     // Empty string validation after trimming
     if (trimmedEmail.length === 0) {
-      logger.debug(`validateEmail is returning false (empty string)`);
       return false;
     }
     
     // Length validation - RFC 5321 specifies maximum email length of 254 characters
     // This prevents buffer overflow attacks and ensures compatibility with email systems
     if (trimmedEmail.length > 254) {
-      logger.debug(`validateEmail is returning false (too long: ${trimmedEmail.length})`);
       return false;
+    }
+
+    // Check cache first for performance
+    if (emailCache.has(trimmedEmail)) {
+      return emailCache.get(trimmedEmail)!;
     }
     
     // Use validator library for RFC 5322 compliant email validation
     // This handles complex email patterns including international domains
     const isValid: boolean = validator.isEmail(trimmedEmail);
     
-    // Log the result for debugging and monitoring
-    logger.debug(`validateEmail is returning ${isValid}`);
+    // Cache result (with size limit to prevent memory issues)
+    if (emailCache.size >= MAX_CACHE_SIZE) {
+      // Clear oldest entries when cache is full
+      const firstKey = emailCache.keys().next().value;
+      emailCache.delete(firstKey);
+    }
+    emailCache.set(trimmedEmail, isValid);
+    
     return isValid;
     
   } catch (err) {
     // Comprehensive error handling with standardized error reporting
     qerrors(err instanceof Error ? err : new Error(String(err)), 'validateEmail', `Email validation failed for input: ${email}`);
-    
-    // Log the error for debugging and monitoring
-    logger.error(`validateEmail failed: ${err instanceof Error ? err.message : String(err)}`);
     
     // Fail-safe approach - always return false on errors to prevent security issues
     return false;

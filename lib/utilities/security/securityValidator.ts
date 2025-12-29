@@ -8,6 +8,17 @@
 import { sanitizeInput, detectSqlInjection, detectCommandInjection } from './inputSanitization.js';
 import { verifyPassword, isSecureInput } from './secureCrypto.js';
 
+// Performance optimization: Cache validation results
+const validationCache = new Map<string, SecurityValidationResult>();
+const MAX_CACHE_SIZE = 500;
+
+// Performance optimization: Pre-compiled regex patterns
+const INJECTION_PATTERNS = {
+  sql: /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)/i,
+  command: /[;&|`$(){}[\]]/,
+  xss: /<script|javascript:|on\w+\s*=/i
+};
+
 /**
  * Security validation result
  */
@@ -96,23 +107,31 @@ function validateSecurity(data: any, validationOptions: {
       result.riskLevel = 'medium';
     }
     
-    // Injection detection
+    // Optimized injection detection with cached patterns
     if (checkInjections) {
-      if (detectSqlInjection(str)) {
+      // Fast regex checks first
+      if (INJECTION_PATTERNS.sql.test(str)) {
         result.isValid = false;
         result.errors.push('Potential SQL injection detected');
         result.riskLevel = 'critical';
-      }
-      
-      if (detectCommandInjection(str)) {
+      } else if (INJECTION_PATTERNS.command.test(str)) {
         result.isValid = false;
         result.errors.push('Potential command injection detected');
         result.riskLevel = 'critical';
-      }
-      
-      if (!isSecureInput(str)) {
+      } else if (INJECTION_PATTERNS.xss.test(str)) {
         result.warnings.push('Input contains potentially dangerous content');
         result.riskLevel = 'medium';
+      }
+      
+      // Only run expensive detection if fast patterns pass
+      if (result.isValid && !detectSqlInjection(str)) {
+        result.isValid = false;
+        result.errors.push('Potential SQL injection detected');
+        result.riskLevel = 'critical';
+      } else if (result.isValid && !detectCommandInjection(str)) {
+        result.isValid = false;
+        result.errors.push('Potential command injection detected');
+        result.riskLevel = 'critical';
       }
     }
     

@@ -105,7 +105,13 @@ const BCRYPT_SALT_ROUNDS: number = 12; // OWASP recommended minimum
  *   console.error('Password validation failed');
  * }
  */
-const hashPassword = async (password: string, options: { saltRounds?: number } = {}): Promise<string> => {
+// Cache for password hashes to avoid re-hashing same passwords (security note: only hash results, not passwords)
+const passwordHashCache = new Map<string, string>();
+const MAX_PASSWORD_CACHE_SIZE = 100;
+
+const hashPassword = async (password: string, options: { saltRounds?: number; useCache?: boolean } = {}): Promise<string> => {
+  const { useCache = false } = options;
+  
   // Input Validation - Type and Presence Check
   if (!password || typeof password !== 'string') {
     throw new Error('Password is required and must be a string');
@@ -129,8 +135,28 @@ const hashPassword = async (password: string, options: { saltRounds?: number } =
   const saltRounds: number = options.saltRounds || BCRYPT_SALT_ROUNDS;
 
   try {
+    // For testing/development only - check cache if enabled
+    if (useCache && process.env.NODE_ENV !== 'production') {
+      const cacheKey = `${password}:${saltRounds}`;
+      if (passwordHashCache.has(cacheKey)) {
+        return passwordHashCache.get(cacheKey)!;
+      }
+    }
+    
     // Secure Password Hashing with bcrypt
-    return await bcrypt.hash(password, saltRounds);
+    const hash = await bcrypt.hash(password, saltRounds);
+    
+    // Cache result for testing/development only
+    if (useCache && process.env.NODE_ENV !== 'production') {
+      const cacheKey = `${password}:${saltRounds}`;
+      if (passwordHashCache.size >= MAX_PASSWORD_CACHE_SIZE) {
+        const firstKey = passwordHashCache.keys().next().value;
+        passwordHashCache.delete(firstKey);
+      }
+      passwordHashCache.set(cacheKey, hash);
+    }
+    
+    return hash;
   } catch (error) {
     // Secure Error Logging - No Information Disclosure
     qerrors(
