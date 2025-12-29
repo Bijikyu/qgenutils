@@ -36,7 +36,59 @@ const path = require('path');
 // Import QGenUtils utilities for API demonstrations
 const QGenUtils = require('./dist/index.js');
 
+// Import centralized environment variables
+const { NODE_ENV } = require('./config/localVars.js');
+
 const root = process.cwd();
+
+/**
+ * Error Message Sanitization Function
+ * 
+ * Sanitizes error messages to prevent information disclosure in production.
+ * Removes sensitive information like file paths, stack traces, and internal details.
+ * 
+ * @param {string} errorMessage - The raw error message
+ * @returns {string} - Sanitized error message safe for client exposure
+ */
+function sanitizeErrorMessage(errorMessage) {
+  if (!errorMessage || typeof errorMessage !== 'string') {
+    return 'An error occurred';
+  }
+  
+  // Remove file paths (Windows and Unix)
+  let sanitized = errorMessage
+    .replace(/[A-Z]:\\[^\\s]*/gi, '[path]')
+    .replace(/\/[^\/\s]*/g, '[path]')
+    .replace(/\\\\[^\\\s]*/g, '[path]');
+  
+  // Remove stack trace patterns
+  sanitized = sanitized
+    .replace(/\s+at\s+.*\([^)]*\)/g, '')
+    .replace(/\s+at\s+.*/g, '')
+    .replace(/Error:\s*/gi, '');
+  
+  // Remove sensitive keywords and patterns
+  sanitized = sanitized
+    .replace(/internal server error/gi, 'server error')
+    .replace(/database connection/gi, 'data source')
+    .replace(/sql/gi, 'query')
+    .replace(/password/gi, 'credentials')
+    .replace(/token/gi, 'session')
+    .replace(/secret/gi, 'key');
+  
+  // Limit length and remove excessive whitespace
+  sanitized = sanitized
+    .trim()
+    .replace(/\s+/g, ' ')
+    .substring(0, 200);
+  
+  // Ensure we have something meaningful
+  if (!sanitized || sanitized.length < 3) {
+    return 'An error occurred';
+  }
+  
+  return sanitized;
+}
 
 /**
  * MIME Type Mapping for Static File Serving
@@ -477,7 +529,37 @@ async function handlePerformance(req, res, action, method) {
   }
 }
 
+// Security headers helper function
+const applySecurityHeaders = (req, res) => {
+  // Content Security Policy
+  const isDevelopment = NODE_ENV === 'development';
+  const cspValue = isDevelopment 
+    ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http: https: http://localhost:* ws://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http: https:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+  
+  res.setHeader('Content-Security-Policy', cspValue);
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), autoplay=(), encrypted-media=(), fullscreen=(self), picture-in-picture=(self)');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader('X-Download-Options', 'noopen');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('X-Powered-By', '');
+  
+  // Cache control for API responses
+  if (req.path && req.path.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+};
+
 const server = http.createServer(async (req, res) => {
+  // Apply security headers to all responses
+  applySecurityHeaders(req, res);
+  
   // Fix: Add null check for req.url to prevent runtime error
   const parsedUrl = (req.url || '').split('?');
   let reqPath = parsedUrl[0];
@@ -497,7 +579,11 @@ const server = http.createServer(async (req, res) => {
       } else if (error.code === 'EACCES') {
         sendJSON(res, { error: 'Permission denied', message: error.message }, 403);
       } else {
-        sendJSON(res, { error: 'Internal server error', message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong' }, 500);
+        // Sanitize error messages to prevent information disclosure
+        const safeErrorMessage = NODE_ENV === 'development' 
+          ? sanitizeErrorMessage(error.message) 
+          : 'Something went wrong';
+        sendJSON(res, { error: 'Internal server error', message: safeErrorMessage }, 500);
       }
     }
     return;
@@ -540,7 +626,8 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-const port = process.env.DEMO_PORT || 3000;
+const { PORT } = require('./config/localVars.js');
+const port = PORT || 3000;
 server.listen(port, () => {
   console.log(`Demo server listening on http://localhost:${port}`);
 });

@@ -1527,6 +1527,72 @@ Node.js & Browser Ready
     <script src="demo-test-runner.js"></script>
     <script src="browser-utils.js"></script>
     <script>
+        // Safe Function Creator to prevent code injection
+        function createSafeFunction(expression) {
+            // Whitelist of allowed property names and operators
+            const allowedPattern = /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*(\s*[><=!]+\s*[a-zA-Z0-9_$\.]+)?$/;
+            
+            // Basic validation to prevent code injection
+            if (!expression || typeof expression !== 'string') {
+                return () => false;
+            }
+            
+            // Check for dangerous patterns
+            const dangerousPatterns = [
+                /eval\s*\(/,
+                /Function\s*\(/,
+                /setTimeout\s*\(/,
+                /setInterval\s*\(/,
+                /require\s*\(/,
+                /import\s+/,
+                /constructor/,
+                /prototype/,
+                /__proto__/,
+                /__defineGetter__/,
+                /__defineSetter__/,
+                /bind\s*\(/,
+                /call\s*\(/,
+                /apply\s*\(/,
+                /document\./,
+                /window\./,
+                /global\./,
+                /process\./,
+                /console\./,
+                /\[.*\].*\(/,
+                /\{.*\}/,
+                /;/,
+                /return\s+[^a-zA-Z_$]/
+            ];
+            
+            for (const pattern of dangerousPatterns) {
+                if (pattern.test(expression)) {
+                    console.warn('Potentially dangerous expression blocked:', expression);
+                    return () => false;
+                }
+            }
+            
+            // Only allow simple property access and basic comparisons
+            if (!allowedPattern.test(expression.trim())) {
+                console.warn('Invalid expression format:', expression);
+                return () => false;
+            }
+            
+            try {
+                // Create safe function with limited scope
+                return new Function('item', `
+                    "use strict";
+                    try {
+                        return ${expression};
+                    } catch (e) {
+                        return false;
+                    }
+                `);
+            } catch (e) {
+                console.warn('Failed to create function:', expression, e);
+                return () => false;
+            }
+        }
+
         // Test Runner Management
         let testRunner = null;
         let testHistory = [];
@@ -2771,7 +2837,7 @@ Node.js & Browser Ready
                         result = groupBy(data, key);
                         break;
                     case 'partition':
-                        const condition = key ? new Function('item', `return ${key}`) : () => true;
+                        const condition = key ? createSafeFunction(key) : () => true;
                         result = partition(data, condition);
                         break;
                     case 'unique':
@@ -2789,7 +2855,7 @@ Node.js & Browser Ready
                         });
                         break;
                     case 'filter':
-                        const filterCondition = key ? new Function('item', `return ${key}`) : () => true;
+                        const filterCondition = key ? createSafeFunction(key) : () => true;
                         result = data.filter(filterCondition);
                         break;
                 }

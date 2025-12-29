@@ -166,7 +166,8 @@ function safeJsonStringify(
  * 
  * @example
  * // Environment-specific limits
- * const isProduction = process.env.NODE_ENV === 'production';
+ * import { NODE_ENV } from '../../../config/localVars.js';
+ * const isProduction = NODE_ENV === 'production';
  * const limit = isProduction ? 10 * 1024 : 1024 * 1024; // Stricter in production
  * const productionSafe = safeJsonStringifyWithSize(data, limit);
  * 

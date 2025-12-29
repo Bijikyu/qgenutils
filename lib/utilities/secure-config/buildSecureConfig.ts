@@ -7,7 +7,7 @@ import convict from 'convict'; // robust config validation
 /**
  * Builds a validated configuration object using convict
  * @param {Object} schema - Convict schema definition
- * @param {Object} [env] - Environment variables (defaults to process.env)
+ * @param {Object} [env] - Environment variables (should import from localVars.js)
  * @param {Object} [overrides] - Additional config overrides
  * @returns {Object} Validated configuration object
  * @example
@@ -16,7 +16,7 @@ import convict from 'convict'; // robust config validation
  *   NODE_ENV: { format: ['development', 'production'], default: 'development' }
  * });
  */
-const buildSecureConfig = (schema: any, env: any = process.env, overrides: any = {}): any => { // build validated config
+const buildSecureConfig = (schema: any, env: any, overrides: any = {}): any => { // build validated config
   if (!schema || typeof schema !== 'object') throw new Error('Schema is required and must be an object');
 
   const config: any = convict(schema), envOverrides = {};

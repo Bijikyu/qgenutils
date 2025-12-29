@@ -40,6 +40,7 @@ import fs from 'fs';
 import path from 'path';
 import { createLogger, format, transports } from 'winston';
 import { fileURLToPath } from 'url';
+import { QGENUTILS_LOG_DIR } from '../config/localVars.js';
 
 // Try to import qerrors for consistent error reporting across the application
 // This optional dependency provides standardized error handling and logging
@@ -62,7 +63,7 @@ const __dirname = path.dirname(__filename);
 // Use environment variable or fallback path for log directory
 // Environment variable allows deployment flexibility (Docker volumes, cloud storage, etc.)
 // Fallback path ensures the logger works out-of-the-box for local development
-const logDir = process.env.QGENUTILS_LOG_DIR || path.join(__dirname, '..', 'logs');
+const logDir = QGENUTILS_LOG_DIR || path.join(__dirname, '..', 'logs');
 
 // Ensure log directory exists synchronously before logger initialization
 // This prevents runtime errors when transports try to write to non-existent directories
