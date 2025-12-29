@@ -1,7 +1,7 @@
 'use strict';
 
-const { createSuccessResult, createErrorResult } = require('./validationResultBuilder');
-const { ERROR_MESSAGES } = require('./validationConstants');
+const { createSuccessResult, createErrorResult } = require('./validationResultBuilder.js');
+const { ERROR_MESSAGES } = require('./validationConstants.js');
 
 /**
  * Unified boolean validation utility

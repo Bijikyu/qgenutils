@@ -10,16 +10,16 @@ const {
   createSuccessResult,
   createErrorResult,
   createMultiErrorResult
-} = require('./resultCreators');
+} = require('./resultCreators.js');
 
 const {
   isSuccess,
   isFailure,
   getFirstError
-} = require('./resultAnalyzers');
+} = require('./resultAnalyzers.js');
 
-import validationConstants from './validationConstants';
-import typeValidatorFactory from './typeValidatorFactory';
+import validationConstants from './validationConstants.js';
+import typeValidatorFactory from './typeValidatorFactory.js';
 const { ERROR_MESSAGES } = validationConstants;
 const { createTypeValidator } = typeValidatorFactory;
 

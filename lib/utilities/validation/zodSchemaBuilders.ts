@@ -1,7 +1,7 @@
 'use strict';
 
 import { z } from 'zod';
-const zodStringValidators: any = require('./zodStringValidators');
+const zodStringValidators: any = require('./zodStringValidators.js');
 
 /**
  * Common Zod schema builders for complex validation scenarios

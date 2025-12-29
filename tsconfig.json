@@ -28,8 +28,7 @@
     "suppressImplicitAnyIndexErrors": false,
     "allowImportingTsExtensions": false,
     "allowArbitraryExtensions": true,
-    "rootDir": "./",
-    "allowArbitraryExtensions": true
+    "rootDir": "./"
   },
   "include": [
     "**/*.ts",

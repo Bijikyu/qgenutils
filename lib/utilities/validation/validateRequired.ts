@@ -9,7 +9,7 @@
  * validateRequired({ name: 'John' }, ['name', 'email']);
  * // { error: 'Missing required fields', required: ['email'] }
  */
-import { createFieldValidator } from './createFieldValidator';
+import { createFieldValidator } from './createFieldValidator.js';
 
 const isNonEmpty: any = (value) => value !== undefined && value !== null && value !== '';
 

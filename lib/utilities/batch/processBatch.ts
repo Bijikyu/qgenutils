@@ -347,8 +347,12 @@ async function processBatch<T, R>(
     // ETA CALCULATION: Estimate remaining time based on current processing rate
     if (progress.processed > 0) {
       const elapsed = Date.now() - startTime;
-      const rate = progress.processed / elapsed; // Items per millisecond
-      progress.eta = rate > 0 ? (progress.total - progress.processed) / rate : 0;
+      if (elapsed > 0) {
+        const rate = progress.processed / elapsed; // Items per millisecond
+        progress.eta = rate > 0 ? (progress.total - progress.processed) / rate : 0;
+      } else {
+        progress.eta = 0; // Avoid division by zero when elapsed time is zero
+      }
     }
 
     // PROGRESS CALLBACK: Report current progress to caller
