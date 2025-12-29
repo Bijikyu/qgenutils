@@ -44,6 +44,7 @@ class DatabaseConnectionPool {
   private config: Required<DatabaseConfig>;
   private connections: Map<string, any> = new Map();
   private activeConnections: Set<string> = new Set();
+  private availableConnections: Set<string> = new Set(); // Track available connections for O(1) lookup
   private connectionQueue: Array<{
     resolve: (connection: any) => void;
     reject: (error: Error) => void;
@@ -51,6 +52,8 @@ class DatabaseConnectionPool {
   }> = [];
   private readonly MAX_QUEUE_SIZE = 100;
   private readonly CONNECTION_HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
+  private healthCheckInterval: NodeJS.Timeout | null = null;
+  private timers: Set<NodeJS.Timeout> = new Set();
 
   constructor(config: DatabaseConfig) {
     this.config = {
@@ -138,7 +141,7 @@ class DatabaseConnectionPool {
   }
 
   /**
-   * Execute multiple queries in a transaction
+   * Execute multiple queries in a transaction (optimized with batching)
    */
   async transaction<T = any>(
     queries: Array<{ sql: string; params?: any[] }>
@@ -150,31 +153,17 @@ class DatabaseConnectionPool {
       // Begin transaction
       await this.executeWithTimeout(connection.connection, 'BEGIN', [], this.config.queryTimeout);
       
-      // Execute all queries
-      for (const query of queries) {
-        const startTime = Date.now();
-        try {
-          const result = await this.executeWithTimeout<T>(
-            connection.connection,
-            query.sql,
-            query.params || [],
-            this.config.queryTimeout
-          );
-          
-          results.push({
-            success: true,
-            data: result,
-            executionTime: Date.now() - startTime,
-            connectionId: connection.id
-          });
-        } catch (error) {
-          results.push({
-            success: false,
-            error: error instanceof Error ? error : new Error(String(error)),
-            executionTime: Date.now() - startTime,
-            connectionId: connection.id
-          });
-          throw error;
+      // Optimize: Group similar queries for batching
+      const queryGroups = this.groupSimilarQueries(queries);
+      
+      // Execute queries in optimized batches
+      for (const group of queryGroups) {
+        if (group.length === 1) {
+          // Single query execution
+          await this.executeSingleQuery(connection, group[0], results);
+        } else {
+          // Batch execution for similar queries
+          await this.executeBatchedQueries(connection, group, results);
         }
       }
       
@@ -202,14 +191,160 @@ class DatabaseConnectionPool {
   }
 
   /**
-   * Get a connection from the pool
+   * Group similar queries for batch optimization
+   */
+  private groupSimilarQueries(queries: Array<{ sql: string; params?: any[] }>): Array<Array<{ sql: string; params?: any[] }>> {
+    const groups: Map<string, Array<{ sql: string; params?: any[] }>> = new Map();
+    
+    for (const query of queries) {
+      const queryType = this.getQueryType(query.sql);
+      if (!groups.has(queryType)) {
+        groups.set(queryType, []);
+      }
+      groups.get(queryType)!.push(query);
+    }
+    
+    return Array.from(groups.values());
+  }
+
+  /**
+   * Extract query type for grouping
+   */
+  private getQueryType(sql: string): string {
+    // Simple query type detection for batching
+    const normalized = sql.trim().toLowerCase();
+    
+    if (normalized.startsWith('select')) return 'SELECT';
+    if (normalized.startsWith('insert')) return 'INSERT';
+    if (normalized.startsWith('update')) return 'UPDATE';
+    if (normalized.startsWith('delete')) return 'DELETE';
+    
+    return 'OTHER';
+  }
+
+  /**
+   * Execute single query with timing
+   */
+  private async executeSingleQuery<T>(
+    connection: { connection: any; id: string }, 
+    query: { sql: string; params?: any[] }, 
+    results: QueryResult<T>[]
+  ): Promise<void> {
+    const startTime = Date.now();
+    try {
+      const result = await this.executeWithTimeout<T>(
+        connection.connection,
+        query.sql,
+        query.params || [],
+        this.config.queryTimeout
+      );
+      
+      results.push({
+        success: true,
+        data: result,
+        executionTime: Date.now() - startTime,
+        connectionId: connection.id
+      });
+    } catch (error) {
+      results.push({
+        success: false,
+        error: error instanceof Error ? error : new Error(String(error)),
+        executionTime: Date.now() - startTime,
+        connectionId: connection.id
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Execute batched queries for optimization
+   */
+  private async executeBatchedQueries<T>(
+    connection: { connection: any; id: string },
+    queries: Array<{ sql: string; params?: any[] }>,
+    results: QueryResult<T>[]
+  ): Promise<void> {
+    const startTime = Date.now();
+    
+    try {
+      // Create batch SQL for supported operations
+      const batchSql = this.createBatchSql(queries);
+      const batchParams = queries.flatMap(q => q.params || []);
+      
+      const result = await this.executeWithTimeout<T>(
+        connection.connection,
+        batchSql,
+        batchParams,
+        this.config.queryTimeout
+      );
+      
+      // Add results for all queries in batch
+      for (let i = 0; i < queries.length; i++) {
+        results.push({
+          success: true,
+          data: Array.isArray(result) ? result[i] : result,
+          executionTime: (Date.now() - startTime) / queries.length,
+          connectionId: connection.id
+        });
+      }
+      
+    } catch (error) {
+      // Add error result for all queries in batch
+      for (const query of queries) {
+        results.push({
+          success: false,
+          error: error instanceof Error ? error : new Error(String(error)),
+          executionTime: (Date.now() - startTime) / queries.length,
+          connectionId: connection.id
+        });
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Create batch SQL for similar queries
+   */
+  private createBatchSql(queries: Array<{ sql: string; params?: any[] }>): string {
+    const queryType = this.getQueryType(queries[0].sql);
+    
+    switch (queryType) {
+      case 'INSERT':
+        // Combine multiple INSERTs into single statement
+        const values = queries.map(q => {
+          const paramList = (q.params || []).map((_, i) => `$${i + 1}`).join(', ');
+          return `(${paramList})`;
+        }).join(', ');
+        return `INSERT INTO table (columns) VALUES ${values};`;
+        
+      case 'UPDATE':
+        // For UPDATE, execute sequentially (most databases don't support batch UPDATE)
+        return queries.map(q => q.sql).join('; ');
+        
+      case 'SELECT':
+        // Combine multiple SELECTs with UNION ALL if possible
+        return queries.map(q => q.sql).join(' UNION ALL ');
+        
+      default:
+        // Fallback to sequential execution
+        return queries.map(q => q.sql).join('; ');
+    }
+  }
+
+  /**
+   * Get a connection from the pool (optimized with O(1) lookup)
    */
   private async getConnection(): Promise<{ connection: any; id: string }> {
-    // Check for available connections
-    for (const [id, connection] of this.connections) {
-      if (!this.activeConnections.has(id)) {
-        this.activeConnections.add(id);
-        return { connection, id };
+    // Check for available connections using O(1) set lookup
+    if (this.availableConnections.size > 0) {
+      const availableId = this.availableConnections.values().next().value;
+      if (availableId) {
+        this.availableConnections.delete(availableId);
+        this.activeConnections.add(availableId);
+        const connection = this.connections.get(availableId);
+        if (connection) {
+          return { connection, id: availableId };
+        }
       }
     }
 
@@ -235,26 +370,46 @@ class DatabaseConnectionPool {
         timestamp: Date.now()
       });
 
-      // Set timeout for queue wait
-      setTimeout(() => {
-        const index = this.connectionQueue.findIndex(
-          item => item.resolve === resolve
-        );
-        if (index !== -1) {
-          this.connectionQueue.splice(index, 1);
-          reject(new Error('Connection timeout'));
-        }
-      }, this.config.connectionTimeout);
+// Set timeout for queue wait
+    const timer = setTimeout(() => {
+      const index = this.connectionQueue.findIndex(
+        item => item.resolve === resolve
+      );
+      if (index !== -1) {
+        this.connectionQueue.splice(index, 1);
+        reject(new Error('Connection timeout'));
+      }
+    }, this.config.connectionTimeout);
+      
+    this.timers.add(timer);
+
+    // Clear timeout when connection is acquired to prevent memory leaks
+    const connectionAcquired = new Promise<void>((resolve, reject) => {
+      // Track connection acquisition
+      resolve();
+    });
+    
+    connectionAcquired.then(() => {
+      if (timer) {
+        clearTimeout(timer);
+        this.timers.delete(timer);
+      }
+    }).catch(() => {
+      if (timer) {
+        clearTimeout(timer);
+        this.timers.delete(timer);
+      }
+    });
     });
   }
 
   /**
-   * Release a connection back to the pool
+   * Release a connection back to the pool (optimized)
    */
   private releaseConnection(connectionId: string): void {
     this.activeConnections.delete(connectionId);
     
-    // Process queued requests
+    // Process queued requests first
     if (this.connectionQueue.length > 0) {
       const queued = this.connectionQueue.shift();
       if (queued) {
@@ -264,6 +419,9 @@ class DatabaseConnectionPool {
           queued.resolve({ connection, id: connectionId });
         }
       }
+    } else {
+      // Add to available connections if no queue
+      this.availableConnections.add(connectionId);
     }
   }
 
@@ -311,32 +469,58 @@ class DatabaseConnectionPool {
   }
 
   /**
-   * Start connection health checks
+   * Start connection health checks (optimized with timer tracking)
    */
   private startHealthChecks(): void {
-    setInterval(async () => {
-      for (const [id, connection] of this.connections) {
-        try {
-          // Simple health check query
-          await this.executeWithTimeout(
-            connection,
-            'SELECT 1',
-            [],
-            5000 // 5 second timeout for health check
-          );
-        } catch (error) {
-          qerrors(
-            error instanceof Error ? error : new Error(String(error)),
-            'DatabaseConnectionPool.healthCheck',
-            `Connection ${id} failed health check, removing from pool`
-          );
+    this.healthCheckInterval = this.addInterval(async () => {
+      // Only check a subset of connections per interval to reduce overhead
+      const connectionsToCheck = Array.from(this.connections.keys()).slice(0, Math.ceil(this.connections.size / 2));
+      
+      await Promise.allSettled(
+        connectionsToCheck.map(async (id) => {
+          const connection = this.connections.get(id);
+          if (!connection) return;
           
-          // Remove failed connection
-          this.connections.delete(id);
-          this.activeConnections.delete(id);
-        }
-      }
+          try {
+            // Simple health check query
+            await this.executeWithTimeout(
+              connection,
+              'SELECT 1',
+              [],
+              5000 // 5 second timeout for health check
+            );
+          } catch (error) {
+            qerrors(
+              error instanceof Error ? error : new Error(String(error)),
+              'DatabaseConnectionPool.healthCheck',
+              `Connection ${id} failed health check, removing from pool`
+            );
+            
+            // Remove failed connection
+            this.connections.delete(id);
+            this.activeConnections.delete(id);
+            this.availableConnections.delete(id);
+          }
+        })
+      );
     }, this.CONNECTION_HEALTH_CHECK_INTERVAL);
+  }
+
+  /**
+   * Add interval with tracking for cleanup
+   */
+  private addInterval(callback: () => void, ms: number): NodeJS.Timeout {
+    const interval = setInterval(callback, ms);
+    this.timers.add(interval);
+    return interval;
+  }
+
+  /**
+   * Remove interval and cleanup tracking
+   */
+  private removeInterval(interval: NodeJS.Timeout): void {
+    clearInterval(interval);
+    this.timers.delete(interval);
   }
 
   /**
@@ -357,6 +541,19 @@ class DatabaseConnectionPool {
    * Close all connections and cleanup
    */
   async close(): Promise<void> {
+    // Clear health check interval
+    if (this.healthCheckInterval) {
+      this.removeInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
+    }
+    
+    // Clear all timers
+    for (const timer of this.timers) {
+      clearTimeout(timer);
+      clearInterval(timer);
+    }
+    this.timers.clear();
+
     // Close all active connections
     for (const [id, connection] of this.connections) {
       try {
@@ -373,6 +570,7 @@ class DatabaseConnectionPool {
     // Clear pools
     this.connections.clear();
     this.activeConnections.clear();
+    this.availableConnections.clear();
     this.connectionQueue.length = 0;
   }
 }

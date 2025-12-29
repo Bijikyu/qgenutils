@@ -80,6 +80,7 @@ class TaskQueue extends EventEmitter {
   private taskCounter = 0;
   private maxCacheSize: number = 10000; // Prevent memory leaks
   private cleanupInterval: NodeJS.Timeout | null = null;
+  private timers: Set<NodeJS.Timeout> = new Set();
 
   constructor(config: TaskQueueConfig) {
     super();
@@ -123,9 +124,26 @@ class TaskQueue extends EventEmitter {
 
   private startCleanupInterval(): void {
     // Clean up every 30 minutes to prevent memory leaks
-    this.cleanupInterval = setInterval(() => {
+    this.cleanupInterval = this.addInterval(() => {
       this.cleanupExpiredData();
     }, 30 * 60 * 1000);
+  }
+
+  /**
+   * Add interval with tracking for cleanup
+   */
+  private addInterval(callback: () => void, ms: number): NodeJS.Timeout {
+    const interval = setInterval(callback, ms);
+    this.timers.add(interval);
+    return interval;
+  }
+
+  /**
+   * Remove interval and cleanup tracking
+   */
+  private removeInterval(interval: NodeJS.Timeout): void {
+    clearInterval(interval);
+    this.timers.delete(interval);
   }
 
   private cleanupExpiredData(): void {
@@ -160,13 +178,20 @@ class TaskQueue extends EventEmitter {
 
   destroy(): void {
     if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
+      this.removeInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
     if (this.pollInterval) {
-      clearInterval(this.pollInterval);
+      this.removeInterval(this.pollInterval);
       this.pollInterval = null;
     }
+    
+    // Clear all timers
+    for (const timer of this.timers) {
+      clearInterval(timer);
+    }
+    this.timers.clear();
+    
     this.tasks.clear();
     this.handlers.clear();
     this.processing.clear();
@@ -308,7 +333,7 @@ class TaskQueue extends EventEmitter {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    this.pollInterval = setInterval(() => {
+    this.pollInterval = this.addInterval(() => {
       this.processPendingTasks();
     }, this.config.pollInterval);
 

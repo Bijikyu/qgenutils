@@ -21,6 +21,8 @@ import { qerrors } from 'qerrors';
 import CircuitBreaker from '../resilience/circuitBreaker.js';
 import HealthChecker from '../health/healthChecker.js';
 import DistributedTracer from '../tracing/distributedTracer.js';
+import asyncLogger from '../logging/asyncLogger.js';
+import responseCompressor from '../performance/responseCompression.js';
 
 interface Route {
   id: string;
@@ -57,6 +59,7 @@ interface GatewayConfig {
   enableCircuitBreaker?: boolean;
   enableRateLimiting?: boolean;
   enableAuthentication?: boolean;
+  enableCompression?: boolean;
   cors?: {
     enabled: boolean;
     origins: string[];
@@ -70,64 +73,9 @@ interface GatewayConfig {
     apiKeys?: Record<string, string[]>;
     jwtSecret?: string;
     oauthProvider?: string;
-  };
-}
-
-interface GatewayMetrics {
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  averageResponseTime: number;
-  requestsByRoute: Map<string, number>;
-  requestsByService: Map<string, number>;
-  errorRate: number;
-  throughput: number;
-  activeConnections: number;
-}
-
-class APIGateway extends EventEmitter {
-  private config: Required<GatewayConfig>;
-  private routes: Map<string, Route[]> = new Map();
-  private circuitBreakers: Map<string, CircuitBreaker<any, any>> = new Map();
-  private maxCacheSize: number = 5000; // Prevent memory leaks
-  private cleanupInterval: NodeJS.Timeout | null = null;
-  private tracer?: DistributedTracer;
-  private healthChecker?: HealthChecker;
-  private metrics: GatewayMetrics;
-  private middleware: Array<(req: Request, res: Response, next: NextFunction) => void> = [];
-
-  constructor(config: GatewayConfig) {
-    super();
-
-    this.config = {
-      name: config.name,
-      version: config.version || '1.0.0',
-      environment: config.environment || 'production',
-      enableTracing: config.enableTracing !== false,
-      enableMetrics: config.enableMetrics !== false,
-      enableLogging: config.enableLogging !== false,
-      defaultTimeout: config.defaultTimeout || 30000,
-      defaultRetries: config.defaultRetries || 3,
-      enableCircuitBreaker: config.enableCircuitBreaker !== false,
-      enableRateLimiting: config.enableRateLimiting !== false,
-      enableAuthentication: config.enableAuthentication !== false,
-      cors: {
-        enabled: config.cors?.enabled !== false,
-        origins: config.cors?.origins || ['*'],
-        methods: config.cors?.methods || ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        headers: config.cors?.headers || ['Content-Type', 'Authorization'],
-        ...config.cors
-      },
-      security: {
-        enableApiKeyAuth: config.security?.enableApiKeyAuth || false,
-        enableJwtAuth: config.security?.enableJwtAuth || false,
-        enableOauth: config.security?.enableOauth || false,
-        apiKeys: config.security?.apiKeys || {},
-        jwtSecret: config.security?.jwtSecret,
-        oauthProvider: config.security?.oauthProvider,
-        ...config.security
-      }
-    };
+};
+   }
+};
 
     this.metrics = {
       totalRequests: 0,
@@ -173,9 +121,26 @@ class APIGateway extends EventEmitter {
 
   private startCleanupInterval(): void {
     // Clean up every 10 minutes to prevent memory leaks
-    this.cleanupInterval = setInterval(() => {
+    this.cleanupInterval = this.addInterval(() => {
       this.cleanupExpiredData();
     }, 10 * 60 * 1000);
+  }
+
+  /**
+   * Add interval with tracking for cleanup
+   */
+  private addInterval(callback: () => void, ms: number): NodeJS.Timeout {
+    const interval = setInterval(callback, ms);
+    this.timers.add(interval);
+    return interval;
+  }
+
+  /**
+   * Remove interval and cleanup tracking
+   */
+  private removeInterval(interval: NodeJS.Timeout): void {
+    clearInterval(interval);
+    this.timers.delete(interval);
   }
 
   private cleanupExpiredData(): void {
@@ -196,14 +161,32 @@ class APIGateway extends EventEmitter {
 
   destroy(): void {
     if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
+      this.removeInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
+    
+    // Clear all timers
+    for (const timer of this.timers) {
+      clearInterval(timer);
+    }
+    this.timers.clear();
+    
     this.routes.clear();
+    this.routeCache.clear();
     this.circuitBreakers.clear();
+    
+    // Clear request deduplication data
+    this.pendingRequests.clear();
+    this.responseCache.clear();
+    
     if (this.tracer) {
       this.tracer.destroy();
     }
+
+    // Flush any remaining logs
+    asyncLogger.destroy().catch(() => {
+      // Ignore logger cleanup errors
+    });
   }
 
   /**
@@ -222,6 +205,9 @@ class APIGateway extends EventEmitter {
       this.routes.set(key, []);
     }
     this.routes.get(key)!.push(fullRoute);
+
+    // Clear route cache when routes change
+    this.routeCache.clear();
 
     // Create circuit breaker if enabled
     if (this.config.enableCircuitBreaker) {
@@ -343,8 +329,35 @@ class APIGateway extends EventEmitter {
           transformedResponse = route.transformResponse(res, response);
         }
 
+        // Apply compression if enabled
+        let responseData = transformedResponse;
+        let shouldCompress = false;
+        
+        if (this.config.enableCompression !== false) {
+          const contentType = res.getHeader('content-type') as string || 'application/json';
+          const acceptEncoding = req.headers['accept-encoding'];
+          
+          try {
+            const compressionResult = await responseCompressor.compressResponse(
+              responseData,
+              contentType,
+              acceptEncoding
+            );
+            
+            if (compressionResult.compressed) {
+              responseData = compressionResult.data;
+              res.setHeader('Content-Encoding', compressionResult.algorithm ? responseCompressor.getContentEncoding(compressionResult.algorithm) : 'gzip');
+              res.setHeader('Content-Length', compressionResult.compressedSize);
+              shouldCompress = true;
+            }
+          } catch (error) {
+            // Continue without compression on error
+            asyncLogger.warn('Compression failed', { error: error.message });
+          }
+        }
+
         // Send response
-        res.status(response.status || 200).json(transformedResponse);
+        res.status(response.status || 200).json(responseData);
 
         // Update success metrics
         this.metrics.successfulRequests++;
@@ -355,9 +368,13 @@ class APIGateway extends EventEmitter {
         this.metrics.failedRequests++;
         this.metrics.errorRate = (this.metrics.failedRequests / this.metrics.totalRequests) * 100;
 
-        // Log error
+        // Log error (non-blocking)
         if (this.config.enableLogging) {
-          console.error('[Gateway] Request failed:', error);
+          asyncLogger.error('[Gateway] Request failed:', { 
+            error: error.message,
+            stack: error.stack,
+            requestId: req.headers['x-request-id']
+          });
         }
 
         // Add error to span
@@ -392,27 +409,53 @@ class APIGateway extends EventEmitter {
   }
 
   /**
-   * Find matching route for request
+   * Find matching route for request (optimized with caching)
    */
   private findMatchingRoute(req: Request): Route | null {
     const method = req.method;
     const path = req.path;
+    const cacheKey = `${method}:${path}`;
+
+    // Check cache first
+    const cachedRoutes = this.routeCache.get(cacheKey);
+    if (cachedRoutes && cachedRoutes.length > 0) {
+      return this.selectRouteByWeight(cachedRoutes);
+    }
 
     // Find exact match
     const exactKey = `${method}:${path}`;
     const exactRoutes = this.routes.get(exactKey);
     if (exactRoutes && exactRoutes.length > 0) {
+      // Cache the result
+      this.routeCache.set(cacheKey, exactRoutes);
       return this.selectRouteByWeight(exactRoutes);
     }
 
-    // Find pattern match
+    // Find pattern match (optimized order)
+    const methodKey = `${method}:`;
+    const wildcardKey = `*:`;
+
+    // Check method-specific patterns first
     for (const [key, routes] of this.routes) {
-      const [routeMethod, routePath] = key.split(':');
-      
-      if (routeMethod !== '*' && routeMethod !== method) continue;
-      
-      if (this.pathMatches(routePath, path)) {
-        return this.selectRouteByWeight(routes);
+      if (key.startsWith(methodKey) && key !== exactKey) {
+        const [, routePath] = key.split(':');
+        if (this.pathMatches(routePath, path)) {
+          // Cache the result
+          this.routeCache.set(cacheKey, routes);
+          return this.selectRouteByWeight(routes);
+        }
+      }
+    }
+
+    // Check wildcard patterns last
+    for (const [key, routes] of this.routes) {
+      if (key.startsWith(wildcardKey)) {
+        const [, routePath] = key.split(':');
+        if (this.pathMatches(routePath, path)) {
+          // Cache the result
+          this.routeCache.set(cacheKey, routes);
+          return this.selectRouteByWeight(routes);
+        }
       }
     }
 
@@ -474,25 +517,88 @@ class APIGateway extends EventEmitter {
   }
 
   /**
-   * Forward request to target service
+   * Forward request to target service (with deduplication and caching)
    */
   private async forwardRequest(route: Route, req: Request): Promise<any> {
     const target = route.target;
     const url = `${target.protocol}://${target.host}:${target.port}${target.endpoint}`;
+    
+    // Create request fingerprint for deduplication
+    const fingerprint = this.createRequestFingerprint(req, route);
+    
+    // Check response cache first
+    const cached = this.responseCache.get(fingerprint);
+    if (cached && (Date.now() - cached.timestamp) < cached.ttl) {
+      return cached.data;
+    }
+
+    // Check for identical pending request
+    const pending = this.pendingRequests.get(fingerprint);
+    if (pending && pending.length < this.MAX_PENDING_PER_KEY) {
+      return new Promise((resolve, reject) => {
+        pending.push({
+          resolve,
+          reject,
+          timestamp: Date.now()
+        });
+      });
+    }
+
+    // Create new pending request entry
+    if (!pending) {
+      this.pendingRequests.set(fingerprint, []);
+    }
 
     // Use circuit breaker if available
-    if (route.circuitBreaker) {
-      return await route.circuitBreaker.execute(req);
-    }
-
-    // Simple HTTP request (in real implementation, use proper HTTP client)
+    let response: any;
     try {
-      // Simulate HTTP request
-      const response = await this.simulateHttpRequest(url, req);
+      if (route.circuitBreaker) {
+        response = await route.circuitBreaker.execute(req);
+      } else {
+        response = await this.simulateHttpRequest(url, req);
+      }
+
+      // Cache successful responses
+      this.responseCache.set(fingerprint, {
+        data: response,
+        timestamp: Date.now(),
+        ttl: this.REQUEST_CACHE_TTL
+      });
+
+      // Resolve all pending requests for this fingerprint
+      const pendingRequests = this.pendingRequests.get(fingerprint) || [];
+      pendingRequests.forEach(p => {
+        p.resolve(response);
+      });
+      this.pendingRequests.delete(fingerprint);
+
       return response;
+
     } catch (error) {
+      // Reject all pending requests for this fingerprint
+      const pendingRequests = this.pendingRequests.get(fingerprint) || [];
+      pendingRequests.forEach(p => {
+        p.reject(error);
+      });
+      this.pendingRequests.delete(fingerprint);
+
       throw new Error(`Failed to forward request to ${target.service}: ${error.message}`);
     }
+  }
+
+  /**
+   * Create request fingerprint for deduplication
+   */
+  private createRequestFingerprint(req: Request, route: Route): string {
+    const keyData = {
+      method: req.method,
+      path: req.path,
+      query: req.query,
+      service: route.target.service,
+      endpoint: route.target.endpoint
+    };
+    
+    return Buffer.from(JSON.stringify(keyData)).toString('base64');
   }
 
   /**
@@ -514,12 +620,71 @@ class APIGateway extends EventEmitter {
   }
 
   /**
-   * Apply gateway middleware
+   * Apply gateway middleware (optimized with parallel execution where possible)
    */
   private async applyMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
-    for (const middleware of this.middleware) {
-      await middleware(req, res, next);
+    // Group middleware by type for parallel execution
+    const authMiddleware = this.middleware.filter(m => 
+      m.name?.includes('auth') || m.name?.includes('validation')
+    );
+    const loggingMiddleware = this.middleware.filter(m => 
+      m.name?.includes('log') || m.name?.includes('metrics')
+    );
+    const otherMiddleware = this.middleware.filter(m => 
+      !authMiddleware.includes(m) && !loggingMiddleware.includes(m)
+    );
+
+    try {
+      // Execute non-blocking middleware in parallel
+      const [, authResults] = await Promise.allSettled([
+        this.executeSequentially(otherMiddleware, req, res, next),
+        this.executeInParallel(authMiddleware, req, res, next)
+      ]);
+
+      // Execute logging middleware (non-blocking)
+      this.executeInParallel(loggingMiddleware, req, res, next).catch(() => {
+        // Ignore logging errors
+      });
+
+    } catch (error) {
+      next(error);
     }
+  }
+
+  /**
+   * Execute middleware sequentially (for dependent operations)
+   */
+  private async executeSequentially(
+    middleware: Array<(req: Request, res: Response, next: NextFunction) => void>,
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+  ): Promise<void> {
+    for (const mw of middleware) {
+      await new Promise<void>((resolve, reject) => {
+        const nextFn = (error?: any) => error ? reject(error) : resolve();
+        mw(req, res, nextFn);
+      });
+    }
+  }
+
+  /**
+   * Execute middleware in parallel (for independent operations)
+   */
+  private async executeInParallel(
+    middleware: Array<(req: Request, res: Response, next: NextFunction) => void>,
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+  ): Promise<void> {
+    await Promise.allSettled(
+      middleware.map(mw => 
+        new Promise<void>((resolve, reject) => {
+          const nextFn = (error?: any) => error ? reject(error) : resolve();
+          mw(req, res, nextFn);
+        })
+      )
+    );
   }
 
   /**
@@ -571,29 +736,60 @@ class APIGateway extends EventEmitter {
   }
 
   /**
-   * Create authentication middleware
+   * Create authentication middleware (optimized with parallel validation)
    */
   private createAuthenticationMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
-    return (req: Request, res: Response, next: NextFunction) => {
-      // API Key authentication
-      if (this.config.security.enableApiKeyAuth) {
-        const apiKey = req.headers['x-api-key'] as string;
-        if (!apiKey || !this.validateApiKey(apiKey)) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        // Run authentication methods in parallel for performance
+        const authPromises: Promise<boolean>[] = [];
+        
+        if (this.config.security.enableApiKeyAuth) {
+          authPromises.push(
+            Promise.resolve().then(() => {
+              const apiKey = req.headers['x-api-key'] as string;
+              return this.validateApiKey(apiKey);
+            })
+          );
+        }
+
+        if (this.config.security.enableJwtAuth) {
+          authPromises.push(
+            Promise.resolve().then(() => {
+              const token = req.headers.authorization?.replace('Bearer ', '');
+              return this.validateJWT(token);
+            })
+          );
+        }
+
+        // Wait for all validations to complete
+        const results = await Promise.allSettled(authPromises);
+        
+        // Check for failures
+        const hasApiKeyAuth = this.config.security.enableApiKeyAuth;
+        const hasJwtAuth = this.config.security.enableJwtAuth;
+        
+        if (hasApiKeyAuth && results[0]?.status === 'fulfilled' && !results[0].value) {
           res.status(401).json({ error: 'Invalid API key' });
           return;
         }
-      }
-
-      // JWT authentication
-      if (this.config.security.enableJwtAuth) {
-        const token = req.headers.authorization?.replace('Bearer ', '');
-        if (!token || !this.validateJWT(token)) {
+        
+        if (hasJwtAuth) {
+          const jwtResult = results[results.length - 1]; // Last result is JWT
+          if (jwtResult?.status === 'fulfilled' && !jwtResult.value) {
+            res.status(401).json({ error: 'Invalid JWT token' });
+            return;
+          }
+        }
           res.status(401).json({ error: 'Invalid JWT token' });
           return;
         }
-      }
 
-      next();
+        next();
+      } catch (error) {
+        res.status(401).json({ error: 'Authentication failed' });
+      }
+    };
     };
   }
 
@@ -634,7 +830,14 @@ class APIGateway extends EventEmitter {
 
       res.on('finish', () => {
         const duration = Date.now() - startTime;
-        console.log(`[Gateway] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+        // Non-blocking request logging
+        asyncLogger.info(`[Gateway] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`, {
+          method: req.method,
+          path: req.path,
+          statusCode: res.statusCode,
+          duration,
+          requestId: req.headers['x-request-id']
+        });
       });
 
       next();
@@ -723,11 +926,56 @@ class APIGateway extends EventEmitter {
     this.config = { ...this.config, ...updates };
   }
 
-  /**
-   * Generate route ID
+/**
+   * Cleanup expired route cache entries and request data
    */
-  private generateRouteId(): string {
-    return `route-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  private cleanupExpiredData(): void {
+    const now = Date.now();
+
+    // Limit routes size
+    if (this.routes.size > this.maxCacheSize) {
+      const entries = Array.from(this.routes.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.routes.delete(key));
+    }
+
+    // Limit circuit breakers size
+    if (this.circuitBreakers.size > this.maxCacheSize) {
+      const entries = Array.from(this.circuitBreakers.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.circuitBreakers.delete(key));
+    }
+
+    // Clean expired response cache
+    for (const [key, cached] of this.responseCache.entries()) {
+      if ((now - cached.timestamp) > cached.ttl) {
+        this.responseCache.delete(key);
+      }
+    }
+
+    // Limit response cache size
+    if (this.responseCache.size > this.maxCacheSize) {
+      const entries = Array.from(this.responseCache.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.responseCache.delete(key));
+    }
+
+    // Clean stale pending requests (older than 30 seconds)
+    for (const [key, pending] of this.pendingRequests.entries()) {
+      const stillPending = pending.filter(p => (now - p.timestamp) < 30000);
+      if (stillPending.length === 0) {
+        this.pendingRequests.delete(key);
+      } else if (stillPending.length !== pending.length) {
+        this.pendingRequests.set(key, stillPending);
+      }
+    }
+
+    // Limit pending requests size
+    if (this.pendingRequests.size > this.maxCacheSize) {
+      const entries = Array.from(this.pendingRequests.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.pendingRequests.delete(key));
+    }
   }
 }
 
