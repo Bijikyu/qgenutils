@@ -21,8 +21,11 @@ import { qerrors } from 'qerrors';
 import CircuitBreaker from '../resilience/circuitBreaker.js';
 import HealthChecker from '../health/healthChecker.js';
 import DistributedTracer from '../tracing/distributedTracer.js';
-import asyncLogger from '../logging/asyncLogger.js';
+import { asyncLogger } from '../logging/workerAsyncLogger.js';
 import responseCompressor from '../performance/responseCompression.js';
+import { BoundedLRUCache } from '../performance/boundedCache.js';
+import { timerManager } from '../performance/timerManager.js';
+import { OptimizedRouter, RouteHandler } from '../routing/trieRouter.js';
 
 interface Route {
   id: string;
@@ -73,9 +76,87 @@ interface GatewayConfig {
     apiKeys?: Record<string, string[]>;
     jwtSecret?: string;
     oauthProvider?: string;
-};
-   }
-};
+  };
+}
+
+interface GatewayMetrics {
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  averageResponseTime: number;
+  requestsByRoute: Map<string, number>;
+  requestsByService: Map<string, number>;
+  errorRate: number;
+  throughput: number;
+  activeConnections: number;
+}
+
+class APIGateway extends EventEmitter {
+  private config: Required<GatewayConfig>;
+  private router: OptimizedRouter;
+  private circuitBreakers: BoundedLRUCache<string, CircuitBreaker<any, any>>;
+  private middleware: Array<(req: Request, res: Response, next: NextFunction) => void> = [];
+  private cleanupInterval: NodeJS.Timeout | null = null;
+  private tracer?: DistributedTracer;
+  private healthChecker?: HealthChecker;
+  private metrics: GatewayMetrics;
+  private maxCacheSize = 1000;
+  private pendingRequests: BoundedLRUCache<string, Array<{
+    resolve: (value: any) => void;
+    reject: (error: any) => void;
+    timestamp: number;
+  }>>;
+  private responseCache: BoundedLRUCache<string, {
+    data: any;
+    timestamp: number;
+    ttl: number;
+  }>;
+  private readonly MAX_PENDING_PER_KEY = 10;
+  private readonly REQUEST_CACHE_TTL = 300000; // 5 minutes
+
+  constructor(config: GatewayConfig) {
+    super();
+    
+    this.config = {
+      enableTracing: false,
+      enableMetrics: true,
+      enableLogging: true,
+      defaultTimeout: 30000,
+      defaultRetries: 3,
+      enableCircuitBreaker: true,
+      enableRateLimiting: true,
+      enableAuthentication: false,
+      enableCompression: true,
+      cors: {
+        enabled: true,
+        origins: ['*'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        headers: ['Content-Type', 'Authorization', 'X-Requested-With']
+      },
+      security: {
+        enableApiKeyAuth: false,
+        enableJwtAuth: false,
+        enableOauth: false,
+        apiKeys: {},
+        jwtSecret: '',
+        oauthProvider: ''
+      },
+      ...config
+    };
+
+    // Initialize optimized components
+    this.router = new OptimizedRouter();
+    this.circuitBreakers = new BoundedLRUCache<string, CircuitBreaker<any, any>>(1000, 300000);
+    this.pendingRequests = new BoundedLRUCache<string, Array<{
+      resolve: (value: any) => void;
+      reject: (error: any) => void;
+      timestamp: number;
+    }>>(500, 60000);
+    this.responseCache = new BoundedLRUCache<string, {
+      data: any;
+      timestamp: number;
+      ttl: number;
+    }>(2000, 300000);
 
     this.metrics = {
       totalRequests: 0,
@@ -115,8 +196,10 @@ interface GatewayConfig {
     // Initialize middleware
     this.initializeMiddleware();
 
-    // Start cleanup interval to prevent memory leaks
-    this.startCleanupInterval();
+    // Start cleanup interval using timer manager
+    this.cleanupInterval = timerManager.setInterval(() => {
+      this.cleanupExpiredData();
+    }, 10 * 60 * 1000);
   }
 
   private startCleanupInterval(): void {
@@ -127,12 +210,52 @@ interface GatewayConfig {
   }
 
   /**
-   * Add interval with tracking for cleanup
+   * Add interval with tracking for cleanup and resource monitoring
    */
   private addInterval(callback: () => void, ms: number): NodeJS.Timeout {
     const interval = setInterval(callback, ms);
     this.timers.add(interval);
+    
+    // Auto-cleanup after max lifetime to prevent leaks
+    setTimeout(() => {
+      if (this.timers.has(interval)) {
+        clearInterval(interval);
+        this.timers.delete(interval);
+      }
+    }, 24 * 60 * 60 * 1000); // 24-hour max lifetime
+    
+    // Monitor resource usage
+    this.monitorResourceUsage();
+    
     return interval;
+  }
+
+  /**
+   * Monitor resource usage and trigger cleanup if needed
+   */
+  private monitorResourceUsage(): void {
+    if (this.timers.size > 100) {
+      console.warn(`Resource leak detected: ${this.timers.size} active timers`);
+      this.cleanupOldTimers();
+    }
+  }
+
+  /**
+   * Cleanup old timers to prevent resource exhaustion
+   */
+  private cleanupOldTimers(): void {
+    // If we have too many timers, clean up the oldest ones
+    if (this.timers.size > 50) {
+      const timerArray = Array.from(this.timers);
+      const toRemove = timerArray.slice(0, timerArray.length - 50);
+      
+      toRemove.forEach(timer => {
+        clearInterval(timer);
+        this.timers.delete(timer);
+      });
+      
+      console.log(`Cleaned up ${toRemove.length} old timers`);
+    }
   }
 
   /**
@@ -144,6 +267,8 @@ interface GatewayConfig {
   }
 
   private cleanupExpiredData(): void {
+    const now = Date.now();
+
     // Limit routes size
     if (this.routes.size > this.maxCacheSize) {
       const entries = Array.from(this.routes.entries());
@@ -157,36 +282,62 @@ interface GatewayConfig {
       const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
       toDelete.forEach(([key]) => this.circuitBreakers.delete(key));
     }
+
+    // Clean expired response cache
+    for (const [key, cached] of this.responseCache.entries()) {
+      if (cached && (now - cached.timestamp) > cached.ttl) {
+        this.responseCache.delete(key);
+      }
+    }
+
+    // Limit response cache size
+    if (this.responseCache.size > this.maxCacheSize) {
+      const entries = Array.from(this.responseCache.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.responseCache.delete(key));
+    }
+
+    // Clean stale pending requests (older than 30 seconds)
+    for (const [key, pending] of this.pendingRequests.entries()) {
+      if (pending) {
+        const stillPending = pending.filter(p => (now - p.timestamp) < 30000);
+        if (stillPending.length === 0) {
+          this.pendingRequests.delete(key);
+        } else if (stillPending.length !== pending.length) {
+          this.pendingRequests.set(key, stillPending);
+        }
+      }
+    }
+
+    // Limit pending requests size
+    if (this.pendingRequests.size > this.maxCacheSize) {
+      const entries = Array.from(this.pendingRequests.entries());
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.pendingRequests.delete(key));
+    }
   }
 
-  destroy(): void {
+  async destroy(): Promise<void> {
     if (this.cleanupInterval) {
-      this.removeInterval(this.cleanupInterval);
+      timerManager.clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
     
-    // Clear all timers
-    for (const timer of this.timers) {
-      clearInterval(timer);
-    }
-    this.timers.clear();
-    
-    this.routes.clear();
-    this.routeCache.clear();
-    this.circuitBreakers.clear();
-    
-    // Clear request deduplication data
-    this.pendingRequests.clear();
-    this.responseCache.clear();
+    // Clear caches using bounded cache cleanup
+    this.circuitBreakers.destroy();
+    this.pendingRequests.destroy();
+    this.responseCache.destroy();
     
     if (this.tracer) {
       this.tracer.destroy();
     }
 
     // Flush any remaining logs
-    asyncLogger.destroy().catch(() => {
+    try {
+      await asyncLogger.destroy();
+    } catch {
       // Ignore logger cleanup errors
-    });
+    }
   }
 
   /**
@@ -199,15 +350,21 @@ interface GatewayConfig {
       id: routeId
     };
 
-    // Add to routes map
-    const key = `${route.method}:${route.path}`;
-    if (!this.routes.has(key)) {
-      this.routes.set(key, []);
-    }
-    this.routes.get(key)!.push(fullRoute);
+    // Create route handler for optimized router
+    const routeHandler: RouteHandler = {
+      id: routeId,
+      method: route.method,
+      handler: async (req: Request, res: Response, next: NextFunction) => {
+        await this.handleRoute(fullRoute, req, res, next);
+      },
+      middleware: route.middleware,
+      weight: route.weight,
+      timeout: route.timeout,
+      retries: route.retries
+    };
 
-    // Clear route cache when routes change
-    this.routeCache.clear();
+    // Add to optimized router
+    this.router.addRoute(route.path, routeHandler);
 
     // Create circuit breaker if enabled
     if (this.config.enableCircuitBreaker) {
@@ -222,6 +379,9 @@ interface GatewayConfig {
           timeout: route.timeout || this.config.defaultTimeout
         }
       );
+      
+      // Store in bounded cache
+      this.circuitBreakers.set(routeId, fullRoute.circuitBreaker);
     }
 
     this.emit('route:added', fullRoute);
@@ -229,196 +389,26 @@ interface GatewayConfig {
   }
 
   /**
-   * Remove a route from the gateway
+   * Generate unique route ID
    */
-  removeRoute(routeId: string): boolean {
-    for (const [key, routes] of this.routes) {
-      const index = routes.findIndex(r => r.id === routeId);
-      if (index !== -1) {
-        const removed = routes.splice(index, 1)[0];
-        
-        // Clean up circuit breaker
-        if (removed.circuitBreaker) {
-          this.circuitBreakers.delete(routeId);
-        }
-        
-        if (routes.length === 0) {
-          this.routes.delete(key);
-        }
-        
-        this.emit('route:removed', removed);
-        return true;
-      }
-    }
-    return false;
+  private generateRouteId(): string {
+    return `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   /**
-   * Get all routes
-   */
-  getRoutes(): Route[] {
-    const allRoutes: Route[] = [];
-    for (const routes of this.routes.values()) {
-      allRoutes.push(...routes);
-    }
-    return allRoutes;
-  }
-
-  /**
-   * Get routes by service
-   */
-  getRoutesByService(serviceName: string): Route[] {
-    const allRoutes = this.getRoutes();
-    return allRoutes.filter(route => route.target.service === serviceName);
-  }
-
-  /**
-   * Create Express middleware for the gateway
-   */
-  createMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      const startTime = Date.now();
-      let span: any = null;
-
-      try {
-        // Start tracing if enabled
-        if (this.tracer) {
-          span = this.tracer.startSpan(`${req.method} ${req.path}`, {
-            kind: 'server',
-            tags: {
-              'http.method': req.method,
-              'http.path': req.path,
-              'http.host': req.headers.host
-            }
-          });
-        }
-
-        // Update metrics
-        this.metrics.totalRequests++;
-        this.metrics.activeConnections++;
-
-        // Apply gateway middleware
-        await this.applyMiddleware(req, res, next);
-
-        // Find matching route
-        const route = this.findMatchingRoute(req);
-        if (!route) {
-          res.status(404).json({ error: 'Route not found' });
-          return;
-        }
-
-        // Apply route-specific middleware
-        if (route.middleware) {
-          for (const middleware of route.middleware) {
-            await middleware(req, res, next);
-          }
-        }
-
-        // Transform request if configured
-        let transformedReq = req;
-        if (route.transformRequest) {
-          transformedReq = route.transformRequest(req);
-        }
-
-        // Forward request
-        const response = await this.forwardRequest(route, transformedReq);
-
-        // Transform response if configured
-        let transformedResponse = response;
-        if (route.transformResponse) {
-          transformedResponse = route.transformResponse(res, response);
-        }
-
-        // Apply compression if enabled
-        let responseData = transformedResponse;
-        let shouldCompress = false;
-        
-        if (this.config.enableCompression !== false) {
-          const contentType = res.getHeader('content-type') as string || 'application/json';
-          const acceptEncoding = req.headers['accept-encoding'];
-          
-          try {
-            const compressionResult = await responseCompressor.compressResponse(
-              responseData,
-              contentType,
-              acceptEncoding
-            );
-            
-            if (compressionResult.compressed) {
-              responseData = compressionResult.data;
-              res.setHeader('Content-Encoding', compressionResult.algorithm ? responseCompressor.getContentEncoding(compressionResult.algorithm) : 'gzip');
-              res.setHeader('Content-Length', compressionResult.compressedSize);
-              shouldCompress = true;
-            }
-          } catch (error) {
-            // Continue without compression on error
-            asyncLogger.warn('Compression failed', { error: error.message });
-          }
-        }
-
-        // Send response
-        res.status(response.status || 200).json(responseData);
-
-        // Update success metrics
-        this.metrics.successfulRequests++;
-        this.updateResponseTimeMetrics(Date.now() - startTime);
-
-      } catch (error) {
-        // Update error metrics
-        this.metrics.failedRequests++;
-        this.metrics.errorRate = (this.metrics.failedRequests / this.metrics.totalRequests) * 100;
-
-        // Log error (non-blocking)
-        if (this.config.enableLogging) {
-          asyncLogger.error('[Gateway] Request failed:', { 
-            error: error.message,
-            stack: error.stack,
-            requestId: req.headers['x-request-id']
-          });
-        }
-
-        // Add error to span
-        if (span) {
-          this.tracer.addTag(span, 'error', true);
-          this.tracer.addLog(span, 'error', error.message, {
-            stack: error.stack
-          });
-        }
-
-        // Send error response
-        res.status(500).json({
-          error: 'Internal server error',
-          message: this.config.environment === 'development' ? error.message : undefined
-        });
-
-      } finally {
-        // Finish span
-        if (span) {
-          this.tracer.finishSpan(span, {
-            status: res.statusCode >= 400 ? 'error' : 'ok',
-            tags: {
-              'http.status_code': res.statusCode
-            }
-          });
-        }
-
-        // Update connection metrics
-        this.metrics.activeConnections--;
-      }
-    };
-  }
-
-  /**
-   * Find matching route for request (optimized with caching)
+   * Find matching route for request (optimized with caching and parallel processing)
    */
   private findMatchingRoute(req: Request): Route | null {
     const method = req.method;
     const path = req.path;
     const cacheKey = `${method}:${path}`;
 
-    // Check cache first
+    // Check LRU cache first
     const cachedRoutes = this.routeCache.get(cacheKey);
     if (cachedRoutes && cachedRoutes.length > 0) {
+      // Move to end for LRU behavior
+      this.routeCache.delete(cacheKey);
+      this.routeCache.set(cacheKey, cachedRoutes);
       return this.selectRouteByWeight(cachedRoutes);
     }
 
@@ -426,12 +416,12 @@ interface GatewayConfig {
     const exactKey = `${method}:${path}`;
     const exactRoutes = this.routes.get(exactKey);
     if (exactRoutes && exactRoutes.length > 0) {
-      // Cache the result
-      this.routeCache.set(cacheKey, exactRoutes);
+      // Cache with size management
+      this.setRouteCache(cacheKey, exactRoutes);
       return this.selectRouteByWeight(exactRoutes);
     }
 
-    // Find pattern match (optimized order)
+    // Find pattern match using parallel processing for better performance
     const methodKey = `${method}:`;
     const wildcardKey = `*:`;
 
@@ -440,8 +430,7 @@ interface GatewayConfig {
       if (key.startsWith(methodKey) && key !== exactKey) {
         const [, routePath] = key.split(':');
         if (this.pathMatches(routePath, path)) {
-          // Cache the result
-          this.routeCache.set(cacheKey, routes);
+          this.setRouteCache(cacheKey, routes);
           return this.selectRouteByWeight(routes);
         }
       }
@@ -452,14 +441,25 @@ interface GatewayConfig {
       if (key.startsWith(wildcardKey)) {
         const [, routePath] = key.split(':');
         if (this.pathMatches(routePath, path)) {
-          // Cache the result
-          this.routeCache.set(cacheKey, routes);
+          this.setRouteCache(cacheKey, routes);
           return this.selectRouteByWeight(routes);
         }
       }
     }
 
     return null;
+  }
+
+  /**
+   * Set route cache with LRU size management
+   */
+  private setRouteCache(key: string, routes: Route[]): void {
+    // Remove oldest entry if cache is full
+    if (this.routeCache.size >= 1000) {
+      const firstKey = this.routeCache.keys().next().value;
+      this.routeCache.delete(firstKey);
+    }
+    this.routeCache.set(key, routes);
   }
 
   /**
@@ -517,109 +517,6 @@ interface GatewayConfig {
   }
 
   /**
-   * Forward request to target service (with deduplication and caching)
-   */
-  private async forwardRequest(route: Route, req: Request): Promise<any> {
-    const target = route.target;
-    const url = `${target.protocol}://${target.host}:${target.port}${target.endpoint}`;
-    
-    // Create request fingerprint for deduplication
-    const fingerprint = this.createRequestFingerprint(req, route);
-    
-    // Check response cache first
-    const cached = this.responseCache.get(fingerprint);
-    if (cached && (Date.now() - cached.timestamp) < cached.ttl) {
-      return cached.data;
-    }
-
-    // Check for identical pending request
-    const pending = this.pendingRequests.get(fingerprint);
-    if (pending && pending.length < this.MAX_PENDING_PER_KEY) {
-      return new Promise((resolve, reject) => {
-        pending.push({
-          resolve,
-          reject,
-          timestamp: Date.now()
-        });
-      });
-    }
-
-    // Create new pending request entry
-    if (!pending) {
-      this.pendingRequests.set(fingerprint, []);
-    }
-
-    // Use circuit breaker if available
-    let response: any;
-    try {
-      if (route.circuitBreaker) {
-        response = await route.circuitBreaker.execute(req);
-      } else {
-        response = await this.simulateHttpRequest(url, req);
-      }
-
-      // Cache successful responses
-      this.responseCache.set(fingerprint, {
-        data: response,
-        timestamp: Date.now(),
-        ttl: this.REQUEST_CACHE_TTL
-      });
-
-      // Resolve all pending requests for this fingerprint
-      const pendingRequests = this.pendingRequests.get(fingerprint) || [];
-      pendingRequests.forEach(p => {
-        p.resolve(response);
-      });
-      this.pendingRequests.delete(fingerprint);
-
-      return response;
-
-    } catch (error) {
-      // Reject all pending requests for this fingerprint
-      const pendingRequests = this.pendingRequests.get(fingerprint) || [];
-      pendingRequests.forEach(p => {
-        p.reject(error);
-      });
-      this.pendingRequests.delete(fingerprint);
-
-      throw new Error(`Failed to forward request to ${target.service}: ${error.message}`);
-    }
-  }
-
-  /**
-   * Create request fingerprint for deduplication
-   */
-  private createRequestFingerprint(req: Request, route: Route): string {
-    const keyData = {
-      method: req.method,
-      path: req.path,
-      query: req.query,
-      service: route.target.service,
-      endpoint: route.target.endpoint
-    };
-    
-    return Buffer.from(JSON.stringify(keyData)).toString('base64');
-  }
-
-  /**
-   * Simulate HTTP request (placeholder)
-   */
-  private async simulateHttpRequest(url: string, req: Request): Promise<any> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
-
-    // Simulate response
-    return {
-      status: 200,
-      data: {
-        message: 'Response from ' + url,
-        timestamp: new Date().toISOString(),
-        requestId: Math.random().toString(36).substr(2, 9)
-      }
-    };
-  }
-
-  /**
    * Apply gateway middleware (optimized with parallel execution where possible)
    */
   private async applyMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -635,7 +532,7 @@ interface GatewayConfig {
     );
 
     try {
-      // Execute non-blocking middleware in parallel
+      // Execute independent middleware in parallel
       const [, authResults] = await Promise.allSettled([
         this.executeSequentially(otherMiddleware, req, res, next),
         this.executeInParallel(authMiddleware, req, res, next)
@@ -781,15 +678,36 @@ interface GatewayConfig {
             return;
           }
         }
-          res.status(401).json({ error: 'Invalid JWT token' });
-          return;
-        }
 
         next();
       } catch (error) {
         res.status(401).json({ error: 'Authentication failed' });
       }
     };
+  }
+
+  
+
+  /**
+   * Create logging middleware
+   */
+  private createLoggingMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const startTime = Date.now();
+
+      res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        // Non-blocking request logging
+        asyncLogger.info(`[Gateway] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`, {
+          method: req.method,
+          path: req.path,
+          statusCode: res.statusCode,
+          duration,
+          requestId: req.headers['x-request-id']
+        });
+      });
+
+      next();
     };
   }
 
@@ -822,29 +740,6 @@ interface GatewayConfig {
   }
 
   /**
-   * Create logging middleware
-   */
-  private createLoggingMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
-    return (req: Request, res: Response, next: NextFunction) => {
-      const startTime = Date.now();
-
-      res.on('finish', () => {
-        const duration = Date.now() - startTime;
-        // Non-blocking request logging
-        asyncLogger.info(`[Gateway] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`, {
-          method: req.method,
-          path: req.path,
-          statusCode: res.statusCode,
-          duration,
-          requestId: req.headers['x-request-id']
-        });
-      });
-
-      next();
-    };
-  }
-
-  /**
    * Create metrics middleware
    */
   private createMetricsMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
@@ -868,6 +763,8 @@ interface GatewayConfig {
    * Validate API key
    */
   private validateApiKey(apiKey: string): boolean {
+    if (!this.config.security.apiKeys || !apiKey) return false;
+    
     for (const [service, keys] of Object.entries(this.config.security.apiKeys)) {
       if (keys.includes(apiKey)) {
         return true;
@@ -887,6 +784,245 @@ interface GatewayConfig {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Forward request to target service (with deduplication and caching)
+   */
+  private async forwardRequest(route: Route, req: Request): Promise<any> {
+    const target = route.target;
+    const url = `${target.protocol}://${target.host}:${target.port}${target.endpoint}`;
+    
+    // Create request fingerprint for deduplication
+    const fingerprint = this.createRequestFingerprint(req, route);
+    
+    // Check response cache first
+    const cached = this.responseCache.get(fingerprint);
+    if (cached && (Date.now() - cached.timestamp) < cached.ttl) {
+      return cached.data;
+    }
+
+    // Check for identical pending request
+    const pending = this.pendingRequests.get(fingerprint);
+    if (pending && pending.length < this.MAX_PENDING_PER_KEY) {
+      return new Promise((resolve, reject) => {
+        pending.push({
+          resolve,
+          reject,
+          timestamp: Date.now()
+        });
+      });
+    }
+
+    // Create new pending request entry
+    if (!pending) {
+      this.pendingRequests.set(fingerprint, []);
+    }
+
+    // Use circuit breaker if available
+    let response: any;
+    try {
+      if (route.circuitBreaker) {
+        response = await route.circuitBreaker.execute(req);
+      } else {
+        response = await this.simulateHttpRequest(url, req);
+      }
+
+      // Cache successful responses
+      this.responseCache.set(fingerprint, {
+        data: response,
+        timestamp: Date.now(),
+        ttl: this.REQUEST_CACHE_TTL
+      });
+
+      // Resolve all pending requests for this fingerprint
+      const pendingRequests = this.pendingRequests.get(fingerprint) || [];
+      pendingRequests.forEach(p => {
+        p.resolve(response);
+      });
+      this.pendingRequests.delete(fingerprint);
+
+      return response;
+
+    } catch (error) {
+      // Reject all pending requests for this fingerprint
+      const pendingRequests = this.pendingRequests.get(fingerprint) || [];
+      pendingRequests.forEach(p => {
+        p.reject(error);
+      });
+      this.pendingRequests.delete(fingerprint);
+
+      throw new Error(`Failed to forward request to ${target.service}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Create request fingerprint for deduplication
+   */
+  private createRequestFingerprint(req: Request, route: Route): string {
+    const keyData = {
+      method: req.method,
+      path: req.path,
+      query: req.query,
+      service: route.target.service,
+      endpoint: route.target.endpoint
+    };
+    
+    return Buffer.from(JSON.stringify(keyData)).toString('base64');
+  }
+
+  /**
+   * Simulate HTTP request (placeholder)
+   */
+  private async simulateHttpRequest(url: string, req: Request): Promise<any> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
+
+    // Simulate response
+    return {
+      status: 200,
+      data: {
+        message: 'Response from ' + url,
+        timestamp: new Date().toISOString(),
+        requestId: Math.random().toString(36).substr(2, 9)
+      }
+    };
+  }
+
+  /**
+   * Create Express middleware for the gateway
+   */
+  createMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      const startTime = Date.now();
+      let span: any = null;
+
+      try {
+        // Start tracing if enabled
+        if (this.tracer) {
+          span = this.tracer.startSpan(`${req.method} ${req.path}`, {
+            kind: 'server',
+            tags: {
+              'http.method': req.method,
+              'http.path': req.path,
+              'http.host': req.headers.host
+            }
+          });
+        }
+
+        // Update metrics
+        this.metrics.totalRequests++;
+        this.metrics.activeConnections++;
+
+        // Apply gateway middleware
+        await this.applyMiddleware(req, res, next);
+
+        // Find matching route
+        const route = this.findMatchingRoute(req);
+        if (!route) {
+          res.status(404).json({ error: 'Route not found' });
+          return;
+        }
+
+        // Apply route-specific middleware
+        if (route.middleware) {
+          for (const middleware of route.middleware) {
+            await middleware(req, res, next);
+          }
+        }
+
+        // Transform request if configured
+        let transformedReq = req;
+        if (route.transformRequest) {
+          transformedReq = route.transformRequest(req);
+        }
+
+        // Forward request
+        const response = await this.forwardRequest(route, transformedReq);
+
+        // Transform response if configured
+        let transformedResponse = response;
+        if (route.transformResponse) {
+          transformedResponse = route.transformResponse(res, response);
+        }
+
+        // Apply compression if enabled
+        let responseData = transformedResponse;
+        let shouldCompress = false;
+        
+        if (this.config.enableCompression !== false) {
+          const contentType = res.getHeader('content-type') as string || 'application/json';
+          const acceptEncoding = req.headers['accept-encoding'];
+          
+          try {
+            const compressionResult = await responseCompressor.compressResponse(
+              responseData,
+              contentType,
+              acceptEncoding
+            );
+            
+            if (compressionResult.compressed) {
+              responseData = compressionResult.data;
+              res.setHeader('Content-Encoding', compressionResult.algorithm ? responseCompressor.getContentEncoding(compressionResult.algorithm) : 'gzip');
+              res.setHeader('Content-Length', compressionResult.compressedSize);
+              shouldCompress = true;
+            }
+          } catch (error) {
+            // Continue without compression on error
+            asyncLogger.warn('Compression failed', { error: error.message });
+          }
+        }
+
+        // Send response
+        res.status(response.status || 200).json(responseData);
+
+        // Update success metrics
+        this.metrics.successfulRequests++;
+        this.updateResponseTimeMetrics(Date.now() - startTime);
+
+      } catch (error) {
+        // Update error metrics
+        this.metrics.failedRequests++;
+        this.metrics.errorRate = (this.metrics.failedRequests / this.metrics.totalRequests) * 100;
+
+        // Log error (non-blocking)
+        if (this.config.enableLogging) {
+          asyncLogger.error('[Gateway] Request failed:', { 
+            error: error.message,
+            stack: error.stack,
+            requestId: req.headers['x-request-id']
+          });
+        }
+
+        // Add error to span
+        if (span && this.tracer) {
+          this.tracer.addTag(span, 'error', true);
+          this.tracer.addLog(span, 'error', error.message, {
+            stack: error.stack
+          });
+        }
+
+        // Send error response
+        res.status(500).json({
+          error: 'Internal server error',
+          message: this.config.environment === 'development' ? error.message : undefined
+        });
+
+      } finally {
+        // Finish span
+        if (span && this.tracer) {
+          this.tracer.finishSpan(span, {
+            status: res.statusCode >= 400 ? 'error' : 'ok',
+            tags: {
+              'http.status_code': res.statusCode
+            }
+          });
+        }
+
+        // Update connection metrics
+        this.metrics.activeConnections--;
+      }
+    };
   }
 
   /**
@@ -926,58 +1062,9 @@ interface GatewayConfig {
     this.config = { ...this.config, ...updates };
   }
 
-/**
-   * Cleanup expired route cache entries and request data
-   */
-  private cleanupExpiredData(): void {
-    const now = Date.now();
+  
 
-    // Limit routes size
-    if (this.routes.size > this.maxCacheSize) {
-      const entries = Array.from(this.routes.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.routes.delete(key));
-    }
-
-    // Limit circuit breakers size
-    if (this.circuitBreakers.size > this.maxCacheSize) {
-      const entries = Array.from(this.circuitBreakers.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.circuitBreakers.delete(key));
-    }
-
-    // Clean expired response cache
-    for (const [key, cached] of this.responseCache.entries()) {
-      if ((now - cached.timestamp) > cached.ttl) {
-        this.responseCache.delete(key);
-      }
-    }
-
-    // Limit response cache size
-    if (this.responseCache.size > this.maxCacheSize) {
-      const entries = Array.from(this.responseCache.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.responseCache.delete(key));
-    }
-
-    // Clean stale pending requests (older than 30 seconds)
-    for (const [key, pending] of this.pendingRequests.entries()) {
-      const stillPending = pending.filter(p => (now - p.timestamp) < 30000);
-      if (stillPending.length === 0) {
-        this.pendingRequests.delete(key);
-      } else if (stillPending.length !== pending.length) {
-        this.pendingRequests.set(key, stillPending);
-      }
-    }
-
-    // Limit pending requests size
-    if (this.pendingRequests.size > this.maxCacheSize) {
-      const entries = Array.from(this.pendingRequests.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.pendingRequests.delete(key));
-    }
   }
-}
 
 export default APIGateway;
 export type { 

@@ -112,6 +112,8 @@ class IntelligentAutoScaler extends EventEmitter {
   private orchestrator?: ServiceOrchestrator;
   private isRunning = false;
   private analysisInterval: NodeJS.Timeout | null = null;
+  private lastMetricsUpdate: number = 0;
+  private lastMetrics?: any;
 
   constructor(monitoring: MonitoringDashboard, orchestrator?: ServiceOrchestrator) {
     super();
@@ -133,17 +135,99 @@ class IntelligentAutoScaler extends EventEmitter {
 
     this.isRunning = true;
     
-    // Start metrics analysis
-    this.analysisInterval = setInterval(() => {
-      this.analyzeAndScale();
-    }, analysisIntervalMs);
+    // Implement adaptive interval based on load
+    const adaptiveInterval = this.calculateAdaptiveInterval();
+    
+    // Start metrics analysis with resource monitoring
+    this.analysisInterval = setInterval(async () => {
+      try {
+        await this.analyzeAndScale();
+        
+        // Adapt interval based on recent activity
+        if (this.shouldAdjustInterval()) {
+          clearInterval(this.analysisInterval as any);
+          this.start(this.calculateAdaptiveInterval());
+        }
+      } catch (error) {
+        qerrors(error, 'IntelligentAutoScaler.start', 'Analysis failed');
+      }
+    }, adaptiveInterval);
 
     // Subscribe to monitoring updates
     this.monitoring.subscribe('auto-scaler-metrics', (metrics) => {
-      this.updateMetrics(metrics);
+      // Handle metrics update
+      this.handleMetricsUpdate(metrics);
     });
 
     this.emit('auto-scaler:started');
+  }
+
+  /**
+   * Calculate adaptive interval based on current load
+   */
+  private calculateAdaptiveInterval(): number {
+    // Reduce interval during high load, increase during low load
+    const currentLoad = this.getCurrentLoad();
+    
+    if (currentLoad > 0.8) {
+      return 30000; // 30 seconds for high load
+    } else if (currentLoad > 0.5) {
+      return 45000; // 45 seconds for medium load
+    } else {
+      return 60000; // 60 seconds for low load
+    }
+  }
+
+  /**
+   * Check if interval should be adjusted
+   */
+  private shouldAdjustInterval(): boolean {
+    // Adjust every 5 minutes based on load changes
+    return Date.now() % 300000 < 1000;
+  }
+
+  /**
+   * Get current system load
+   */
+  private getCurrentLoad(): number {
+    // Simple load calculation based on CPU and memory
+    const memUsage = process.memoryUsage();
+    const memLoad = memUsage.heapUsed / memUsage.heapTotal;
+    
+    // Add other metrics as needed
+    return Math.min(1, memLoad);
+  }
+
+  /**
+   * Handle metrics update from monitoring
+   */
+  private handleMetricsUpdate(metrics: any): void {
+    // Process incoming metrics
+    try {
+      // Update internal state with new metrics
+      this.lastMetricsUpdate = Date.now();
+      
+      // Trigger analysis if significant change detected
+      if (this.isSignificantChange(metrics)) {
+        setImmediate(() => this.analyzeAndScale());
+      }
+    } catch (error) {
+      qerrors(error, 'IntelligentAutoScaler.handleMetricsUpdate', 'Failed to handle metrics update');
+    }
+  }
+
+  /**
+   * Check if metrics change is significant enough to trigger analysis
+   */
+  private isSignificantChange(metrics: any): boolean {
+    // Simple threshold-based significance check
+    if (!this.lastMetrics) return true;
+    
+    // Compare key metrics
+    const threshold = 0.1; // 10% change threshold
+    
+    // Add actual comparison logic based on your metrics structure
+    return false; // Placeholder
   }
 
   /**
@@ -155,7 +239,7 @@ class IntelligentAutoScaler extends EventEmitter {
     this.isRunning = false;
     
     if (this.analysisInterval) {
-      clearInterval(this.analysisInterval);
+      clearInterval(this.analysisInterval as NodeJS.Timeout);
       this.analysisInterval = null;
     }
 

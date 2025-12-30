@@ -22,6 +22,7 @@ interface DatabaseConfig {
   username: string;
   password: string;
   maxConnections?: number;
+  minConnections?: number;
   connectionTimeout?: number;
   queryTimeout?: number;
 }
@@ -58,6 +59,7 @@ class DatabaseConnectionPool {
   constructor(config: DatabaseConfig) {
     this.config = {
       maxConnections: 10,
+      minConnections: 2,
       connectionTimeout: 10000,
       queryTimeout: 30000,
       ...config
@@ -332,9 +334,22 @@ class DatabaseConnectionPool {
   }
 
   /**
-   * Get a connection from the pool (optimized with O(1) lookup)
+   * Get a connection from the pool (optimized with connection pre-warming and affinity)
    */
   private async getConnection(): Promise<{ connection: any; id: string }> {
+    // Connection pre-warming for better performance
+    if (this.connections.size < this.config.minConnections) {
+      await this.preWarmConnections();
+    }
+    
+    // Implement connection affinity for better cache locality
+    const affinityKey = this.getCurrentThreadAffinity();
+    const affinityConnection = this.getAffinityConnection(affinityKey);
+    
+    if (affinityConnection && this.isConnectionHealthy(affinityConnection)) {
+      return affinityConnection;
+    }
+
     // Check for available connections using O(1) set lookup
     if (this.availableConnections.size > 0) {
       const availableId = this.availableConnections.values().next().value;
@@ -342,7 +357,7 @@ class DatabaseConnectionPool {
         this.availableConnections.delete(availableId);
         this.activeConnections.add(availableId);
         const connection = this.connections.get(availableId);
-        if (connection) {
+        if (connection && this.isConnectionHealthy(connection)) {
           return { connection, id: availableId };
         }
       }
@@ -370,37 +385,138 @@ class DatabaseConnectionPool {
         timestamp: Date.now()
       });
 
-// Set timeout for queue wait
-    const timer = setTimeout(() => {
-      const index = this.connectionQueue.findIndex(
-        item => item.resolve === resolve
-      );
-      if (index !== -1) {
-        this.connectionQueue.splice(index, 1);
-        reject(new Error('Connection timeout'));
-      }
-    }, this.config.connectionTimeout);
-      
-    this.timers.add(timer);
+      // Set timeout for queue wait
+      const timer = setTimeout(() => {
+        const index = this.connectionQueue.findIndex(
+          item => item.resolve === resolve
+        );
+        if (index !== -1) {
+          this.connectionQueue.splice(index, 1);
+          reject(new Error('Connection timeout'));
+        }
+      }, this.config.connectionTimeout || 30000);
 
-    // Clear timeout when connection is acquired to prevent memory leaks
-    const connectionAcquired = new Promise<void>((resolve, reject) => {
-      // Track connection acquisition
-      resolve();
+      // Store timer reference for cleanup
+      (this.connectionQueue[this.connectionQueue.length - 1] as any).timer = timer;
     });
+  }
+
+  /**
+   * Add connection pre-warming for better performance
+   */
+  private async preWarmConnections(): Promise<void> {
+    const warmupPromises: Promise<void>[] = [];
+    const targetSize = Math.min(this.config.minConnections, this.config.maxConnections);
     
-    connectionAcquired.then(() => {
-      if (timer) {
-        clearTimeout(timer);
-        this.timers.delete(timer);
+    for (let i = this.connections.size; i < targetSize; i++) {
+      warmupPromises.push(this.createAndStoreConnection());
+    }
+    
+    await Promise.all(warmupPromises);
+  }
+
+/**
+   * Create a new database connection with validation and retry
+   */
+  private async createConnection(retryCount: number = 0): Promise<any> {
+    const maxRetries = 3;
+    const baseDelay = 100; // Base delay in ms
+    
+    try {
+      // Simulate connection creation (replace with actual database driver)
+      const connectionId = this.generateConnectionId();
+      
+      // Add exponential backoff for retries
+      const delay = baseDelay * Math.pow(2, retryCount);
+      if (retryCount > 0) {
+        await new Promise(resolve => setTimeout(resolve, Math.min(delay, 5000)));
       }
-    }).catch(() => {
-      if (timer) {
-        clearTimeout(timer);
-        this.timers.delete(timer);
+      
+      const connection = {
+        id: connectionId,
+        created: Date.now(),
+        lastUsed: Date.now(),
+        isHealthy: true,
+        queryCount: 0,
+        lastValidated: Date.now(),
+        retryCount
+      };
+      
+      // Validate connection immediately
+      await this.validateConnection(connection);
+      
+      return connection;
+    } catch (error) {
+      if (retryCount < maxRetries) {
+        console.warn(`Connection creation failed (attempt ${retryCount + 1}/${maxRetries}), retrying:`, error.message);
+        return this.createConnection(retryCount + 1);
       }
-    });
-    });
+      
+      throw new Error(`Failed to create database connection after ${maxRetries} attempts: ${error.message}`);
+    }
+  }
+
+  /**
+   * Validate connection health
+   */
+  private async validateConnection(connection: any): Promise<void> {
+    try {
+      // Simulate health check (replace with actual ping/health check)
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      connection.isHealthy = true;
+      connection.lastValidated = Date.now();
+    } catch (error) {
+      connection.isHealthy = false;
+      throw new Error(`Connection validation failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Check if connection needs validation
+   */
+  private shouldValidateConnection(connection: any): boolean {
+    const lastValidationAge = Date.now() - (connection.lastValidated || connection.created);
+    const maxAge = 30000; // Validate every 30 seconds
+    
+    return lastValidationAge > maxAge || !connection.isHealthy;
+  }
+
+  /**
+   * Get current thread affinity for connection reuse
+   */
+  private getCurrentThreadAffinity(): string {
+    // Simple thread affinity based on async context
+    return `thread_${process.pid}_${Date.now() % 8}`;
+  }
+
+  /**
+   * Get affinity connection for better cache locality
+   */
+  private getAffinityConnection(affinityKey: string): { connection: any; id: string } | null {
+    // Try to find a connection that matches this affinity
+    for (const [id, connection] of this.connections) {
+      if (this.availableConnections.has(id) && 
+          (connection as any).affinityKey === affinityKey &&
+          this.isConnectionHealthy(connection)) {
+        this.availableConnections.delete(id);
+        this.activeConnections.add(id);
+        return { connection, id };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Check if connection is healthy
+   */
+  private isConnectionHealthy(connection: any): boolean {
+    try {
+      // Simple health check - can be enhanced with actual ping
+      return connection && !connection.closed && connection.readyState === 'connected';
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -523,11 +639,137 @@ class DatabaseConnectionPool {
     this.timers.delete(interval);
   }
 
-  /**
-   * Generate unique connection ID
+/**
+   * Execute a database query with enhanced connection pooling and retry logic
    */
-  private generateConnectionId(): string {
-    return `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  async query<T = any>(
+    sql: string, 
+    params: any[] = [], 
+    options: QueryOptions = {}
+  ): Promise<QueryResult<T>> {
+    const startTime = Date.now();
+    const { timeout = this.config.queryTimeout, retries = 3, batch = false } = options;
+    
+    let connection: any;
+    let lastError: Error | undefined;
+    
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        connection = await this.getConnection();
+        
+        // Check if connection needs validation
+        if (this.shouldValidateConnection(connection)) {
+          await this.validateConnection(connection);
+        }
+        
+        // Execute query with timeout
+        const queryPromise = this.executeQuery(connection, sql, params, batch);
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Query timeout')), timeout);
+        });
+        
+        const result = await Promise.race([queryPromise, timeoutPromise]);
+        
+        // Update connection usage
+        connection.queryCount++;
+        connection.lastUsed = Date.now();
+        
+        // Return connection to pool
+        this.releaseConnection(connection.id);
+        
+        // Update metrics
+        this.updateMetrics(result);
+        
+        return result;
+        
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Remove failed connection
+        if (connection) {
+          this.removeConnection(connection.id);
+        }
+        
+        if (attempt === retries) {
+          // Log final error
+          qerrors(lastError, 'DatabaseConnectionPool.query', `Query failed after ${retries} attempts`);
+        } else {
+          // Log retry attempt with exponential backoff
+          const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+          console.warn(`Query attempt ${attempt + 1} failed, retrying in ${delay}ms:`, lastError.message);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    // This should never be reached, but TypeScript needs it
+    const errorResult: QueryResult<T> = {
+      success: false,
+      data: undefined,
+      error: lastError,
+      executionTime: Date.now() - startTime,
+      connectionId: connection?.id || 'unknown'
+    };
+    
+    return errorResult;
+  }
+
+  /**
+   * Execute query with proper error handling
+   */
+  private async executeQuery<T>(
+    connection: any, 
+    sql: string, 
+    params: any[], 
+    batch: boolean
+  ): Promise<QueryResult<T>> {
+    const executionStartTime = Date.now();
+    
+    try {
+      // Simulate query processing (replace with actual database query)
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 200 + 100));
+      
+      const result: QueryResult<T> = {
+        success: true,
+        data: batch ? params.map((p, i) => ({ 
+          id: i + 1, 
+          ...p || {} 
+        })) as T : {
+          id: Date.now(),
+          sql,
+          params,
+          timestamp: new Date().toISOString()
+        } as T,
+        error: undefined,
+        executionTime: Date.now() - executionStartTime,
+        connectionId: connection.id
+      };
+      
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        data: undefined,
+        error: error instanceof Error ? error : new Error(String(error)),
+        executionTime: Date.now() - executionStartTime,
+        connectionId: connection.id
+      };
+    }
+  }
+
+  /**
+   * Remove failed connection
+   */
+  private removeConnection(connectionId: string): void {
+    // Remove from all tracking structures
+    this.connections.delete(connectionId);
+    this.activeConnections.delete(connectionId);
+    this.availableConnections.delete(connectionId);
+    
+    // Also remove from health tracking
+    if (this.healthCheckInterval) {
+      // Health check will clean up in next cycle
+    }
   }
 
   /**

@@ -16,6 +16,8 @@
 
 import { EventEmitter } from 'events';
 import { qerrors } from 'qerrors';
+import { BoundedLRUCache, CircularBuffer } from '../performance/boundedCache.js';
+import { timerManager } from '../performance/timerManager.js';
 
 interface Event {
   id: string;
@@ -75,18 +77,8 @@ interface EventBusConfig {
   retryDelay?: number;
 }
 
-class EventBus {
-  private config: Required<EventBusConfig>;
-  private eventEmitter: EventEmitter;
-  private subscriptions: Map<string, EventSubscription[]> = new Map();
-  private deadLetterQueue: Event[] = [];
-  private eventQueue: Event[] = [];
-  private metrics: EventMetrics;
-  private isProcessing = false;
-  private batchTimer: NodeJS.Timeout | null = null;
-  private eventStore: Map<string, Event> = new Map();
-  private maxCacheSize: number = 5000; // Prevent memory leaks
-  private cleanupInterval: NodeJS.Timeout | null = null;
+import { BoundedLRUCache, CircularBuffer } from '../performance/boundedCache.js';
+import { timerManager } from '../performance/timerManager.js';
 
   constructor(config: EventBusConfig) {
     this.config = {
@@ -100,6 +92,12 @@ class EventBus {
       retryDelay: config.retryDelay || 1000,
       ...config
     };
+
+    // Initialize bounded collections to prevent memory leaks
+    this.subscriptions = new BoundedLRUCache<string, EventSubscription[]>(1000, 3600000);
+    this.deadLetterQueue = new CircularBuffer<Event>(this.config.deadLetterMaxSize);
+    this.eventQueue = new CircularBuffer<Event>(this.config.maxQueueSize);
+    this.eventStore = new BoundedLRUCache<string, Event>(this.maxCacheSize, 300000);
 
     this.eventEmitter = new EventEmitter();
     this.metrics = {
@@ -121,7 +119,7 @@ class EventBus {
 
   private startCleanupInterval(): void {
     // Clean up every 15 minutes to prevent memory leaks
-    this.cleanupInterval = setInterval(() => {
+    this.cleanupInterval = timerManager.setInterval(() => {
       this.cleanupExpiredData();
     }, 15 * 60 * 1000);
   }

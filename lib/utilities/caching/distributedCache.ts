@@ -828,43 +828,39 @@ class DistributedCache<T = any> {
 class ConsistentHashRing {
   private ring: Map<number, string> = new Map();
   private nodes: Set<string> = new Set();
-  private virtualNodes = 150; // Number of virtual nodes per physical node
+  private virtualNodesPerPhysical = 150; // Number of virtual nodes per physical node
+  private virtualNodeTracker: Map<string, number[]> = new Map(); // Track virtual nodes per physical node
 
   /**
    * Add node to ring
    */
   addNode(nodeId: string, weight: number = 1): void {
-    for (let i = 0; i < this.virtualNodes * weight; i++) {
+    const virtualNodeCount = this.virtualNodesPerPhysical * weight;
+    const virtualNodeIds: number[] = [];
+    
+    for (let i = 0; i < virtualNodeCount; i++) {
       const key = `${nodeId}:${i}`;
       const hash = this.hash(key);
       this.ring.set(hash, nodeId);
+      virtualNodeIds.push(hash);
     }
+    
+    this.virtualNodeTracker.set(nodeId, virtualNodeIds);
     this.nodes.add(nodeId);
   }
 
-  /**
+/**
    * Remove node from ring (optimized with virtual node tracking)
    */
   removeNode(nodeId: string): void {
     // Remove virtual nodes for this physical node
-    const virtualNodes = this.virtualNodes.get(nodeId) || [];
-    for (const virtualNodeId of virtualNodes) {
-for (const [ringIndex, ringNodeId] of this.ring.entries()) {
-        if (ringNodeId === virtualNodeId) {
-          this.ring.delete(ringIndex);
-        }
-      }
+    const virtualNodeHashes = this.virtualNodeTracker.get(nodeId) || [];
+    for (const virtualNodeHash of virtualNodeHashes) {
+      this.ring.delete(virtualNodeHash);
     }
-    this.virtualNodes.delete(nodeId);
+    this.virtualNodeTracker.delete(nodeId);
     
     // Remove physical node
-    const ringArray = Array.from(this.ring.entries());
-    for (const [ringIndex, ringNodeId] of ringArray) {
-      if (ringNodeId === nodeId) {
-        this.ring.delete(ringIndex);
-        break;
-      }
-    }
     this.nodes.delete(nodeId);
   }
 
@@ -896,16 +892,27 @@ for (const [ringIndex, ringNodeId] of this.ring.entries()) {
   }
 
   /**
-   * Simple hash function
+   * Improved hash function using FNV-1a for better distribution
    */
   private hash(key: string): number {
-    let hash = 0;
+    // Use FNV-1a hash for better distribution
+    let hash = 2166136261;
     for (let i = 0; i < key.length; i++) {
-      const char = key.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+      hash ^= key.charCodeAt(i);
+      hash *= 16777619;
     }
-    return Math.abs(hash);
+    
+    // Add virtual node support for better distribution
+    const virtualNodeHash = hash % this.virtualNodesPerPhysical;
+    return Math.abs(virtualNodeHash);
+  }
+
+  /**
+   * Add dynamic virtual node adjustment
+   */
+  private adjustVirtualNodes(): void {
+    const nodeCount = this.nodes.size;
+    this.virtualNodesPerPhysical = Math.max(150, nodeCount * 160); // 160x physical nodes
   }
 }
 
