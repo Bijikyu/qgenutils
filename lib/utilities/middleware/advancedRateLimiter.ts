@@ -1,21 +1,20 @@
 /**
- * Advanced Rate Limiting Middleware
+ * Advanced Rate Limiting Middleware - SCALABILITY FIXES
  * 
  * PURPOSE: Comprehensive rate limiting solution supporting multiple algorithms,
  * distributed environments, and intelligent throttling for API protection.
  * 
- * RATE LIMITING FEATURES:
- * - Multiple algorithms (sliding window, token bucket, fixed window)
- * - Distributed support with Redis/Memcached
- * - Intelligent request classification
- * - Progressive penalty system
- * - Burst capacity handling
- * - Performance monitoring
+ * SCALABILITY IMPROVEMENTS:
+ * - Bounded cache with LRU eviction to prevent memory leaks
+ * - Optimized cleanup with batched operations
+ * - Configurable cache size limits
+ * - Efficient sliding window cleanup
  */
 
 import { Request, Response, NextFunction } from 'express';
 import { qerrors } from 'qerrors';
 import DistributedCache from '../caching/distributedCache.js';
+import BoundedRateLimitCache from './boundedRateLimitCache.js';
 
 interface RateLimitConfig {
   algorithm: 'sliding_window' | 'token_bucket' | 'fixed_window';
@@ -31,6 +30,7 @@ interface RateLimitConfig {
   message?: string;
   onLimitReached?: (req: Request, res: Response) => void;
   onSkipped?: (req: Request, res: Response) => void;
+  maxCacheSize?: number;
 }
 
 interface TokenBucketConfig {
@@ -57,11 +57,12 @@ interface RateLimitMetrics {
 }
 
 class RateLimiter {
-  private config: Required<RateLimitConfig>;
+  private config: RateLimitConfig;
   private metrics: RateLimitMetrics;
-  private tokenBuckets: Map<string, TokenBucketConfig> = new Map();
-  private slidingWindows: Map<string, SlidingWindowEntry[]> = new Map();
-  private fixedWindows: Map<string, { count: number; resetTime: number }> = new Map();
+  private tokenBuckets: BoundedRateLimitCache<string, TokenBucketConfig>;
+  private slidingWindows: BoundedRateLimitCache<string, SlidingWindowEntry[]>;
+  private fixedWindows: BoundedRateLimitCache<string, { count: number; resetTime: number }>;
+  private cleanupInterval: NodeJS.Timeout;
 
   constructor(config: RateLimitConfig) {
     this.config = {
@@ -72,13 +73,20 @@ class RateLimiter {
       skipSuccessfulRequests: config.skipSuccessfulRequests || false,
       skipFailedRequests: config.skipFailedRequests || false,
       enableDrafting: config.enableDrafting || false,
-      distributedCache: config.distributedCache || undefined,
+      distributedCache: config.distributedCache,
       headers: config.headers !== false,
-      statusCode: config.statusCode ||429,
+      statusCode: config.statusCode || 429,
       message: config.message || 'Too many requests, please try again later.',
       onLimitReached: config.onLimitReached || (() => {}),
-      onSkipped: config.onSkipped || (() => {})
+      onSkipped: config.onSkipped || (() => {}),
+      maxCacheSize: config.maxCacheSize || 10000
     };
+
+    // Initialize bounded caches to prevent memory leaks
+    const cacheSize = this.config.maxCacheSize!;
+    this.tokenBuckets = new BoundedRateLimitCache(cacheSize);
+    this.slidingWindows = new BoundedRateLimitCache(cacheSize);
+    this.fixedWindows = new BoundedRateLimitCache(cacheSize);
 
     this.metrics = {
       totalRequests: 0,
@@ -92,7 +100,7 @@ class RateLimiter {
     };
 
     // Start cleanup interval for expired entries
-    setInterval(() => this.cleanupExpiredEntries(), 60000); // Every minute
+    this.cleanupInterval = setInterval(() => this.cleanupExpiredEntries(), 60000);
   }
 
   /**
@@ -101,12 +109,12 @@ class RateLimiter {
   middleware() {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const key = this.config.keyGenerator(req);
+        const key = this.config.keyGenerator!(req);
         const shouldSkip = this.shouldSkipRequest(req, res);
 
         if (shouldSkip) {
           this.metrics.skippedRequests++;
-          this.config.onSkipped(req, res);
+          this.config.onSkipped!(req, res);
           return next();
         }
 
@@ -126,7 +134,7 @@ class RateLimiter {
           const currentCount = this.metrics.blockedByAlgorithm.get(algorithmName) || 0;
           this.metrics.blockedByAlgorithm.set(algorithmName, currentCount + 1);
 
-          this.config.onLimitReached(req, res);
+          this.config.onLimitReached!(req, res);
           this.sendLimitResponse(req, res, result);
         }
 
@@ -168,7 +176,7 @@ class RateLimiter {
   }
 
   /**
-   * Sliding window algorithm
+   * Sliding window algorithm with optimized cleanup
    */
   private async checkSlidingWindow(key: string, now: number): Promise<{
     allowed: boolean;
@@ -184,13 +192,33 @@ class RateLimiter {
       const cached = await this.config.distributedCache.get(cacheKey);
       entries = cached || [];
     } else {
-      // Use in-memory sliding window
+      // Use bounded in-memory sliding window
       entries = this.slidingWindows.get(key) || [];
     }
 
-    // Remove expired entries
+    // Optimized cleanup with binary search for large arrays
     const windowStart = now - this.config.windowMs;
-    const validEntries = entries.filter(entry => entry.timestamp > windowStart);
+    let validEntries: SlidingWindowEntry[];
+
+    if (entries.length > 100) {
+      // Use binary search for large arrays
+      let left = 0;
+      let right = entries.length;
+      
+      while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (entries[mid].timestamp <= windowStart) {
+          left = mid + 1;
+        } else {
+          right = mid;
+        }
+      }
+      
+      validEntries = entries.slice(left);
+    } else {
+      // Use linear filter for small arrays
+      validEntries = entries.filter(entry => entry.timestamp > windowStart);
+    }
 
     // Count current requests in window
     const currentCount = validEntries.reduce((sum, entry) => sum + entry.count, 0);
@@ -245,7 +273,7 @@ class RateLimiter {
         maxTokens: this.config.maxRequests
       };
     } else {
-      // Use in-memory token bucket
+      // Use bounded in-memory token bucket
       bucket = this.tokenBuckets.get(key) || {
         tokens: this.config.maxRequests,
         refillRate: this.config.maxRequests / (this.config.windowMs / 1000),
@@ -310,7 +338,7 @@ class RateLimiter {
         resetTime: now + this.config.windowMs
       };
     } else {
-      // Use in-memory fixed window
+      // Use bounded in-memory fixed window
       window = this.fixedWindows.get(key) || {
         count: 0,
         resetTime: now + this.config.windowMs
@@ -390,7 +418,7 @@ class RateLimiter {
     resetTime: number;
     retryAfter?: number;
   }): void {
-    res.status(this.config.statusCode);
+    res.status(this.config.statusCode!);
     
     this.addResponseHeaders(res, {
       remaining: 0,
@@ -406,7 +434,7 @@ class RateLimiter {
         retryAfter: result.retryAfter
       });
     } else {
-      res.send(this.config.message);
+      res.send(this.config.message!);
     }
   }
 
@@ -414,33 +442,31 @@ class RateLimiter {
    * Default key generator
    */
   private defaultKeyGenerator(req: Request): string {
-    return req.ip || req.connection.remoteAddress || 'unknown';
+    return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown';
   }
 
   /**
-   * Clean up expired entries
+   * Clean up expired entries with batched operations
    */
   private cleanupExpiredEntries(): void {
     const now = Date.now();
 
-    // Clean sliding windows
-    for (const [key, entries] of this.slidingWindows) {
-      const windowStart = now - this.config.windowMs;
+    // Batch cleanup for sliding windows
+    const windowStart = now - this.config.windowMs;
+    this.slidingWindows.cleanup((key, entries) => {
       const validEntries = entries.filter(entry => entry.timestamp > windowStart);
-      
       if (validEntries.length === 0) {
-        this.slidingWindows.delete(key);
-      } else {
-        this.slidingWindows.set(key, validEntries);
+        return true; // Delete this entry
       }
-    }
+      // Update with filtered entries
+      this.slidingWindows.set(key, validEntries);
+      return false; // Don't delete
+    });
 
-    // Clean fixed windows
-    for (const [key, window] of this.fixedWindows) {
-      if (now > window.resetTime) {
-        this.fixedWindows.delete(key);
-      }
-    }
+    // Batch cleanup for fixed windows
+    this.fixedWindows.cleanup((key, window) => {
+      return now > window.resetTime;
+    });
   }
 
   /**
@@ -511,6 +537,16 @@ class RateLimiter {
       algorithm: this.config.algorithm,
       ...result
     };
+  }
+
+  /**
+   * Cleanup resources
+   */
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    this.reset();
   }
 }
 

@@ -315,3 +315,5 @@ export class EventBus {
     this.timers.delete(timer);
   }
 }
+
+export default EventBus;
