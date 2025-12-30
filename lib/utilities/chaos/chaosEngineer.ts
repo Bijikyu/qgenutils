@@ -91,7 +91,7 @@ constructor(config: ChaosControl) {
     super();
     
     this.config = {
-      chaosEnabled: config.enabled !== false,
+      chaosEnabled: config.chaosEnabled !== false,
       requiresApproval: config.requiresApproval !== false,
       rollbackThreshold: config.rollbackThreshold || 0.5, // 50% error rate
       maxConcurrency: config.maxConcurrency || 3,
@@ -100,10 +100,8 @@ constructor(config: ChaosControl) {
         enable: config.productionSafeguards?.enable !== false,
         maxErrorRate: config.productionSafeguards?.maxErrorRate || 0.1, // 10%
         maxLatencyIncrease: config.productionSafeguards?.maxLatencyIncrease || 500, // 500ms
-        allowedHours: config.productionSafeguards?.allowedHours || ['10:00', '11:00', '14:00', '15:00'], // Business hours only
-        ...config.productionSafeguards
-      },
-      ...config
+        allowedHours: config.productionSafeguards?.allowedHours || ['10:00', '11:00', '14:00', '15:00'] // Business hours only
+      }
     };
 
     this.metrics = {
@@ -209,7 +207,7 @@ this.isRunning = true;
 
     try {
       this.updateExperimentStatus(experimentId, 'running');
-      this.metrics.servicesTested.add(experiment.target.services);
+      experiment.target.services.forEach(service => this.metrics.servicesTested.add(service));
 
       console.log(`🔥 Starting chaos experiment: ${experiment.name} (${experiment.type})`);
       console.log(`   Target: ${experiment.target.services.join(', ')}`);

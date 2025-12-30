@@ -28,18 +28,21 @@ interface DistributedRateLimitConfig {
  * Distributed Rate Limiter Implementation
  */
 export class DistributedRateLimiter extends EventEmitter {
-  private config: Required<DistributedRateLimitConfig>;
+  private config: DistributedRateLimitConfig;
   private requestCounts: BoundedLRUCache<string, { count: number; windowStart: number }>;
   private blockedKeys: BoundedLRUCache<string, number>;
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(config: DistributedRateLimitConfig) {
     super();
-    this.config = {
+this.config = {
+      windowMs: config.windowMs,
+      maxRequests: config.maxRequests,
       keyGenerator: config.keyGenerator || ((req: any) => req.ip || req.socket?.remoteAddress || 'unknown'),
-      onLimitReached: config.onLimitReached || null,
+      onLimitReached: config.onLimitReached || (() => {}),
       skipSuccessfulRequests: config.skipSuccessfulRequests || false,
-      ...config
+      redis: config.redis || { host: 'localhost', port: 6379 },
+      redisClient: config.redisClient
     };
 
     // Initialize bounded caches to prevent memory leaks
@@ -71,7 +74,7 @@ export class DistributedRateLimiter extends EventEmitter {
    * Check rate limit
    */
   async checkLimit(req: any, res: any): Promise<RateLimitResult> {
-    const key = this.config.keyGenerator(req);
+    const key = this.config.keyGenerator?.(req) || req.ip || req.socket?.remoteAddress || 'unknown';
     const now = Date.now();
 
     // Check if currently blocked

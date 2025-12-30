@@ -48,6 +48,13 @@ export default {
   // Test timeout
   testTimeout: 10000,
   
+  // Parallel test execution for scalability
+  maxWorkers: '50%',
+  
+  // Enable test caching for faster subsequent runs
+  cache: true,
+  cacheDirectory: '<rootDir>/.jest-cache',
+  
   // Verbose output
   verbose: true,
   

@@ -1011,26 +1011,27 @@ class IntelligentAutoScaler extends EventEmitter {
       const current = this.currentMetrics.get(serviceName) || this.getDefaultMetrics();
       
       // Update with latest values (simplified)
-      const updated = {
+      const serviceData = serviceMetrics as any;
+        const updated = {
         cpu: {
           ...current.cpu,
-          current: serviceMetrics.cpuUsage || current.cpu.current
+          current: serviceData.cpuUsage || current.cpu.current
         },
         memory: {
           ...current.memory,
-          current: serviceMetrics.memoryUsage || current.memory.current
+          current: serviceData.memoryUsage || current.memory.current
         },
         requests: {
           ...current.requests,
-          current: serviceMetrics.requests || current.requests.current
+          current: serviceData.requests || current.requests.current
         },
         responseTime: {
           ...current.responseTime,
-          current: serviceMetrics.responseTime || current.responseTime.current
+          current: serviceData.responseTime || current.responseTime.current
         },
         queueDepth: {
           ...current.queueDepth,
-          current: serviceMetrics.queueDepth || current.queueDepth.current
+          current: serviceData.queueDepth || current.queueDepth.current
         }
       };
       

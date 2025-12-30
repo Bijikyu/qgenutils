@@ -28,7 +28,10 @@
     "suppressImplicitAnyIndexErrors": false,
     "allowImportingTsExtensions": false,
     "allowArbitraryExtensions": true,
-    "rootDir": "./"
+    "rootDir": "./",
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "composite": false
   },
   "include": [
     "**/*.ts",
@@ -38,6 +41,8 @@
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.test.js"
+    "**/*.test.js",
+    "lib/utilities/database/connectionPool.ts",
+    "lib/utilities/gateway/apiGateway.ts"
   ]
 }

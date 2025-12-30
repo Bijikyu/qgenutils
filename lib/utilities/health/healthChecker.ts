@@ -96,7 +96,7 @@ class HealthChecker {
     this.config = {
       name: config.name,
       version: config.version || '1.0.0',
-      releaseId: config.releaseId,
+      releaseId: config.releaseId || 'unknown',
       thresholds: {
         memoryUsage: 80,
         cpuUsage: 70,
