@@ -314,14 +314,24 @@ export class JSONWorkerPool {
   }
 
   /**
-   * Clean up stale tasks
+   * Clean up stale tasks with optimized batch processing
    */
   private cleanupStaleTasks(): void {
     const now = Date.now();
     const timeout = 30000; // 30 seconds timeout
+    const staleTasks: string[] = [];
 
+    // Collect stale task IDs
     for (const [taskId, pending] of this.pendingTasks.entries()) {
       if (now - pending.startTime > timeout) {
+        staleTasks.push(taskId);
+      }
+    }
+
+    // Process stale tasks in batch
+    for (const taskId of staleTasks) {
+      const pending = this.pendingTasks.get(taskId);
+      if (pending) {
         this.pendingTasks.delete(taskId);
         pending.reject(new Error('JSON processing timeout'));
         this.stats.errorCount++;

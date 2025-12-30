@@ -260,23 +260,47 @@ function generateSecureRandom(length: number = 32, charset: string = 'ABCDEFGHIJ
   return result;
 }
 
-/**
- * Validates JSON input for security issues
- * @param jsonString - JSON string to validate
- * @param maxSize - Maximum size in bytes
- * @returns Parsed and validated object
- */
-function validateAndParseJson(jsonString: string, maxSize: number = 1024 * 1024): any {
-  if (typeof jsonString !== 'string') {
-    throw new Error('Input must be a string');
+  /**
+   * Parses and validates JSON input safely with async fallback for large payloads
+   * @param jsonString - JSON string to parse
+   * @param maxSize - Maximum size in bytes (default 1MB)
+   * @returns Parsed and validated JSON object
+   */
+  async function parseJsonSafe(jsonString: string, maxSize: number = 1024 * 1024): Promise<any> {
+    if (typeof jsonString !== 'string') {
+      throw new Error('Input must be a string');
+    }
+    
+    if (jsonString.length > maxSize) {
+      throw new Error(`JSON input exceeds maximum size of ${maxSize} bytes`);
+    }
+    
+    // Use worker thread for large payloads to prevent blocking
+    if (jsonString.length > 100 * 1024) { // 100KB threshold
+      try {
+        // Check if worker pool is available
+        const { parseJSONAsync } = await import('../performance/jsonWorkerPool.js');
+        return await parseJSONAsync(jsonString);
+      } catch {
+        // Fallback to synchronous parsing if worker unavailable
+      }
+    }
+    
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      throw new Error(`Invalid JSON format: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
-  
-  if (jsonString.length > maxSize) {
-    throw new Error(`JSON input exceeds maximum size of ${maxSize} bytes`);
-  }
-  
-  try {
-    const parsed = JSON.parse(jsonString);
+
+  /**
+   * Validates JSON input for security issues with async support
+   * @param jsonString - JSON string to validate
+   * @param maxSize - Maximum size in bytes
+   * @returns Parsed and validated object
+   */
+  async function validateAndParseJson(jsonString: string, maxSize: number = 1024 * 1024): Promise<any> {
+    const parsed = await parseJsonSafe(jsonString, maxSize);
     
     // Check for prototype pollution patterns
     if (hasPrototypePollution(parsed)) {
@@ -284,13 +308,7 @@ function validateAndParseJson(jsonString: string, maxSize: number = 1024 * 1024)
     }
     
     return parsed;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new Error('Invalid JSON format');
-    }
-    throw error;
   }
-}
 
 /**
  * Checks for prototype pollution in objects

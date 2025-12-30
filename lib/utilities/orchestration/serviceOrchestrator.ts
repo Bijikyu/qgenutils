@@ -406,7 +406,7 @@ class ServiceOrchestrator extends EventEmitter {
   }
 
   /**
-   * Call a service instance
+   * Call a service instance with enhanced error handling
    */
   async callService<T = any>(instance: ServiceInstance, data: any): Promise<T> {
     if (!instance.circuitBreaker) {
@@ -416,12 +416,25 @@ class ServiceOrchestrator extends EventEmitter {
     this.updateServiceMetrics(instance, 'request');
 
     try {
-      const result = await instance.circuitBreaker.execute(data);
+      // Add timeout protection
+      const result = await Promise.race([
+        instance.circuitBreaker.execute(data),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Service call timeout')), 30000)
+        )
+      ]);
+      
       this.updateServiceMetrics(instance, 'success');
       return result;
 
     } catch (error) {
       this.updateServiceMetrics(instance, 'failure');
+      
+      // Enhanced error context
+      if (error instanceof Error) {
+        error.message = `[${instance.name}:${instance.id}] ${error.message}`;
+      }
+      
       throw error;
     }
   }

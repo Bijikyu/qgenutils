@@ -155,6 +155,14 @@ class DistributedCache<T = any> {
       const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
       toDelete.forEach(([key]) => this.metrics.nodeMetrics.delete(key));
     }
+
+    // CRITICAL FIX: Clean up key distribution to prevent unbounded memory growth
+    if (this.metrics.keyDistribution.size > this.maxCacheSize) {
+      const entries = Array.from(this.metrics.keyDistribution.entries())
+        .sort((a, b) => a[1] - b[1]); // Sort by frequency (least used first)
+      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      toDelete.forEach(([key]) => this.metrics.keyDistribution.delete(key));
+    }
   }
 
   destroy(): void {
@@ -774,11 +782,19 @@ class DistributedCache<T = any> {
   }
 
   /**
-   * Update key distribution tracking
+   * Update key distribution tracking with size limit
    */
   private updateKeyDistribution(key: string): void {
     const count = this.metrics.keyDistribution.get(key) || 0;
     this.metrics.keyDistribution.set(key, count + 1);
+    
+    // Prevent unbounded growth - cleanup if exceeding limit
+    if (this.metrics.keyDistribution.size > this.maxCacheSize) {
+      const entries = Array.from(this.metrics.keyDistribution.entries())
+        .sort((a, b) => a[1] - b[1]); // Remove least frequently used
+      const toDelete = entries.slice(0, Math.floor(this.maxCacheSize * 0.1)); // Remove 10%
+      toDelete.forEach(([k]) => this.metrics.keyDistribution.delete(k));
+    }
   }
 
   /**
@@ -847,6 +863,9 @@ class ConsistentHashRing {
     
     this.virtualNodeTracker.set(nodeId, virtualNodeIds);
     this.nodes.add(nodeId);
+    
+    // Mark sorted hashes as dirty for recaching
+    this._hashesDirty = true;
   }
 
 /**
@@ -862,26 +881,61 @@ class ConsistentHashRing {
     
     // Remove physical node
     this.nodes.delete(nodeId);
+    
+    // Mark sorted hashes as dirty for recaching
+    this._hashesDirty = true;
   }
 
   /**
-   * Get node for key
+   * Get node for key (optimized with binary search)
    */
   getNode(key: string): string | null {
     if (this.ring.size === 0) return null;
 
     const hash = this.hash(key);
-    const sortedHashes = Array.from(this.ring.keys()).sort((a, b) => a - b);
+    const sortedHashes = this.getSortedHashes();
 
-    // Find first node with hash >= key hash
-    for (const nodeHash of sortedHashes) {
-      if (nodeHash >= hash) {
-        return this.ring.get(nodeHash)!;
-      }
+    // Use binary search for O(log n) instead of O(n)
+    const index = this.binarySearch(sortedHashes, hash);
+    if (index < sortedHashes.length) {
+      return this.ring.get(sortedHashes[index])!;
     }
 
     // Wrap around to first node
     return this.ring.get(sortedHashes[0])!;
+  }
+
+  /**
+   * Cached sorted hashes for performance
+   */
+  private _sortedHashes: number[] | null = null;
+  private _hashesDirty = true;
+
+  private getSortedHashes(): number[] {
+    if (this._hashesDirty || !this._sortedHashes) {
+      this._sortedHashes = Array.from(this.ring.keys()).sort((a, b) => a - b);
+      this._hashesDirty = false;
+    }
+    return this._sortedHashes;
+  }
+
+  /**
+   * Binary search implementation
+   */
+  private binarySearch(sortedHashes: number[], target: number): number {
+    let left = 0;
+    let right = sortedHashes.length;
+
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2);
+      if (sortedHashes[mid] < target) {
+        left = mid + 1;
+      } else {
+        right = mid;
+      }
+    }
+
+    return left;
   }
 
   /**

@@ -59,6 +59,14 @@ class CircuitBreaker<T extends any[], R = any> {
   private responseTimes: number[] = [];
   private readonly MAX_RESPONSE_TIMES = 100;
 
+  // Optimized array operations
+  private addResponseTime(time: number): void {
+    if (this.responseTimes.length >= this.MAX_RESPONSE_TIMES) {
+      this.responseTimes.shift(); // Remove oldest
+    }
+    this.responseTimes.push(time);
+  }
+
   constructor(
     private fn: (...args: T) => Promise<R>,
     config: CircuitBreakerConfig
@@ -187,10 +195,7 @@ class CircuitBreaker<T extends any[], R = any> {
     this.lastSuccessTime = Date.now();
     
     // Record response time
-    this.responseTimes.push(responseTime);
-    if (this.responseTimes.length > this.MAX_RESPONSE_TIMES) {
-      this.responseTimes.shift();
-    }
+    this.addResponseTime(responseTime);
 
     // State transitions based on current state
     switch (this.state) {
@@ -217,10 +222,7 @@ class CircuitBreaker<T extends any[], R = any> {
     this.lastFailureTime = Date.now();
     
     // Record response time even for failures
-    this.responseTimes.push(responseTime);
-    if (this.responseTimes.length > this.MAX_RESPONSE_TIMES) {
-      this.responseTimes.shift();
-    }
+    this.addResponseTime(responseTime);
 
     // State transitions based on current state
     switch (this.state) {

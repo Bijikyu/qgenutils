@@ -365,18 +365,20 @@ class DatabaseConnectionPool {
 
     // Create new connection if under limit
     if (this.connections.size < this.config.maxConnections) {
-      const connectionId = this.generateConnectionId();
+      const connectionId = this.createConnectionId();
       const connection = await this.createConnection();
       this.connections.set(connectionId, connection);
       this.activeConnections.add(connectionId);
       return { connection, id: connectionId };
     }
 
-    // Wait for available connection
+    // Wait for available connection with queue overflow protection
     return new Promise((resolve, reject) => {
       if (this.connectionQueue.length >= this.MAX_QUEUE_SIZE) {
-        reject(new Error('Connection queue is full'));
-        return;
+        // Remove oldest 10% to prevent queue overflow
+        const toRemove = Math.max(1, Math.floor(this.MAX_QUEUE_SIZE * 0.1));
+        const removed = this.connectionQueue.splice(0, toRemove);
+        removed.forEach(item => item.reject(new Error('Connection queue overflow')));
       }
 
       this.connectionQueue.push({
@@ -424,7 +426,7 @@ class DatabaseConnectionPool {
     
     try {
       // Simulate connection creation (replace with actual database driver)
-      const connectionId = this.generateConnectionId();
+      const connectionId = this.createConnectionId();
       
       // Add exponential backoff for retries
       const delay = baseDelay * Math.pow(2, retryCount);
@@ -542,21 +544,16 @@ class DatabaseConnectionPool {
   }
 
   /**
+   * Generate unique connection ID
+   */
+  private createConnectionId(): string {
+    return `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
    * Create a new database connection
    */
-  private async createConnection(): Promise<any> {
-    // This would be implemented with actual database driver
-    // For now, return a mock connection
-    return {
-      query: async (sql: string, params: any[]) => {
-        // Mock query execution
-        return { rows: [], rowCount: 0 };
-      },
-      close: async () => {
-        // Mock connection close
-      }
-    };
-  }
+  
 
   /**
    * Execute query with timeout
