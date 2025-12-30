@@ -1,4 +1,5 @@
 import SECURITY_CONFIG from './securityConfig.js';
+import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 /**
  * Creates a security-focused rate limiter middleware for Express
@@ -39,65 +40,24 @@ function createSecurityRateLimiter(options: {
   const keyGenerator: Function = options.keyGenerator || defaultKeyGenerator;
   const onLimitExceeded: Function | null = options.onLimitExceeded || null;
 
-  const requestCounts: any = new Map(); // key -> { count, windowStart }
-  const blockedKeys: any = new Map(); // key -> blockUntil timestamp
+  // Use bounded caches to prevent memory leaks
+  const requestCounts = new BoundedLRUCache<string, { count: number; windowStart: number }>(
+    10000, // Maximum 10K IPs tracked
+    60000  // 1 minute TTL
+  );
+  const blockedKeys = new BoundedLRUCache<string, number>(
+    5000,  // Maximum 5K blocked IPs
+    300000 // 5 minute TTL for blocks
+  );
 
   function defaultKeyGenerator(req: any) { // default: use client IP
     return req.ip || req.socket?.remoteAddress || 'unknown';
   }
 
   function cleanup() { // cleanup expired entries with memory leak prevention
-    const now: number = Date.now();
-    let cleanedCount = 0;
-
-    // Clean request counts
-    requestCounts.forEach((data: any, key: any): any => {
-      if (now - data.windowStart > windowMs) {
-        requestCounts.delete(key);
-        cleanedCount++;
-      }
-    });
-
-    // Clean blocked keys
-    blockedKeys.forEach((blockUntil: any, key: any): any => {
-      if (now >= blockUntil) {
-        blockedKeys.delete(key);
-        cleanedCount++;
-      }
-    });
-
-    // Force cleanup if maps are getting too large (memory leak prevention)
-    if (requestCounts.size > 10000) {
-      const oldestAllowed = now - windowMs;
-      // Use batch processing to avoid blocking on large maps
-      const toDelete: any[] = [];
-      requestCounts.forEach((data: any, key: any): any => {
-        if (data.windowStart < oldestAllowed) {
-          toDelete.push(key);
-        }
-      });
-      toDelete.forEach(key => requestCounts.delete(key));
-      cleanedCount += toDelete.length;
-      // Clear array to prevent memory leak
-      toDelete.length = 0;
-    }
-
-    if (blockedKeys.size > 5000) {
-      const oldestAllowed = now - (blockDurationMs * 2);
-      // Use batch processing to avoid blocking on large maps
-      const toDelete: any[] = [];
-      blockedKeys.forEach((blockUntil: any, key: any): any => {
-        if (blockUntil < oldestAllowed) {
-          toDelete.push(key);
-        }
-      });
-      toDelete.forEach(key => blockedKeys.delete(key));
-      cleanedCount += toDelete.length;
-      // Clear array to prevent memory leak
-      toDelete.length = 0;
-    }
-
-    return cleanedCount;
+    // BoundedLRUCache handles automatic cleanup via TTL
+    // No manual cleanup needed - the cache handles eviction automatically
+    return 0;
   }
 
   return function rateLimiterMiddleware(req: any, res: any, next: any) { // rate limiter middleware
@@ -130,7 +90,10 @@ function createSecurityRateLimiter(options: {
 
     if (!data || now - data.windowStart > windowMs) { // new window
       data = { count: 0, windowStart: now };
-      requestCounts.set(key, data);
+      requestCounts.set(key, data, windowMs); // Set with TTL
+    } else {
+      // Update existing entry
+      requestCounts.set(key, data, windowMs);
     }
 
     data.count++; // increment request count
@@ -144,7 +107,7 @@ function createSecurityRateLimiter(options: {
 
     if (data.count > maxRequests) { // limit exceeded
       const blockUntilTime: any = now + blockDurationMs;
-      blockedKeys.set(key, blockUntilTime);
+      blockedKeys.set(key, blockUntilTime, blockDurationMs); // Set with TTL
 
       if (onLimitExceeded) {
         onLimitExceeded(req, key, data.count);

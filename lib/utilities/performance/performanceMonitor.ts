@@ -14,6 +14,7 @@
  */
 
 import { qerrors } from 'qerrors';
+import { BoundedLRUCache } from './boundedCache.js';
 
 interface PerformanceMetrics {
   timestamp: number;
@@ -124,12 +125,14 @@ class PerformanceMonitor {
       }
     };
 
-    // Add to history
+    // Add to history with bounds checking
     this.metrics.push(metrics);
 
-    // Limit history size
+    // Limit history size to prevent memory leaks
     if (this.metrics.length > this.MAX_METRICS_HISTORY) {
-      this.metrics.shift();
+      // Remove multiple entries at once for efficiency
+      const excess = this.metrics.length - this.MAX_METRICS_HISTORY;
+      this.metrics.splice(0, excess);
     }
 
     // Check for performance issues
@@ -211,12 +214,21 @@ class PerformanceMonitor {
    * Create performance alert
    */
   private createAlert(alert: PerformanceAlert): void {
-    // Avoid duplicate alerts
-    const recentAlert = this.alerts.find(a => 
-      a.type === alert.type && 
-      a.severity === alert.severity &&
-      (Date.now() - a.timestamp) < 60000 // Within last minute
-    );
+    // Avoid duplicate alerts with optimized search
+    const now = Date.now();
+    const oneMinuteAgo = now - 60000;
+    let recentAlert: PerformanceAlert | undefined;
+
+    // Use reverse iteration for faster finding recent alerts
+    for (let i = this.alerts.length - 1; i >= 0; i--) {
+      const a = this.alerts[i];
+      if (a.timestamp < oneMinuteAgo) break; // Stop if too old
+      if (a.type === alert.type && 
+          a.severity === alert.severity) {
+        recentAlert = a;
+        break;
+      }
+    }
 
     if (!recentAlert) {
       this.alerts.push(alert);
@@ -228,9 +240,11 @@ class PerformanceMonitor {
         `Performance Alert: ${alert.type} - ${alert.severity}`
       );
 
-      // Limit alerts history
+      // Limit alerts history to prevent memory leaks
       if (this.alerts.length > 100) {
-        this.alerts.shift();
+        // Remove multiple entries at once for efficiency
+        const excess = this.alerts.length - 100;
+        this.alerts.splice(0, excess);
       }
     }
   }

@@ -97,6 +97,7 @@ class APIGateway extends EventEmitter {
   private circuitBreakers: BoundedLRUCache<string, CircuitBreaker<any, any>>;
   private middleware: Array<(req: Request, res: Response, next: NextFunction) => void> = [];
   private cleanupInterval: NodeJS.Timeout | null = null;
+  private timers: Set<NodeJS.Timeout> = new Set();
   private tracer?: DistributedTracer;
   private healthChecker?: HealthChecker;
   private metrics: GatewayMetrics;
@@ -270,10 +271,10 @@ class APIGateway extends EventEmitter {
     const now = Date.now();
 
     // Limit routes size
-    if (this.routes.size > this.maxCacheSize) {
-      const entries = Array.from(this.routes.entries());
+    if (this.router.size > this.maxCacheSize) {
+      const entries = Array.from(this.router.entries());
       const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.routes.delete(key));
+      toDelete.forEach(([key]) => this.router.delete(key));
     }
 
     // Limit circuit breakers size

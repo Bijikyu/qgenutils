@@ -66,7 +66,7 @@ interface ChaosMetrics {
 }
 
 interface ChaosControl {
-  enabled: boolean;
+  chaosEnabled: boolean;
   requiresApproval: boolean;
   rollbackThreshold: number;
   maxConcurrency: number;
@@ -85,12 +85,13 @@ class ChaosEngineer extends EventEmitter {
   private metrics: ChaosMetrics;
   private isRunning = false;
   private chaosMonkey?: any;
+  private settings: ChaosControl;
 
-  constructor(config: ChaosControl) {
+constructor(config: ChaosControl) {
     super();
-
+    
     this.config = {
-      enabled: config.enabled !== false,
+      chaosEnabled: config.enabled !== false,
       requiresApproval: config.requiresApproval !== false,
       rollbackThreshold: config.rollbackThreshold || 0.5, // 50% error rate
       maxConcurrency: config.maxConcurrency || 3,
@@ -128,10 +129,10 @@ class ChaosEngineer extends EventEmitter {
   start(): void {
     if (this.isRunning) return;
 
-    this.isRunning = true;
+this.isRunning = true;
     this.emit('chaos:started');
-
-    if (this.config.safeMode) {
+    
+    if (this.settings.safeMode) {
       console.log('🛡️ Chaos Engine started in SAFE MODE');
     } else {
       console.log('🔥 Chaos Engine started in NORMAL MODE');
@@ -190,13 +191,13 @@ class ChaosEngineer extends EventEmitter {
     }
 
     // Check if chaos is enabled
-    if (!this.config.enabled) {
+    if (!this.settings.chaosEnabled) {
       console.log('Chaos experiments are disabled');
       return;
     }
 
-    // Production safeguards
-    if (this.config.productionSafeguards.enable && !this.isAllowedTime()) {
+// Production safeguards
+    if (this.settings.productionSafeguards.enable && !this.isAllowedTime()) {
       throw new Error('Chaos experiments not allowed outside business hours');
     }
 
@@ -208,7 +209,7 @@ class ChaosEngineer extends EventEmitter {
 
     try {
       this.updateExperimentStatus(experimentId, 'running');
-      this.metrics.servicesTested.add(...experiment.target.services);
+      this.metrics.servicesTested.add(experiment.target.services);
 
       console.log(`🔥 Starting chaos experiment: ${experiment.name} (${experiment.type})`);
       console.log(`   Target: ${experiment.target.services.join(', ')}`);
@@ -544,6 +545,13 @@ class ChaosEngineer extends EventEmitter {
 
   private async simulateDataCorruption(services: string[], field: string, type: string): Promise<void> {
     await this.sleep(100);
+  }
+
+  /**
+   * Generate unique experiment ID
+   */
+  private generateExperimentId(): string {
+    return `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   /**

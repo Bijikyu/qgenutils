@@ -16,6 +16,7 @@
 
 import { EventEmitter } from 'events';
 import { qerrors } from 'qerrors';
+import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 interface TraceContext {
   traceId: string;
@@ -79,9 +80,9 @@ interface TracingConfig {
 
 class DistributedTracer extends EventEmitter {
   private config: Required<TracingConfig>;
-  private activeSpans: Map<string, Span> = new Map();
-  private traces: Map<string, Trace> = new Map();
-  private baggage: Map<string, Record<string, string>> = new Map();
+  private activeSpans: BoundedLRUCache<string, Span>;
+  private traces: BoundedLRUCache<string, Trace>;
+  private baggage: BoundedLRUCache<string, Record<string, string>>;
   private maxCacheSize: number = 10000; // Prevent memory leaks
   private cleanupInterval: NodeJS.Timeout | null = null;
   private metrics: {
@@ -110,6 +111,11 @@ class DistributedTracer extends EventEmitter {
       customExporter: config.customExporter
     };
 
+    // Initialize bounded caches to prevent memory leaks
+    this.activeSpans = new BoundedLRUCache<string, Span>(this.maxCacheSize, 30 * 60 * 1000);
+    this.traces = new BoundedLRUCache<string, Trace>(Math.floor(this.maxCacheSize * 0.5), 60 * 60 * 1000);
+    this.baggage = new BoundedLRUCache<string, Record<string, string>>(Math.floor(this.maxCacheSize * 0.3), 15 * 60 * 1000);
+
     this.metrics = {
       tracesCreated: 0,
       spansCreated: 0,
@@ -131,29 +137,9 @@ class DistributedTracer extends EventEmitter {
   }
 
   private cleanupExpiredData(): void {
-    // Remove old completed traces to prevent memory leaks
-    const now = Date.now();
-    const maxAge = 30 * 60 * 1000; // 30 minutes
-
-    for (const [traceId, trace] of this.traces.entries()) {
-      if (trace.endTime && (now - trace.endTime) > maxAge) {
-        this.traces.delete(traceId);
-      }
-    }
-
-    // Limit active spans size
-    if (this.activeSpans.size > this.maxCacheSize) {
-      const entries = Array.from(this.activeSpans.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([spanId]) => this.activeSpans.delete(spanId));
-    }
-
-    // Limit baggage size
-    if (this.baggage.size > this.maxCacheSize) {
-      const entries = Array.from(this.baggage.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.baggage.delete(key));
-    }
+    // BoundedLRUCache handles automatic cleanup based on TTL and size limits
+    // No manual cleanup needed - the cache automatically removes expired entries
+    // This method is kept for compatibility but the bounded cache handles everything
   }
 
   destroy(): void {
@@ -161,9 +147,10 @@ class DistributedTracer extends EventEmitter {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
-    this.activeSpans.clear();
-    this.traces.clear();
-    this.baggage.clear();
+    // CRITICAL BUG FIX: Call destroy() on bounded caches to clean up intervals
+    this.activeSpans.destroy();
+    this.traces.destroy();
+    this.baggage.destroy();
   }
 
   /**
@@ -265,9 +252,13 @@ class DistributedTracer extends EventEmitter {
       Object.assign(span.tags, options.tags);
     }
 
-    // Add logs
+    // Add logs with size limit
     if (options?.logs) {
-      span.logs.push(...options.logs);
+      const MAX_LOGS_PER_SPAN = 50;
+      const availableSpace = MAX_LOGS_PER_SPAN - span.logs.length;
+      if (availableSpace > 0) {
+        span.logs.push(...options.logs.slice(0, availableSpace));
+      }
     }
 
     // Remove from active spans
@@ -391,6 +382,11 @@ class DistributedTracer extends EventEmitter {
    * Add log to span
    */
   addLog(span: Span, level: string, message: string, fields?: Record<string, any>): void {
+    // Limit logs per span to prevent memory leaks
+    const MAX_LOGS_PER_SPAN = 50;
+    if (span.logs.length >= MAX_LOGS_PER_SPAN) {
+      span.logs.shift(); // Remove oldest log
+    }
     span.logs.push({
       timestamp: Date.now(),
       level,

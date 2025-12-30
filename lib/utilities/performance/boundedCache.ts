@@ -225,9 +225,70 @@ export class BoundedLRUCache<K, V> {
     }
   }
 
+/**
+    * Get all values (for compatibility with Map interface)
+    */
+  values(): V[] {
+    const result: V[] = [];
+    const now = Date.now();
+    
+    for (const [key, item] of this.cache.entries()) {
+      if (now - item.timestamp <= item.ttl) {
+        result.push(item.value);
+      }
+    }
+    
+    return result;
+  }
+
   /**
-   * Destroy cache and cleanup resources
-   */
+    * Get all entries (for compatibility with Map interface)
+    */
+  entries(): Array<[K, V]> {
+    const result: Array<[K, V]> = [];
+    const now = Date.now();
+    
+    for (const [cacheKey, item] of this.cache.entries()) {
+      if (now - item.timestamp <= item.ttl) {
+        const key = this.deserializeKey(cacheKey);
+        result.push([key, item.value]);
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+    * Get all keys (for compatibility with Map interface)
+    */
+  keys(): K[] {
+    const result: K[] = [];
+    const now = Date.now();
+    
+    for (const [cacheKey, item] of this.cache.entries()) {
+      if (now - item.timestamp <= item.ttl) {
+        const key = this.deserializeKey(cacheKey);
+        result.push(key);
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+    * Deserialize key from string
+    */
+  private deserializeKey(cacheKey: string): K {
+    try {
+      return JSON.parse(cacheKey) as K;
+    } catch {
+      return cacheKey as unknown as K;
+    }
+  }
+
+  /**
+    * Destroy cache and cleanup resources
+    */
   destroy(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);

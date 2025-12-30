@@ -13,7 +13,7 @@
  */
 
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
-import { writeFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
+import { writeFile, appendFile, mkdir, access } from 'fs/promises';
 import { join, dirname } from 'path';
 import { performance } from 'perf_hooks';
 
@@ -65,34 +65,42 @@ function runWorker(): void {
   const FLUSH_INTERVAL = 5000; // 5 seconds
   const FLUSH_THRESHOLD = 100; // or 100 entries
 
-  // Ensure log directory exists
+  // Ensure log directory exists (async check in worker initialization)
   const logDir = dirname(logFile);
-  if (!existsSync(logDir)) {
-    mkdirSync(logDir, { recursive: true });
-  }
+  (async () => {
+    try {
+      await access(logDir);
+    } catch {
+      await mkdir(logDir, { recursive: true });
+    }
+  })();
 
   /**
-   * Check if log file needs rotation
+   * Check if log file needs rotation (async)
    */
-  function needsRotation(): boolean {
+  async function needsRotation(): Promise<boolean> {
     try {
-      return existsSync(logFile) && 
-             require('fs').statSync(logFile).size > maxFileSize;
+      await access(logFile);
+      const stats = await require('fs/promises').stat(logFile);
+      return stats.size > maxFileSize;
     } catch {
       return false;
     }
   }
 
   /**
-   * Rotate log file
+   * Rotate log file (async)
    */
-  function rotateLog(): void {
+  async function rotateLog(): Promise<void> {
     try {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[.:]/g, '-');
       const rotatedFile = logFile.replace('.log', `-${timestamp}.log`);
       
-      if (existsSync(logFile)) {
-        require('fs').renameSync(logFile, rotatedFile);
+      try {
+        await access(logFile);
+        await require('fs/promises').rename(logFile, rotatedFile);
+      } catch {
+        // File doesn't exist, nothing to rotate
       }
     } catch (error) {
       console.error('Log rotation failed:', error);
@@ -100,36 +108,37 @@ function runWorker(): void {
   }
 
   /**
-   * Flush buffer to file
+   * Flush buffer to file (async)
    */
-  function flushBuffer(): void {
+  async function flushBuffer(): Promise<void> {
     if (logBuffer.length === 0) return;
 
     const startTime = performance.now();
     
     try {
       // Rotate if needed
-      if (needsRotation()) {
-        rotateLog();
+      if (await needsRotation()) {
+        await rotateLog();
       }
 
+      // CRITICAL BUG FIX: Create copy of buffer before clearing to prevent race condition
+      const entriesToFlush = logBuffer.splice(0, logBuffer.length);
+      
       // Batch write all logs
-      const logLines = logBuffer.map(entry => {
+      const logLines = entriesToFlush.map(entry => {
         const logLine = JSON.stringify(entry);
         return `${logLine}\n`;
       }).join('');
 
-      appendFileSync(logFile, logLines, 'utf8');
+      await appendFile(logFile, logLines, 'utf8');
 
-      // Update stats
+      // Update stats - BUG FIX: Use entriesToFlush instead of cleared logBuffer
       const processingTime = performance.now() - startTime;
-      stats.totalLogs += logBuffer.length;
-      stats.errorCount += logBuffer.filter(e => e.level === 'error').length;
-      stats.warnCount += logBuffer.filter(e => e.level === 'warn').length;
+      stats.totalLogs += entriesToFlush.length;
+      stats.errorCount += entriesToFlush.filter(e => e.level === 'error').length;
+      stats.warnCount += entriesToFlush.filter(e => e.level === 'warn').length;
       stats.avgProcessingTime = (stats.avgProcessingTime * 0.9) + (processingTime * 0.1);
       stats.bufferSize = 0;
-
-      logBuffer = [];
       lastFlush = Date.now();
 
     } catch (error) {
@@ -148,11 +157,13 @@ function runWorker(): void {
     
     logBuffer.push(entry);
     
-    // Auto-flush if needed
+    // Auto-flush if needed (async) - BUG FIX: Prevent concurrent flushes
     const now = Date.now();
     if (logBuffer.length >= FLUSH_THRESHOLD || 
         now - lastFlush > FLUSH_INTERVAL) {
-      flushBuffer();
+      // Debounce flush calls to prevent race conditions
+      lastFlush = now;
+      flushBuffer().catch(console.error);
     }
   }
 

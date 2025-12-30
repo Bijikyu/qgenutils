@@ -1,4 +1,5 @@
 import SECURITY_CONFIG from './securityConfig.js';
+import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 interface IpTrackerConfig {
   maxTrackedIps?: number;
@@ -49,14 +50,21 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
   const maxFailedAttempts: number = config.maxFailedAttempts || SECURITY_CONFIG.MAX_FAILED_ATTEMPTS;
   const windowMs: number = config.windowMs || SECURITY_CONFIG.RATE_LIMIT_WINDOW_MS;
 
-  const ipData: Map<string, IpData> = new Map(); // IP -> tracking data
-  const blockedIps: Map<string, number> = new Map(); // IP -> block expiry timestamp
+  const ipData = new BoundedLRUCache<string, IpData>(
+    maxTrackedIps, // Use config limit
+    windowMs * 2  // TTL is 2x window time
+  );
+  const blockedIps = new BoundedLRUCache<string, number>(
+    10000,  // Max 10K blocked IPs
+    blockDurationMs * 2  // TTL is 2x block duration
+  );
   let cleanupTimer: ReturnType<typeof setInterval> | null = null;
   const maxCacheSize: number = 50000; // Prevent memory leaks
 
   function getIpData(ip: string): IpData { // get or create IP tracking data
-    if (!ipData.has(ip)) {
-      ipData.set(ip, {
+    let data = ipData.get(ip);
+    if (!data) {
+      data = {
         requestCount: 0,
         windowStart: Date.now(),
         lastRequest: Date.now(),
@@ -64,9 +72,10 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
         suspiciousPatterns: [],
         lastSeen: Date.now(),
         blockCount: 0
-      });
+      };
+      ipData.set(ip, data, windowMs * 2);
     }
-    return ipData.get(ip)!;
+    return data;
   }
 
   function track(ip: string, suspiciousPatterns: string[] = []): { shouldBlock: boolean } { // track request from IP
@@ -97,7 +106,7 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
 
   function block(ip: string, durationMs: number = blockDurationMs): number { // block an IP
     const blockUntil: number = Date.now() + durationMs;
-    blockedIps.set(ip, blockUntil);
+    blockedIps.set(ip, blockUntil, durationMs);
     return blockUntil;
   }
 
@@ -118,32 +127,8 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
   }
 
   function cleanup(): void { // cleanup expired entries
-    const now: number = Date.now();
-
-    blockedIps.forEach((blockUntil: number, ip: string): void => { // remove expired blocks
-      if (blockUntil <= now) blockedIps.delete(ip);
-    });
-
-    ipData.forEach((data: IpData, ip: string): void => { // remove stale IP data
-      if (data.windowStart + windowMs < now && !blockedIps.has(ip)) {
-        ipData.delete(ip);
-      }
-    });
-
-    if (ipData.size > maxTrackedIps) { // enforce memory limit
-      const sorted = Array.from(ipData.entries())
-        .sort(([, a]: [string, IpData], [, b]: [string, IpData]) => a.lastRequest - b.lastRequest);
-      const toRemove: [string, IpData][] = sorted.slice(0, ipData.size - maxTrackedIps);
-      toRemove.forEach(([ip]: [string, IpData]) => ipData.delete(ip));
-    }
-
-    // Also enforce maximum cache size for blocked IPs
-    if (blockedIps.size > maxCacheSize) {
-      const sorted = Array.from(blockedIps.entries())
-        .sort(([, a]: [string, number], [, b]: [string, number]) => a - b);
-      const toRemove: [string, number][] = sorted.slice(0, blockedIps.size - maxCacheSize);
-      toRemove.forEach(([ip]: [string, number]) => blockedIps.delete(ip));
-    }
+    // BoundedLRUCache handles automatic cleanup via TTL and size limits
+    // No manual cleanup needed
   }
 
   function startPeriodicCleanup() { // start automatic cleanup

@@ -150,8 +150,8 @@ class AsyncLogger {
         const { writeFile } = await import('fs/promises');
         await writeFile(filePath, logLines, { flag: 'a' });
       } else {
-        // Fallback to sync for development
-        writeFileSync(filePath, logLines, { flag: 'a' });
+        // Remove sync fallback - always use async to prevent blocking
+        throw new Error('Async file writing required - sync operations not allowed in production');
       }
     } catch (error) {
       console.error('Failed to write logs:', error);
@@ -159,22 +159,12 @@ class AsyncLogger {
   }
 
   /**
-   * Synchronous fallback for critical errors
+   * Removed synchronous fallback - all operations must be async
    */
   private flushSync(): void {
-    if (this.logBuffer.length === 0) return;
-
-    try {
-      const entries = this.logBuffer.splice(0, this.logBuffer.length);
-      const logLines = entries.map(entry => 
-        `${new Date(entry.timestamp).toISOString()} [${entry.level.toUpperCase()}] ${entry.message}${entry.metadata ? ' ' + JSON.stringify(entry.metadata) : ''}\n`
-      ).join('');
-
-      const filePath = join(this.logDir, this.logFile);
-      writeFileSync(filePath, logLines, { flag: 'a' });
-    } catch (error) {
-      console.error('Failed to write logs synchronously:', error);
-    }
+    // This method is removed to prevent blocking I/O operations
+    // All logging must use async operations only
+    console.warn('Synchronous logging operations are not allowed for scalability');
   }
 
   /**

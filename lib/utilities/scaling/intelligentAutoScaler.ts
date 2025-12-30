@@ -18,6 +18,7 @@ import { EventEmitter } from 'events';
 import { qerrors } from 'qerrors';
 import MonitoringDashboard from '../monitoring/monitoringDashboard.js';
 import ServiceOrchestrator from '../orchestration/serviceOrchestrator.js';
+import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 interface ScalingMetrics {
   cpu: {
@@ -104,10 +105,11 @@ interface PredictiveModel {
 }
 
 class IntelligentAutoScaler extends EventEmitter {
-  private policies: Map<string, ScalingPolicy> = new Map();
-  private currentMetrics: Map<string, ScalingMetrics> = new Map();
+  private policies: BoundedLRUCache<string, ScalingPolicy>;
+  private currentMetrics: BoundedLRUCache<string, ScalingMetrics>;
   private scalingHistory: ScalingDecision[] = [];
-  private predictiveModels: Map<string, PredictiveModel> = new Map();
+  private predictiveModels: BoundedLRUCache<string, PredictiveModel>;
+  private readonly MAX_HISTORY_SIZE = 1000; // Prevent unbounded growth
   private monitoring: MonitoringDashboard;
   private orchestrator?: ServiceOrchestrator;
   private isRunning = false;
@@ -119,6 +121,11 @@ class IntelligentAutoScaler extends EventEmitter {
     super();
     this.monitoring = monitoring;
     this.orchestrator = orchestrator;
+    
+    // Initialize bounded caches to prevent memory leaks
+    this.policies = new BoundedLRUCache<string, ScalingPolicy>(100, 24 * 60 * 60 * 1000); // 100 policies, 24h TTL
+    this.currentMetrics = new BoundedLRUCache<string, ScalingMetrics>(500, 60 * 60 * 1000); // 500 metrics, 1h TTL
+    this.predictiveModels = new BoundedLRUCache<string, PredictiveModel>(50, 7 * 24 * 60 * 60 * 1000); // 50 models, 7d TTL
     
     // Initialize default policies
     this.initializeDefaultPolicies();
@@ -186,8 +193,22 @@ class IntelligentAutoScaler extends EventEmitter {
     return Date.now() % 300000 < 1000;
   }
 
+/**
+   * Get current hour
+   */
+  private getCurrentHour(): number {
+    return new Date().getHours();
+  }
+
   /**
-   * Get current system load
+   * Get current minute
+   */
+  private getCurrentMinute(): number {
+    return new Date().getMinutes();
+  }
+
+  /**
+   * Get current load
    */
   private getCurrentLoad(): number {
     // Simple load calculation based on CPU and memory
@@ -320,7 +341,7 @@ class IntelligentAutoScaler extends EventEmitter {
         return this.makePredictiveDecision(policy, serviceMetrics, currentInstances);
       
       case 'reactive':
-        return this.makeReactiveDecision(policy, serviceMetrics, currentInstances);
+        return this.makeReactiveDecision(policy, metrics, currentInstances);
       
       case 'scheduled':
         return this.makeScheduledDecision(policy, currentInstances);
@@ -331,6 +352,26 @@ class IntelligentAutoScaler extends EventEmitter {
       default:
         return this.makeDefaultDecision(policy, serviceMetrics, currentInstances);
     }
+  }
+
+  /**
+   * Make default scaling decision
+   */
+  private makeDefaultDecision(
+    policy: ScalingPolicy,
+    metrics: ScalingMetrics,
+    currentInstances: number
+  ): ScalingDecision {
+    return {
+      action: 'hold',
+      reason: 'Default decision - no scaling needed',
+      confidence: 50,
+      currentInstances,
+      recommendedInstances: currentInstances,
+      estimatedCost: this.calculateEstimatedCost(policy, currentInstances),
+      timeToImpact: this.calculateTimeToImpact('scale_up', policy),
+      metrics
+    };
   }
 
   /**
@@ -491,6 +532,8 @@ class IntelligentAutoScaler extends EventEmitter {
       
       const [startHour, startMin] = schedule.startTime.split(':').map(Number);
       const [endHour, endMin] = schedule.endTime.split(':').map(Number);
+      const currentHour = this.getCurrentHour();
+      const currentMin = this.getCurrentMinute();
       const currentMinutes = currentHour * 60 + currentMin;
       const startMinutes = startHour * 60 + startMin;
       const endMinutes = endHour * 60 + endMin;
@@ -522,14 +565,14 @@ class IntelligentAutoScaler extends EventEmitter {
     };
   }
 
-  /**
-   * Make hybrid scaling decision
+/**
+   * Make hybrid decision
    */
-  private makeHybridDecision(
+  private async makeHybridDecision(
     policy: ScalingPolicy,
     metrics: ScalingMetrics,
     currentInstances: number
-  ): ScalingDecision {
+  ): Promise<ScalingDecision> {
     const predictive = await this.makePredictiveDecision(policy, metrics, currentInstances);
     const reactive = this.makeReactiveDecision(policy, metrics, currentInstances);
     
