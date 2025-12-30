@@ -15,6 +15,33 @@
 // Add a module-level variable to track concurrent calls with timestamps
 let inProgress = new Map<string, number>();
 
+// Periodic cleanup to prevent memory leaks (every 5 minutes)
+const CLEANUP_INTERVAL = 5 * 60 * 1000;
+let cleanupTimer: ReturnType<typeof setInterval> | null = null;
+
+function startCleanupTimer(): void {
+  if (cleanupTimer) return;
+  
+  cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    const staleIds: string[] = [];
+    
+    for (const [id, timestamp] of inProgress.entries()) {
+      if (now - timestamp > 30000) {
+        staleIds.push(id);
+      }
+    }
+    
+    staleIds.forEach(id => inProgress.delete(id));
+    
+    // If no more in-progress calls, stop the timer
+    if (inProgress.size === 0 && cleanupTimer) {
+      clearInterval(cleanupTimer);
+      cleanupTimer = null;
+    }
+  }, CLEANUP_INTERVAL);
+}
+
 interface PerformanceState {
   lastCpuUsage?: NodeJS.CpuUsage;
   responseTimes?: number[];
@@ -47,16 +74,14 @@ function collectPerformanceMetrics(state: PerformanceState = {}, callId?: string
   const now: number = Date.now(); // current timestamp
   const id = callId || `${now}-${Math.random().toString(36).substr(2, 9)}`;
   
+  // Start cleanup timer if needed
+  if (inProgress.size > 0 && !cleanupTimer) {
+    startCleanupTimer();
+  }
+  
   // Check if this call is already in progress to prevent race conditions
   if (inProgress.has(id)) {
     throw new Error(`Concurrent call detected with ID: ${id}`);
-  }
-  
-  // Clean up stale entries (older than 30 seconds) to prevent memory leaks
-  for (const [existingId, timestamp] of inProgress.entries()) {
-    if (now - timestamp > 30000) {
-      inProgress.delete(existingId);
-    }
   }
   
   try {

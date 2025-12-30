@@ -854,31 +854,74 @@ class IntelligentAutoScaler extends EventEmitter {
     return instances?.requests?.current || 0;
   }
 
-  // Helper methods for metric calculations
+  // Memoized cache for expensive calculations
+  private metricCache = new Map<string, { value: any; timestamp: number }>();
+  private readonly CACHE_TTL = 5000; // 5 seconds cache TTL
+
+  private getCacheKey(method: string, ...args: any[]): string {
+    return `${method}:${args.join(':')}`;
+  }
+
+  private getCachedResult<T>(key: string, calculator: () => T): T {
+    const now = Date.now();
+    const cached = this.metricCache.get(key);
+    
+    if (cached && (now - cached.timestamp) < this.CACHE_TTL) {
+      return cached.value;
+    }
+    
+    // Check size before insertion to prevent overflow
+    if (this.metricCache.size >= 1000) {
+      const oldestKey = this.metricCache.keys().next().value;
+      this.metricCache.delete(oldestKey);
+    }
+    
+    const result = calculator();
+    this.metricCache.set(key, { value: result, timestamp: now });
+    
+    return result;
+  }
+
+  // Helper methods for metric calculations with memoization
   private calculateAverage(metric: string, serviceName: string): number {
-    // Simplified calculation using historical data
-    return Math.random() * 100; // Placeholder
+    const key = this.getCacheKey('avg', metric, serviceName);
+    return this.getCachedResult(key, () => {
+      // Simplified calculation using historical data
+      return Math.random() * 100; // Placeholder
+    });
   }
 
   private calculateTrend(metric: string, serviceName: string): 'increasing' | 'decreasing' | 'stable' {
-    // Simplified trend calculation
-    const trends: ('increasing' | 'decreasing' | 'stable')[] = ['increasing', 'decreasing', 'stable'];
-    return trends[Math.floor(Math.random() * 3)];
+    const key = this.getCacheKey('trend', metric, serviceName);
+    return this.getCachedResult(key, () => {
+      // Simplified trend calculation
+      const trends: ('increasing' | 'decreasing' | 'stable')[] = ['increasing', 'decreasing', 'stable'];
+      return trends[Math.floor(Math.random() * 3)];
+    });
   }
 
   private predictMetric(metric: string, serviceName: string): number {
-    // Simplified prediction using historical patterns
-    return Math.random() * 100; // Placeholder
+    const key = this.getCacheKey('pred', metric, serviceName);
+    return this.getCachedResult(key, () => {
+      // Simplified prediction using historical patterns
+      return Math.random() * 100; // Placeholder
+    });
   }
 
   private calculatePeak(metric: string, serviceName: string): number {
-    // Simplified peak calculation
-    return Math.random() * 1000; // Placeholder
+    const key = this.getCacheKey('peak', metric, serviceName);
+    return this.getCachedResult(key, () => {
+      // Simplified peak calculation
+      return Math.random() * 1000; // Placeholder
+    });
   }
 
   private calculatePercentile(metric: string, serviceName: string, percentile: number): number {
-    // Simplified percentile calculation
-    return Math.random() * 2000; // Placeholder
+    const key = this.getCacheKey('pct', metric, serviceName, percentile);
+    return this.getCachedResult(key, () => {
+      // Simplified percentile calculation
+      return Math.random() * 2000; // Placeholder
+    });
   }
 
   private getDefaultMetrics(): ScalingMetrics {

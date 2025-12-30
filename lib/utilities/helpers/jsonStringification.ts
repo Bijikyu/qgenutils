@@ -98,27 +98,26 @@ function safeJsonStringify(
   const { space = null, replacer = null, replacerArray = null } = replacerOptions;
   
   try {
-    // Determine which replacer to use
+    // Determine which replacer to use and stringify once
+    let result: string;
     if (replacerArray) {
       // Use array replacer for whitelisting properties
-      if (space !== null) {
-        return JSON.stringify(value, replacerArray, space);
-      }
-      return JSON.stringify(value, replacerArray);
+      result = space !== null 
+        ? JSON.stringify(value, replacerArray, space)
+        : JSON.stringify(value, replacerArray);
+    } else if (replacer !== null) {
+      // Use function replacer if provided
+      result = space !== null 
+        ? JSON.stringify(value, replacer, space)
+        : JSON.stringify(value, replacer);
+    } else {
+      // Use default stringification
+      result = space !== null 
+        ? JSON.stringify(value, null, space)
+        : JSON.stringify(value);
     }
     
-    // Use function replacer if provided
-    if (replacer !== null) {
-      if (space !== null) {
-        return JSON.stringify(value, replacer, space);
-      }
-      return JSON.stringify(value, replacer);
-    }
-    
-    // Use default stringification
-    return JSON.stringify(value);
-    
-    return JSON.stringify(value);
+    return result;
   } catch (error) {
     // Log error without exposing sensitive information
     console.error('JSON stringification failed:', error instanceof Error ? error.message : 'Unknown error');
@@ -126,6 +125,35 @@ function safeJsonStringify(
     // Return safe default value
     return defaultValue;
   }
+}
+
+/**
+ * Detects circular references in objects to prevent infinite loops during JSON stringification
+ */
+function hasCircularReferences(value: any, seen = new WeakSet()): boolean {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+  
+  if (seen.has(value)) {
+    return true;
+  }
+  
+  seen.add(value);
+  
+  if (Array.isArray(value)) {
+    return value.some(item => hasCircularReferences(item, seen));
+  }
+  
+  for (const key in value) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      if (hasCircularReferences(value[key], seen)) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
 }
 
 /**
@@ -187,10 +215,22 @@ function safeJsonStringifyWithSize(
   }
   
   try {
+    // Check for circular references first
+    if (hasCircularReferences(value)) {
+      console.warn('Circular reference detected during JSON stringification, returning default value');
+      return defaultValue;
+    }
+    
     const jsonString = JSON.stringify(value);
     
-    // Calculate byte length accurately for UTF-8 strings
-    const byteLength = Buffer.byteLength(jsonString, 'utf8');
+    // Calculate byte length safely
+    let byteLength: number;
+    try {
+      byteLength = Buffer.byteLength(jsonString, 'utf8');
+    } catch (bufferError) {
+      console.error('Buffer byte length calculation failed:', bufferError instanceof Error ? bufferError.message : 'Unknown error');
+      return defaultValue;
+    }
     
     // Check against size limit
     if (byteLength <= maxSize) {

@@ -36,6 +36,9 @@ export interface TrieNode {
   parameter: string | null;
   wildcard: boolean;
   methods: Map<string, RouteHandler>;
+  // Optimized lookup references
+  parameterChild?: TrieNode;
+  wildcardChild?: TrieNode;
 }
 
 export class RouteTrie {
@@ -48,7 +51,9 @@ export class RouteTrie {
       handler: null,
       parameter: null,
       wildcard: false,
-      methods: new Map()
+      methods: new Map(),
+      parameterChild: undefined,
+      wildcardChild: undefined
     };
   }
 
@@ -69,9 +74,18 @@ export class RouteTrie {
           handler: null,
           parameter: segment.startsWith(':') ? segment.slice(1) : null,
           wildcard: segment === '*',
-          methods: new Map()
+          methods: new Map(),
+          parameterChild: undefined,
+          wildcardChild: undefined
         };
         current.children.set(segment, child);
+        
+        // Update optimized lookup references
+        if (child.parameter) {
+          current.parameterChild = child;
+        } else if (child.wildcard) {
+          current.wildcardChild = child;
+        }
       }
 
       current = child;
@@ -108,25 +122,15 @@ export class RouteTrie {
       const segment = segments[i];
       let child = current.children.get(segment);
 
-      // Try parameter matching
-      if (!child) {
-        for (const [key, node] of current.children.entries()) {
-          if (node.parameter) {
-            params[node.parameter] = segment;
-            child = node;
-            break;
-          }
-        }
+      // Try parameter matching (O(1) lookup)
+      if (!child && current.parameterChild && current.parameterChild.parameter) {
+        params[current.parameterChild.parameter] = segment;
+        child = current.parameterChild;
       }
 
-      // Try wildcard matching
-      if (!child) {
-        for (const [key, node] of current.children.entries()) {
-          if (node.wildcard) {
-            child = node;
-            break;
-          }
-        }
+      // Try wildcard matching (O(1) lookup)
+      if (!child && current.wildcardChild) {
+        child = current.wildcardChild;
       }
 
       if (!child) {
@@ -177,7 +181,9 @@ export class RouteTrie {
       handler: null,
       parameter: null,
       wildcard: false,
-      methods: new Map()
+      methods: new Map(),
+      parameterChild: undefined,
+      wildcardChild: undefined
     };
     this.routeCache.clear();
   }
