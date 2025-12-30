@@ -4,6 +4,8 @@ interface CachedModule {
   module: any;
   loadTime: number;
   lastAccessed: number;
+  prev?: string;
+  next?: string;
 }
 
 interface DynamicImportCacheOptions {
@@ -41,6 +43,9 @@ class DynamicImportCache {
   private hitCount = 0;
   private missCount = 0;
   private preCachedModules: Record<string, any> = {};
+  // LRU optimization
+  private lruHead: string | null = null;
+  private lruTail: string | null = null;
 
   constructor(options: DynamicImportCacheOptions = {}) {
     const {
@@ -115,6 +120,8 @@ class DynamicImportCache {
     if (cached && (now - cached.loadTime) < this.cacheTimeoutMs) {
       cached.lastAccessed = now;
       this.hitCount++;
+      // Move to head of LRU list (O(1) operation)
+      this.moveToHead(cacheKey);
       return cached.module;
     }
 
@@ -156,18 +163,35 @@ class DynamicImportCache {
       }
 
       this.cache.set(cacheKey, cachedModule);
+      // Add to head of LRU list
+      this.addToHead(cacheKey);
       return module;
     })();
 
     // Store loading promise and handle cleanup
-    this.moduleLoading.set(cacheKey, loadingPromise);
+    // Check if someone else already set the promise (race condition)
+    const existingPromise = this.moduleLoading.get(cacheKey);
+    if (existingPromise && existingPromise !== loadingPromise) {
+      // Another request started loading first, wait for theirs
+      try {
+        return await existingPromise;
+      } catch {
+        // If theirs failed, proceed with ours
+      }
+    }
+    
+    if (!existingPromise) {
+      this.moduleLoading.set(cacheKey, loadingPromise);
+    }
     
     try {
       const result = await loadingPromise;
       return result;
     } finally {
-      // Always clean up loading promise
-      this.moduleLoading.delete(cacheKey);
+      // Only clean up if this is the promise we stored
+      if (this.moduleLoading.get(cacheKey) === loadingPromise) {
+        this.moduleLoading.delete(cacheKey);
+      }
     }
   }
 
@@ -211,20 +235,27 @@ class DynamicImportCache {
   }
 
   private evictOldestModule(): void {
-    let oldestKey: string | null = null;
-    let oldestAccessed = Date.now();
-
-    const entries = Array.from(this.cache.entries());
-    for (let i = 0; i < entries.length; i++) {
-      const [key, cached] = entries[i];
-      if (cached.lastAccessed < oldestAccessed) {
-        oldestAccessed = cached.lastAccessed;
-        oldestKey = key;
+    // O(1) LRU eviction - remove from tail
+    if (this.lruTail) {
+      const tailKey = this.lruTail;
+      const tailModule = this.cache.get(tailKey);
+      
+      if (tailModule) {
+        // Update linked list
+        if (tailModule.prev) {
+          const prevModule = this.cache.get(tailModule.prev);
+          if (prevModule) {
+            prevModule.next = undefined;
+          }
+          this.lruTail = tailModule.prev;
+        } else {
+          // This was the only item
+          this.lruHead = null;
+          this.lruTail = null;
+        }
+        
+        this.cache.delete(tailKey);
       }
-    }
-
-    if (oldestKey) {
-      this.cache.delete(oldestKey);
     }
   }
 
@@ -233,17 +264,138 @@ class DynamicImportCache {
    */
   cleanup(): void {
     const now = Date.now();
+    let current = this.lruHead;
     const expiredKeys: string[] = [];
 
-    const entries = Array.from(this.cache.entries());
-    for (let i = 0; i < entries.length; i++) {
-      const [key, cached] = entries[i];
-      if ((now - cached.loadTime) > this.cacheTimeoutMs) {
-        expiredKeys.push(key);
+    // O(n) traversal but only through linked list, not creating arrays
+    while (current) {
+      const cached = this.cache.get(current);
+      if (cached && (now - cached.loadTime) > this.cacheTimeoutMs) {
+        expiredKeys.push(current);
+      }
+      current = cached?.next || null;
+    }
+
+    // Remove expired entries and update linked list
+    expiredKeys.forEach(key => {
+      const cached = this.cache.get(key);
+      if (cached) {
+        // Update linked list pointers
+        if (cached.prev) {
+          const prevModule = this.cache.get(cached.prev);
+          if (prevModule) {
+            prevModule.next = cached.next;
+          }
+        } else {
+          // This was the head
+          this.lruHead = cached.next || null;
+        }
+        
+        if (cached.next) {
+          const nextModule = this.cache.get(cached.next);
+          if (nextModule) {
+            nextModule.prev = cached.prev;
+          }
+        } else {
+          // This was the tail
+          this.lruTail = cached.prev || null;
+        }
+        
+        this.cache.delete(key);
+      }
+    });
+  }
+
+// LRU management methods
+  private moveToHead(key: string): void {
+    const cached = this.cache.get(key);
+    if (!cached) return;
+
+    // If already at head, no action needed
+    if (this.lruHead === key) return;
+
+    // Remove from current position
+    if (cached.prev) {
+      const prevModule = this.cache.get(cached.prev);
+      if (prevModule) {
+        prevModule.next = cached.next || undefined;
       }
     }
 
-    expiredKeys.forEach(key => this.cache.delete(key));
+    if (cached.next) {
+      const nextModule = this.cache.get(cached.next);
+      if (nextModule) {
+        nextModule.prev = cached.prev || undefined;
+      }
+    } else {
+      // This was the tail
+      this.lruTail = cached.prev || null;
+    }
+
+    // Add to head
+    cached.prev = undefined;
+    cached.next = this.lruHead || undefined;
+    
+    if (this.lruHead) {
+      const headModule = this.cache.get(this.lruHead);
+      if (headModule) {
+        headModule.prev = key;
+      }
+    }
+    
+    this.lruHead = key;
+    
+    if (!this.lruTail) {
+      this.lruTail = key;
+}
+
+    if (cached.next) {
+      const nextModule = this.cache.get(cached.next);
+      if (nextModule) {
+        nextModule.prev = cached.prev;
+      }
+    } else {
+      // This was the tail
+      this.lruTail = cached.prev || null;
+    }
+
+    // Add to head
+    cached.prev = undefined;
+    cached.next = this.lruHead || undefined;
+    
+    if (this.lruHead) {
+      const headModule = this.cache.get(this.lruHead);
+      if (headModule) {
+        headModule.prev = key;
+      }
+    }
+    
+    this.lruHead = key;
+    
+    if (!this.lruTail) {
+      this.lruTail = key;
+    }
+  }
+
+  private addToHead(key: string): void {
+    const cached = this.cache.get(key);
+    if (!cached) return;
+
+    cached.prev = undefined;
+    cached.next = this.lruHead || undefined;
+    
+    if (this.lruHead) {
+      const headModule = this.cache.get(this.lruHead);
+      if (headModule) {
+        headModule.prev = key;
+      }
+    }
+    
+    this.lruHead = key;
+    
+    if (!this.lruTail) {
+      this.lruTail = key;
+    }
   }
 
   private startCleanup(intervalMs: number): void {

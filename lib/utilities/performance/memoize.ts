@@ -36,12 +36,36 @@
  */
 
 /**
+ * Optimized key generator for common primitive types
+ */
+const optimizedKeyGenerator = (...args: any[]): string => {
+  if (args.length === 0) return '';
+  if (args.length === 1) {
+    const arg = args[0];
+    if (arg === null || arg === undefined) return 'null';
+    if (typeof arg === 'string') return `s:${arg}`;
+    if (typeof arg === 'number') return `n:${arg}`;
+    if (typeof arg === 'boolean') return `b:${arg}`;
+    // Fallback to JSON for complex objects
+    return JSON.stringify(arg);
+  }
+  // For multiple args, use optimized approach then fallback
+  return args.map(arg => {
+    if (arg === null || arg === undefined) return 'null';
+    if (typeof arg === 'string') return `s:${arg}`;
+    if (typeof arg === 'number') return `n:${arg}`;
+    if (typeof arg === 'boolean') return `b:${arg}`;
+    return JSON.stringify(arg);
+  }).join('|');
+};
+
+/**
  * Configuration options for memoization behavior.
  */
 interface MemoizeOptions {
   /** Maximum number of cached entries (default: 1000 to prevent memory leaks) */
   maxSize?: number;
-  /** Custom key generator function (default: JSON.stringify) */
+  /** Custom key generator function (default: optimized key generator) */
   keyGenerator?: (...args: any[]) => string;
   /** Cache statistics tracking */
   enableStats?: boolean;
@@ -130,7 +154,7 @@ const memoize = <T extends (...args: any[]) => any>(
   // OPTIONS CONFIGURATION: Extract memoization settings
   const {
     maxSize = 1000,                    // Default maximum cache entries to prevent memory leaks
-    keyGenerator = JSON.stringify,     // Default key generation
+    keyGenerator = optimizedKeyGenerator,     // Optimized key generation
     enableStats = false                // Performance tracking
   } = options;
 
@@ -166,16 +190,17 @@ const memoize = <T extends (...args: any[]) => any>(
       cache.delete(key);
       cache.set(key, value);
       
-      // STATISTICS UPDATE: Record cache hit
+// STATISTICS UPDATE: Record cache hit
       if (stats) {
         stats.hits++;
+        stats.size = cache.size;
         stats.hitRatio = stats.hits / stats.lookups;
       }
       
       return value;
     }
     
-    // CACHE MISS: Compute and cache the result
+    // CACHE MISS: Compute and cache result
     const result = fn.apply(this, args);
     
     // CACHE MANAGEMENT: Enforce size limits if configured
@@ -193,7 +218,7 @@ const memoize = <T extends (...args: any[]) => any>(
       stats.misses++;
       stats.size = cache.size;
       stats.hitRatio = stats.hits / stats.lookups;
-    }
+}
     
     return result;
   };
