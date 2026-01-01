@@ -244,8 +244,8 @@ function generateSecureRandom(length: number = 32, charset: string = 'ABCDEFGHIJ
   const randomValues = new Uint8Array(length);
   
   // Use crypto.getRandomValues for secure random generation
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(randomValues);
+  if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
+    globalThis.crypto.getRandomValues(randomValues);
   } else {
     // Fallback for environments without crypto API
     for (let i = 0; i < length; i++) {
@@ -253,9 +253,11 @@ function generateSecureRandom(length: number = 32, charset: string = 'ABCDEFGHIJ
     }
   }
   
+  const resultArray: string[] = [];
   for (let i = 0; i < length; i++) {
-    result += charset.charAt(randomValues[i] % charset.length);
+    resultArray.push(charset.charAt(randomValues[i] % charset.length));
   }
+  result = resultArray.join('');
   
   return result;
 }
