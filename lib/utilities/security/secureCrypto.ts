@@ -381,23 +381,29 @@ function generateSecureRandom(length: number = 32): string {
     const crypto = require('crypto');
     const randomBytes = crypto.randomBytes(length);
     
+    const resultArray: string[] = [];
     for (let i = 0; i < length; i++) {
-      result += charset[randomBytes[i] % charset.length];
+      resultArray.push(charset[randomBytes[i] % charset.length]);
     }
+    result = resultArray.join('');
   } catch (error) {
     // Fallback to browser crypto
     const buffer = new Uint8Array(length);
     if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
       globalThis.crypto.getRandomValues(buffer);
       
+      const resultArray2: string[] = [];
       for (let i = 0; i < length; i++) {
-        result += charset[buffer[i] % charset.length];
+        resultArray2.push(charset[buffer[i] % charset.length]);
       }
+      result = resultArray2.join('');
     } else {
       // Last resort - less secure Math.random()
+      const resultArray3: string[] = [];
       for (let i = 0; i < length; i++) {
-        result += charset[Math.floor(Math.random() * charset.length)];
+        resultArray3.push(charset[Math.floor(Math.random() * charset.length)]);
       }
+      result = resultArray3.join('');
     }
   }
   

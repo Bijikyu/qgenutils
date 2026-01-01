@@ -121,6 +121,7 @@ function createUnifiedValidator(coreValidator: any, options: any = {}) {
       results[fieldName] = result.isValid ? result.value : value;
       
       if (!result.isValid) {
+        // Pre-compute error messages for better performance
         errors[fieldName] = result.errors.map(err => 
           errorMessages[err] || `Invalid ${fieldName}`
         );
