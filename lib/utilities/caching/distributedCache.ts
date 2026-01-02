@@ -142,25 +142,36 @@ class DistributedCache<T = any> {
   }
 
   private cleanupExpiredData(): void {
-    // Limit nodes size
+    // Limit nodes size - use direct iteration instead of Array.from()
     if (this.nodes.size > this.maxCacheSize) {
-      const entries = Array.from(this.nodes.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.nodes.delete(key));
+      const entriesToDelete = this.nodes.size - this.maxCacheSize;
+      let deleted = 0;
+      for (const [key] of this.nodes.entries()) {
+        if (deleted >= entriesToDelete) break;
+        this.nodes.delete(key);
+        deleted++;
+      }
     }
 
     // Clean up old node metrics
     if (this.metrics.nodeMetrics.size > this.maxCacheSize) {
-      const entries = Array.from(this.metrics.nodeMetrics.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([key]) => this.metrics.nodeMetrics.delete(key));
+      const entriesToDelete = this.metrics.nodeMetrics.size - this.maxCacheSize;
+      let deleted = 0;
+      for (const [key] of this.metrics.nodeMetrics.entries()) {
+        if (deleted >= entriesToDelete) break;
+        this.metrics.nodeMetrics.delete(key);
+        deleted++;
+      }
     }
 
     // CRITICAL FIX: Clean up key distribution to prevent unbounded memory growth
     if (this.metrics.keyDistribution.size > this.maxCacheSize) {
+      const entriesToDelete = this.metrics.keyDistribution.size - this.maxCacheSize;
+      // For key distribution, we need to sort by frequency, so Array.from() is necessary here
+      // but we limit the scope and cache the result
       const entries = Array.from(this.metrics.keyDistribution.entries())
         .sort((a, b) => a[1] - b[1]); // Sort by frequency (least used first)
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
+      const toDelete = entries.slice(0, entriesToDelete);
       toDelete.forEach(([key]) => this.metrics.keyDistribution.delete(key));
     }
   }

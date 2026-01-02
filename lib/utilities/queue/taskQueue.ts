@@ -81,6 +81,16 @@ class TaskQueue extends EventEmitter {
   private maxCacheSize: number = 10000; // Prevent memory leaks
   private cleanupInterval: NodeJS.Timeout | null = null;
   private timers: Set<NodeJS.Timeout> = new Set();
+  
+  // Performance optimization: Indexed lookups for O(1) filtering
+  private tasksByStatus: Map<Task['status'], Set<string>> = new Map([
+    ['pending', new Set()],
+    ['processing', new Set()],
+    ['completed', new Set()],
+    ['failed', new Set()],
+    ['cancelled', new Set()]
+  ]);
+  private tasksByType: Map<string, Set<string>> = new Map();
 
   constructor(config: TaskQueueConfig) {
     super();
@@ -261,20 +271,37 @@ class TaskQueue extends EventEmitter {
 
     // Add to storage
     this.tasks.set(taskId, task);
+    
+    // Update indexed lookups for O(1) filtering
+    this.tasksByStatus.get('pending')!.add(taskId);
+    if (!this.tasksByType.has(type)) {
+      this.tasksByType.set(type, new Set());
+    }
+    this.tasksByType.get(type)!.add(taskId);
+    
     this.metrics.totalTasks++;
     this.metrics.pendingTasks++;
 
     // Emit event
     this.emit('taskAdded', task);
 
-    return taskId;
+return taskId;
   }
 
   /**
-   * Get task status
+   * Update task status and maintain indexed lookups
    */
-  getTask(taskId: string): Task | undefined {
-    return this.tasks.get(taskId);
+  private updateTaskStatus(task: Task, newStatus: Task['status']): void {
+    const oldStatus = task.status;
+    
+    // Remove from old status index
+    this.tasksByStatus.get(oldStatus)?.delete(task.id);
+    
+    // Add to new status index
+    this.tasksByStatus.get(newStatus)?.add(task.id);
+    
+    // Update task status
+    task.status = newStatus;
   }
 
   /**
@@ -287,7 +314,7 @@ class TaskQueue extends EventEmitter {
       return false;
     }
 
-    task.status = 'cancelled';
+    this.updateTaskStatus(task, 'cancelled');
     this.metrics.pendingTasks--;
     this.metrics.failedTasks++;
 
@@ -372,17 +399,27 @@ class TaskQueue extends EventEmitter {
   }
 
   /**
-   * Get tasks by status
+   * Get tasks by status - optimized with O(1) indexed lookup
    */
   getTasksByStatus(status: Task['status']): Task[] {
-    return Array.from(this.tasks.values()).filter(task => task.status === status);
+    const taskIds = this.tasksByStatus.get(status);
+    if (!taskIds || taskIds.size === 0) {
+      return [];
+    }
+    
+    return Array.from(taskIds).map(id => this.tasks.get(id)!).filter(Boolean);
   }
 
   /**
-   * Get tasks by type
+   * Get tasks by type - optimized with O(1) indexed lookup
    */
   getTasksByType(type: string): Task[] {
-    return Array.from(this.tasks.values()).filter(task => task.type === type);
+    const taskIds = this.tasksByType.get(type);
+    if (!taskIds || taskIds.size === 0) {
+      return [];
+    }
+    
+    return Array.from(taskIds).map(id => this.tasks.get(id)!).filter(Boolean);
   }
 
   /**
@@ -397,6 +434,15 @@ class TaskQueue extends EventEmitter {
 
     this.tasks.clear();
     this.processing.clear();
+    
+    // Clear indexed lookups
+    for (const statusSet of this.tasksByStatus.values()) {
+      statusSet.clear();
+    }
+    for (const typeSet of this.tasksByType.values()) {
+      typeSet.clear();
+    }
+    
     this.metrics.pendingTasks = 0;
     this.metrics.processingTasks = 0;
   }
@@ -412,11 +458,13 @@ class TaskQueue extends EventEmitter {
     const availableSlots = this.config.maxConcurrency - this.processing.size;
     const maxTasks = Math.min(availableSlots, this.config.batchSize);
 
-    // Single-pass filtering and collection to avoid creating intermediate arrays
-    for (const task of Array.from(this.tasks.values())) {
-      if (task.status === 'pending' && 
-          task.scheduledAt <= now &&
-          !this.processing.has(task.id)) {
+    // Use indexed lookup for O(1) status filtering instead of Array.from()
+    const pendingTaskIds = this.tasksByStatus.get('pending')!;
+    for (const taskId of pendingTaskIds) {
+      const task = this.tasks.get(taskId);
+      if (!task) continue;
+      
+      if (task.scheduledAt <= now && !this.processing.has(taskId)) {
         readyTasks.push(task);
         
         // Early exit if we have enough tasks
@@ -448,7 +496,7 @@ class TaskQueue extends EventEmitter {
     const handler = this.handlers.get(task.type);
     if (!handler) {
       // No handler found, mark as failed
-      task.status = 'failed';
+      this.updateTaskStatus(task, 'failed');
       task.error = `No handler registered for task type: ${task.type}`;
       this.metrics.pendingTasks--;
       this.metrics.failedTasks++;
@@ -459,7 +507,7 @@ class TaskQueue extends EventEmitter {
 
     // Mark as processing
     this.processing.add(task.id);
-    task.status = 'processing';
+    this.updateTaskStatus(task, 'processing');
     task.lastAttemptAt = Date.now();
     task.attempts++;
 
@@ -475,7 +523,7 @@ class TaskQueue extends EventEmitter {
       const result = await this.executeWithTimeout(handler, task, task.timeout);
 
       // Task completed successfully
-      task.status = 'completed';
+      this.updateTaskStatus(task, 'completed');
       task.result = result;
       task.completedAt = Date.now();
 
@@ -492,13 +540,13 @@ class TaskQueue extends EventEmitter {
         // Schedule retry with exponential backoff
         const retryDelay = this.config.retryDelay * Math.pow(2, task.attempts - 1);
         task.scheduledAt = Date.now() + retryDelay;
-        task.status = 'pending';
+        this.updateTaskStatus(task, 'pending');
 
         this.emit('taskRetry', task);
 
       } else {
         // Max retries reached
-        task.status = 'failed';
+        this.updateTaskStatus(task, 'failed');
 
         if (this.config.deadLetterQueue) {
           this.deadLetterQueue.push(task);
@@ -584,28 +632,22 @@ class TaskQueue extends EventEmitter {
   }
 
   /**
-   * Update queue metrics
+   * Update queue metrics - optimized with O(1) indexed lookups
    */
   private updateMetrics(): void {
     const now = Date.now();
-    let pendingCount = 0;
-    let processingCount = 0;
     let recentCompletedCount = 0;
 
-    // Single-pass metrics calculation for better performance
-    for (const task of Array.from(this.tasks.values())) {
-      switch (task.status) {
-        case 'pending':
-          pendingCount++;
-          break;
-        case 'processing':
-          processingCount++;
-          break;
-        case 'completed':
-          if (task.completedAt && (now - task.completedAt) < 60000) {
-            recentCompletedCount++;
-          }
-          break;
+    // Use indexed lookups for O(1) count instead of O(n) iteration
+    const pendingCount = this.tasksByStatus.get('pending')?.size || 0;
+    const processingCount = this.tasksByStatus.get('processing')?.size || 0;
+    
+    // Only need to iterate completed tasks for recent completion check
+    const completedTaskIds = this.tasksByStatus.get('completed') || new Set();
+    for (const taskId of completedTaskIds) {
+      const task = this.tasks.get(taskId);
+      if (task?.completedAt && (now - task.completedAt) < 60000) {
+        recentCompletedCount++;
       }
     }
 
