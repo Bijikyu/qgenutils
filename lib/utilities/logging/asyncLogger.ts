@@ -11,7 +11,7 @@
  * - Performance-optimized for high-throughput systems
  */
 
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFile, mkdir, access } from 'fs/promises';
 import { join } from 'path';
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 
@@ -41,13 +41,19 @@ class AsyncLogger {
     this.logDir = logDir;
     this.logFile = logFile;
     
-    // Ensure log directory exists
-    if (!existsSync(logDir)) {
-      mkdirSync(logDir, { recursive: true });
-    }
-
     this.initializeLogWorker();
     this.startFlushTimer();
+  }
+
+  /**
+   * Ensure log directory exists asynchronously
+   */
+  private async ensureLogDirectory(): Promise<void> {
+    try {
+      await access(this.logDir);
+    } catch {
+      await mkdir(this.logDir, { recursive: true });
+    }
   }
 
   /**
@@ -62,8 +68,8 @@ class AsyncLogger {
 
     this.logWorker.on('error', (error) => {
       console.error('Log worker error:', error);
-      // Fallback to synchronous logging if worker fails
-      this.flushSync();
+      // Fallback to async logging if worker fails
+      this.flushAsync(this.logBuffer.splice(0));
     });
   }
 
@@ -139,20 +145,17 @@ class AsyncLogger {
    */
   private async flushAsync(entries: LogEntry[]): Promise<void> {
     try {
+      // Ensure directory exists before writing
+      await this.ensureLogDirectory();
+      
       const logLines = entries.map(entry => 
         `${new Date(entry.timestamp).toISOString()} [${entry.level.toUpperCase()}] ${entry.message}${entry.metadata ? ' ' + JSON.stringify(entry.metadata) : ''}\n`
       ).join('');
 
       const filePath = join(this.logDir, this.logFile);
       
-      // Use async file operations in production environments
-      if (process.env.NODE_ENV === 'production') {
-        const { writeFile } = await import('fs/promises');
-        await writeFile(filePath, logLines, { flag: 'a' });
-      } else {
-        // Remove sync fallback - always use async to prevent blocking
-        throw new Error('Async file writing required - sync operations not allowed in production');
-      }
+      // Always use async file operations to prevent blocking
+      await writeFile(filePath, logLines, { flag: 'a' });
     } catch (error) {
       console.error('Failed to write logs:', error);
     }
@@ -171,6 +174,9 @@ class AsyncLogger {
    * Force immediate flush of all buffered logs
    */
   async flushImmediate(): Promise<void> {
+    // Ensure directory exists before flushing
+    await this.ensureLogDirectory();
+    
     this.flush();
     
     // Wait for worker to process logs (non-blocking wait)
@@ -205,12 +211,18 @@ if (!isMainThread && workerData?.isLogWorker) {
       const { entries, logDir, logFile } = data;
       const filePath = join(logDir, logFile);
       
+      // Ensure directory exists in worker thread
+      try {
+        await access(logDir);
+      } catch {
+        await mkdir(logDir, { recursive: true });
+      }
+      
       const logLines = entries.map(entry => 
         `${new Date(entry.timestamp).toISOString()} [${entry.level.toUpperCase()}] ${entry.message}${entry.metadata ? ' ' + JSON.stringify(entry.metadata) : ''}\n`
       ).join('');
 
       // Use async file operations in worker
-      const { writeFile } = await import('fs/promises');
       await writeFile(filePath, logLines, { flag: 'a' });
       
       parentPort?.postMessage({ success: true });
