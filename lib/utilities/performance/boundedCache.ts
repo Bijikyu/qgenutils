@@ -180,7 +180,7 @@ export class BoundedLRUCache<K, V> {
     let oldestKey: string | null = null;
     let oldestTime = Date.now();
 
-    for (const [key, item] of this.cache.entries()) {
+    for (const [key, item] of Array.from(this.cache.entries())) {
       if (item.lastAccessed < oldestTime) {
         oldestTime = item.lastAccessed;
         oldestKey = key;
@@ -207,21 +207,19 @@ export class BoundedLRUCache<K, V> {
    */
   private cleanupExpired(): void {
     const now = Date.now();
-    const toDelete: string[] = [];
+    let deletedCount = 0;
 
-    for (const [key, item] of this.cache.entries()) {
+    // Single-pass deletion for better performance
+    for (const [key, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp > item.ttl) {
-        toDelete.push(key);
+        this.cache.delete(key);
+        this.stats.expirations++;
+        deletedCount++;
       }
     }
 
-    for (const key of toDelete) {
-      this.cache.delete(key);
-      this.stats.expirations++;
-    }
-
-    if (toDelete.length > 0) {
-      console.log(`Cache cleanup: removed ${toDelete.length} expired items`);
+    if (deletedCount > 0) {
+      console.log(`Cache cleanup: removed ${deletedCount} expired items`);
     }
   }
 
@@ -232,7 +230,7 @@ export class BoundedLRUCache<K, V> {
     const result: V[] = [];
     const now = Date.now();
     
-    for (const [key, item] of this.cache.entries()) {
+    for (const [key, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp <= item.ttl) {
         result.push(item.value);
       }
@@ -248,7 +246,7 @@ export class BoundedLRUCache<K, V> {
     const result: Array<[K, V]> = [];
     const now = Date.now();
     
-    for (const [cacheKey, item] of this.cache.entries()) {
+    for (const [cacheKey, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp <= item.ttl) {
         const key = this.deserializeKey(cacheKey);
         result.push([key, item.value]);
@@ -265,7 +263,7 @@ export class BoundedLRUCache<K, V> {
     const result: K[] = [];
     const now = Date.now();
     
-    for (const [cacheKey, item] of this.cache.entries()) {
+    for (const [cacheKey, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp <= item.ttl) {
         const key = this.deserializeKey(cacheKey);
         result.push(key);
