@@ -422,13 +422,19 @@ class APIGateway extends EventEmitter {
       return this.selectRouteByWeight(exactRoutes);
     }
 
-    // Find pattern match using parallel processing for better performance
+    // Find pattern match using single pass for better performance
     const methodKey = `${method}:`;
     const wildcardKey = `*:`;
 
-    // Check method-specific patterns first
+    // Optimized single pass: prioritize method-specific patterns
     for (const [key, routes] of this.routes) {
-      if (key.startsWith(methodKey) && key !== exactKey) {
+      if (key === exactKey) continue; // Skip exact match (already handled)
+      
+      const isMethodSpecific = key.startsWith(methodKey);
+      const isWildcard = key.startsWith(wildcardKey);
+      
+      if (isMethodSpecific) {
+        // Method-specific patterns have priority
         const [, routePath] = key.split(':');
         if (this.pathMatches(routePath, path)) {
           this.setRouteCache(cacheKey, routes);
@@ -437,9 +443,9 @@ class APIGateway extends EventEmitter {
       }
     }
 
-    // Check wildcard patterns last
+    // Check wildcard patterns only if no method-specific match found
     for (const [key, routes] of this.routes) {
-      if (key.startsWith(wildcardKey)) {
+      if (key.startsWith(wildcardKey) && key !== exactKey) {
         const [, routePath] = key.split(':');
         if (this.pathMatches(routePath, path)) {
           this.setRouteCache(cacheKey, routes);

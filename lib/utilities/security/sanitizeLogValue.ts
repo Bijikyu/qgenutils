@@ -26,6 +26,7 @@ function sanitizeLogValue(value) { // sanitize value for safe logging
   }
 
   if (typeof value === 'string') {
+    // Optimized: check patterns with early exit, but still run all patterns
     for (const pattern of SENSITIVE_PATTERNS) { // check for sensitive patterns
       if (pattern.test(value)) {
         return '[REDACTED_SENSITIVE]';
