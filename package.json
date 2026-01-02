@@ -69,6 +69,7 @@
   "author": "Q",
   "license": "ISC",
   "dependencies": {
+    "@types/lodash": "^4.17.21",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "convict": "^6.2.4",
@@ -79,6 +80,7 @@
     "filesize": "^11.0.13",
     "heap": "^0.2.7",
     "helmet": "^8.1.0",
+    "lodash": "^4.17.21",
     "nanoid": "^3.3.7",
     "qerrors": "^1.2.7",
     "safe-compare": "^1.1.4",
