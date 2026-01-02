@@ -180,7 +180,8 @@ export class BoundedLRUCache<K, V> {
     let oldestKey: string | null = null;
     let oldestTime = Date.now();
 
-    for (const [key, item] of Array.from(this.cache.entries())) {
+    // Use direct Map iteration instead of Array.from() for better performance
+    for (const [key, item] of this.cache.entries()) {
       if (item.lastAccessed < oldestTime) {
         oldestTime = item.lastAccessed;
         oldestKey = key;
@@ -210,7 +211,7 @@ export class BoundedLRUCache<K, V> {
     let deletedCount = 0;
 
     // Single-pass deletion for better performance
-    for (const [key, item] of Array.from(this.cache.entries())) {
+    for (const [key, item] of this.cache.entries()) {
       if (now - item.timestamp > item.ttl) {
         this.cache.delete(key);
         this.stats.expirations++;
@@ -230,7 +231,7 @@ export class BoundedLRUCache<K, V> {
     const result: V[] = [];
     const now = Date.now();
     
-    for (const [key, item] of Array.from(this.cache.entries())) {
+    for (const [key, item] of this.cache.entries()) {
       if (now - item.timestamp <= item.ttl) {
         result.push(item.value);
       }

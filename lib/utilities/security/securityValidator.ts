@@ -19,6 +19,20 @@ const INJECTION_PATTERNS = {
   xss: /<script|javascript:|on\w+\s*=/i
 };
 
+// Performance optimization: Pre-compiled email regex
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+// Performance optimization: Pre-compiled dangerous patterns for config audit
+const DANGEROUS_CONFIG_PATTERNS = [
+  /\$\{.*\}/, // Template injection
+  /<script[^>]*>.*<\/script>/gi, // XSS
+  /javascript:/gi, // JavaScript protocol
+  /data:text\/html/gi // Data protocol HTML
+];
+
+// Performance optimization: Set for dangerous keys lookup
+const DANGEROUS_KEYS_SET = new Set(['__proto__', 'constructor', 'prototype']);
+
 /**
  * Security validation result
  */
@@ -171,8 +185,7 @@ function validateType(data: any, type: string): { isValid: boolean; error?: stri
     case 'number':
       return { isValid: typeof data === 'number' && !isNaN(data) };
     case 'email':
-      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-      return { isValid: typeof data === 'string' && emailRegex.test(data) };
+      return { isValid: typeof data === 'string' && EMAIL_REGEX.test(data) };
     case 'url':
       try {
         new URL(String(data));
@@ -196,10 +209,9 @@ function validateType(data: any, type: string): { isValid: boolean; error?: stri
  */
 function hasPrototypePollution(obj: any): boolean {
   if (obj && typeof obj === 'object') {
-    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
-    
     for (const key of Object.keys(obj)) {
-      if (dangerousKeys.includes(key)) {
+      // Use Set for O(1) lookup instead of Array.includes() O(n)
+      if (DANGEROUS_KEYS_SET.has(key)) {
         return true;
       }
       
@@ -225,21 +237,16 @@ function auditConfiguration(config: Record<string, any>): SecurityValidationResu
     riskLevel: 'low'
   };
   
-  // Check for dangerous configuration values
-  const dangerousPatterns = [
-    /\$\{.*\}/, // Template injection
-    /<script[^>]*>.*<\/script>/gi, // XSS
-    /javascript:/gi, // JavaScript protocol
-    /data:text\/html/gi // Data protocol HTML
-  ];
-  
+  // Check for dangerous configuration values - optimized with pre-compiled patterns
   for (const [key, value] of Object.entries(config)) {
     if (typeof value === 'string') {
-      for (const pattern of dangerousPatterns) {
+      // Use pre-compiled patterns and early termination
+      for (const pattern of DANGEROUS_CONFIG_PATTERNS) {
         if (pattern.test(value)) {
           result.isValid = false;
           result.errors.push(`Dangerous pattern detected in configuration key: ${key}`);
           result.riskLevel = 'high';
+          break; // Early termination - no need to check other patterns
         }
       }
     }
