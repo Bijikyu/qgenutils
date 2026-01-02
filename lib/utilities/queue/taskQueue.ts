@@ -147,32 +147,47 @@ class TaskQueue extends EventEmitter {
   }
 
   private cleanupExpiredData(): void {
-    // Limit tasks size
-    if (this.tasks.size > this.maxCacheSize) {
-      const entries = Array.from(this.tasks.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([taskId]) => this.tasks.delete(taskId));
-    }
-
-    // Limit handlers size
-    if (this.handlers.size > this.maxCacheSize) {
-      const entries = Array.from(this.handlers.entries());
-      const toDelete = entries.slice(0, entries.length - this.maxCacheSize);
-      toDelete.forEach(([taskType]) => this.handlers.delete(taskType));
-    }
-
-    // Limit dead letter queue size
-    if (this.deadLetterQueue.length > this.maxCacheSize) {
-      this.deadLetterQueue = this.deadLetterQueue.slice(-this.maxCacheSize);
-    }
-
-    // Clean up old completed tasks (older than 2 hours)
     const now = Date.now();
     const maxAge = 2 * 60 * 60 * 1000; // 2 hours
-    for (const [taskId, task] of this.tasks.entries()) {
+    const toDelete: string[] = [];
+
+    // Single-pass cleanup for better performance
+    for (const [taskId, task] of Array.from(this.tasks.entries())) {
+      // Remove old completed tasks
       if (task.status === 'completed' && task.completedAt && (now - task.completedAt) > maxAge) {
+        toDelete.push(taskId);
+      }
+    }
+
+    // Batch delete tasks
+    for (const taskId of toDelete) {
+      this.tasks.delete(taskId);
+    }
+
+    // Efficient size limiting using iterator
+    if (this.tasks.size > this.maxCacheSize) {
+      const excessCount = this.tasks.size - this.maxCacheSize;
+      const iterator = this.tasks.keys();
+      for (let i = 0; i < excessCount; i++) {
+        const { value: taskId } = iterator.next();
         this.tasks.delete(taskId);
       }
+    }
+
+    // Size limit handlers efficiently
+    if (this.handlers.size > this.maxCacheSize) {
+      const excessCount = this.handlers.size - this.maxCacheSize;
+      const iterator = this.handlers.keys();
+      for (let i = 0; i < excessCount; i++) {
+        const { value: taskType } = iterator.next();
+        this.handlers.delete(taskType);
+      }
+    }
+
+    // Efficient dead letter queue trimming
+    if (this.deadLetterQueue.length > this.maxCacheSize) {
+      const removeCount = this.deadLetterQueue.length - this.maxCacheSize;
+      this.deadLetterQueue.splice(0, removeCount);
     }
   }
 
@@ -187,7 +202,7 @@ class TaskQueue extends EventEmitter {
     }
     
     // Clear all timers
-    for (const timer of this.timers) {
+    for (const timer of Array.from(this.timers)) {
       clearInterval(timer);
     }
     this.timers.clear();
@@ -392,26 +407,36 @@ class TaskQueue extends EventEmitter {
   private async processPendingTasks(): Promise<void> {
     if (!this.isRunning) return;
 
-    // Get ready tasks (scheduled time passed and not processing)
     const now = Date.now();
-    const readyTasks = Array.from(this.tasks.values()).filter(task => 
-      task.status === 'pending' && 
-      task.scheduledAt <= now &&
-      !this.processing.has(task.id)
-    );
-
-    // Sort by priority
-    readyTasks.sort((a, b) => {
-      const weightA = this.config.priorityWeights[a.priority];
-      const weightB = this.config.priorityWeights[b.priority];
-      return weightB - weightA;
-    });
-
-    // Process up to concurrency limit
+    const readyTasks: Task[] = [];
     const availableSlots = this.config.maxConcurrency - this.processing.size;
-    const tasksToProcess = readyTasks.slice(0, Math.min(availableSlots, this.config.batchSize));
+    const maxTasks = Math.min(availableSlots, this.config.batchSize);
 
-    for (const task of tasksToProcess) {
+    // Single-pass filtering and collection to avoid creating intermediate arrays
+    for (const task of Array.from(this.tasks.values())) {
+      if (task.status === 'pending' && 
+          task.scheduledAt <= now &&
+          !this.processing.has(task.id)) {
+        readyTasks.push(task);
+        
+        // Early exit if we have enough tasks
+        if (readyTasks.length >= maxTasks) {
+          break;
+        }
+      }
+    }
+
+    // Sort only the tasks we'll actually process
+    if (readyTasks.length > 1) {
+      readyTasks.sort((a, b) => {
+        const weightA = this.config.priorityWeights[a.priority];
+        const weightB = this.config.priorityWeights[b.priority];
+        return weightB - weightA;
+      });
+    }
+
+    // Process tasks sequentially to maintain concurrency control
+    for (const task of readyTasks) {
       await this.processTask(task);
     }
   }
@@ -563,17 +588,30 @@ class TaskQueue extends EventEmitter {
    */
   private updateMetrics(): void {
     const now = Date.now();
-    const tasks = Array.from(this.tasks.values());
+    let pendingCount = 0;
+    let processingCount = 0;
+    let recentCompletedCount = 0;
 
-    // Count tasks by status
-    this.metrics.pendingTasks = tasks.filter(t => t.status === 'pending').length;
-    this.metrics.processingTasks = tasks.filter(t => t.status === 'processing').length;
-    
-    // Calculate throughput (tasks per second over last minute)
-    const recentTasks = tasks.filter(t => 
-      t.completedAt && (now - t.completedAt) < 60000
-    );
-    this.metrics.throughput = recentTasks.length / 60;
+    // Single-pass metrics calculation for better performance
+    for (const task of Array.from(this.tasks.values())) {
+      switch (task.status) {
+        case 'pending':
+          pendingCount++;
+          break;
+        case 'processing':
+          processingCount++;
+          break;
+        case 'completed':
+          if (task.completedAt && (now - task.completedAt) < 60000) {
+            recentCompletedCount++;
+          }
+          break;
+      }
+    }
+
+    this.metrics.pendingTasks = pendingCount;
+    this.metrics.processingTasks = processingCount;
+    this.metrics.throughput = recentCompletedCount / 60;
   }
 
   /**
@@ -648,7 +686,7 @@ class TaskQueueManager {
    * Start all queues
    */
   startAll(): void {
-    for (const queue of this.queues.values()) {
+    for (const queue of Array.from(this.queues.values())) {
       queue.start();
     }
   }
@@ -657,7 +695,7 @@ class TaskQueueManager {
    * Stop all queues
    */
   stopAll(): void {
-    for (const queue of this.queues.values()) {
+    for (const queue of Array.from(this.queues.values())) {
       queue.stop();
     }
   }
