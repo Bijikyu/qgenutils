@@ -6,9 +6,9 @@
  * Comprehensive audit for production deployment readiness
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFile, access } from 'fs/promises';
 import { join } from 'path';
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 
 class ProductionAudit {
   constructor() {
@@ -39,22 +39,26 @@ class ProductionAudit {
     
     try {
       // Check if build output exists
-      if (existsSync('dist/index.js')) {
+      try {
+        await access('dist/index.js');
         this.passed.push('✅ Build output exists');
-      } else {
+      } catch {
         this.issues.push('❌ Build output missing - run npm run build');
       }
       
       // Check TypeScript compilation
       try {
-        execSync('npm run build', { stdio: 'pipe' });
+        await this.execAsync('npm run build');
         this.passed.push('✅ TypeScript compilation successful');
       } catch (error) {
         this.issues.push('❌ TypeScript compilation failed');
       }
       
-      // Check package.json scripts
-      const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+      // Batch read configuration files
+      const configFiles = ['package.json'];
+      const fileContents = await this.batchReadFiles(configFiles);
+      const packageJson = JSON.parse(fileContents['package.json']);
+      
       const requiredScripts = ['build', 'test', 'start'];
       
       requiredScripts.forEach(script => {
