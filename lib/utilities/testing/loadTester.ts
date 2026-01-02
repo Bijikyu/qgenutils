@@ -459,34 +459,33 @@ class LoadTester {
   generateReport(results: LoadTestResult[]): string {
     let report = '# Load Test Report\n\n';
     
-    // Use array join for better performance than string concatenation
-    const reportSections: string[] = [];
-    for (const result of results) {
-      const section: string[] = [];
+    // Optimized report generation with pre-allocated array and template literals
+    const reportSections: string[] = new Array(results.length);
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
       
-      section.push(`## ${result.testName}\n\n`);
-      section.push(`**Duration:** ${(result.duration / 1000).toFixed(1)}s\n`);
-      section.push(`**Total Requests:** ${result.totalRequests}\n`);
-      section.push(`**Success Rate:** ${(100 - result.errorRate).toFixed(1)}%\n`);
-      section.push(`**Average Response Time:** ${result.averageResponseTime.toFixed(2)}ms\n`);
-      section.push(`**95th Percentile:** ${result.p95ResponseTime.toFixed(2)}ms\n`);
-      section.push(`**Requests/Second:** ${result.requestsPerSecond.toFixed(0)}\n`);
-      section.push(`**Memory Usage:** ${((result.memoryUsage.delta / 1024 / 1024)).toFixed(1)}MB\n\n`);
+      // Build section efficiently using template literals
+      let section = `## ${result.testName}\n\n`;
+      section += `**Duration:** ${(result.duration / 1000).toFixed(1)}s\n`;
+      section += `**Total Requests:** ${result.totalRequests}\n`;
+      section += `**Success Rate:** ${(100 - result.errorRate).toFixed(1)}%\n`;
+      section += `**Average Response Time:** ${result.averageResponseTime.toFixed(2)}ms\n`;
+      section += `**95th Percentile:** ${result.p95ResponseTime.toFixed(2)}ms\n`;
+      section += `**Requests/Second:** ${result.requestsPerSecond.toFixed(0)}\n`;
+      section += `**Memory Usage:** ${((result.memoryUsage.delta / 1024 / 1024)).toFixed(1)}MB\n\n`;
 
       if (result.bottlenecks.length > 0) {
-        section.push(`### Bottlenecks\n`);
-        section.push(...result.bottlenecks.map(bottleneck => `- ${bottleneck}\n`));
-        section.push('\n');
+        section += `### Bottlenecks\n`;
+        section += result.bottlenecks.map(bottleneck => `- ${bottleneck}`).join('\n') + '\n\n';
       }
 
       if (result.recommendations.length > 0) {
-        section.push(`### Recommendations\n`);
-        section.push(...result.recommendations.map(rec => `- ${rec}\n`));
-        section.push('\n');
+        section += `### Recommendations\n`;
+        section += result.recommendations.map(rec => `- ${rec}`).join('\n') + '\n\n';
       }
 
-      section.push('---\n\n');
-      reportSections.push(section.join(''));
+      section += '---\n\n';
+      reportSections[i] = section;
     }
     
     report += reportSections.join('');

@@ -189,20 +189,36 @@ function fixRequireImports(content, filePath) {
  * - Manual testing recommended after fixes
  * - Backup copies for critical files
  */
-filesToFix.forEach(filePath => {
+async function fixFile(filePath) {
   if (fs.existsSync(filePath)) {
     console.log(`Fixing ${filePath}...`);
-    let content = fs.readFileSync(filePath, 'utf8');
-    
-    // Apply fixes in dependency order
-    content = fixRequireImports(content, filePath);
-    content = fixQerrorsCalls(content);
-    
-    fs.writeFileSync(filePath, content, 'utf8');
-    console.log(`Fixed ${filePath}`);
+    try {
+      let content = await fs.promises.readFile(filePath, 'utf8');
+      
+      // Apply fixes in dependency order
+      content = fixRequireImports(content, filePath);
+      content = fixQerrorsCalls(content);
+      
+      await fs.promises.writeFile(filePath, content, 'utf8');
+      console.log(`Fixed ${filePath}`);
+    } catch (error) {
+      console.error(`Error fixing ${filePath}:`, error);
+      throw error; // Re-throw to handle in Promise.all
+    }
   } else {
     console.log(`File not found: ${filePath}`);
   }
-});
+}
+
+// Process files in parallel for better performance
+(async () => {
+  try {
+    await Promise.all(filesToFix.map(fixFile));
+    console.log('Critical fixes applied successfully!');
+  } catch (error) {
+    console.error('Error applying fixes:', error);
+    process.exit(1);
+  }
+})();
 
 console.log('Critical fixes applied successfully!');

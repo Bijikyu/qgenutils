@@ -44,7 +44,7 @@ try {
       for (const p of candidates) {
         try {
           if (fs.existsSync(p)) {
-            const c = fs.readFileSync(p, 'utf8');
+            const c = await fs.promises.readFile(p, 'utf8');
             if (isValid(c)) {
               content = c;
               break;
@@ -63,7 +63,7 @@ try {
         }
       } else {
         try {
-          fs.writeFileSync(target, content, 'utf8');
+          await fs.promises.writeFile(target, content, 'utf8');
         } catch (error) {
           if (qerrors) {
             qerrors(error instanceof Error ? error : new Error(String(error)), 'ensureRunner', `Template write failed for: ${target}`);

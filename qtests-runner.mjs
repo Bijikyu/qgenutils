@@ -184,7 +184,7 @@ class TestRunner {
         if (runInBand) intendedArgs.push('--runInBand');
         else if (Number.isFinite(maxW) && maxW > 0) intendedArgs.push(`--maxWorkers=${maxW}`);
         intendedArgs.push('--cache', '--no-coverage');
-        fs.writeFileSync(path.join(process.cwd(), 'runner-jest-args.json'), JSON.stringify(intendedArgs), 'utf8');
+        await fs.promises.writeFile(path.join(process.cwd(), 'runner-jest-args.json'), JSON.stringify(intendedArgs), 'utf8');
       } catch { /* best effort only */ }
 
       const { results } = await this._runCLI(argv, [process.cwd()]);
@@ -203,7 +203,7 @@ class TestRunner {
       console.error(msg);
       this.failedTests++;
     }
-    if (this.failedTests > 0) this.generateDebugFile();
+    if (this.failedTests > 0) await this.generateDebugFile();
     this.printSummary();
     process.exit(this.failedTests > 0 ? 1 : 0);
   }
@@ -227,7 +227,7 @@ class TestRunner {
   }
 
   // Generate debug file for failed tests
-  generateDebugFile() {
+  async generateDebugFile() {
     const failedResults = this.testResults.filter(r => !r.success);
     if (failedResults.length === 0) return;
     if (this.isEnvTruthy('QTESTS_SUPPRESS_DEBUG') || this.isEnvTruthy('QTESTS_NO_DEBUG_FILE')) return;
@@ -247,7 +247,7 @@ class TestRunner {
     debugContent += `- Total failed tests: ${failedResults.length}\n`;
     debugContent += `- Failed test files: ${failedResults.map(r => r.file).join(', ')}\n`;
     debugContent += `- Generated: ${new Date().toISOString()}\n`;
-    try { fs.writeFileSync(debugFilePath, debugContent); } catch {}
+    try { await fs.promises.writeFile(debugFilePath, debugContent); } catch {}
     if (!this.isEnvTruthy('QTESTS_SILENT')) {
       console.log(`\n${colors.yellow}📋 Debug file created: ${debugFilePath}${colors.reset}`);
     }
