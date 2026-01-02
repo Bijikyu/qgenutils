@@ -464,11 +464,30 @@ class HealthChecker {
   } {
     const results = Object.values(checkResults);
     
+    // Optimized single pass through results
+    let passed = 0;
+    let failed = 0;
+    let warned = 0;
+    
+    for (const result of results) {
+      switch (result.status) {
+        case 'pass':
+          passed++;
+          break;
+        case 'fail':
+          failed++;
+          break;
+        case 'warn':
+          warned++;
+          break;
+      }
+    }
+    
     const summary = {
       total: results.length,
-      passed: results.filter(r => r.status === 'pass').length,
-      failed: results.filter(r => r.status === 'fail').length,
-      warned: results.filter(r => r.status === 'warn').length,
+      passed,
+      failed,
+      warned,
       critical: results.length // All health checks are critical in this context
     };
 

@@ -431,10 +431,24 @@ function generateSecurityReport(auditData: {
     });
   }
   
-  // Calculate overall risk
-  const criticalIssues = report.issues.filter(i => i.severity === 'critical').length;
-  const highIssues = report.issues.filter(i => i.severity === 'high').length;
-  const mediumIssues = report.issues.filter(i => i.severity === 'medium').length;
+  // Calculate overall risk - optimized single pass
+  let criticalIssues = 0;
+  let highIssues = 0;
+  let mediumIssues = 0;
+  
+  for (const issue of report.issues) {
+    switch (issue.severity) {
+      case 'critical':
+        criticalIssues++;
+        break;
+      case 'high':
+        highIssues++;
+        break;
+      case 'medium':
+        mediumIssues++;
+        break;
+    }
+  }
   
   if (criticalIssues > 0) {
     report.overallRisk = 'critical';
