@@ -459,34 +459,37 @@ class LoadTester {
   generateReport(results: LoadTestResult[]): string {
     let report = '# Load Test Report\n\n';
     
+    // Use array join for better performance than string concatenation
+    const reportSections: string[] = [];
     for (const result of results) {
-      report += `## ${result.testName}\n\n`;
-      report += `**Duration:** ${(result.duration / 1000).toFixed(1)}s\n`;
-      report += `**Total Requests:** ${result.totalRequests}\n`;
-      report += `**Success Rate:** ${(100 - result.errorRate).toFixed(1)}%\n`;
-      report += `**Average Response Time:** ${result.averageResponseTime.toFixed(2)}ms\n`;
-      report += `**95th Percentile:** ${result.p95ResponseTime.toFixed(2)}ms\n`;
-      report += `**Requests/Second:** ${result.requestsPerSecond.toFixed(0)}\n`;
-      report += `**Memory Usage:** ${((result.memoryUsage.delta / 1024 / 1024)).toFixed(1)}MB\n\n`;
+      const section: string[] = [];
+      
+      section.push(`## ${result.testName}\n\n`);
+      section.push(`**Duration:** ${(result.duration / 1000).toFixed(1)}s\n`);
+      section.push(`**Total Requests:** ${result.totalRequests}\n`);
+      section.push(`**Success Rate:** ${(100 - result.errorRate).toFixed(1)}%\n`);
+      section.push(`**Average Response Time:** ${result.averageResponseTime.toFixed(2)}ms\n`);
+      section.push(`**95th Percentile:** ${result.p95ResponseTime.toFixed(2)}ms\n`);
+      section.push(`**Requests/Second:** ${result.requestsPerSecond.toFixed(0)}\n`);
+      section.push(`**Memory Usage:** ${((result.memoryUsage.delta / 1024 / 1024)).toFixed(1)}MB\n\n`);
 
       if (result.bottlenecks.length > 0) {
-        report += `### Bottlenecks\n`;
-        result.bottlenecks.forEach(bottleneck => {
-          report += `- ${bottleneck}\n`;
-        });
-        report += '\n';
+        section.push(`### Bottlenecks\n`);
+        section.push(...result.bottlenecks.map(bottleneck => `- ${bottleneck}\n`));
+        section.push('\n');
       }
 
       if (result.recommendations.length > 0) {
-        report += `### Recommendations\n`;
-        result.recommendations.forEach(rec => {
-          report += `- ${rec}\n`;
-        });
-        report += '\n';
+        section.push(`### Recommendations\n`);
+        section.push(...result.recommendations.map(rec => `- ${rec}\n`));
+        section.push('\n');
       }
 
-      report += '---\n\n';
+      section.push('---\n\n');
+      reportSections.push(section.join(''));
     }
+    
+    report += reportSections.join('');
 
     return report;
   }

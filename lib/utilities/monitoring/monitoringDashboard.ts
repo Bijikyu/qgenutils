@@ -693,9 +693,11 @@ if (this.collectionInterval) {
     const services = this.lastMetrics.services;
     let html = '<div class="widget"><h2 class="widget-title">Services</h2>';
     
+    // Use array join for better performance than string concatenation
+    const serviceHtmls: string[] = [];
     for (const [name, metrics] of Object.entries(services)) {
       const status = metrics.unhealthy === 0 ? 'pass' : 'fail';
-      html += `
+      serviceHtmls.push(`
         <div class="service">
           <strong>${name}:</strong> 
           <span class="status-${status}">${status.toUpperCase()}</span>
@@ -703,10 +705,10 @@ if (this.collectionInterval) {
           <br>RT: ${metrics.responseTime.toFixed(0)}ms | 
           Error Rate: ${metrics.errorRate.toFixed(2)}%
         </div>
-      `;
+      `);
     }
     
-    html += '</div>';
+    html += serviceHtmls.join('') + '</div>';
     return html;
   }
 

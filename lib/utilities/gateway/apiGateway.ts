@@ -517,20 +517,26 @@ class APIGateway extends EventEmitter {
     return false;
   }
 
-  /**
-   * Apply gateway middleware (optimized with parallel execution where possible)
-   */
-  private async applyMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
-    // Group middleware by type for parallel execution
-    const authMiddleware = this.middleware.filter(m => 
-      m.name?.includes('auth') || m.name?.includes('validation')
-    );
-    const loggingMiddleware = this.middleware.filter(m => 
-      m.name?.includes('log') || m.name?.includes('metrics')
-    );
-    const otherMiddleware = this.middleware.filter(m => 
-      !authMiddleware.includes(m) && !loggingMiddleware.includes(m)
-    );
+/**
+    * Apply gateway middleware (optimized with parallel execution where possible)
+    */
+   private async applyMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+     // Group middleware by type for parallel execution - optimized single pass
+     const authMiddleware: any[] = [];
+     const loggingMiddleware: any[] = [];
+     const otherMiddleware: any[] = [];
+     
+     // Single pass through middleware array - O(n) instead of O(n²)
+     for (const m of this.middleware) {
+       const name = m.name?.toLowerCase() || '';
+       if (name.includes('auth') || name.includes('validation')) {
+         authMiddleware.push(m);
+       } else if (name.includes('log') || name.includes('metrics')) {
+         loggingMiddleware.push(m);
+       } else {
+         otherMiddleware.push(m);
+       }
+     }
 
     try {
       // Execute independent middleware in parallel

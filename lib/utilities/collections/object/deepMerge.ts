@@ -23,8 +23,28 @@ const DANGEROUS_KEYS = new Set([
 // Maximum recursion depth to prevent stack overflow
 const MAX_DEPTH = 100;
 
+// Optimized dangerous key check function - reduces redundant string operations
+function isDangerousKey(key: string): boolean {
+  return DANGEROUS_KEYS.has(key) || 
+         key === '__proto__' || 
+         key === 'constructor' || 
+         key === 'prototype' ||
+         key.startsWith('__') ||
+         key.includes('proto') ||
+         key.includes('constructor');
+}
+
 function deepMerge(...objects: any[]) {
-  return objects.reduce((result, obj: any, index: any): any => {
+  return _deepMerge(objects, 0);
+}
+
+// Internal recursive function with depth tracking
+function _deepMerge(objects: any[], depth: number): any {
+  if (depth > MAX_DEPTH) {
+    throw new Error('Maximum merge depth exceeded to prevent stack overflow');
+  }
+  
+  return objects.reduce((result, obj: any): any => {
     if (!obj || typeof obj !== 'object') return result;
     
     // Use Object.keys for better performance than getOwnPropertyNames
@@ -33,14 +53,8 @@ function deepMerge(...objects: any[]) {
     for (let i = 0; i < ownKeys.length; i++) {
       const key = ownKeys[i];
       
-      // Optimized dangerous key checking with Set (O(1) vs O(n))
-      if (DANGEROUS_KEYS.has(key) || 
-          key === '__proto__' || 
-          key === 'constructor' || 
-          key === 'prototype' ||
-          key.startsWith('__') ||
-          key.includes('proto') ||
-          key.includes('constructor')) {
+      // Optimized dangerous key checking with single function call
+      if (isDangerousKey(key)) {
         continue;
       }
       
@@ -58,11 +72,7 @@ function deepMerge(...objects: any[]) {
       }
       
       if (isPlainObject(value) && isPlainObject(existingValue)) {
-        // Add depth tracking to prevent infinite recursion
-        if (index > MAX_DEPTH) {
-          throw new Error('Maximum merge depth exceeded to prevent stack overflow');
-        }
-        result[key] = deepMerge(existingValue, value);
+        result[key] = _deepMerge([existingValue, value], depth + 1);
       } else {
         result[key] = value;
       }

@@ -27,30 +27,59 @@
 import sanitizeHtml from 'sanitize-html';
 import logger from '../../logger.js';
 
+// Pre-configure sanitize options to avoid object creation on each call
+const SANITIZE_OPTIONS = { 
+  allowedTags: [], 
+  allowedAttributes: {}, 
+  textFilter: (text: any) => text, 
+  disallowedTagsMode: 'discard' as const, 
+  enforceHtmlBoundary: false 
+};
+
 const sanitizeString = (input: any): any => {
-  logger.debug(`sanitizeString: starting sanitization`, { inputType: typeof input, inputLength: input ? String(input).length : 0 });
-  try {
-    if (input == null) {
-      logger.debug(`sanitizeString: null or undefined input`);
-      return ``;
-    }
-    let str;
-    if (typeof input === `string`) str = input;
-    else if (typeof input === `number` || typeof input === `boolean`) str = String(input);
-    else {
+  // Early return for null/undefined - avoid unnecessary logging
+  if (input == null) {
+    return '';
+  }
+  
+  // Optimize type checking and string conversion
+  let str: string;
+  switch (typeof input) {
+    case 'string':
+      str = input;
+      break;
+    case 'number':
+    case 'boolean':
+      str = String(input);
+      break;
+    default:
+      // Only log warning for complex objects, not for null/undefined
       logger.warn(`sanitizeString: rejecting complex object input for security`, { inputType: typeof input });
-      return ``;
+      return '';
+  }
+  
+  // Early return for empty string
+  if (str === '') {
+    return '';
+  }
+  
+  try {
+    const sanitized: string = sanitizeHtml(str, SANITIZE_OPTIONS);
+    // Only log debug for significant changes to reduce noise
+    if (str.length !== sanitized.length && str.length - sanitized.length > 10) {
+      logger.debug(`sanitizeString: significant sanitization`, { 
+        originalLength: str.length, 
+        sanitizedLength: sanitized.length, 
+        charactersRemoved: str.length - sanitized.length 
+      });
     }
-    if (str === ``) {
-      logger.debug(`sanitizeString: empty string input`);
-      return ``;
-    }
-    const sanitized: any = sanitizeHtml(str, { allowedTags: [], allowedAttributes: {}, textFilter: (text: any) => text, disallowedTagsMode: 'discard', enforceHtmlBoundary: false });
-    logger.debug(`sanitizeString: sanitization completed`, { originalLength: str.length, sanitizedLength: sanitized.length, charactersRemoved: str.length - sanitized.length });
     return sanitized;
   } catch (error) {
-    logger.error(`sanitizeString failed with unexpected error`, { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined, inputType: typeof input });
-    return ``;
+    logger.error(`sanitizeString failed with unexpected error`, { 
+      error: error instanceof Error ? error.message : String(error), 
+      inputType: typeof input 
+    });
+    return '';
   }
 };
 

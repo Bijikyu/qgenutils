@@ -54,53 +54,42 @@ function createMinHeap(compare: (a: any, b: any) => number) {
 
   // Return a clean interface that abstracts the underlying implementation
   // This provides consistency and allows for future implementation changes
+  // Optimized with method binding to avoid function creation on each call
   return {
     /**
      * Insert an item into the heap while maintaining heap properties
      * @param {*} item - Item to insert (any type supported by comparator)
      */
-    push(item: any) {
-      heap.push(item);
-    },
+    push: heap.push.bind(heap),
 
     /**
      * Remove and return the minimum item from the heap
      * @returns {*} Minimum item or undefined if heap is empty
      */
-    pop() {
-      return heap.pop();
-    },
+    pop: heap.pop.bind(heap),
 
     /**
      * View the minimum item without removing it from the heap
      * @returns {*} Minimum item or undefined if heap is empty
      */
-    peek() {
-      return heap.peek();
-    },
+    peek: heap.peek.bind(heap),
 
     /**
      * Get the current number of items in the heap
      * @returns {number} Current heap size
      */
-    size() {
-      return heap.size();
-    },
+    size: heap.size.bind(heap),
 
     /**
      * Remove all items from the heap efficiently
      */
-    clear() {
-      heap.clear();
-    },
+    clear: heap.clear.bind(heap),
 
     /**
      * Convert heap to array representation (not sorted)
      * @returns {Array} Array representation of heap's internal storage
      */
-    toArray() {
-      return heap.toArray();
-    }
+    toArray: heap.toArray.bind(heap)
   };
 }
 
