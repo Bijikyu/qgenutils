@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-config.mjs",
     "prebuild": "rm -rf dist",
     "build:prod": "NODE_ENV=production npm run build",
     "build:parallel": "tsc --build",
@@ -107,7 +107,7 @@
     "loqatevars": "^1.0.6",
     "madge": "^8.0.0",
     "npmcontext": "^1.0.1",
-    "opencode-ai": "1.0.224",
+    "opencode-ai": "1.0.223",
     "qtests": "^2.0.0",
     "quantumagent": "^1.0.5",
     "ts-jest": "^29.4.4",

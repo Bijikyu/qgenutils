@@ -121,10 +121,14 @@ function createUnifiedValidator(coreValidator: any, options: any = {}) {
       results[fieldName] = result.isValid ? result.value : value;
       
       if (!result.isValid) {
-        // Pre-compute error messages for better performance
-        errors[fieldName] = result.errors.map(err => 
-          errorMessages[err] || `Invalid ${fieldName}`
-        );
+        // Optimize error message generation by avoiding array.map
+        const fieldErrors = result.errors;
+        const errorMessagesForField: string[] = [];
+        for (let i = 0; i < fieldErrors.length; i++) {
+          const err = fieldErrors[i];
+          errorMessagesForField.push(errorMessages[err] || `Invalid ${fieldName}`);
+        }
+        errors[fieldName] = errorMessagesForField;
         isValid = false;
       }
     }
