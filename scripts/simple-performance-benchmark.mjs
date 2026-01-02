@@ -70,7 +70,8 @@ class SimplePerformanceBenchmark {
     
     // Import utilities one by one
     try {
-      const { formatDateTime } = await import('../dist/lib/utilities/datetime/formatDateTime.js');
+      const formatDateTimeModule = await import('../dist/lib/utilities/datetime/formatDateTime.js');
+      const formatDateTime = formatDateTimeModule.default;
       await this.measureFunction('formatDateTime', () => {
         return formatDateTime('2023-12-25T10:30:00.000Z');
       }, null);
@@ -79,7 +80,8 @@ class SimplePerformanceBenchmark {
     }
     
     try {
-      const { formatDuration } = await import('../dist/lib/utilities/datetime/formatDuration.js');
+      const formatDurationModule = await import('../dist/lib/utilities/datetime/formatDuration.js');
+      const formatDuration = formatDurationModule.default;
       await this.measureFunction('formatDuration', () => {
         return formatDuration('2023-12-25T10:00:00.000Z', '2023-12-25T11:30:45.000Z');
       }, null);
@@ -88,7 +90,8 @@ class SimplePerformanceBenchmark {
     }
     
     try {
-      const { ensureProtocol } = await import('../dist/lib/utilities/url/ensureProtocol.js');
+      const ensureProtocolModule = await import('../dist/lib/utilities/url/ensureProtocol.js');
+      const ensureProtocol = ensureProtocolModule.default;
       await this.measureFunction('ensureProtocol', () => {
         return ensureProtocol('example.com');
       }, null);
@@ -97,7 +100,8 @@ class SimplePerformanceBenchmark {
     }
     
     try {
-      const { validateEmailFormat } = await import('../dist/lib/utilities/validation/validateEmailSimple.js');
+      const validateEmailFormatModule = await import('../dist/lib/utilities/validation/validateEmailSimple.js');
+      const validateEmailFormat = validateEmailFormatModule.default;
       await this.measureFunction('validateEmailFormat', () => {
         return validateEmailFormat('test@example.com');
       }, null);
@@ -106,7 +110,8 @@ class SimplePerformanceBenchmark {
     }
     
     try {
-      const { hashPassword } = await import('../dist/lib/utilities/password/hashPassword.js');
+      const hashPasswordModule = await import('../dist/lib/utilities/password/hashPassword.js');
+      const hashPassword = hashPasswordModule.default;
       await this.measureFunction('hashPassword', async () => {
         return await hashPassword('testPassword123');
       }, null);
@@ -115,7 +120,8 @@ class SimplePerformanceBenchmark {
     }
     
     try {
-      const { sanitizeInput } = await import('../dist/lib/utilities/validation/sanitizeInput.js');
+      const sanitizeInputModule = await import('../dist/lib/utilities/validation/sanitizeInput.js');
+      const sanitizeInput = sanitizeInputModule.default;
       await this.measureFunction('sanitizeInput', () => {
         return sanitizeInput('<script>alert("xss")</script>');
       }, null);

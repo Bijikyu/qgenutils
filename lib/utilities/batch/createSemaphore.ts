@@ -120,6 +120,7 @@ function createSemaphore(permits: number) {
   // SEMAPHORE STATE: Initialize available permits and waiting queue
   let availablePermits = permits;                 // Current available permits
   const waitQueue: Array<(release: ReleaseFunction) => void> = []; // FIFO waiting queue
+  const abortedSet: Set<Function> = new Set(); // Track aborted requests to prevent race conditions
 
   /**
    * Acquires a permit, blocking if none are available.
@@ -152,11 +153,17 @@ function createSemaphore(permits: number) {
         // CANCELLATION HANDLER: Remove from queue if aborted while waiting
         if (options?.signal) {
           const handleAbort = () => {
+            // Check if already resolved first
             const index = waitQueue.indexOf(resolve);
-            if (index > -1) {
-              waitQueue.splice(index, 1);
-              reject(new Error('Semaphore acquire operation aborted'));
+            if (index === -1) {
+              // Already resolved/removed, no action needed
+              return;
             }
+            
+            // Mark as aborted and remove atomically
+            abortedSet.add(resolve);
+            waitQueue.splice(index, 1);
+            reject(new Error('Semaphore acquire operation aborted'));
           };
           
           options.signal.addEventListener('abort', handleAbort, { once: true });
@@ -180,7 +187,23 @@ function createSemaphore(permits: number) {
     if (waitQueue.length > 0) {
       const nextResolve = waitQueue.shift(); // FIFO - get first in queue
       if (nextResolve) {
-        nextResolve(release); // Grant permit to waiting operation
+        // Check if this resolve was aborted
+        if (abortedSet.has(nextResolve)) {
+          abortedSet.delete(nextResolve);
+          // This was aborted, so don't grant the permit
+          // The permit is already accounted for, no need to adjust availablePermits
+          return;
+        }
+        
+        try {
+          nextResolve(release); // Grant permit to waiting operation
+        } catch (error) {
+          // Handle case where resolve was already called (race condition)
+          // Put the permit back if we couldn't grant it
+          if (availablePermits < permits) {
+            availablePermits++;
+          }
+        }
       }
     } else {
       // INCREMENT PERMITS: Increase available permits if no queue

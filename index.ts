@@ -54,11 +54,11 @@ import createDirectLoader from './lib/utilities/module-loader/createDirectLoader
 
 // Validation utilities - comprehensive input validation with security-first approach
 // Each validator includes proper error handling, type checking, and security considerations
-import validateEmailFormat from './lib/utilities/validation/validateEmailSimple.js';
-import validatePasswordStrength from './lib/utilities/validation/validatePassword.js';
-import validateMonetaryAmount from './lib/utilities/validation/validateAmount.js';
-import validateApiKeyFormat from './lib/utilities/validation/validateApiKey.js';
-import validateCurrencyCode from './lib/utilities/validation/validateCurrency.js';
+import validateEmailSimple from './lib/utilities/validation/validateEmailSimple.js';
+import validatePassword from './lib/utilities/validation/validatePassword.js';
+import validateAmount from './lib/utilities/validation/validateAmount.js';
+import validateApiKey from './lib/utilities/validation/validateApiKey.js';
+import validateCurrency from './lib/utilities/validation/validateCurrency.js';
 import validatePaymentMethodNonce from './lib/utilities/validation/validatePaymentMethodNonce.js';
 import validateDateRange from './lib/utilities/validation/validateDateRange.js';
 import validateSubscriptionPlan from './lib/utilities/validation/validateSubscriptionPlan.js';
@@ -142,8 +142,8 @@ import {
 
 // Legacy backward compatibility alias
 // This alias ensures that existing code using validateEmail continues to work
-// while the newer validateEmailFormat provides improved functionality
-const validateEmail = validateEmailFormat;
+// while the newer validateEmailSimple provides improved functionality
+const validateEmail = validateEmailSimple;
 
 /**
  * EXPORT SECTION - Named Exports
@@ -184,11 +184,11 @@ export {
   // getPerformanceHealthStatus,
   // createPerformanceMonitor,
   // Validation utilities - comprehensive input validation
-  validateEmailFormat,
-  validatePasswordStrength,
-  validateMonetaryAmount,
-  validateApiKeyFormat,
-  validateCurrencyCode,
+  validateEmailSimple,
+  validatePassword,
+  validateAmount,
+  validateApiKey,
+  validateCurrency,
   validatePaymentMethodNonce,
   validateDateRange,
   validateSubscriptionPlan,
@@ -288,11 +288,11 @@ export default {
   // getPerformanceHealthStatus,
   // createPerformanceMonitor,
   // Validation utilities
-  validateEmailFormat,
-  validatePasswordStrength,
-  validateMonetaryAmount,
-  validateApiKeyFormat,
-  validateCurrencyCode,
+  validateEmailSimple,
+  validatePassword,
+  validateAmount,
+  validateApiKey,
+  validateCurrency,
   validatePaymentMethodNonce,
   validateDateRange,
   validateSubscriptionPlan,

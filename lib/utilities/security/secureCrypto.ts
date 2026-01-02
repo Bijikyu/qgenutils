@@ -374,40 +374,37 @@ function generateSecureRandom(length: number = 32): string {
   }
   
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const charsetLength = charset.length;
+  
+  // Helper function to build result from random bytes
+  const buildRandomString = (randomValues: Uint8Array | Buffer): string => {
+    const resultArray = new Array(length);
+    for (let i = 0; i < length; i++) {
+      resultArray[i] = charset[randomValues[i] % charsetLength];
+    }
+    return resultArray.join('');
+  };
   
   try {
     // Use Node.js crypto if available
     const crypto = require('crypto');
     const randomBytes = crypto.randomBytes(length);
-    
-    const resultArray: string[] = [];
-    for (let i = 0; i < length; i++) {
-      resultArray.push(charset[randomBytes[i] % charset.length]);
-    }
-    result = resultArray.join('');
+    return buildRandomString(randomBytes);
   } catch (error) {
     // Fallback to browser crypto
     const buffer = new Uint8Array(length);
     if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
       globalThis.crypto.getRandomValues(buffer);
-      
-      const resultArray2: string[] = [];
-      for (let i = 0; i < length; i++) {
-        resultArray2.push(charset[buffer[i] % charset.length]);
-      }
-      result = resultArray2.join('');
+      return buildRandomString(buffer);
     } else {
       // Last resort - less secure Math.random()
-      const resultArray3: string[] = [];
+      const randomValues = new Uint8Array(length);
       for (let i = 0; i < length; i++) {
-        resultArray3.push(charset[Math.floor(Math.random() * charset.length)]);
+        randomValues[i] = Math.floor(Math.random() * 256);
       }
-      result = resultArray3.join('');
+      return buildRandomString(randomValues);
     }
   }
-  
-  return result;
 }
 
 export {
@@ -421,8 +418,8 @@ export {
   encrypt,
   decrypt,
   createJwt,
+  generateSecureRandom,
   signMessage,
   constantTimeCompare,
-  isSecureInput,
-  generateSecureRandom
+  isSecureInput
 };
