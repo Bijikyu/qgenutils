@@ -9,16 +9,16 @@
  * 
  * IMPLEMENTATION STRATEGY:
  * - Default to HTTPS for security (fail-secure approach)
- * - Handle common URL variations (with/without protocol, with/without www)
+ * - Use native URL API for robust URL parsing and validation
  * - Preserve existing protocols when explicitly specified
- * - Normalize protocol format (lowercase, proper syntax)
+ * - Normalize protocol format using URL API
  * - Handle edge cases like protocol-relative URLs (//example.com)
  * 
  * SECURITY CONSIDERATIONS:
  * - HTTPS-first approach protects user data in transit
  * - Prevents accidental downgrade to HTTP
- * - Handles malicious inputs that might exploit protocol parsing
- * - Validates URL structure to prevent injection attacks
+ * - Uses native URL API to prevent parsing vulnerabilities
+ * - Validates URL structure using built-in URL validation
  * 
  * PROTOCOL HANDLING RULES:
  * - No protocol: Add https://
@@ -52,35 +52,7 @@ const ensureProtocol = (url: any): any => {
       return `https://`;
     }
 
-    const protocolRegex: any = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
-    const hasProtocol: any = protocolRegex.test(trimmedUrl);
-    
-    if (hasProtocol) {
-      const protocolMatch: any = trimmedUrl.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)(.*)/);
-      
-      if (protocolMatch) {
-        const protocol: any = protocolMatch[1].toLowerCase();
-        const rest: any = protocolMatch[2];
-        
-        if (protocol === `http:` || protocol === `https:` || protocol === `ftp:` || protocol === `ftps:`) {
-          const normalizedUrl: any = protocol + rest;
-          logger.debug(`ensureProtocol: preserved existing valid protocol`, { 
-            original: trimmedUrl, 
-            normalized: normalizedUrl 
-          });
-          return normalizedUrl;
-        }
-        
-        logger.warn(`ensureProtocol: unknown protocol detected, defaulting to HTTPS`, { 
-          originalProtocol: protocol, 
-          url: trimmedUrl 
-        });
-        
-        const httpsUrl: any = `https://` + rest.replace(/^\/\//, ``);
-        return httpsUrl;
-      }
-    }
-
+    // Handle protocol-relative URLs first
     if (trimmedUrl.startsWith(`//`)) {
       const httpsUrl: any = `https:` + trimmedUrl;
       logger.debug(`ensureProtocol: converted protocol-relative URL`, { 
@@ -90,13 +62,48 @@ const ensureProtocol = (url: any): any => {
       return httpsUrl;
     }
 
-    const httpsUrl: any = `https://` + trimmedUrl;
-    logger.debug(`ensureProtocol: added HTTPS protocol`, { 
-      original: trimmedUrl, 
-      result: httpsUrl 
-    });
-    
-    return httpsUrl;
+    // Use native URL API for robust parsing
+    try {
+      const parsedUrl = new URL(trimmedUrl);
+      
+      // Check if protocol is valid and preserve if so
+      const validProtocols = ['http:', 'https:', 'ftp:', 'ftps:'];
+      if (validProtocols.includes(parsedUrl.protocol)) {
+        const normalizedUrl: any = parsedUrl.toString();
+        logger.debug(`ensureProtocol: preserved existing valid protocol using URL API`, { 
+          original: trimmedUrl, 
+          normalized: normalizedUrl 
+        });
+        return normalizedUrl;
+      }
+      
+      // Unknown protocol, default to HTTPS
+      logger.warn(`ensureProtocol: unknown protocol detected, defaulting to HTTPS`, { 
+        originalProtocol: parsedUrl.protocol, 
+        url: trimmedUrl 
+      });
+      
+      const httpsUrl: any = `https://` + (parsedUrl.hostname || parsedUrl.host || '') + (parsedUrl.pathname || '') + (parsedUrl.search || '') + (parsedUrl.hash || '');
+      return httpsUrl;
+      
+    } catch (urlError) {
+      // URL parsing failed, likely missing protocol - add HTTPS
+      if (trimmedUrl.includes('://')) {
+        // Has protocol but invalid URL, default to HTTPS
+        logger.warn(`ensureProtocol: invalid URL with protocol detected, defaulting to HTTPS`, { 
+          url: trimmedUrl 
+        });
+        return `https://`;
+      }
+      
+      // No protocol, add HTTPS
+      const httpsUrl: any = `https://` + trimmedUrl;
+      logger.debug(`ensureProtocol: added HTTPS protocol (no existing protocol)`, { 
+        original: trimmedUrl, 
+        result: httpsUrl 
+      });
+      return httpsUrl;
+    }
 
   } catch (error) {
     qerrors(error, `ensureProtocol`);

@@ -127,11 +127,15 @@ function safeJsonStringify(
   }
 }
 
+import { isArray, isObject, some } from 'lodash';
+
 /**
  * Detects circular references in objects to prevent infinite loops during JSON stringification
+ * Refactored to use lodash utilities for better performance and consistency
  */
 function hasCircularReferences(value: any, seen = new WeakSet()): boolean {
-  if (value === null || typeof value !== 'object') {
+  // Use lodash.isObject for consistent object type checking
+  if (!isObject(value) || value === null) {
     return false;
   }
   
@@ -141,19 +145,23 @@ function hasCircularReferences(value: any, seen = new WeakSet()): boolean {
   
   seen.add(value);
   
-  if (Array.isArray(value)) {
-    return value.some(item => hasCircularReferences(item, seen));
+  // Use lodash.isArray for consistent array checking
+  if (isArray(value)) {
+    return some(value, item => hasCircularReferences(item, seen));
   }
   
-  for (const key in value) {
+  // Use lodash.some for efficient iteration - handle objects with no own properties
+  const keys = Object.keys(value);
+  if (keys.length === 0) {
+    return false;
+  }
+  
+  return some(keys, key => {
     if (Object.prototype.hasOwnProperty.call(value, key)) {
-      if (hasCircularReferences(value[key], seen)) {
-        return true;
-      }
+      return hasCircularReferences(value[key], seen);
     }
-  }
-  
-  return false;
+    return false;
+  });
 }
 
 /**
