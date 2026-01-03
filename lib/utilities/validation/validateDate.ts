@@ -1,9 +1,10 @@
 'use strict';
 
+import validator from 'validator';
 import { createFieldValidator } from './createFieldValidator.js';
 
 /**
- * Validates date field
+ * Validates date field using validator library
  * @param {*} value - Value to validate
  * @param {string} fieldName - Name of field for error messages
  * @returns {{error: string}|null} Validation error or null if valid
@@ -12,7 +13,12 @@ import { createFieldValidator } from './createFieldValidator.js';
  * validateDate('invalid', 'startDate'); // { error: '...' }
  */
 const validateDate = createFieldValidator(
-  (value) => !isNaN(new Date(value).getTime()),
+  (value) => {
+    if (typeof value !== 'string') {
+      value = value.toString();
+    }
+    return validator.isDate(value) || validator.isISO8601(value);
+  },
   'must be a valid date'
 );
 
