@@ -1,7 +1,9 @@
 'use strict';
 
+import validator from 'validator';
+
 /**
- * Validates string length is within bounds
+ * Validates string length is within bounds using validator.isLength()
  * @param {string} value - String value to validate
  * @param {number} minLength - Minimum allowed length
  * @param {number} maxLength - Maximum allowed length
@@ -10,26 +12,27 @@
  * @example
  * validateStringLength('hello', 1, 100, 'name'); // null
  */
-function validateStringLength(value, minLength, maxLength, fieldName) { // check string length
-  if (typeof value !== 'string') { // must be string
+function validateStringLength(value: any, minLength: number, maxLength: number, fieldName?: string) {
+  if (typeof value !== 'string') {
     return {
       error: `${fieldName || 'Value'} must be a string`
     };
   }
 
-  if (value.length < minLength) { // too short
-    return {
-      error: `${fieldName || 'Value'} must be at least ${minLength} characters long`
-    };
+  if (!validator.isLength(value, { min: minLength, max: maxLength })) {
+    // Determine specific error based on actual length
+    if (value.length < minLength) {
+      return {
+        error: `${fieldName || 'Value'} must be at least ${minLength} characters long`
+      };
+    } else {
+      return {
+        error: `${fieldName || 'Value'} must be no more than ${maxLength} characters long`
+      };
+    }
   }
 
-  if (value.length > maxLength) { // too long
-    return {
-      error: `${fieldName || 'Value'} must be no more than ${maxLength} characters long`
-    };
-  }
-
-  return null; // valid
+  return null;
 }
 
 export default validateStringLength;

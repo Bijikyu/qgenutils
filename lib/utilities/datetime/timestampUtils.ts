@@ -1,6 +1,24 @@
 /**
- * Timestamp utilities for common time-related operations
+ * Timestamp utilities using date-fns
+ * 
+ * PURPOSE: Provides timestamp operations using well-tested date-fns library
+ * instead of custom implementations for better reliability and
+ * locale-aware functionality.
  */
+
+import { 
+  add, 
+  sub, 
+  differenceInMilliseconds, 
+  differenceInSeconds, 
+  differenceInMinutes, 
+  differenceInHours, 
+  differenceInDays,
+  parseISO,
+  isValid,
+  format,
+  parse
+} from 'date-fns';
 
 interface TimeToAdd {
   days?: number;
@@ -80,23 +98,25 @@ function createIsoTimestamp(offsetMs: number = 0): string {
  * @returns Timestamp object with multiple formats
  */
 function createTimestampObject(timestamp: number = Date.now()): TimestampObject {
+  const date = new Date(timestamp);
   return {
     timestamp,
-    isoString: new Date(timestamp).toISOString(),
-    dateString: new Date(timestamp).toDateString(),
-    timeString: new Date(timestamp).toTimeString(),
-    localString: new Date(timestamp).toLocaleString(),
-    utcString: new Date(timestamp).toUTCString()
+    isoString: date.toISOString(),
+    dateString: date.toDateString(),
+    timeString: date.toTimeString(),
+    localString: date.toLocaleString(),
+    utcString: date.toUTCString()
   };
 }
 
 /**
- * Adds time to a timestamp
+ * Adds time to a timestamp using date-fns
  * @param timestamp - Base timestamp in milliseconds
  * @param timeToAdd - Time to add
  * @returns New timestamp with time added
  */
 function addToTimestamp(timestamp: number, timeToAdd: TimeToAdd = {}): number {
+  const date = new Date(timestamp);
   const {
     days = 0,
     hours = 0,
@@ -105,51 +125,71 @@ function addToTimestamp(timestamp: number, timeToAdd: TimeToAdd = {}): number {
     milliseconds = 0
   } = timeToAdd;
 
-  const totalMs = 
-    (days * 24 * 60 * 60 * 1000) +
-    (hours * 60 * 60 * 1000) +
-    (minutes * 60 * 1000) +
-    (seconds * 1000) +
-    milliseconds;
+  let result = date;
 
-  return timestamp + totalMs;
+  if (days > 0) result = add(result, { days });
+  if (hours > 0) result = add(result, { hours });
+  if (minutes > 0) result = add(result, { minutes });
+  if (seconds > 0) result = add(result, { seconds });
+  if (milliseconds > 0) {
+    // Add milliseconds separately as date-fns doesn't support milliseconds in duration
+    result = new Date(result.getTime() + milliseconds);
+  }
+
+  return result.getTime();
 }
 
 /**
- * Subtracts time from a timestamp
+ * Subtracts time from a timestamp using date-fns
  * @param timestamp - Base timestamp in milliseconds
  * @param timeToSubtract - Time to subtract (same format as addToTimestamp)
  * @returns New timestamp with time subtracted
  */
 function subtractFromTimestamp(timestamp: number, timeToSubtract: TimeToAdd = {}): number {
-  return addToTimestamp(timestamp, Object.fromEntries(
-    Object.entries(timeToSubtract).map(([key, value]) => [key, -Math.abs(value as number)])
-  ) as TimeToAdd);
+  const date = new Date(timestamp);
+  const {
+    days = 0,
+    hours = 0,
+    minutes = 0,
+    seconds = 0,
+    milliseconds = 0
+  } = timeToSubtract;
+
+  let result = date;
+
+  if (days > 0) result = sub(result, { days });
+  if (hours > 0) result = sub(result, { hours });
+  if (minutes > 0) result = sub(result, { minutes });
+  if (seconds > 0) result = sub(result, { seconds });
+  if (milliseconds > 0) {
+    // Subtract milliseconds separately as date-fns doesn't support milliseconds in duration
+    result = new Date(result.getTime() - milliseconds);
+  }
+
+  return result.getTime();
 }
 
 /**
- * Calculates difference between two timestamps
+ * Calculates difference between two timestamps using date-fns
  * @param timestamp1 - First timestamp in milliseconds
  * @param timestamp2 - Second timestamp in milliseconds (default: current time)
  * @returns Difference in multiple units
  */
 function getTimestampDifference(timestamp1: number, timestamp2: number = Date.now()): TimestampDifference {
-  const diffMs: any = Math.abs(timestamp2 - timestamp1);
-  const diffSeconds: any = Math.floor(diffMs / 1000);
-  const diffMinutes: any = Math.floor(diffSeconds / 60);
-  const diffHours: any = Math.floor(diffMinutes / 60);
-  const diffDays: any = Math.floor(diffHours / 24);
+  const diffMs = Math.abs(timestamp2 - timestamp1);
+  const date1 = new Date(timestamp1);
+  const date2 = new Date(timestamp2);
 
   return {
     milliseconds: diffMs,
-    seconds: diffSeconds % 60,
-    minutes: diffMinutes % 60,
-    hours: diffHours % 24,
-    days: diffDays,
-    totalSeconds: diffSeconds,
-    totalMinutes: diffMinutes,
-    totalHours: diffHours,
-    totalDays: diffDays
+    seconds: differenceInSeconds(date2, date1),
+    minutes: differenceInMinutes(date2, date1),
+    hours: differenceInHours(date2, date1),
+    days: differenceInDays(date2, date1),
+    totalSeconds: differenceInSeconds(date2, date1),
+    totalMinutes: differenceInMinutes(date2, date1),
+    totalHours: differenceInHours(date2, date1),
+    totalDays: differenceInDays(date2, date1)
   };
 }
 
@@ -164,14 +204,14 @@ function isValidTimestamp(value: unknown): boolean {
   }
   
   // Check if it's within reasonable range (not too far in past or future)
-  const minTimestamp: any = new Date('1970-01-01').getTime();
-  const maxTimestamp: any = new Date('2100-01-01').getTime();
+  const minTimestamp = new Date('1970-01-01').getTime();
+  const maxTimestamp = new Date('2100-01-01').getTime();
   
   return value >= minTimestamp && value <= maxTimestamp;
 }
 
 /**
- * Parses various timestamp formats to milliseconds
+ * Parses various timestamp formats to milliseconds using date-fns
  * @param timestamp - Timestamp in various formats
  * @returns Timestamp in milliseconds or null if invalid
  */
@@ -181,12 +221,12 @@ function parseTimestamp(timestamp: unknown): number | null {
   }
   
   if (typeof timestamp === 'string') {
-    const parsed: any = new Date(timestamp).getTime();
-    return isValidTimestamp(parsed) ? parsed : null;
+    const parsed = parseISO(timestamp);
+    return isValid(parsed) ? parsed.getTime() : null;
   }
   
   if (timestamp instanceof Date) {
-    const parsed: any = timestamp.getTime();
+    const parsed = timestamp.getTime();
     return isValidTimestamp(parsed) ? parsed : null;
   }
   
