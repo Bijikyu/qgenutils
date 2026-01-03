@@ -2,15 +2,17 @@
  * JSON cloning and manipulation utilities
  */
 
+import { cloneDeep } from 'lodash';
+
 /**
- * Safely deep clones an object using JSON
+ * Safely deep clones an object using lodash.cloneDeep
  * @param {*} value - Value to clone
  * @param {*} defaultValue - Default value if cloning fails
  * @returns {*} Deep cloned value or default value
  */
-function safeDeepClone(value, defaultValue = null) {
+function safeDeepClone(value: any, defaultValue: any = null) {
   try {
-    return JSON.parse(JSON.stringify(value));
+    return cloneDeep(value);
   } catch (error) {
     return defaultValue;
   }
@@ -21,7 +23,7 @@ function safeDeepClone(value, defaultValue = null) {
  * @param {...Object} objects - Objects to merge
  * @returns {Object} Merged object or empty object if merge fails
  */
-function safeJsonMerge(...objects) {
+function safeJsonMerge(...objects: any[]) {
   try {
     return objects.reduce((merged, obj: any): any => {
       if (obj && typeof obj === 'object') {
