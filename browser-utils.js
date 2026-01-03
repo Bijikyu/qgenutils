@@ -81,34 +81,35 @@ const generateSecurePassword = QGenUtils.generateSecurePassword || ((options) =>
 const timingSafeCompare = QGenUtils.timingSafeCompare || ((a, b) => ({ valid: false, error: 'timingSafeCompare not available' }));
 const extractApiKey = QGenUtils.extractApiKey || ((input) => ({ valid: false, error: 'extractApiKey not available' }));
 
-// Collections utilities
-const groupBy = QGenUtils.groupBy;
-const partition = QGenUtils.partition;
-const unique = QGenUtils.unique;
-const chunk = QGenUtils.chunk;
-const flatten = QGenUtils.flatten;
-const intersection = QGenUtils.intersection;
-const difference = QGenUtils.difference;
-const sortBy = QGenUtils.sortBy;
-const shuffle = QGenUtils.shuffle;
-const take = QGenUtils.take;
-const skip = QGenUtils.skip;
-const takeWhile = QGenUtils.takeWhile;
-const skipWhile = QGenUtils.skipWhile;
+// Collections utilities - Now use lodash directly for removed utilities
+const _ = require('lodash');
+const groupBy = QGenUtils.groupBy || _.groupBy;
+const partition = QGenUtils.partition || _.partition;
+const unique = QGenUtils.unique || _.uniq;
+const chunk = QGenUtils.chunk || _.chunk;
+const flatten = QGenUtils.flatten || _.flatten;
+const intersection = QGenUtils.intersection || _.intersection;
+const difference = QGenUtils.difference || _.difference;
+const sortBy = QGenUtils.sortBy || _.sortBy;
+const shuffle = QGenUtils.shuffle || _.shuffle;
+const take = QGenUtils.take || _.take;
+const skip = QGenUtils.skip || _.drop;
+const takeWhile = QGenUtils.takeWhile || _.takeWhile;
+const skipWhile = QGenUtils.skipWhile || _.dropWhile;
 
-// Object utilities
+// Object utilities - Now use lodash directly for removed utilities
 const isPlainObject = QGenUtils.isPlainObject;
-const pick = QGenUtils.pick;
-const omit = QGenUtils.omit;
+const pick = QGenUtils.pick || _.pick;
+const omit = QGenUtils.omit || _.omit;
 const deepMerge = QGenUtils.deepMerge;
-const deepClone = QGenUtils.deepClone;
-const getNestedValue = QGenUtils.getNestedValue;
+const deepClone = QGenUtils.deepClone || _.cloneDeep;
+const getNestedValue = QGenUtils.getNestedValue || _.get;
 const setNestedValue = QGenUtils.setNestedValue;
-const isEqual = QGenUtils.isEqual;
-const mapKeys = QGenUtils.mapKeys;
-const mapValues = QGenUtils.mapValues;
-const filterKeys = QGenUtils.filterKeys;
-const isEmpty = QGenUtils.isEmpty;
+const isEqual = QGenUtils.isEqual || _.isEqual;
+const mapKeys = QGenUtils.mapKeys || _.mapKeys;
+const mapValues = QGenUtils.mapValues || _.mapValues;
+const filterKeys = QGenUtils.filterKeys || _.pickBy;
+const isEmpty = QGenUtils.isEmpty || _.isEmpty;
 const toQueryString = QGenUtils.toQueryString;
 const fromQueryString = QGenUtils.fromQueryString;
 
@@ -161,9 +162,15 @@ const createRunIdCore = QGenUtils.createRunIdCore;
 const buildEndpointMeta = QGenUtils.buildEndpointMeta;
 const attachEndpointMeta = QGenUtils.attachEndpointMeta;
 
-// HTTP utilities
-const createJsonHeaders = QGenUtils.createJsonHeaders;
-const createBasicAuth = QGenUtils.createBasicAuth;
+// HTTP utilities - createJsonHeaders and createBasicAuth removed, provide fallbacks
+const createJsonHeaders = QGenUtils.createJsonHeaders || ((additionalHeaders = {}) => ({
+  'Content-Type': 'application/json',
+  ...additionalHeaders
+}));
+const createBasicAuth = QGenUtils.createBasicAuth || ((apiKey, username = 'anystring') => ({
+  username,
+  password: apiKey
+}));
 const contextualTimeouts = QGenUtils.contextualTimeouts;
 const getContextualTimeout = QGenUtils.getContextualTimeout;
 const createTimeoutConfig = QGenUtils.createTimeoutConfig;

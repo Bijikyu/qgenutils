@@ -13,8 +13,6 @@
  * @param {number} [customTimeout] - Optional custom timeout override
  * @returns {{ headers?: Record<string, string>; auth?: { username: string; password: string }; timeout: number }}
  */
-const createJsonHeaders: any = require('./createJsonHeaders');
-const createBasicAuth: any = require('./createBasicAuth');
 const getContextualTimeout: any = require('./getContextualTimeout');
 const { qerrors } = require('qerrors');
 
@@ -25,10 +23,10 @@ function createHttpConfig(apiKey: string, additionalHeaders: Record<string, stri
     };
     
     if (apiKey) {
-      config.auth = createBasicAuth(apiKey);
+      config.auth = { username: 'anystring', password: apiKey };
     }
     
-    config.headers = createJsonHeaders(additionalHeaders);
+    config.headers = { 'Content-Type': 'application/json', ...additionalHeaders };
     
     return config;
   } catch (err) {
