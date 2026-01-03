@@ -11,7 +11,7 @@
  * - Early returns for better performance
  */
 
-const isPlainObject: any = require('./isPlainObject.js');
+import isPlainObject from './isPlainObject.js';
 
 // Pre-computed Set for dangerous keys (O(1) lookup instead of O(n) array.includes)
 const DANGEROUS_KEYS = new Set([
