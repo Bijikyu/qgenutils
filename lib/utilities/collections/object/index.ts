@@ -27,7 +27,7 @@
  */
 
 import { qerrors } from 'qerrors';
-import * as _ from 'lodash';
+const _ = require('lodash');
 
 // Extract lodash functions with proper typing
 const _pick = _.pick;
@@ -40,12 +40,11 @@ const _pickBy = _.pickBy;
 const _isEmpty = _.isEmpty;
 
 // Keep custom implementations for security-critical functions
-import isPlainObject from './isPlainObject';
-import deepMerge from './deepMerge';
-import deepClone from './deepClone';
-import setNestedValue from './setNestedValue';
-import toQueryString from './toQueryString';
-import fromQueryString from './fromQueryString';
+import isPlainObject from './isPlainObject.js';
+import deepMerge from './deepMerge.js';
+import setNestedValue from './setNestedValue.js';
+import toQueryString from './toQueryString.js';
+import fromQueryString from './fromQueryString.js';
 
 // Wrapper functions for lodash utilities with error handling
 const pick = <T extends Record<string, any>, K extends keyof T>(
@@ -87,6 +86,15 @@ const getNestedValue = <T>(obj: any, path: string, defaultValue?: T): T => {
   } catch (error) {
     qerrors(error instanceof Error ? error : new Error(String(error)), 'getNestedValue', `Nested property access failed for path: ${path}`);
     return defaultValue !== undefined ? defaultValue : undefined as T;
+  }
+};
+
+const deepClone = <T>(obj: T): T => {
+  try {
+    return _.cloneDeep(obj);
+  } catch (error) {
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'deepClone', `Deep cloning failed for object type: ${typeof obj}`);
+    return null as T;
   }
 };
 
@@ -159,7 +167,6 @@ export {
   pick,
   omit,
   deepMerge,
-  deepClone,
   getNestedValue,
   setNestedValue,
   isEqual,

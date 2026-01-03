@@ -8,7 +8,7 @@
  * @param {string} path - Dot-separated path (e.g., 'user.address.city')
  * @param {*} value - Value to set
  */
-const isPlainObject: any = require('./isPlainObject');
+import isPlainObject from './isPlainObject.js';
 
 function setNestedValue(obj, path, value) {
   if (!obj || typeof obj !== 'object' || typeof path !== 'string') {

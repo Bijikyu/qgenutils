@@ -29,9 +29,10 @@
     "allowImportingTsExtensions": false,
     "allowArbitraryExtensions": true,
     "rootDir": "./",
-    "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "composite": false
+"incremental": true,
+"tsBuildInfoFile": "./dist/.tsbuildinfo",
+"composite": false,
+"assumeChangesOnlyAffectDirectDependencies": true
   },
   "include": [
     "**/*.ts",
