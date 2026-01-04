@@ -34,34 +34,6 @@
  * @throws Never throws - returns original URL on any error
  */
 
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
-import isValidString from '../helpers/isValidString.js';
-
-function stripProtocol(url) {
-  logger.debug(`stripProtocol is running with ${url}`);
-  
-  try {
-    // Validate input
-    if (!isValidString(url)) {
-      logger.debug(`stripProtocol returning original input due to invalid type`);
-      return url || ``;
-    }
-
-    // Chain replacements to remove protocol and trailing slash
-    // Using case-insensitive regex pattern for consistency with other URL functions
-    const processed = url
-      .replace(/^https?:\/\//i, ``) // regex removes http:// or https:// prefix only
-      .replace(/\/$/, ``);           // regex trims a single trailing slash
-    
-    logger.debug(`stripProtocol is returning ${processed}`);
-    return processed;
-  } catch (error) {
-    // Handle unexpected errors in string processing
-    qerrors(error, `stripProtocol`);
-    logger.error(`stripProtocol failed with error: ${error instanceof Error ? error.message : String(error)}`);
-    return url; // fallback to input on failure
-  }
-}
+import{qerrors}from'qerrors';import logger from'../../logger.js';import isValidString from'../helpers/isValidString.js';const stripProtocol=(url)=>{logger.debug(`stripProtocol is running with ${url}`);try{if(!isValidString(url)){logger.debug(`stripProtocol returning original input due to invalid type`);return url||``;}const processed=url.replace(/^https?:\/\//i,``).replace(/\/$/,``);logger.debug(`stripProtocol is returning ${processed}`);return processed;}catch(error){qerrors(error,`stripProtocol`);logger.error(`stripProtocol failed with error: ${error instanceof Error?error.message:String(error)}`);return url;}};
 
 export default stripProtocol;

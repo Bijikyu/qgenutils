@@ -11,14 +11,6 @@
  * @returns Throttled function
  */
 
-import _ from 'lodash';
-
-const throttle = (
-  fn: (...args: any[]) => any,
-  delay: number,
-  options?: any
-): ((...args: any[]) => any) => {
-  return _.throttle(fn, delay, options);
-};
+import _ from'lodash';const throttle=(fn:(...args:any[])=>any,delay:number,options?:any):((...args:any[])=>any)=>_.throttle(fn,delay,options);
 
 export default throttle;

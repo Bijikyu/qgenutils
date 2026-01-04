@@ -29,40 +29,6 @@
  * @throws Never throws - returns "N/A" on any error for graceful degradation
  */
 
-import { format as formatDateFn, parseISO, isValid } from 'date-fns';
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
-
-function formatDateTime(dateString: string): string {
-  logger.debug(`formatDateTime is running with ${dateString}`);
-  
-  try {
-    if (!dateString) {
-      logger.debug(`formatDateTime is returning N/A`);
-      return `N/A`;
-    }
-
-    const date: any = parseISO(dateString);
-
-    if (!isValid(date)) {
-      logger.debug(`formatDateTime is returning N/A`);
-      return `N/A`;
-    }
-    
-    const formatted: any = formatDateFn(date, 'Ppp');
-    logger.debug(`formatDateTime is returning ${formatted}`);
-    return formatted;
-  } catch (err) {
-    if (err instanceof Error) {
-      qerrors(err, `formatDateTime`);
-      logger.error(`formatDateTime failed`, err);
-    } else {
-      const error = new Error(String(err));
-      qerrors(error, `formatDateTime`);
-      logger.error(`formatDateTime failed`, error);
-    }
-    return `N/A`;
-  }
-}
+import{format as formatDateFn,parseISO,isValid}from'date-fns';import{qerrors}from'qerrors';import logger from'../../logger.js';const formatDateTime=(dateString:string):string=>{logger.debug(`formatDateTime is running with ${dateString}`);try{if(!dateString){logger.debug(`formatDateTime is returning N/A`);return`N/A`;}const date:any=parseISO(dateString);if(!isValid(date)){logger.debug(`formatDateTime is returning N/A`);return`N/A`;}const formatted:any=formatDateFn(date,'Ppp');logger.debug(`formatDateTime is returning ${formatted}`);return formatted;}catch(err){if(err instanceof Error){qerrors(err,`formatDateTime`);logger.error(`formatDateTime failed`,err);}else{const error=new Error(String(err));qerrors(error,`formatDateTime`);logger.error(`formatDateTime failed`,error);}return`N/A`;}};
 
 export default formatDateTime;

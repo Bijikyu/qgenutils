@@ -19,7 +19,7 @@
 // Authentication and comparison utilities
 import timingSafeCompare from './timingSafeCompare';
 import maskApiKey from './maskApiKey';
-import extractApiKey from './extractApiKey';
+import extractApiKey from './extractApiKey';import type{ExtractApiKeyOptions,Request}from'./extractApiKey';
 import maskString from './maskString';
 import maskUnified from './maskUnified';
 

@@ -1,6 +1,4 @@
-'use strict';
-
-const sanitizeHtml: any = require('sanitize-html'); // XSS prevention library
+import sanitizeHtml from'sanitize-html';
 
 /**
  * Extract and sanitize validation errors from express-validator result

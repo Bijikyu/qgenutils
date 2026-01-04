@@ -11,18 +11,6 @@
  * @returns Debounced function
  */
 
-import _ from 'lodash';
-
-const debounce = (
-  fn: (...args: any[]) => any,
-  delay: number,
-  options?: {
-    leading?: boolean;
-    trailing?: boolean;
-    maxWait?: number;
-  }
-): ((...args: any[]) => any) => {
-  return _.debounce(fn, delay, options);
-};
+import _ from'lodash';const debounce=(fn:(...args:any[])=>any,delay:number,options?:{leading?:boolean;trailing?:boolean;maxWait?:number;}):((...args:any[])=>any)=>_.debounce(fn,delay,options);
 
 export default debounce;

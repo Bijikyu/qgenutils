@@ -17,31 +17,6 @@ interface SanitizeInputOptions {
  * sanitizeInput('<script>alert("xss")</script>Hello') // returns 'Hello'
  * sanitizeInput('Normal text') // returns 'Normal text'
  */
-const sanitizeInput = (input: string, options: SanitizeInputOptions = {}): string => {
-  if (!input || typeof input !== 'string') return '';
-  const maxLength = options.maxLength ?? 10000;
-  input = input.length > maxLength ? input.substring(0, maxLength) : input;
+const sanitizeInput=(input:string,options:SanitizeInputOptions={}):string=>{if(!input||typeof input!=='string')return'';const maxLength=options.maxLength??10000;input=input.length>maxLength?input.substring(0,maxLength):input;try{const encoded=new TextEncoder().encode(input);const decoded=new TextDecoder('utf-8',{fatal:true}).decode(encoded);if(decoded.includes(''))return'';const hasControlChars=/[\x00-\x1F\x7F]/.test(input);const hasHighSurrogates=/[\uD800-\uDFFF]/.test(input);if(hasControlChars||hasHighSurrogates)return'';}catch{return'';}const finalOptions={allowedTags:options.allowedTags??[],allowedAttributes:options.allowedAttributes??{},textFilter:options.textFilter,maxLength:options.maxLength??10000};try{return sanitizeHtml(input,finalOptions);}catch(error){return input.replace(/<[^>]*>/g,'').trim();}};
 
-  try {
-    const encoded = new TextEncoder().encode(input);
-    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(encoded);
-    if (decoded.includes('�')) return '';
-    const hasControlChars = /[\x00-\x1F\x7F]/.test(input);
-    const hasHighSurrogates = /[\uD800-\uDFFF]/.test(input);
-    const hasLowSurrogates = /[\uDC00-\uDFFF]/.test(input);
-    if ((hasControlChars || hasHighSurrogates || hasLowSurrogates) && !input.includes('\t') && !input.includes('\n') && !input.includes('\r')) return '';
-  } catch (encodingError) {
-    return '';
-  }
-
-  const defaultOptions: SanitizeInputOptions = { allowedTags: [], allowedAttributes: {}, textFilter: (text: string): string => text.trim(), maxLength, allowedEncodings: ['utf-8'] };
-  const finalOptions = { ...defaultOptions, ...options };
-
-  try {
-    return sanitizeHtml(input, finalOptions);
-  } catch (error) {
-    return input.replace(/<[^>]*>/g, '').trim();
-  }
-};
-
-export default sanitizeInput;
+export default sanitizeInput;export type{SanitizeInputOptions};

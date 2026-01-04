@@ -74,57 +74,6 @@ interface PasswordValidationResult {
   strength: 'very_weak' | 'weak' | 'medium' | 'strong' | 'invalid';
 }
 
-const validatePassword = (password: string): PasswordValidationResult => {
-  if (!password || typeof password !== 'string') return { isValid: false, errors: ['invalid_input'], strength: 'invalid' };
-  const errors: string[] = [];
-  const hasMinLength: boolean = password.length >= 8;
-  const hasMaxLength: boolean = password.length <= 128;
-  const hasUpperCase: boolean = /[A-Z]/.test(password);
-  const hasLowerCase: boolean = /[a-z]/.test(password);
-  const hasNumbers: boolean = /\d/.test(password);
-  const hasSpecialChar: boolean = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  
-  if (password.includes(' ') || password.includes('\t') || password.includes('\n')) errors.push('contains_whitespace');
-  const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein', 'welcome'];
-  if (commonPasswords.some(common => password.toLowerCase().includes(common))) errors.push('common_password');
-  if (/(.)\1{2,}/.test(password)) errors.push('repeated_characters');
-  
-  const hasSequential = (str: string): boolean => {
-    for (let i = 0; i < str.length - 2; i++) {
-      const char1 = str.charCodeAt(i);
-      const char2 = str.charCodeAt(i + 1);
-      const char3 = str.charCodeAt(i + 2);
-      if (char2 === char1 + 1 && char3 === char2 + 1) return true;
-    }
-    return false;
-  };
-  
-  if (hasSequential(password)) errors.push('sequential_characters');
-  if (!hasMinLength) errors.push('too_short');
-  if (!hasMaxLength) errors.push('too_long');
-  if (!hasUpperCase) errors.push('no_uppercase');
-  if (!hasLowerCase) errors.push('no_lowercase');
-  if (!hasNumbers) errors.push('no_number');
-  if (!hasSpecialChar) errors.push('no_special');
+const validatePassword=(password:string):PasswordValidationResult=>{if(!password||typeof password!=='string')return{isValid:false,errors:['invalid_input'],strength:'invalid'};const errors:string[]=[];const hasMinLength=password.length>=8;const hasMaxLength=password.length<=128;const hasUpperCase=/[A-Z]/.test(password);const hasLowerCase=/[a-z]/.test(password);const hasNumbers=/\d/.test(password);const hasSpecialChar=/[!@#$%^&*(),.?":{}|<>]/.test(password);if(password.includes(' ')||password.includes('\t')||password.includes('\n'))errors.push('contains_whitespace');const commonPasswords=['password','123456','qwerty','admin','letmein','welcome'];if(commonPasswords.some(common=>password.toLowerCase().includes(common)))errors.push('common_password');if(/(.)\1{2,}/.test(password))errors.push('repeated_characters');const hasSequential=(str:string):boolean=>{for(let i=0;i<str.length-2;i++){const char1=str.charCodeAt(i);const char2=str.charCodeAt(i+1);const char3=str.charCodeAt(i+2);if(char2===char1+1&&char3===char2+1)return true;}return false;};if(hasSequential(password))errors.push('sequential_characters');if(!hasMinLength)errors.push('too_short');if(!hasMaxLength)errors.push('too_long');if(!hasUpperCase)errors.push('no_uppercase');if(!hasLowerCase)errors.push('no_lowercase');if(!hasNumbers)errors.push('no_number');if(!hasSpecialChar)errors.push('no_special');const isValid=errors.length===0;let strength:PasswordValidationResult['strength']='strong';if(!isValid){strength=errors.length<=2?'weak':'very_weak';}else{const strengthCriteria=[hasMinLength,hasUpperCase,hasLowerCase,hasNumbers,hasSpecialChar].filter(Boolean).length;if(strengthCriteria>=4){strength='strong';}else if(strengthCriteria>=3){strength='medium';}else{strength='weak';}}return{isValid,errors,strength};};
 
-  const isValid: boolean = errors.length === 0;
-  let strength: PasswordValidationResult['strength'] = 'strong';
-  
-  if (!isValid) {
-    strength = errors.length <= 2 ? 'weak' : 'very_weak';
-  } else {
-    const strengthCriteria = [hasMinLength, hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
-    if (strengthCriteria >= 4) {
-      strength = 'strong';
-    } else if (strengthCriteria >= 3) {
-      strength = 'medium';
-    } else {
-      strength = 'weak';
-    }
-  }
-
-  return { isValid, errors, strength };
-};
-
-export default validatePassword;
-export { validatePassword as validatePasswordStrength };
+export default validatePassword;export{validatePassword as validatePasswordStrength};export type{PasswordValidationResult};

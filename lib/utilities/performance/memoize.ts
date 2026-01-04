@@ -10,13 +10,6 @@
  * @returns Memoized function
  */
 
-import _ from 'lodash';
-
-const memoize = (
-  fn: (...args: any[]) => any,
-  resolver?: (...args: any[]) => any
-): ((...args: any[]) => any) => {
-  return _.memoize(fn, resolver);
-};
+import _ from'lodash';const memoize=(fn:(...args:any[])=>any,resolver?:(...args:any[])=>any):((...args:any[])=>any)=>_.memoize(fn,resolver);
 
 export default memoize;
