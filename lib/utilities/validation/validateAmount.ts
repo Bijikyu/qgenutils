@@ -71,10 +71,7 @@ import { qerrors } from 'qerrors'; // Centralized error handling system
  *       for your specific application requirements
  */
 
-interface AmountValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
+export interface AmountValidationResult{isValid:boolean;errors:string[];}
 
 const validateAmount = (amount: number): AmountValidationResult => {
   try {
