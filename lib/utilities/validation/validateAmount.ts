@@ -76,85 +76,34 @@ interface AmountValidationResult {
   errors: string[];
 }
 
-function validateAmount(amount: number): AmountValidationResult {
+const validateAmount = (amount: number): AmountValidationResult => {
   try {
-    // TYPE VALIDATION: Ensure input is a number type
-    // This prevents string numbers and other types that could cause calculation errors
-    if (typeof amount !== 'number') {
-      return { 
-        isValid: false, 
-        errors: ['not_number'] 
-      };
-    }
-
-    // NUMERIC INTEGRITY: Check for valid numeric values
-    // NaN (Not-a-Number) and Infinity can cause calculation and storage issues
-    if (isNaN(amount) || !isFinite(amount)) {
-      return { 
-        isValid: false, 
-        errors: ['not_number'] 
-      };
-    }
-
-    const errors: string[] = []; // Collect all validation errors for detailed feedback
-
-    // BUSINESS RULE: Zero amount validation
-    // Many business applications treat zero amounts differently (free vs invalid)
+    if (typeof amount !== 'number') return { isValid: false, errors: ['not_number'] };
+    if (isNaN(amount) || !isFinite(amount)) return { isValid: false, errors: ['not_number'] };
+    const errors: string[] = [];
     if (amount === 0) {
       errors.push('zero_amount');
-    } 
-    // BUSINESS RULE: Negative amount validation
-    // Most payment systems don't allow negative amounts for charges
-    // Note: Adjust this rule if your application needs refunds/credits
-    else if (amount < 0) {
+    } else if (amount < 0) {
       errors.push('negative_amount');
     }
-
-    // DECIMAL PRECISION: Validate currency precision using string-based approach
-    // This prevents floating point precision errors that are common in financial calculations
-    // Approach: Convert to string and validate decimal places directly
     const amountStr = amount.toString();
     const decimalIndex = amountStr.indexOf('.');
-    
-    // Check if more than 2 decimal places (standard currency precision)
     if (decimalIndex !== -1 && amountStr.length - decimalIndex - 1 > 2) {
       errors.push('too_many_decimals');
     }
-    
-    // Additional check using integer arithmetic for safety
     const cents = Math.round(amount * 100);
-    if (!Number.isFinite(cents) || Math.abs(cents) > 99999999) { // Max $999,999.99 in cents
+    if (!Number.isFinite(cents) || Math.abs(cents) > 99999999) {
       errors.push('invalid_amount');
     }
-
-    // BUSINESS LIMIT: Maximum amount validation
-    // Prevents system abuse, database overflow, and potential fraud
-    // $999,999.99 is a reasonable limit for most applications
     if (amount > 999999.99) {
       errors.push('exceeds_limit');
     }
-
-    // VALIDATION RESULT: Amount is valid only if no errors were collected
-    return { 
-      isValid: errors.length === 0, 
-      errors 
-    };
-    
+    return { isValid: errors.length === 0, errors };
   } catch (err) {
-    // ERROR HANDLING: Catch unexpected errors and maintain system stability
-    // Log error for debugging but return a safe failure response
-    qerrors(
-      err instanceof Error ? err : new Error(String(err)), 
-      'validateAmount', 
-      `Amount validation failed for input type: ${typeof amount}`
-    );
-    
-    return { 
-      isValid: false, 
-      errors: ['validation_error'] 
-    };
+    qerrors(err instanceof Error ? err : new Error(String(err)), 'validateAmount', `Amount validation failed for input type: ${typeof amount}`);
+    return { isValid: false, errors: ['validation_error'] };
   }
-}
+};
 
 export default validateAmount;
 export { validateAmount as validateMonetaryAmount };

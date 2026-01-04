@@ -10,7 +10,6 @@ import loadAndFlattenModule from './lib/utilities/module-loader/loadAndFlattenMo
 import createCachedLoader from './lib/utilities/module-loader/createCachedLoader.js';
 import createSimpleLoader from './lib/utilities/module-loader/createSimpleLoader.js';
 import createDirectLoader from './lib/utilities/module-loader/createDirectLoader.js';
-
 import validateEmailSimple from './lib/utilities/validation/validateEmailSimple.js';
 import validatePassword from './lib/utilities/validation/validatePassword.js';
 import validateAmount from './lib/utilities/validation/validateAmount.js';
@@ -62,19 +61,12 @@ import normalizeUrlOrigin from './lib/utilities/url/normalizeUrlOrigin.js';
 import stripProtocol from './lib/utilities/url/stripProtocol.js';
 import parseUrlParts from './lib/utilities/url/parseUrlParts.js';
 import {
-  requireFields,
-  checkPassportAuth,
-  hasGithubStrategy,
-  calculateContentLength,
-  getRequiredHeader,
-  sendJsonResponse,
-  buildCleanHeaders,
-  renderView,
-  registerViewRoute
+  requireFields,checkPassportAuth,hasGithubStrategy,calculateContentLength,getRequiredHeader,
+  sendJsonResponse,buildCleanHeaders,renderView,registerViewRoute
 } from './lib/utilities/legacy/missingLegacyFunctions.js';
-const validateEmail = validateEmailSimple;
+const validateEmail=validateEmailSimple;
 
-export {
+export{
   logger,createMinHeap,hashPassword,verifyPassword,generateSecurePassword,maskSensitiveValue,
   validateConfigValue,buildSecureConfig,loadAndFlattenModule,createCachedLoader,createSimpleLoader,
   createDirectLoader,validateEmailSimple,validatePassword,validateAmount,validateApiKey,
@@ -92,7 +84,7 @@ export {
   sendJsonResponse,buildCleanHeaders,renderView,registerViewRoute,validateEmail
 };
 
-export default {
+export default{
   logger,createMinHeap,hashPassword,verifyPassword,generateSecurePassword,maskSensitiveValue,
   validateConfigValue,buildSecureConfig,loadAndFlattenModule,createCachedLoader,createSimpleLoader,
   createDirectLoader,validateEmailSimple,validatePassword,validateAmount,validateApiKey,

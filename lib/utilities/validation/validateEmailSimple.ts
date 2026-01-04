@@ -11,21 +11,11 @@
 
 import validator from 'validator';
 
-function validateEmail(email: any): boolean {
-  // Input validation - validator handles most cases but we ensure string type
-  if (!email || typeof email !== 'string') {
-    return false;
-  }
-  
-  // Trim whitespace and let validator handle the rest
+const validateEmail = (email: any): boolean => {
+  if (!email || typeof email !== 'string') return false;
   const trimmedEmail = email.trim();
-  if (trimmedEmail.length === 0) {
-    return false;
-  }
-  
-  // Direct call to validator.isEmail() - RFC 5322 compliant
-  return validator.isEmail(trimmedEmail);
-}
+  return trimmedEmail.length > 0 && validator.isEmail(trimmedEmail);
+};
 
 export default validateEmail;
 export { validateEmail as validateEmailFormat };

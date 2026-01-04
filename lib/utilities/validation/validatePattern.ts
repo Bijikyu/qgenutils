@@ -13,19 +13,9 @@ import validator from 'validator';
  * validatePattern('ABC123', /^[A-Z0-9]+$/, 'code'); // null
  */
 const validatePattern = (value: any, pattern: any, fieldName: any, customMessage: any): any => {
-  if (typeof value !== 'string') return {
-    error: `${fieldName || 'Value'} must be a string`
-  };
-
+  if (typeof value !== 'string') return { error: `${fieldName || 'Value'} must be a string` };
   if (!(pattern instanceof RegExp)) throw new Error('Pattern must be a RegExp');
-
-  // Use validator.matches for regex pattern matching
-  if (!validator.matches(value, pattern)) {
-    return {
-      error: customMessage || `${fieldName || 'Value'} does not match required pattern`
-    };
-  }
-
+  if (!validator.matches(value, pattern)) return { error: customMessage || `${fieldName || 'Value'} does not match required pattern` };
   return null;
 };
 

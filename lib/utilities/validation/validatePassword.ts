@@ -74,64 +74,32 @@ interface PasswordValidationResult {
   strength: 'very_weak' | 'weak' | 'medium' | 'strong' | 'invalid';
 }
 
-function validatePassword(password: string): PasswordValidationResult {
-  // INPUT VALIDATION: Ensure password is a string and not null/undefined
-  // This defensive programming prevents type errors and provides predictable behavior
-  if (!password || typeof password !== 'string') {
-    return { 
-      isValid: false, 
-      errors: ['invalid_input'], 
-      strength: 'invalid' 
-    };
-  }
-
-  const errors: string[] = []; // Collect all validation errors for comprehensive feedback
-
-  // COMPLEXITY CHECKS: Evaluate password against security requirements
-  // Each check is performed independently to provide specific error feedback
+const validatePassword = (password: string): PasswordValidationResult => {
+  if (!password || typeof password !== 'string') return { isValid: false, errors: ['invalid_input'], strength: 'invalid' };
+  const errors: string[] = [];
+  const hasMinLength: boolean = password.length >= 8;
+  const hasMaxLength: boolean = password.length <= 128;
+  const hasUpperCase: boolean = /[A-Z]/.test(password);
+  const hasLowerCase: boolean = /[a-z]/.test(password);
+  const hasNumbers: boolean = /\d/.test(password);
+  const hasSpecialChar: boolean = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   
-  const hasMinLength: boolean = password.length >= 8;  // NIST minimum recommendation
-  const hasMaxLength: boolean = password.length <= 128; // Prevent DoS, support passphrases
-  const hasUpperCase: boolean = /[A-Z]/.test(password); // Uppercase letter requirement
-  const hasLowerCase: boolean = /[a-z]/.test(password); // Lowercase letter requirement
-  const hasNumbers: boolean = /\d/.test(password);    // Numeric character requirement
-  const hasSpecialChar: boolean = /[!@#$%^&*(),.?":{}|<>]/.test(password); // Special character requirement
-  
-  // Additional security checks
-  if (password.includes(' ') || password.includes('\t') || password.includes('\n')) {
-    errors.push('contains_whitespace');
-  }
-  
-  // Check for common weak passwords
+  if (password.includes(' ') || password.includes('\t') || password.includes('\n')) errors.push('contains_whitespace');
   const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein', 'welcome'];
-  if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
-    errors.push('common_password');
-  }
+  if (commonPasswords.some(common => password.toLowerCase().includes(common))) errors.push('common_password');
+  if (/(.)\1{2,}/.test(password)) errors.push('repeated_characters');
   
-  // Check for repeated characters (weak password pattern)
-  if (/(.)\1{2,}/.test(password)) {
-    errors.push('repeated_characters');
-  }
-  
-  // Check for sequential characters
   const hasSequential = (str: string): boolean => {
     for (let i = 0; i < str.length - 2; i++) {
       const char1 = str.charCodeAt(i);
       const char2 = str.charCodeAt(i + 1);
       const char3 = str.charCodeAt(i + 2);
-      if (char2 === char1 + 1 && char3 === char2 + 1) {
-        return true;
-      }
+      if (char2 === char1 + 1 && char3 === char2 + 1) return true;
     }
     return false;
   };
   
-  if (hasSequential(password)) {
-    errors.push('sequential_characters');
-  }
-
-  // ERROR COLLECTION: Add specific error codes for each failed requirement
-  // These codes are intentionally user-friendly and translatable
+  if (hasSequential(password)) errors.push('sequential_characters');
   if (!hasMinLength) errors.push('too_short');
   if (!hasMaxLength) errors.push('too_long');
   if (!hasUpperCase) errors.push('no_uppercase');
@@ -139,42 +107,24 @@ function validatePassword(password: string): PasswordValidationResult {
   if (!hasNumbers) errors.push('no_number');
   if (!hasSpecialChar) errors.push('no_special');
 
-  // VALIDATION STATUS: Password is valid only if all requirements are met
   const isValid: boolean = errors.length === 0;
-
-  // STRENGTH ASSESSMENT: Calculate password strength based on multiple factors
-  let strength: PasswordValidationResult['strength'] = 'strong'; // Default for valid passwords
+  let strength: PasswordValidationResult['strength'] = 'strong';
   
   if (!isValid) {
-    // For invalid passwords, assess weakness based on number of failed criteria
-    // More errors = weaker password = higher security risk
     strength = errors.length <= 2 ? 'weak' : 'very_weak';
   } else {
-    // For valid passwords, assess strength based on criteria met (excluding maxLength which is a constraint)
-    // This provides a more nuanced strength assessment for valid passwords
-    const strengthCriteria = [
-      hasMinLength, 
-      hasUpperCase, 
-      hasLowerCase, 
-      hasNumbers, 
-      hasSpecialChar
-    ].filter(Boolean).length;
-    
+    const strengthCriteria = [hasMinLength, hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
     if (strengthCriteria >= 4) {
-      strength = 'strong';    // Meets most complexity requirements
+      strength = 'strong';
     } else if (strengthCriteria >= 3) {
-      strength = 'medium';   // Meets basic requirements
+      strength = 'medium';
     } else {
-      strength = 'weak';      // Valid but minimal complexity
+      strength = 'weak';
     }
   }
 
-  return { 
-    isValid, 
-    errors, 
-    strength 
-  };
-}
+  return { isValid, errors, strength };
+};
 
 export default validatePassword;
 export { validatePassword as validatePasswordStrength };
