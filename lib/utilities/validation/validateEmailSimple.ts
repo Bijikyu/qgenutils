@@ -9,13 +9,4 @@
  * @returns {boolean} True if email is valid, false otherwise
  */
 
-import validator from 'validator';
-
-const validateEmail = (email: any): boolean => {
-  if (!email || typeof email !== 'string') return false;
-  const trimmedEmail = email.trim();
-  return trimmedEmail.length > 0 && validator.isEmail(trimmedEmail);
-};
-
-export default validateEmail;
-export { validateEmail as validateEmailFormat };
+import validator from'validator';const validateEmail=(email:any):boolean=>{if(!email||typeof email!=='string')return false;const trimmedEmail=email.trim();return trimmedEmail.length>0&&validator.isEmail(trimmedEmail);};export default validateEmail;export{validateEmail as validateEmailFormat};

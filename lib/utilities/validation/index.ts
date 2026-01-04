@@ -50,6 +50,8 @@ import validateApiKeyFormat from './validateApiKey.js';
 import validateCurrencyCode from './validateCurrency.js';
 import sanitizeInput from './sanitizeInput.js';
 import extractValidationErrors from './extractValidationErrors.js';
+import type{PasswordValidationResult}from'./validatePassword.js';
+import type{SanitizeInputOptions}from'./sanitizeInput.js';
 
 // Type validators
 import validateRequired from './validateRequired.js';
@@ -104,7 +106,7 @@ import validationConstants from './validationConstants.js';
 import handleValidationFailure from './handleValidationFailure.js';
 
 // Named exports for better tree-shaking support
-export {
+export{
   // Core validation
   validateEmailFormat,
   validatePasswordStrength,
@@ -113,6 +115,9 @@ export {
   validateCurrencyCode,
   sanitizeInput,
   extractValidationErrors,
+  // Types
+  type PasswordValidationResult,
+  type SanitizeInputOptions,
   
   // Type validators
   validateRequired,

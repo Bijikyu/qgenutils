@@ -29,22 +29,6 @@
  * @throws Never throws - returns current date on any error for safety
  */
 
-import { addDays as addDaysFromDate } from 'date-fns';
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
-
-const addDays = (days: number = 90): Date => {
-  logger.debug(`addDays calculating future date with ${days} days offset`);
-  try {
-    (typeof days !== `number` || isNaN(days) || !isFinite(days)) && (logger.warn(`addDays received non-numeric or infinite days parameter, using default`), days = 90);
-    const today = new Date(), futureDate = addDaysFromDate(today, days);
-    logger.debug(`addDays calculated date successfully: ${futureDate.toISOString()}`);
-    return futureDate;
-  } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), `addDays`);
-    logger.error(`addDays failed with error: ${error instanceof Error ? error.message : String(error)}`);
-    return new Date();
-  }
-};
+import{addDays as addDaysFromDate}from'date-fns';import{qerrors}from'qerrors';import logger from'../../logger.js';const addDays=(days:number=90):Date=>{logger.debug(`addDays calculating future date with ${days} days offset`);try{(typeof days!==`number`||isNaN(days)||!isFinite(days))&&(logger.warn(`addDays received non-numeric or infinite days parameter, using default`),days=90);const today=new Date(),futureDate=addDaysFromDate(today,days);logger.debug(`addDays calculated date successfully: ${futureDate.toISOString()}`);return futureDate;}catch(error){qerrors(error instanceof Error?error:new Error(String(error)),`addDays`);logger.error(`addDays failed with error: ${error instanceof Error?error.message:String(error)}`);return new Date();}};
 
 export default addDays;
