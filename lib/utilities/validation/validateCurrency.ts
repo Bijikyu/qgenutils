@@ -13,18 +13,15 @@ const SUPPORTED_CURRENCIES: any = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY']; //
  * validateCurrency('usd') // returns false (case-sensitive)
  * validateCurrency('XYZ') // returns false (unsupported)
  */
-function validateCurrency(currency) { // comprehensive currency validation using ISO 4217 standards
+const validateCurrency = (currency: any): boolean => {
   try {
-  if (!currency || typeof currency !== 'string') { // check for currency presence and string type
-    return false; // invalid input rejection
-  }
-
-  return SUPPORTED_CURRENCIES.includes(currency); // validate against supported currencies (case-sensitive)
+    if (!currency || typeof currency !== 'string') return false;
+    return SUPPORTED_CURRENCIES.includes(currency);
   } catch (error) {
     qerrors(error instanceof Error ? error : new Error(String(error)), 'validateCurrency', `Currency validation failed for input: ${typeof currency}`);
     return false;
   }
-}
+};
 
 export default validateCurrency;
 export { validateCurrency as validateCurrencyCode };

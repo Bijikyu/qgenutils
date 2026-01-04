@@ -59,61 +59,31 @@ import logger from '../../logger.js'; // Structured logging for debugging and mo
  * @see RFC 5322 for email address specifications
  * @see validator library for implementation details
  */
-function validateEmail(email: any): boolean {
-  // Log input for debugging purposes (scrubbed in production)
+const validateEmail = (email: any): boolean => {
   logger.debug(`validateEmail is running with input of type: ${typeof email}`);
-  
   try {
-    // DEFENSIVE PROGRAMMING: Handle null/undefined/non-string inputs early
-    // This prevents type errors and provides predictable behavior for any input type
     if (!email || typeof email !== 'string') {
       logger.debug(`validateEmail is returning false (invalid input type: ${typeof email})`);
       return false;
     }
-    
-    // NORMALIZATION: Trim whitespace to handle user input common issues
-    // Users often accidentally add leading/trailing spaces when copying/pasting
     const trimmedEmail: string = email.trim();
-    
-    // EMPTY INPUT CHECK: Reject empty strings after trimming
-    // Empty emails are never valid in real-world scenarios
     if (trimmedEmail.length === 0) {
       logger.debug(`validateEmail is returning false (empty string after trimming)`);
       return false;
     }
-    
-    // LENGTH VALIDATION: Enforce RFC 5322 maximum length
-    // RFC 5322 specifies maximum email length of 254 characters including @ and domain
-    // This prevents DoS attacks via extremely long inputs and maintains compliance
     if (trimmedEmail.length > 254) {
       logger.debug(`validateEmail is returning false (too long: ${trimmedEmail.length} chars, max 254)`);
       return false;
     }
-    
-    // CORE VALIDATION: Use industry-standard validator library
-    // The validator library implements comprehensive RFC 5322 validation including:
-    // - Local part rules (username, dots, quotes, etc.)
-    // - Domain part validation (subdomains, IP addresses, etc.)
-    // - Special character handling
-    // - International domain name support
     const isValid: boolean = validator.isEmail(trimmedEmail);
-    
-    // Log result for monitoring and debugging
     logger.debug(`validateEmail is returning ${isValid} for email: ${trimmedEmail.substring(0, 50)}${trimmedEmail.length > 50 ? '...' : ''}`);
     return isValid;
-    
   } catch (err) {
-    // ERROR HANDLING: Never throw exceptions to maintain predictable behavior
-    // Log errors for monitoring but always return false for invalid states
     const errorMessage = err instanceof Error ? err.message : String(err);
-    qerrors(
-      err instanceof Error ? err : new Error(String(err)), 
-      'validateEmail', 
-      `Email validation failed for input: ${typeof email === 'string' ? email.substring(0, 50) : String(email)}`
-    );
+    qerrors(err instanceof Error ? err : new Error(String(err)), 'validateEmail', `Email validation failed for input: ${typeof email === 'string' ? email.substring(0, 50) : String(email)}`);
     logger.error(`validateEmail failed: ${errorMessage}`);
-    return false; // Fail safe - return false for any validation errors
+    return false;
   }
-}
+};
 
 export default validateEmail;

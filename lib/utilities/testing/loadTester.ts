@@ -281,100 +281,44 @@ class LoadTester {
     return result;
   }
 
-  /**
-   * Execute a single request with timing and error handling
-   */
-  private async executeRequest(
-    testFunction: (payload: any) => Promise<any>,
-    config: LoadTestConfig,
-    responseTimes: number[],
-    errors: Map<string, { count: number; samples: string[] }>
-  ): Promise<any> {
+  private async executeRequest(testFunction: (payload: any) => Promise<any>, config: LoadTestConfig, responseTimes: number[], errors: Map<string, { count: number; samples: string[] }>): Promise<any> {
     const startTime = performance.now();
-    
     try {
-      const payload = config.payloadGenerator ? config.payloadGenerator() : null;
-      const result = await Promise.race([
-        testFunction(payload),
-        this.timeoutPromise(config.timeout)
-      ]);
-      
+      const payload = config.payloadGenerator?.() ?? null;
+      const result = await Promise.race([testFunction(payload), this.timeoutPromise(config.timeout)]);
       const responseTime = performance.now() - startTime;
       responseTimes.push(responseTime);
-      
       return result;
     } catch (error) {
       const responseTime = performance.now() - startTime;
       responseTimes.push(responseTime);
-      
       const errorType = error instanceof Error ? error.name : 'UnknownError';
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (!errors.has(errorType)) {
-        errors.set(errorType, { count: 0, samples: [] });
-      }
-      
+      if (!errors.has(errorType)) errors.set(errorType, { count: 0, samples: [] });
       const errorData = errors.get(errorType)!;
       errorData.count++;
-      if (errorData.samples.length < 5) {
-        errorData.samples.push(errorMessage);
-      }
-      
+      if (errorData.samples.length < 5) errorData.samples.push(errorMessage);
       throw error;
     }
   }
 
-  /**
-   * Create timeout promise
-   */
   private timeoutPromise(timeout: number): Promise<never> {
-    return new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), timeout);
-    });
+    return new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), timeout));
   }
 
-  /**
-   * Calculate percentile from sorted array
-   */
   private getPercentile(sortedArray: number[], percentile: number): number {
     if (sortedArray.length === 0) return 0;
-    
     const index = Math.ceil((percentile / 100) * sortedArray.length) - 1;
     return sortedArray[Math.max(0, index)];
   }
 
-  /**
-   * Identify performance bottlenecks
-   */
-  private identifyBottlenecks(metrics: {
-    errorRate: number;
-    averageResponseTime: number;
-    p95ResponseTime: number;
-    memoryDelta: number;
-    cpuUsage: number;
-  }): string[] {
+  private identifyBottlenecks(metrics: { errorRate: number; averageResponseTime: number; p95ResponseTime: number; memoryDelta: number; cpuUsage: number; }): string[] {
     const bottlenecks: string[] = [];
-
-    if (metrics.errorRate > 5) {
-      bottlenecks.push('High error rate indicates system instability');
-    }
-
-    if (metrics.averageResponseTime > 1000) {
-      bottlenecks.push('Slow response times suggest processing bottlenecks');
-    }
-
-    if (metrics.p95ResponseTime > 2000) {
-      bottlenecks.push('95th percentile response times are too high');
-    }
-
-    if (metrics.memoryDelta > 100 * 1024 * 1024) { // 100MB
-      bottlenecks.push('Memory usage indicates potential memory leaks');
-    }
-
-    if (metrics.cpuUsage > 80) {
-      bottlenecks.push('High CPU usage suggests compute bottlenecks');
-    }
-
+    if (metrics.errorRate > 5) bottlenecks.push('High error rate indicates system instability');
+    if (metrics.averageResponseTime > 1000) bottlenecks.push('Slow response times suggest processing bottlenecks');
+    if (metrics.p95ResponseTime > 2000) bottlenecks.push('95th percentile response times are too high');
+    if (metrics.memoryDelta > 100 * 1024 * 1024) bottlenecks.push('Memory usage indicates potential memory leaks');
+    if (metrics.cpuUsage > 80) bottlenecks.push('High CPU usage suggests compute bottlenecks');
     return bottlenecks;
   }
 
