@@ -73,10 +73,13 @@ function createAdvancedHttpClient(config: Config = {}) {
       
       // Log request details (if logger is available)
       if (localVars.NODE_ENV !== 'production') {
-        console.debug(`HTTP Request: ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`, {
-          headers: requestConfig.headers,
-          data: requestConfig.data
-        });
+        // Use proper logger in production - this is for debugging only
+        if (process.env?.NODE_ENV !== 'production') {
+          console.debug(`HTTP Request: ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`, {
+            headers: requestConfig.headers,
+            data: requestConfig.data
+          });
+        }
       }
       
       return requestConfig;

@@ -220,7 +220,10 @@ export class BoundedLRUCache<K, V> {
     }
 
     if (deletedCount > 0) {
-      console.log(`Cache cleanup: removed ${deletedCount} expired items`);
+      // Use proper logger instead of console for production logging
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+        console.debug(`Cache cleanup: removed ${deletedCount} expired items`);
+      }
     }
   }
 

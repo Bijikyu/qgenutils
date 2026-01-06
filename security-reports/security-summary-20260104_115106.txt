@@ -1,0 +1,20 @@
+Security Audit Summary Report
+============================
+Project: qgenutils v1.0.3
+Date: Sun Jan  4 11:52:15 AM UTC 2026
+
+Generated Reports:
+- Dependency Scan: dependency-scan-20260104_115106.txt
+- Code Security: code-security-20260104_115106.txt
+- File Permissions: file-permissions-20260104_115106.txt
+- Network Security: network-security-20260104_115106.txt
+- Configuration Security: config-security-20260104_115106.txt
+
+Issues in code-security-20260104_115106.txt: 14
+Issues in config-security-20260104_115106.txt: 3529
+Issues in dependency-scan-20260104_115106.txt: 1
+Issues in file-permissions-20260104_115106.txt: 3
+Issues in network-security-20260104_115106.txt: 25593
+
+Total Issues Found: 29140
+SECURITY STATUS: ATTENTION REQUIRED

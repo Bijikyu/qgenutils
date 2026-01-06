@@ -84,7 +84,7 @@ const execHelperWrapper = (fn: any, options: any = {}): any => {
         }
       }
 
-      logErrors && logger.error(`[ExecHelper] Error in ${wrapperContext}:`, finalError.message);
+      logErrors && logger.error(`[ExecHelper] Error in ${wrapperContext}:`, finalError instanceof Error ? finalError.message : String(finalError));
 
       throw finalError;
     }
@@ -118,7 +118,8 @@ const executeWithRetry = async (fn: any, args: any, retryCount: any, retryDelay:
     } catch (error) {
       lastError = error;
 
-      if (error.statusCode === 400 || error.statusCode === 401 || error.statusCode === 403) throw error;
+      if (error && typeof error === 'object' && 'statusCode' in error && 
+          (error.statusCode === 400 || error.statusCode === 401 || error.statusCode === 403)) throw error;
 
       if (attempt === retryCount) throw error;
 

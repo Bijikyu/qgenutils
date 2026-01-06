@@ -347,8 +347,9 @@ class DynamicImportCache {
     
     if (!this.lruTail) {
       this.lruTail = key;
-}
+    }
 
+    // Remove from current position
     if (cached.next) {
       const nextModule = this.cache.get(cached.next);
       if (nextModule) {
@@ -372,6 +373,7 @@ class DynamicImportCache {
     
     this.lruHead = key;
     
+    // Set tail if this is the first item
     if (!this.lruTail) {
       this.lruTail = key;
     }

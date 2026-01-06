@@ -1,0 +1,53 @@
+Code Security Analysis Report
+==============================
+Project: qgenutils v1.0.3
+Date: Sun Jan  4 11:51:09 AM UTC 2026
+
+=== Secret Detection ===
+Checking for potential hardcoded secrets...
+Pattern: password\s*=\s*['"][^'"]{8,}['"]
+MATCHES FOUND!
+
+Pattern: secret\s*=\s*['"][^'"]{8,}['"]
+No matches found
+
+Pattern: api_key\s*=\s*['"][^'"]{8,}['"]
+MATCHES FOUND!
+
+Pattern: token\s*=\s*['"][^'"]{8,}['"]
+MATCHES FOUND!
+
+Pattern: private_key\s*=\s*['"][^'"]{8,}['"]
+No matches found
+
+Pattern: aws_access_key\s*=\s*['"][^'"]{8,}['"]
+No matches found
+
+Pattern: aws_secret_key\s*=\s*['"][^'"]{8,}['"]
+No matches found
+
+=== Dangerous Function Usage ===
+Function: eval\s*\(
+USAGE FOUND!
+
+Function: Function\s*\(
+USAGE FOUND!
+
+Function: setTimeout\s*\([^,]*,[^0-9]
+USAGE FOUND!
+
+Function: setInterval\s*\([^,]*,[^0-9]
+USAGE FOUND!
+
+Function: exec\s*\(
+USAGE FOUND!
+
+Function: spawn\s*\(
+USAGE FOUND!
+
+Function: child_process
+USAGE FOUND!
+
+=== SQL Injection Patterns ===
+POTENTIAL SQL INJECTION!
+

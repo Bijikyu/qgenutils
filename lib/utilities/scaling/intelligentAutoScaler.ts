@@ -870,11 +870,8 @@ class IntelligentAutoScaler extends EventEmitter {
       return cached.value;
     }
     
-    // Check size before insertion to prevent overflow
-    if (this.metricCache.size >= 1000) {
-      const oldestKey = this.metricCache.keys().next().value;
-      this.metricCache.delete(oldestKey);
-    }
+    // Prevent memory leaks with enhanced cache management
+    this.enforceMetricCacheLimits();
     
     const result = calculator();
     this.metricCache.set(key, { value: result, timestamp: now });
@@ -883,6 +880,25 @@ class IntelligentAutoScaler extends EventEmitter {
   }
 
   // Helper methods for metric calculations with memoization
+  /**
+   * Enforce memory limits on metric cache to prevent unbounded growth
+   */
+  private enforceMetricCacheLimits(): void {
+    const MAX_CACHE_SIZE = 1000;
+    
+    if (this.metricCache.size >= MAX_CACHE_SIZE) {
+      const entries = Array.from(this.metricCache.entries());
+      // Sort by timestamp (oldest first)
+      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+      
+      // Remove oldest 25% to maintain performance
+      const toRemove = Math.floor(MAX_CACHE_SIZE * 0.25);
+      for (let i = 0; i < toRemove; i++) {
+        this.metricCache.delete(entries[i][0]);
+      }
+    }
+  }
+
   private calculateAverage(metric: string, serviceName: string): number {
     const key = this.getCacheKey('avg', metric, serviceName);
     return this.getCachedResult(key, () => {

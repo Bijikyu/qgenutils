@@ -15,31 +15,63 @@
 // Add a module-level variable to track concurrent calls with timestamps
 let inProgress = new Map<string, number>();
 
-// Periodic cleanup to prevent memory leaks (every 5 minutes)
+// Prevent memory leaks by bounding the in-progress map
+const MAX_IN_PROGRESS = 1000;
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
 let cleanupTimer: ReturnType<typeof setInterval> | null = null;
+
+function enforceMaxInProgress(): void {
+  if (inProgress.size >= MAX_IN_PROGRESS) {
+    // Remove oldest entries to prevent unbounded growth
+    const entries = Array.from(inProgress.entries());
+    // Sort by timestamp (oldest first)
+    entries.sort((a, b) => a[1] - b[1]);
+    // Remove oldest 25% of entries
+    const toRemove = Math.floor(MAX_IN_PROGRESS * 0.25);
+    for (let i = 0; i < toRemove; i++) {
+      inProgress.delete(entries[i][0]);
+    }
+  }
+}
 
 function startCleanupTimer(): void {
   if (cleanupTimer) return;
   
   cleanupTimer = setInterval(() => {
-    const now = Date.now();
-    const staleIds: string[] = [];
-    
-    for (const [id, timestamp] of inProgress.entries()) {
-      if (now - timestamp > 30000) {
-        staleIds.push(id);
+    try {
+      const now = Date.now();
+      const staleIds: string[] = [];
+      
+      // Enforce size limits before cleanup
+      enforceMaxInProgress();
+      
+      for (const [id, timestamp] of inProgress.entries()) {
+        if (now - timestamp > 30000) { // 30 second timeout
+          staleIds.push(id);
+        }
       }
-    }
-    
-    staleIds.forEach(id => inProgress.delete(id));
-    
-    // If no more in-progress calls, stop the timer
-    if (inProgress.size === 0 && cleanupTimer) {
-      clearInterval(cleanupTimer);
-      cleanupTimer = null;
+      
+      staleIds.forEach(id => inProgress.delete(id));
+      
+      // If no more in-progress calls, stop the timer
+      if (inProgress.size === 0 && cleanupTimer) {
+        clearInterval(cleanupTimer);
+        cleanupTimer = null;
+      }
+    } catch (error) {
+      // Log error but continue timer to prevent cleanup failure
+      console.warn('[performance] Cleanup timer error:', error);
     }
   }, CLEANUP_INTERVAL);
+}
+
+// Add cleanup function for graceful shutdown
+export function stopCleanupTimer(): void {
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+    cleanupTimer = null;
+  }
+  inProgress.clear();
 }
 
 interface PerformanceState {

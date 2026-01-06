@@ -11,7 +11,7 @@
     "strictPropertyInitialization": false,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noImplicitReturns": false,
+    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
@@ -44,6 +44,8 @@
     "**/*.test.ts",
     "**/*.test.js",
     "lib/utilities/database/connectionPool.ts",
-    "lib/utilities/gateway/apiGateway.ts"
+    "lib/utilities/gateway/apiGateway.ts",
+    ".cache",
+    "agentRecords"
   ]
 }

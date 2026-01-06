@@ -24,8 +24,12 @@
  */
 
 import validator from 'validator'; // Email validation library implementing RFC 5322 standards
-import { qerrors } from 'qerrors'; // Centralized error handling system
-import logger from '../../logger.js'; // Structured logging for debugging and monitoring
+import { 
+  TypeValidators, 
+  ErrorHandlers, 
+  InputSanitizers, 
+  LoggingUtils 
+} from '../shared/index.js';
 
 /**
  * Validates an email address format and structure using RFC 5322 compliant validation.
@@ -60,28 +64,32 @@ import logger from '../../logger.js'; // Structured logging for debugging and mo
  * @see validator library for implementation details
  */
 const validateEmail = (email: any): boolean => {
-  logger.debug(`validateEmail is running with input of type: ${typeof email}`);
+  const log = LoggingUtils.quickLogger('validateEmail');
+  
+  log.start(email);
+  
+  // Use shared utilities for validation and sanitization
+  if (!TypeValidators.isNonEmptyString(email, { trim: true })) {
+    log.debug(`returning false (invalid input type or empty)`);
+    return false;
+  }
+
+  const sanitizedEmail = InputSanitizers.sanitizeEmail(email, { maxLength: 254 });
+  if (sanitizedEmail === '') {
+    log.debug(`returning false (invalid email after sanitization)`);
+    return false;
+  }
+
   try {
-    if (!email || typeof email !== 'string') {
-      logger.debug(`validateEmail is returning false (invalid input type: ${typeof email})`);
-      return false;
-    }
-    const trimmedEmail: string = email.trim();
-    if (trimmedEmail.length === 0) {
-      logger.debug(`validateEmail is returning false (empty string after trimming)`);
-      return false;
-    }
-    if (trimmedEmail.length > 254) {
-      logger.debug(`validateEmail is returning false (too long: ${trimmedEmail.length} chars, max 254)`);
-      return false;
-    }
-    const isValid: boolean = validator.isEmail(trimmedEmail);
-    logger.debug(`validateEmail is returning ${isValid} for email: ${trimmedEmail.substring(0, 50)}${trimmedEmail.length > 50 ? '...' : ''}`);
+    const isValid: boolean = validator.isEmail(sanitizedEmail);
+    log.debug(`returning ${isValid} for email: ${sanitizedEmail.substring(0, 50)}${sanitizedEmail.length > 50 ? '...' : ''}`);
     return isValid;
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    qerrors(err instanceof Error ? err : new Error(String(err)), 'validateEmail', `Email validation failed for input: ${typeof email === 'string' ? email.substring(0, 50) : String(email)}`);
-    logger.error(`validateEmail failed: ${errorMessage}`);
+    ErrorHandlers.handleError(err, {
+      functionName: 'validateEmail',
+      context: `Email validation failed for input: ${TypeValidators.isString(email) ? email.substring(0, 50) : String(email)}`
+    });
+    log.error(err);
     return false;
   }
 };

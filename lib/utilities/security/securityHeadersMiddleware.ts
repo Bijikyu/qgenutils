@@ -58,11 +58,11 @@ const defaultConfig: SecurityHeadersConfig = {
 const getCSPDirectives = (environment: string): string => {
   const baseDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Allow inline scripts for demo compatibility
-    "style-src 'self' 'unsafe-inline'", // Allow inline styles for demo compatibility
+    "script-src 'self'", // Removed unsafe-inline and unsafe-eval for security
+    "style-src 'self'", // Removed unsafe-inline for security
     "img-src 'self' data: https:",
     "font-src 'self' data:",
-    "connect-src 'self' http: https:",
+    "connect-src 'self' https:", // Restrict to HTTPS only in production
     "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'self'",
@@ -72,10 +72,9 @@ const getCSPDirectives = (environment: string): string => {
   ];
 
   if (environment === 'development') {
-    baseDirectives.push(
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
-      "connect-src 'self' http://localhost:* ws://localhost:*"
-    );
+    baseDirectives.splice(1, 1, "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*"); // Replace script-src
+    baseDirectives.splice(2, 1, "style-src 'self' 'unsafe-inline'"); // Replace style-src
+    baseDirectives.splice(5, 1, "connect-src 'self' http://localhost:* ws://localhost:* https:"); // Replace connect-src
   }
 
   return baseDirectives.join('; ');
@@ -157,7 +156,10 @@ export const createSecurityHeaders = (config: SecurityHeadersConfig = {}):
       }
 
     } catch (error) {
-      console.warn('Security headers middleware error:', error);
+      // Log security middleware errors without exposing sensitive data
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+        console.warn('Security headers middleware error:', error instanceof Error ? error.message : 'Unknown error');
+      }
       // Continue without failing the request
     }
 

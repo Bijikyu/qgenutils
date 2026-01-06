@@ -52,9 +52,9 @@ function generateExecutionId() {
     try {
       randomPart = nanoid(12); // 12 characters provides good collision resistance
     } catch (nanoidError) {
-      qerrors(nanoidError, `generateExecutionId-nanoid`);
+      qerrors(nanoidError as Error, `generateExecutionId-nanoid`);
       logger.warn(`generateExecutionId: nanoid generation failed, using fallback`, { 
-        error: nanoidError.message 
+        error: nanoidError instanceof Error ? nanoidError.message : String(nanoidError)
       });
       
       // Fallback to Math.random with timestamp for uniqueness
@@ -88,7 +88,7 @@ function generateExecutionId() {
     
     logger.warn(`generateExecutionId: using fallback ID generation`, { 
       fallbackId,
-      originalError: error.message
+      originalError: error instanceof Error ? error.message : String(error)
     });
 
     return fallbackId;

@@ -55,9 +55,10 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
         if (transformers[key] && typeof transformers[key] === 'function') {
           try {
             config[key] = transformers[key](value);
-          } catch (err) {
-            throw new Error(`Transform error for field '${key}': ${err.message}`);
-          }
+} catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      throw new Error(`Transform error for field '${key}': ${errorMessage}`);
+    }
         } else {
           config[key] = value;
         }
@@ -71,9 +72,10 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
             if (!isValid) {
               throw new Error(`Validation failed for field '${key}'`);
             }
-          } catch (err) {
-            throw new Error(`Validation error for field '${key}': ${err.message}`);
-          }
+} catch (err) {
+      const typedError = err instanceof Error ? err : new Error(String(err));
+      throw new Error(`Validation error for field '${key}': ${typedError.message}`);
+    }
         }
       }
 
@@ -88,7 +90,7 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
 
     } catch (err) {
       if (errorHandler && typeof errorHandler === 'function') {
-        return errorHandler(err, inputOptions);
+        return errorHandler(err as Error, inputOptions);
       }
       throw err;
     }
@@ -208,7 +210,7 @@ function createFieldSchema(fieldConfig) {
         try {
           result = rule(result);
         } catch (err) {
-          throw new Error(`Transform failed: ${err.message}`);
+          throw new Error(`Transform failed: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     }

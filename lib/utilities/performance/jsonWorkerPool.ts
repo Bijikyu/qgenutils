@@ -46,7 +46,7 @@ interface WorkerPoolStats {
 }
 
 // Worker implementation
-function runJSONWorker(): void {
+async function runJSONWorker(): Promise<void> {
   if (isMainThread) return;
 
   const workerId = process.pid;
@@ -56,7 +56,7 @@ function runJSONWorker(): void {
   /**
    * Process JSON task
    */
-  function processTask(task: JSONTask): JSONResult {
+  async function processTask(task: JSONTask): Promise<JSONResult> {
     const startTime = performance.now();
     let result: any;
     let error: Error | undefined;
@@ -64,7 +64,33 @@ function runJSONWorker(): void {
     try {
       if (task.type === 'parse') {
         const jsonString = task.data as string;
-        result = JSON.parse(jsonString, task.options?.reviver);
+        
+        // Use streaming parser for large payloads (>1MB)
+        if (jsonString.length > 1024 * 1024) {
+          const { parseJSONAsync } = require('../streamingJSONParser.js');
+          
+          // Handle async parsing in worker
+          result = await new Promise((resolve, reject) => {
+            try {
+              const parseResult = parseJSONAsync(jsonString, task.options);
+              if (parseResult.error) {
+                resolve({ error: parseResult.error });
+              } else {
+                resolve({ result: parseResult.data });
+              }
+            } catch (err) {
+              resolve({ error: err instanceof Error ? err : new Error(String(err)) });
+            }
+          }).then((response: any) => {
+            if (response.error) {
+              error = response.error;
+            } else {
+              result = response.result;
+            }
+          });
+        } else {
+          result = JSON.parse(jsonString, task.options?.reviver);
+        }
       } else if (task.type === 'stringify') {
         const obj = task.data;
         result = JSON.stringify(obj, task.options?.replacer, task.options?.space);

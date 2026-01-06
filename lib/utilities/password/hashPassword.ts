@@ -6,18 +6,20 @@ const BCRYPT_SALT_ROUNDS = 12;
 
 interface HashOptions {
   saltRounds?: number;
-  useCache?: boolean;
+  // Note: useCache option removed for security reasons
 }
 
-// Cache for password hashes to avoid re-hashing same passwords (security note: only hash results, not passwords)
-const passwordHashCache = new Map<string, string>();
-const MAX_PASSWORD_CACHE_SIZE = 100;
-
 /**
- * Hash password using optimized implementation
+ * Hash password using secure implementation
+ * 
+ * SECURITY NOTE: Intentionally NO CACHING of password hashes to prevent:
+ * - Rainbow table attacks
+ * - Timing attacks  
+ * - Hash leakage through memory inspection
+ * - Cross-contamination between user passwords
  */
 export default async function hashPassword(password: string, options?: HashOptions): Promise<string> {
-  const { saltRounds = BCRYPT_SALT_ROUNDS, useCache = true } = options || {};
+  const { saltRounds = BCRYPT_SALT_ROUNDS } = options || {};
   
   try {
     // Input Validation
@@ -33,15 +35,7 @@ export default async function hashPassword(password: string, options?: HashOptio
       throw new Error('Password must not exceed 128 characters');
     }
 
-    // Check cache if enabled
-    if (useCache) {
-      const cachedHash = passwordHashCache.get(password);
-      if (cachedHash) {
-        return cachedHash;
-      }
-    }
-
-    // Hash password
+    // Hash password securely - NO CACHING for security
     const hash = await new Promise<string>((resolve, reject) => {
       bcrypt.hash(password, saltRounds, (err, hash) => {
         if (err) {
@@ -51,18 +45,6 @@ export default async function hashPassword(password: string, options?: HashOptio
         }
       });
     });
-
-    // Cache result if enabled
-    if (useCache) {
-      // Implement simple cache eviction
-      if (passwordHashCache.size >= MAX_PASSWORD_CACHE_SIZE) {
-        const firstKey = passwordHashCache.keys().next().value;
-        if (firstKey) {
-          passwordHashCache.delete(firstKey);
-        }
-      }
-      passwordHashCache.set(password, hash);
-    }
 
     return hash;
     
