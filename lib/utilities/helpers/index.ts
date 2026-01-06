@@ -81,6 +81,54 @@ import safeJsonStringify from './safeJsonStringify';
 import requireAndValidate from './requireAndValidate';
 
 // ============================================================================
+// CENTRALIZED ERROR HANDLING UTILITIES
+// ============================================================================
+
+import { 
+  handleUtilityError,
+  handleAsyncUtilityError,
+  handleValidationError 
+} from './handleUtilityError.js';
+
+// ============================================================================
+// INPUT VALIDATION UTILITIES
+// ============================================================================
+
+import { 
+  validateInput,
+  validateString,
+  validateNumber,
+  validateArray,
+  type ValidationResult 
+} from './validateInput.js';
+
+// ============================================================================
+// DEBUG LOGGING UTILITIES
+// ============================================================================
+
+import { 
+  createDebugLogger,
+  createPerformanceMonitor,
+  createSimpleDebugLogger,
+  type DebugLogger 
+} from './debugLogger.js';
+
+// ============================================================================
+// JSDOC TEMPLATE UTILITIES
+// ============================================================================
+
+import { 
+  generateJSDoc,
+  createJSDocParam,
+  createJSDocReturn,
+  validationFunctionTemplate,
+  transformationFunctionTemplate,
+  formatFunctionTemplate,
+  generatorFunctionTemplate,
+  configFunctionTemplate
+} from './jsdocTemplates.js';
+
+// ============================================================================
 // NAMED EXPORTS - Tree-Shaking Optimized
 // ============================================================================
 
@@ -112,7 +160,39 @@ export {
   safeJsonStringify,
   
   // Core Utility Functions
-  requireAndValidate
+  requireAndValidate,
+  
+  // Centralized Error Handling Utilities
+  handleUtilityError,
+  handleAsyncUtilityError,
+  handleValidationError,
+  
+  // Enhanced Input Validation Utilities
+  validateInput,
+  validateString,
+  validateNumber,
+  validateArray,
+  
+  // Validation Types
+  type ValidationResult,
+  
+  // Debug Logging Utilities
+  createDebugLogger,
+  createPerformanceMonitor,
+  createSimpleDebugLogger,
+  
+  // Debug Logger Types
+  type DebugLogger,
+  
+  // JSDoc Template Utilities
+  generateJSDoc,
+  createJSDocParam,
+  createJSDocReturn,
+  validationFunctionTemplate,
+  transformationFunctionTemplate,
+  formatFunctionTemplate,
+  generatorFunctionTemplate,
+  configFunctionTemplate
 };
 
 // ============================================================================

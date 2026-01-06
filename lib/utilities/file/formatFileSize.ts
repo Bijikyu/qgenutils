@@ -68,17 +68,29 @@
  */
 
 import { filesize } from 'filesize';
-import logger from '../../logger.js';
+import { 
+  handleUtilityError, 
+  validateNumber, 
+  createDebugLogger 
+} from '../helpers/index.js';
 
 function formatFileSize(bytes: number, options: Record<string, any> = {}) {
-  logger.debug(`formatFileSize formatting file size`, { bytes, options });
+  const debug = createDebugLogger('formatFileSize');
+  
+  // Validate input using centralized validation
+  const validationResult = validateNumber(bytes, 'formatFileSize', 0, { 
+    min: 0, 
+    allowNaN: false 
+  });
+  
+  if (!validationResult.isValid) {
+    return validationResult.value;
+  }
+  
+  const validatedBytes = validationResult.value;
   
   try {
-    // Handle invalid inputs gracefully
-    if (typeof bytes !== `number` || isNaN(bytes) || bytes < 0) {
-      logger.warn(`formatFileSize received invalid bytes value`, { bytes });
-      return `0 B`;
-    }
+    debug.start({ bytes: validatedBytes, options });
 
     // Default options for consistent output with original implementation
     const defaultOptions = {
@@ -92,20 +104,20 @@ function formatFileSize(bytes: number, options: Record<string, any> = {}) {
     const finalOptions: any = { ...defaultOptions, ...options };
 
     // Handle zero bytes - filesize handles this but we maintain consistent logging
-    if (bytes === 0) {
-      logger.debug(`formatFileSize: zero bytes`);
+    if (validatedBytes === 0) {
+      debug.step('zero bytes handling');
     }
 
-    const result: any = filesize(bytes, finalOptions);
+    const result: any = filesize(validatedBytes, finalOptions);
     
-    logger.debug(`formatFileSize formatted successfully`, { input: bytes, output: result });
+    debug.success({ input: validatedBytes, output: result });
     return result;
 
   } catch (error) {
-    logger.error(`formatFileSize failed with error`, { error: error instanceof Error ? error.message : String(error), bytes });
-    
-    // Return safe fallback value
-    return `0 B`;
+    return handleUtilityError(error, 'formatFileSize', { 
+      bytes: validatedBytes,
+      options 
+    }, '0 B');
   }
 }
 

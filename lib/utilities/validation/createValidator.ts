@@ -1,1 +1,0 @@
-const createValidator=(validations)=>{if(!Array.isArray(validations))throw new Error('Validations must be an array');return(data)=>{const errors:any=[];for(const validation of validations){if(typeof validation!=='function')continue;const error:any=validation(data);if(error)errors.push(error);}return errors.length===0?null:{errors};}};export default createValidator;

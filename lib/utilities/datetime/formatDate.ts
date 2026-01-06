@@ -25,33 +25,42 @@
  * @throws Never throws - returns fallback on any error
  */
 
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
-import isValidDate from '../helpers/isValidDate.js';
+import { 
+  handleUtilityError, 
+  validateInput, 
+  createDebugLogger,
+  isValidDate 
+} from '../helpers/index.js';
 
 function formatDate(date: string | Date | null | undefined, fallback: string = "Unknown"): string {
-  logger.debug(`formatDate processing date input: ${date}, fallback: ${fallback}`);
+  const debug = createDebugLogger('formatDate');
   
-  if (!date) {
-    logger.debug(`formatDate returning fallback for null/undefined input`);
+  // Validate input using centralized validation
+  const validationResult = validateInput(date, 'object', 'formatDate', null);
+  
+  if (!validationResult.isValid) {
+    debug.warn('returning fallback for null/undefined input');
     return fallback;
   }
   
   try {
+    debug.start({ input: date, fallback });
+    
     const dateObj: any = typeof date === `string` ? new Date(date) : date;
     if (!isValidDate(dateObj)) {
-      logger.debug(`formatDate returning fallback for invalid date`);
+      debug.warn('returning fallback for invalid date');
       return fallback;
     }
     
     const formatted: any = dateObj.toLocaleDateString();
-    logger.debug(`formatDate successfully formatted date: ${formatted}`);
+    debug.success({ output: formatted });
     
     return formatted;
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), `formatDate`);
-    logger.error(`formatDate failed with error: ${error instanceof Error ? error.message : String(error)}`);
-    return fallback;
+    return handleUtilityError(error, 'formatDate', { 
+      input: date,
+      fallback 
+    }, fallback);
   }
 }
 

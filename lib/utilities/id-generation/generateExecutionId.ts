@@ -37,34 +37,41 @@
  */
 
 import { nanoid } from 'nanoid';
-import { qerrors } from 'qerrors';
-import logger from '../../logger.js';
+import { 
+  handleUtilityError, 
+  handleAsyncUtilityError, 
+  createDebugLogger 
+} from '../helpers/index.js';
 
 function generateExecutionId() {
-  logger.debug(`generateExecutionId: generating unique execution identifier`);
+  const debug = createDebugLogger('generateExecutionId');
 
   try {
+    debug.start({ operation: 'generating unique execution identifier' });
+    
     // Get current timestamp for chronological ordering
-    const timestamp: any = Date.now().toString();
+    const timestamp: string = Date.now().toString();
     
     // Generate cryptographically secure random string
-    let randomPart;
+    let randomPart: string;
     try {
       randomPart = nanoid(12); // 12 characters provides good collision resistance
     } catch (nanoidError) {
-      qerrors(nanoidError as Error, `generateExecutionId-nanoid`);
-      logger.warn(`generateExecutionId: nanoid generation failed, using fallback`, { 
-        error: nanoidError instanceof Error ? nanoidError.message : String(nanoidError)
-      });
+      // Handle nanoid failure with centralized error handling
+      handleAsyncUtilityError(nanoidError, 'generateExecutionId', 'nanoid generation', {
+        nanoidError: nanoidError instanceof Error ? nanoidError.message : String(nanoidError)
+      }, null);
+      
+      debug.warn('nanoid generation failed, using fallback');
       
       // Fallback to Math.random with timestamp for uniqueness
       randomPart = Math.random().toString(36).substring(2, 14).padEnd(12, `0`);
     }
 
     // Combine timestamp and random parts with clear prefix
-    const executionId: any = `exec_${timestamp}_${randomPart}`;
+    const executionId: string = `exec_${timestamp}_${randomPart}`;
     
-    logger.debug(`generateExecutionId: ID generated successfully`, {
+    debug.success({
       executionId,
       timestamp,
       randomPartLength: randomPart.length,
@@ -74,24 +81,17 @@ function generateExecutionId() {
     return executionId;
 
   } catch (error) {
-    // Handle any unexpected errors during ID generation
-    qerrors(error instanceof Error ? error : new Error(String(error)), `generateExecutionId`);
-    logger.error(`generateExecutionId failed with error`, { 
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : String(error)
-    });
-
     // Generate fallback ID using timestamp and random number
-    const fallbackTimestamp: any = Date.now().toString();
-    const fallbackRandom: any = Math.random().toString(36).substring(2, 14).padEnd(12, `0`);
-    const fallbackId: any = `exec_${fallbackTimestamp}_${fallbackRandom}`;
+    const fallbackTimestamp: string = Date.now().toString();
+    const fallbackRandom: string = Math.random().toString(36).substring(2, 14).padEnd(12, `0`);
+    const fallbackId: string = `exec_${fallbackTimestamp}_${fallbackRandom}`;
     
-    logger.warn(`generateExecutionId: using fallback ID generation`, { 
+    // Handle error with centralized error handling and return fallback
+    return handleUtilityError(error, 'generateExecutionId', {
+      stack: error instanceof Error ? error.stack : String(error),
       fallbackId,
       originalError: error instanceof Error ? error.message : String(error)
-    });
-
-    return fallbackId;
+    }, fallbackId);
   }
 }
 

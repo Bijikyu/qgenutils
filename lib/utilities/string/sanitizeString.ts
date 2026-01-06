@@ -25,7 +25,11 @@
  */
 
 import sanitizeHtml from 'sanitize-html';
-import logger from '../../logger.js';
+import { 
+  handleUtilityError, 
+  validateString, 
+  createDebugLogger 
+} from '../helpers/index.js';
 
 // Pre-configure sanitize options to avoid object creation on each call
 const SANITIZE_OPTIONS = { 
@@ -37,26 +41,20 @@ const SANITIZE_OPTIONS = {
 };
 
 const sanitizeString = (input: any): any => {
-  // Early return for null/undefined - avoid unnecessary logging
-  if (input == null) {
-    return '';
+  const debug = createDebugLogger('sanitizeString');
+  
+  // Validate input using centralized validation
+  const validationResult = validateString(input, 'sanitizeString', '', { 
+    allowEmpty: true, 
+    trim: false 
+  });
+  
+  if (!validationResult.isValid) {
+    // For complex objects, validation already logged the warning
+    return validationResult.value;
   }
   
-  // Optimize type checking and string conversion
-  let str: string;
-  switch (typeof input) {
-    case 'string':
-      str = input;
-      break;
-    case 'number':
-    case 'boolean':
-      str = String(input);
-      break;
-    default:
-      // Only log warning for complex objects, not for null/undefined
-      logger.warn(`sanitizeString: rejecting complex object input for security`, { inputType: typeof input });
-      return '';
-  }
+  const str = validationResult.value;
   
   // Early return for empty string
   if (str === '') {
@@ -64,22 +62,27 @@ const sanitizeString = (input: any): any => {
   }
   
   try {
+    debug.start({ inputLength: str.length });
+    
     const sanitized: string = sanitizeHtml(str, SANITIZE_OPTIONS);
+    
     // Only log debug for significant changes to reduce noise
     if (str.length !== sanitized.length && str.length - sanitized.length > 10) {
-      logger.debug(`sanitizeString: significant sanitization`, { 
+      debug.step('significant sanitization', { 
         originalLength: str.length, 
         sanitizedLength: sanitized.length, 
         charactersRemoved: str.length - sanitized.length 
       });
     }
+    
+    debug.success({ outputLength: sanitized.length });
     return sanitized;
+    
   } catch (error) {
-    logger.error(`sanitizeString failed with unexpected error`, { 
-      error: error instanceof Error ? error.message : String(error), 
-      inputType: typeof input 
-    });
-    return '';
+    return handleUtilityError(error, 'sanitizeString', { 
+      inputType: typeof input,
+      inputLength: str.length
+    }, '');
   }
 };
 
