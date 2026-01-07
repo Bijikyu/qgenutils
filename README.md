@@ -9,6 +9,42 @@ A production-ready Node.js utility library providing comprehensive functionality
 npm install qgenutils
 ```
 
+## Demo Server (Development & Testing)
+
+**Important:** The demo server is for development and testing purposes only. It is **not** included in the npm package and should not be used in production.
+
+### Running the Demo
+
+```bash
+# Clone the repository first
+git clone <repository-url>
+cd qgenutils
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Start the demo server
+npm run start-demo
+```
+
+The demo server provides:
+- **Interactive Web Interface**: Test all utilities at `http://localhost:3000`
+- **REST API Endpoints**: Try utilities via HTTP requests
+- **Live Documentation**: See functions in action with real data
+
+### Demo API Endpoints
+
+The demo server exposes these endpoints for testing:
+
+- `POST /api/validate/email` - Email validation
+- `POST /api/security/hash-password` - Password hashing
+- `POST /api/collections/group-by` - Array grouping
+- `POST /api/performance/memoize` - Performance testing
+- `POST /api/datetime/format-date` - Date formatting
+
+**Note:** These endpoints are for demonstration only and not part of the published package.
+
 ## Quick Start
 
 ```javascript

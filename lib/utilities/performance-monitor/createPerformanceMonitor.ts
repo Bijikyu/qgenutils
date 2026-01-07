@@ -30,7 +30,7 @@
  */
 
 import { qerrors } from 'qerrors';
-import * as metricCollectionUtils from './metricCollectionUtils'; // unified metric collection utilities
+import * as metricCollectionUtils from './metricCollectionUtils.js'; // unified metric collection utilities
 const { createMetricsCollector, measureEventLoopLag } = metricCollectionUtils; // core metric collection functions
 const getPerformanceHealthStatus: any = require('./getPerformanceHealthStatus'); // health status calculation
 const analyzePerformanceMetrics: any = require('./analyzePerformanceMetrics'); // metric analysis and alerting

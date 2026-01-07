@@ -27,9 +27,10 @@
     "test:verbose": "jest --verbose --config tests/jest.config.js --rootDir .",
     "pretest": "npm run build && node scripts/ensure-runner.mjs",
     "start": "NODE_ENV=production node dist/index.js",
-    "start-demo": "node demo-server.js",
+    "start-demo": "node examples/simple-demo-server.cjs",
     "health": "npm run build && npm test && npm run audit:security",
     "analyze": "npm run build && npm run test:performance && npm run test:coverage",
+    "test-automated": "node scripts/automated-test.cjs",
     "audit:security": "npm audit && npm outdated",
     "clean": "rm -rf dist node_modules/.cache && npm run build",
     "size-check": "du -sh dist/ && find dist/ -name '*.js' -exec wc -c {} + | sort -n"

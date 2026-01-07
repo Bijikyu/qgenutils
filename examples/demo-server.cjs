@@ -34,10 +34,12 @@ const fs = require('fs');
 const path = require('path');
 
 // Import QGenUtils utilities for API demonstrations
-const QGenUtils = require('./dist/index.js');
+const { createRequire } = require('module');
+const require = createRequire(import.meta.url);
+const QGenUtils = require('../dist/index.js');
 
 // Import centralized environment variables
-const { NODE_ENV } = require('./config/localVars.js');
+const { NODE_ENV } = require('../config/localVars.js');
 
 const root = process.cwd();
 
@@ -626,7 +628,7 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-const { PORT } = require('./config/localVars.js');
+const { PORT } = require('../config/localVars.js');
 const port = PORT || 3000;
 server.listen(port, () => {
   console.log(`Demo server listening on http://localhost:${port}`);

@@ -122,12 +122,12 @@ export const FileNameUtils = {
   /**
    * Dangerous filename characters
    */
-  DANGEROUS_CHARS: RegExp = /[<>:"|?*\/\\x00-\\x1f]/,
+  DANGEROUS_CHARS: /[<>:"|?*\/\\x00-\\x1f]/,
 
   /**
    * Reserved names (Windows)
    */
-  RESERVED_NAMES: Set<string> = new Set([
+  RESERVED_NAMES: new Set([
     'CON', 'PRN', 'AUX', 'NUL',
     'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
     'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
@@ -199,11 +199,11 @@ export const SecurityUtils = {
   /**
    * Dangerous paths patterns
    */
-  DANGEROUS_PATTERNS: RegExp[] = [
+  DANGEROUS_PATTERNS: [
     /\.\./,  // Directory traversal
     /\.\.\\/, // Windows directory traversal
     /\//,  // Double slashes
-    /[<>:"|?*]/, // Command injection
+    /[<>"|?*]/, // Command injection
     /[\x00-\x1f]/, // Control characters
     /^[a-zA-Z]:/,  // Windows drive letters
     /\/etc\/(passwd|shadow|hosts)/i, // System files
@@ -216,7 +216,7 @@ export const SecurityUtils = {
   validatePath: (path: string): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    if (!validateAndTrimString(path)) {
+    if (!validateAndTrimString(path, { required: true })) {
       errors.push('Path is required');
       return { isValid: false, errors };
     }

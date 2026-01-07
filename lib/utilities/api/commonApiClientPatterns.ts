@@ -342,9 +342,9 @@ export function createBatchClient(
         // Extract successful results
         batchResults.forEach((result, index) => {
           if (result.status === 'fulfilled') {
-            results.push(result.value);
+            results.push((result as any).value);
           } else {
-            handleError(result.reason, 'batchClient', `Batch request ${i + index} failed`);
+            handleError((result as any).reason, 'batchClient', `Batch request ${index} failed`);
           }
         });
         

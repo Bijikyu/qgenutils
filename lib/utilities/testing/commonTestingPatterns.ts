@@ -29,6 +29,9 @@ export interface MockResponse {
   statusCode?: number;
   headers?: Record<string, string>;
   data?: any;
+  status?: jest.Mock<number, [number?]>;
+  json?: jest.Mock<void, [any?]>;
+  setHeader?: jest.Mock<void, [string, string]>;
 }
 
 /**
@@ -318,7 +321,7 @@ export const AsyncUtils = {
    * Waits for a condition to become true
    */
   waitFor: (condition: () => boolean, timeout = 5000) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const startTime = Date.now();
       
       const checkCondition = () => {

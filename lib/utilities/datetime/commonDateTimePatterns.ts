@@ -181,14 +181,14 @@ export function subtractTime(date: Date, options: {
   seconds?: number;
   milliseconds?: number;
 } = {}): Date {
-  return addTime(date, {
-    years: -options.years,
-    months: -options.months,
-    days: -options.days,
-    hours: -options.hours,
-    minutes: -options.minutes,
-    seconds: -options.seconds,
-    milliseconds: -options.milliseconds
+return addTime(date, {
+    years: -(options.years || 0),
+    months: -(options.months || 0),
+    days: -(options.days || 0),
+    hours: -(options.hours || 0),
+    minutes: -(options.minutes || 0),
+    seconds: -(options.seconds || 0),
+    milliseconds: -(options.milliseconds || 0),
   });
 }
 

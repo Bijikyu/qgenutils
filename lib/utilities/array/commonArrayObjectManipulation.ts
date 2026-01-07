@@ -115,7 +115,7 @@ export const ArrayUtils = {
   /**
    * Removes elements based on predicate
    */
-  remove: <T>(array: T[], predicate: (item: T, index: number) => T[] => {
+  remove: <T>(array: T[], predicate: (item: T, index: number) => boolean): T[] => {
     return array.filter((item, index) => !predicate(item, index));
   },
 
@@ -123,20 +123,20 @@ export const ArrayUtils = {
    * Filters array based on predicate
    */
   filter: <T>(array: T[], predicate: (item: T) => boolean): T[] => {
-    return array.filter((item, index) => predicate(item, index));
+    return array.filter((item) => predicate(item));
   },
 
   /**
    * Maps array to different type
    */
-  map: <T, U>(array: T[], mapper: (item: T, index: number) => U[] => {
+  map: <T, U>(array: T[], mapper: (item: T, index: number) => U): U[] => {
     return array.map(mapper);
   },
 
   /**
    * Reduces array to single value
    */
-  reduce: <T, U>(array: T[], reducer: (acc: U, item: T, index: number, initialValue: U): U => {
+  reduce: <T, U>(array: T[], reducer: (acc: U, item: T, index: number) => U, initialValue: U): U => {
     return array.reduce(reducer, initialValue);
   },
 
@@ -150,7 +150,7 @@ export const ArrayUtils = {
   /**
    * Splits string into array by separator
    */
-  split: (str: string, limit?: number): string[] => {
+  split: (str: string, separator: string, limit?: number): string[] => {
     return limit ? str.split(separator, limit) : str.split(separator);
   },
 
@@ -249,7 +249,7 @@ export const ObjectUtils = {
   pick: <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> => {
     const result = {} as Pick<T, K>;
     for (const key of keys) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         result[key] = obj[key];
       }
     }
@@ -259,14 +259,12 @@ export const ObjectUtils = {
   /**
    * Omits specified properties from object
    */
-  omit: <T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> => {
-    const result = {} as Omit<T, K>;
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key) && !keys.includes(key)) {
-        result[key] = obj[key];
-      }
+  omit: <T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> => {
+    const result = { ...obj };
+    for (const key of keys) {
+      delete result[key];
     }
-    return result;
+    return result as Omit<T, K>;
   },
 
   /**
@@ -275,7 +273,7 @@ export const ObjectUtils = {
   renameKeys: <T>(obj: T, keyMap: Record<keyof T, string>): T => {
     const result = {} as T;
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const newKey = keyMap[key];
         if (newKey) {
           result[newKey as keyof T] = obj[key];
