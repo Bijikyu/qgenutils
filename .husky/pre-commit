@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run ESLint on all staged files
+npx lint-staged
+
+# Check for syntax errors in critical files
+echo "📝 Checking critical files for syntax errors..."
+
+# Check demo server syntax
+node -c examples/simple-demo-server.cjs
+if [ $? -ne 0 ]; then
+  echo "❌ Syntax error in simple-demo-server.cjs"
+  exit 1
+fi
+
+# Check API client syntax  
+node -c examples/api-client-enhanced.js
+if [ $? -ne 0 ]; then
+  echo "❌ Syntax error in api-client-enhanced.js"
+  exit 1
+fi
+
+# Run a quick integration test
+echo "🧪 Running quick integration test..."
+node tests/integration/frontend-backend-integration.test.cjs --quick
+
+if [ $? -eq 0 ]; then
+  echo "✅ Pre-commit checks passed!"
+else
+  echo "❌ Integration test failed"
+  exit 1
+fi
+
+echo "🎯 Pre-commit hooks completed successfully"

@@ -24,6 +24,10 @@
     "test:unit": "jest tests/unit --config tests/jest.config.js --rootDir .",
     "test:integration": "jest tests/integration --config tests/jest.config.js --rootDir .",
     "test:performance": "node --expose-gc scripts/simple-performance-benchmark.mjs",
+    "benchmark": "node scripts/performance-benchmark.cjs",
+    "benchmark-full": "node scripts/performance-benchmark.cjs full",
+    "benchmark-quick": "node scripts/performance-benchmark.cjs quick",
+    "benchmark-memory": "node scripts/performance-benchmark.cjs memory",
     "test:verbose": "jest --verbose --config tests/jest.config.js --rootDir .",
     "pretest": "npm run build && node scripts/ensure-runner.mjs",
     "start": "NODE_ENV=production node dist/index.js",
@@ -31,6 +35,7 @@
     "health": "npm run build && npm test && npm run audit:security",
     "analyze": "npm run build && npm run test:performance && npm run test:coverage",
     "test-automated": "node scripts/automated-test.cjs",
+    "setup-dev": "node scripts/setup-development.cjs",
     "audit:security": "npm audit && npm outdated",
     "clean": "rm -rf dist node_modules/.cache && npm run build",
     "size-check": "du -sh dist/ && find dist/ -name '*.js' -exec wc -c {} + | sort -n"

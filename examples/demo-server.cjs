@@ -34,8 +34,6 @@ const fs = require('fs');
 const path = require('path');
 
 // Import QGenUtils utilities for API demonstrations
-const { createRequire } = require('module');
-const require = createRequire(import.meta.url);
 const QGenUtils = require('../dist/index.js');
 
 // Import centralized environment variables

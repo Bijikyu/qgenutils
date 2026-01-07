@@ -472,6 +472,7 @@
             }
         }
     </style>
+    <script src="api-client-enhanced.js"></script>
 </head>
 <body>
     <div class="container">
@@ -2051,6 +2052,9 @@ Node.js & Browser Ready
         // Import real QGenUtils functions for browser environment
         let utils;
         
+        // Initialize enhanced API client
+        const apiClient = new APIClient();
+        
         try {
             // Use real QGenUtils if available
             if (typeof QGenUtils !== 'undefined') {
@@ -2407,6 +2411,18 @@ Node.js & Browser Ready
             const email = document.getElementById('showcaseEmail').value;
             const result = utils.validateEmailFormat(email);
             displayResult('emailResult', result, result.isValid ? 'success' : 'error');
+        }
+
+        async function validateEmailEnhanced() {
+            const email = document.getElementById('emailInput').value;
+            if (!email) {
+                showNotification('Please enter an email address', 'warning');
+                return;
+            }
+            
+            const result = await apiClient.validateEmail(email);
+            displayResult('emailValidationResult', result.success ? result.data : { error: result.error }, result.success ? 'success' : 'error');
+            showNotification(result.message, result.success ? 'success' : 'error');
         }
 
         function maskShowcaseKey() {

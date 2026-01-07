@@ -19,6 +19,67 @@ const DemoUtils = {
     };
   },
 
+  validatePassword: (password) => {
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      numbers: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    
+    const strength = Object.values(checks).filter(Boolean).length;
+    const score = strength / Object.keys(checks).length;
+    
+    const suggestions = [];
+    if (!checks.length) { suggestions.push("Use at least 8 characters"); }
+    if (!checks.uppercase) { suggestions.push("Include uppercase letters"); }
+    if (!checks.lowercase) { suggestions.push("Include lowercase letters"); }
+    if (!checks.numbers) { suggestions.push("Include numbers"); }
+    if (!checks.special) { suggestions.push("Include special characters"); }
+    
+    return {
+      strength,
+      score,
+      checks,
+      suggestions,
+      isValid: strength >= 4,
+      message: strength >= 4 ? 'Strong password' : 'Weak password'
+    };
+  },
+
+  maskApiKey: (apiKey) => {
+    if (!apiKey || typeof apiKey !== 'string') {
+      return { 
+        original: apiKey,
+        masked: '****',
+        error: 'Invalid API key format'
+      };
+    }
+    
+    // Common API key patterns
+    const patterns = [
+      /^sk-[a-zA-Z0-9]{48}/, // Stripe-like
+      /^[a-zA-Z0-9]{32}/, // Generic 32-char
+      /^[a-zA-Z0-9-]{20}/, // Generic with dashes
+    ];
+    
+    let masked = apiKey;
+    for (const pattern of patterns) {
+      if (pattern.test(apiKey)) {
+        masked = apiKey.substring(0, 8) + '****' + apiKey.substring(apiKey.length - 4);
+        break;
+      }
+    }
+    
+    // Fallback: show first 2 and last 2
+    if (masked === apiKey && apiKey.length > 8) {
+      masked = apiKey.substring(0, 2) + '****' + apiKey.substring(apiKey.length - 2);
+    }
+    
+    return { original: apiKey, masked };
+  },
+
   formatDate: (dateString) => {
     try {
       const date = new Date(dateString);
@@ -66,7 +127,7 @@ const server = http.createServer((req, res) => {
   serveStaticFile(req, res, path);
 });
 
-function handleApiRequest(req, res, path, method) {
+async function handleApiRequest(req, res, path, method) {
   console.log('API Request:', { method, path, url: req.url });
   
   if (method !== 'POST') {
@@ -74,14 +135,17 @@ function handleApiRequest(req, res, path, method) {
     return;
   }
 
-  const body = parseRequestBody(req);
-  const [, category, action] = path.split('/');
-  console.log('Parsed path:', { category, action });
+  const body = await parseRequestBody(req);
+  const [, , category, action] = path.split('/');
+  console.log('Parsed path:', { category, action, body });
 
   setTimeout(() => {
     switch (category) {
       case 'validate':
         handleValidation(req, res, action, body);
+        break;
+      case 'security':
+        handleSecurity(req, res, action, body);
         break;
       case 'datetime':
         handleDateTime(req, res, action, body);
@@ -101,6 +165,9 @@ function handleValidation(req, res, action, body) {
     case 'email':
       result = DemoUtils.validateEmail(body.email);
       break;
+    case 'password':
+      result = DemoUtils.validatePassword(body.password);
+      break;
     default:
       result = { error: 'Unknown validation action' };
   }
@@ -115,6 +182,18 @@ function handleDateTime(req, res, action, body) {
       break;
     default:
       result = { error: 'Unknown datetime action' };
+  }
+  sendJson(res, result);
+}
+
+function handleSecurity(req, res, action, body) {
+  let result;
+  switch (action) {
+    case 'mask-api-key':
+      result = DemoUtils.maskApiKey(body.apiKey);
+      break;
+    default:
+      result = { error: 'Unknown security action' };
   }
   sendJson(res, result);
 }
@@ -157,7 +236,7 @@ function sendJson(res, data, statusCode = 200) {
 }
 
 function serveStaticFile(req, res, path) {
-  if (path === '/') path = '/demo.html';
+    if (path === '/') { path = '/demo.html'; }
   
   const filePath = path.join(__dirname, path);
   const extname = path.extname(filePath);
@@ -184,6 +263,8 @@ server.listen(port, () => {
   console.log(`Simple Demo Server listening on http://localhost:${port}`);
   console.log('Available endpoints:');
   console.log('  POST /api/validate/email - Email validation');
+  console.log('  POST /api/validate/password - Password validation');
+  console.log('  POST /api/security/mask-api-key - API key masking');
   console.log('  POST /api/datetime/format - Date formatting');
   console.log('  POST /api/collections/group-by - Array grouping');
   console.log('  Open http://localhost:3000 for demo interface');

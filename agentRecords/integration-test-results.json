@@ -1,0 +1,172 @@
+{
+  "timestamp": "2026-01-07T19:34:25.103Z",
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "successRate": 100
+  },
+  "tests": [
+    {
+      "name": "Email Validation - Valid Email",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "isValid": true,
+        "message": "Valid email format"
+      },
+      "duration": 0
+    },
+    {
+      "name": "Email Validation - Invalid Email",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "isValid": false,
+        "message": "Invalid email format"
+      },
+      "duration": 0
+    },
+    {
+      "name": "Password Validation - Strong Password",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "strength": 5,
+        "score": 1,
+        "checks": {
+          "length": true,
+          "uppercase": true,
+          "lowercase": true,
+          "numbers": true,
+          "special": true
+        },
+        "suggestions": [],
+        "isValid": true,
+        "message": "Strong password"
+      },
+      "duration": 0
+    },
+    {
+      "name": "API Key Masking",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "original": "sk-sensitive1234567890abcdef",
+        "masked": "sk-sensi****cdef"
+      },
+      "duration": 0
+    },
+    {
+      "name": "Collections - Group By",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "A": [
+          {
+            "name": "John",
+            "category": "A"
+          },
+          {
+            "name": "Bob",
+            "category": "A"
+          }
+        ],
+        "B": [
+          {
+            "name": "Jane",
+            "category": "B"
+          }
+        ]
+      },
+      "duration": 0
+    },
+    {
+      "name": "Error Handling - Invalid Endpoint",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "statusCode": 404,
+        "data": {
+          "error": "Unknown endpoint"
+        }
+      },
+      "duration": 0
+    },
+    {
+      "name": "Error Handling - Invalid Method",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "statusCode": 405,
+        "data": {
+          "error": "Method not allowed"
+        }
+      },
+      "duration": 0
+    },
+    {
+      "name": "Error Handling - Invalid JSON",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "statusCode": 200,
+        "data": {
+          "isValid": false,
+          "message": "Invalid email format"
+        }
+      },
+      "duration": 0
+    },
+    {
+      "name": "CORS - OPTIONS Request",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "statusCode": 200,
+        "headers": {
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "access-control-allow-headers": "Content-Type",
+          "date": "Wed, 07 Jan 2026 19:34:24 GMT",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5",
+          "transfer-encoding": "chunked"
+        }
+      },
+      "duration": 0
+    },
+    {
+      "name": "CORS Headers",
+      "passed": "*",
+      "reason": "",
+      "details": {
+        "statusCode": 200,
+        "headers": {
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "access-control-allow-headers": "Content-Type",
+          "content-type": "application/json",
+          "date": "Wed, 07 Jan 2026 19:34:24 GMT",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5",
+          "transfer-encoding": "chunked"
+        },
+        "hasCorsHeaders": "*"
+      },
+      "duration": 0
+    },
+    {
+      "name": "Performance - Concurrent Requests",
+      "passed": true,
+      "reason": "",
+      "details": {
+        "concurrentRequests": 10,
+        "successfulRequests": 10,
+        "duration": 120,
+        "averageTime": 12
+      },
+      "duration": 0
+    }
+  ]
+}
