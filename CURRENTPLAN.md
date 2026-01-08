@@ -1,167 +1,186 @@
-# Comprehensive Bug Analysis and Fix Plan
+# Comprehensive App Wiring Audit Plan
 
 ## Task Classification
-**NON-TRIVIAL** - This codebase requires systematic bug analysis across multiple utility categories including validation, security, performance monitoring, batch processing, and module loading.
+**NON-TRIVIAL** - This requires systematic analysis of external API compliance, backend contracts, and frontend-backend integration across the entire codebase.
 
-## Identified Bugs and Issues
+## Overview
+This plan addresses three specific audit tasks:
+1. **External Third-Party API Compliance** - Verify all external API implementations match their documentation/specifications
+2. **Backend Contracts and Schema Validation** - Ensure backend routes have proper schema and UI accessibility
+3. **Frontend-Backend Wiring Audit** - Validate UI elements are properly connected to backend endpoints
 
-### 🚨 CRITICAL BUGS
+## Task 1: External Third-Party API Compliance Audit
 
-#### 1. **Missing Import Files in index.ts** 
-- **Location**: `/home/runner/workspace/index.ts` lines 30-39
-- **Issue**: Several imports reference non-existent or incorrectly named files
-- **Affected Imports**:
-  - `validateEmailFormat` (file exists as `validateEmail.ts`)
-  - `validatePasswordStrength` (file exists as `validatePassword.ts`) 
-  - `validateMonetaryAmount` (file exists as `validateAmount.ts`)
-  - `extractValidationErrors` (file may not exist)
-  - `validateApiKeyFormat` (file may not exist)
-  - `validateCurrencyCode` (file may not exist)
-  - `validatePaymentMethodNonce` (file may not exist)
-  - `validateDateRange` (file may not exist)
-  - `validateSubscriptionPlan` (file may not exist)
-- **Impact**: Build failures, runtime import errors
-- **Priority**: CRITICAL
+### Scope of Analysis
+Identify all external third-party API integrations and verify compliance:
 
-#### 2. **Mixed Module Systems in Validation Files**
-- **Location**: Multiple files in `/lib/utilities/validation/`
-- **Issue**: Files use `'use strict'` with ES6 imports/exports inconsistently
-- **Affected Files**: `validatePassword.ts`, `sanitizeInput.ts`, `measureEventLoopLag.ts`
-- **Impact**: Module resolution failures, bundling issues
-- **Priority**: HIGH
+#### 1.1 HTTP Client Libraries
+- **Axios** usage patterns and configuration
+- **Request/response interceptor** implementations
+- **Timeout and retry logic** compliance
 
-#### 3. **Unsafe Type Annotations**
-- **Location**: `validatePassword.ts` lines 16-32
-- **Issue**: Variables typed as `any` when specific types are available
-- **Impact**: Loss of type safety, potential runtime errors
-- **Priority**: MEDIUM
+#### 1.2 Authentication & Security APIs
+- **bcrypt** password hashing implementation
+- **express-validator** input validation patterns
+- **helmet** security header configurations
+- **express-rate-limit** rate limiting implementations
 
-### ⚠️ LOGIC ERRORS
+#### 1.3 Utility Libraries
+- **validator.js** string validation usage
+- **date-fns** datetime manipulation patterns
+- **lodash** utility function usage
+- **sanitize-html** HTML sanitization compliance
 
-#### 4. **Semaphore Race Condition**
-- **Location**: `/lib/utilities/batch/createSemaphore.ts` lines 30-37
-- **Issue**: Release function doesn't properly handle concurrent access to waitQueue
-- **Impact**: Potential deadlocks, missed releases
-- **Priority**: HIGH
+#### 1.4 Logging & Monitoring
+- **winston** logging configuration
+- **winston-daily-rotate-file** rotation setup
 
-#### 5. **Event Loop Lag Calculation Bounds Issue**
-- **Location**: `/lib/utilities/performance-monitor/measureEventLoopLag.ts` lines 21-28
-- **Issue**: BigInt clamping may lose precision for very large lag values
-- **Impact**: Inaccurate performance measurements
-- **Priority**: MEDIUM
+### Compliance Checklist
+- [ ] All API calls use correct HTTP methods and headers
+- [ ] Request/response payloads match API specifications
+- [ ] Error handling follows API documentation
+- [ ] Rate limiting and timeout configurations are appropriate
+- [ ] Authentication patterns match security best practices
+- [ ] Data validation aligns with library specifications
 
-#### 6. **Password Strength Logic Flaw**
-- **Location**: `/lib/utilities/validation/validatePassword.ts` lines 34-47
-- **Issue**: Strength calculation includes maxLength as criteria when it should be a constraint
-- **Impact**: Incorrect strength assessments
-- **Priority**: LOW
+## Task 2: Backend Contracts and Schema Validation
 
-### 🔒 SECURITY ISSUES
+### Backend Route Analysis
+#### 2.1 Demo Server Endpoints
+Analyze demo server implementation in `examples/simple-demo-server.cjs`:
+- `POST /api/validate/email` - Email validation endpoint
+- `POST /api/security/hash-password` - Password hashing endpoint  
+- `POST /api/collections/group-by` - Array grouping endpoint
+- `POST /api/performance/memoize` - Performance testing endpoint
+- `POST /api/datetime/format-date` - Date formatting endpoint
 
-#### 7. **Logger Directory Traversal Risk**
-- **Location**: `/lib/logger.js` lines 23-35
-- **Issue**: Dynamic require path construction without validation
-- **Impact**: Potential directory traversal attacks
-- **Priority**: MEDIUM
+#### 2.2 Schema Validation
+- Verify request/response schemas match documented contracts
+- Check input validation completeness
+- Ensure error responses are consistent
 
-#### 8. **Sanitize Input Missing Validation**
-- **Location**: `/lib/utilities/validation/sanitizeInput.ts` lines 13-23
-- **Issue**: No length limits or character encoding validation
-- **Impact**: Potential DoS via extremely long inputs
-- **Priority**: MEDIUM
+#### 2.3 UI Accessibility Analysis
+- Confirm each backend endpoint has corresponding UI element
+- Identify orphaned backend endpoints without UI access
+- Validate UI forms properly connect to backend APIs
 
-### 📦 CONFIGURATION ISSUES
+### Backend-UI Mapping Checklist
+- [ ] Each demo endpoint has corresponding UI form/button
+- [ ] UI input validation matches backend validation
+- [ ] Error responses are properly displayed in UI
+- [ ] Success responses update UI appropriately
+- [ ] No backend endpoints are hidden from UI access
 
-#### 9. **Package.json Missing Dependencies**
-- **Location**: `/package.json`
-- **Issue**: Some imported modules may not be listed as dependencies
-- **Impact**: Runtime failures in production
-- **Priority**: HIGH
+## Task 3: Frontend-Backend Wiring Audit
 
-#### 10. **TypeScript Config Inconsistencies**
-- **Location**: `/tsconfig.json` line 16
-- **Issue**: `noUncheckedIndexedAccess: false` may hide array bounds issues
-- **Impact**: Potential undefined access errors
-- **Priority**: LOW
+### Frontend Components Analysis
+#### 3.1 Demo UI Elements
+Analyze demo server HTML interface:
+- Form submissions and AJAX calls
+- Button event handlers and API integrations
+- Real-time response display and error handling
 
-### 🧪 TESTING ISSUES
+#### 3.2 API Call Patterns
+- Verify all frontend API calls use correct endpoints
+- Check request payload structures match backend expectations
+- Ensure response handling is complete and robust
 
-#### 11. **Test Runner Path Resolution**
-- **Location**: `/qtests-runner.mjs` lines 152-159
-- **Issue**: Limited config path search may miss valid jest configs
-- **Impact**: Test execution failures
-- **Priority**: MEDIUM
+#### 3.3 Data Flow Validation
+- Trace data from UI input through backend processing to response
+- Verify bidirectional data flow works correctly
+- Check for proper state management and updates
 
-## Fix Strategy
+### Wiring Integration Checklist
+- [ ] All UI forms have functional API connections
+- [ ] API calls use correct HTTP methods and endpoints
+- [ ] Request payloads match backend schema expectations
+- [ ] Response handling covers success and error cases
+- [ ] UI updates reflect backend response accurately
+- [ ] No UI elements make non-functional or dead API calls
 
-### Phase 1: Critical Import Fixes
-1. Audit all imports in `index.ts`
-2. Verify file existence and naming consistency
-3. Update import paths to match actual files
-4. Test build process
+## Implementation Strategy
 
-### Phase 2: Module System Standardization
-1. Remove `'use strict'` from ES6 modules
-2. Ensure consistent import/export syntax
-3. Update TypeScript configurations
+### Phase 1: External API Compliance (Agent 1)
+**Focus**: Library usage patterns and specification compliance
+**Files to analyze**:
+- All HTTP client configurations
+- Authentication and security implementations  
+- Validation and sanitization patterns
+- Logging and monitoring setups
 
-### Phase 3: Logic and Security Fixes
-1. Fix semaphore race conditions
-2. Improve input validation and sanitization
-3. Enhance logger security
-4. Correct password strength logic
+### Phase 2: Backend Contracts (Agent 2)
+**Focus**: Demo server endpoints and schema validation
+**Files to analyze**:
+- `examples/simple-demo-server.cjs`
+- Backend route definitions
+- Request/response validation middleware
+- Error handling patterns
 
-### Phase 4: Type Safety Improvements
-1. Replace `any` types with proper TypeScript types
-2. Enable stricter TypeScript checks
-3. Add comprehensive type coverage
+### Phase 3: Frontend-Backend Wiring (Agent 3)
+**Focus**: UI integration and API call patterns
+**Files to analyze**:
+- Demo HTML interface and JavaScript
+- Form submissions and AJAX handlers
+- Response display and error handling UI
 
-### Phase 5: Testing and Validation
-1. Fix test runner configuration issues
-2. Add comprehensive unit tests for fixed bugs
-3. Validate all fixes with test suite
+### Phase 4: Integration Testing (Agent 4)
+**Focus**: End-to-end validation and fixes
+**Responsibilities**:
+- Test all identified issues
+- Implement fixes for compliance problems
+- Validate complete data flow
+- Document all changes made
+
+## Success Criteria
+
+### Task 1 Success Metrics
+- ✅ All external API calls comply with documentation
+- ✅ Library usage patterns follow specifications
+- ✅ Error handling matches API requirements
+- ✅ Security implementations follow best practices
+
+### Task 2 Success Metrics  
+- ✅ All backend endpoints have proper schema validation
+- ✅ Each endpoint is accessible via UI element
+- ✅ Request/response contracts are consistent
+- ✅ No orphaned backend endpoints exist
+
+### Task 3 Success Metrics
+- ✅ All UI elements have functional backend connections
+- ✅ API calls use correct endpoints and payloads
+- ✅ Response handling is complete and robust
+- ✅ Data flow works end-to-end without breaks
 
 ## Parallel Execution Plan
 
-### Agent 1: Import/Export Fixes
-- Fix index.ts import issues
-- Standardize module systems
-- Update package.json dependencies
+### Agent Assignments
+- **Agent compliance**: External API audit and fixes
+- **Agent backend**: Backend contracts and schema validation  
+- **Agent frontend**: Frontend-backend wiring analysis
+- **Agent integrator**: End-to-end testing and fix validation
 
-### Agent 2: Logic Bug Fixes  
-- Fix semaphore race conditions
-- Correct event loop lag calculations
-- Fix password strength logic
+### Coordination Strategy
+- Agents work in parallel on separate task areas
+- Cross-agent communication for integration points
+- Final integration agent validates all fixes work together
 
-### Agent 3: Security Hardening
-- Improve logger path validation
-- Enhance input sanitization
-- Review all security-related utilities
-
-### Agent 4: Type Safety & Testing
-- Replace any types with proper types
-- Fix test runner issues
-- Add comprehensive test coverage
-
-## Success Criteria
-1. ✅ All imports resolve correctly
-2. ✅ Build process completes without errors
-3. ✅ Test suite passes (target: 100% pass rate)
-4. ✅ No runtime module resolution errors
-5. ✅ Security issues mitigated
-6. ✅ Type safety improved (strict mode enabled)
+## Risk Mitigation
+- Document all API compliance issues found
+- Test fixes in isolation before integration
+- Maintain backward compatibility where possible
+- Create comprehensive test coverage for fixed issues
 
 ## Estimated Timeline
-- **Phase 1**: 30 minutes (Critical fixes)
-- **Phase 2**: 20 minutes (Module standardization)
-- **Phase 3**: 40 minutes (Logic/Security fixes)
-- **Phase 4**: 30 minutes (Type safety)
-- **Phase 5**: 20 minutes (Testing/Validation)
+- **Phase 1**: 45 minutes (External API compliance)
+- **Phase 2**: 30 minutes (Backend contracts)
+- **Phase 3**: 35 minutes (Frontend-backend wiring)
+- **Phase 4**: 30 minutes (Integration testing and fixes)
 
 **Total Estimated Time**: 2 hours 20 minutes
 
-## Risk Mitigation
-- Create backup of all files before modifications
-- Test each fix individually before combining
-- Maintain backward compatibility where possible
-- Use feature flags for breaking changes if needed
+## Deliverables
+1. Detailed compliance report for each external API
+2. Backend endpoint schema documentation
+3. Frontend-backend wiring map with issue identification
+4. Fixed code for all identified compliance and wiring issues
+5. End-to-end test validation results

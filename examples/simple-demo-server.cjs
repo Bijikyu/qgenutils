@@ -21,26 +21,198 @@ const logger = {
   error: (msg, meta = {}) => console.error(`❌ ${msg}`, meta)
 };
 
+// Enhanced input validation utilities
+const inputValidator = {
+  validateString: (input, fieldName = 'input', options = {}) => {
+    const {
+      minLength = 0,
+      maxLength = 10000,
+      allowEmpty = false,
+      trim = true
+    } = options;
+    
+    // Handle null/undefined
+    if (input === null || input === undefined) {
+      return {
+        isValid: allowEmpty,
+        value: allowEmpty ? '' : null,
+        error: allowEmpty ? null : `${fieldName} is required`
+      };
+    }
+    
+    // Convert to string
+    const str = String(input);
+    
+    // Trim if requested
+    const processedStr = trim ? str.trim() : str;
+    
+    // Check empty
+    if (!allowEmpty && processedStr.length === 0) {
+      return {
+        isValid: false,
+        value: processedStr,
+        error: `${fieldName} cannot be empty`
+      };
+    }
+    
+    // Check length
+    if (processedStr.length < minLength) {
+      return {
+        isValid: false,
+        value: processedStr,
+        error: `${fieldName} must be at least ${minLength} characters`
+      };
+    }
+    
+    if (processedStr.length > maxLength) {
+      return {
+        isValid: false,
+        value: processedStr,
+        error: `${fieldName} must not exceed ${maxLength} characters`
+      };
+    }
+    
+    return {
+      isValid: true,
+      value: processedStr,
+      error: null
+    };
+  },
+  
+  validateNumber: (input, fieldName = 'number', options = {}) => {
+    const {
+      min = Number.NEGATIVE_INFINITY,
+      max = Number.POSITIVE_INFINITY,
+      allowFloat = true,
+      allowNegative = true
+    } = options;
+    
+    // Handle null/undefined
+    if (input === null || input === undefined) {
+      return {
+        isValid: false,
+        value: null,
+        error: `${fieldName} is required`
+      };
+    }
+    
+    // Convert to number
+    const num = Number(input);
+    
+    // Check if valid number
+    if (isNaN(num) || !isFinite(num)) {
+      return {
+        isValid: false,
+        value: input,
+        error: `${fieldName} must be a valid number`
+      };
+    }
+    
+    // Check float
+    if (!allowFloat && !Number.isInteger(num)) {
+      return {
+        isValid: false,
+        value: num,
+        error: `${fieldName} must be an integer`
+      };
+    }
+    
+    // Check negative
+    if (!allowNegative && num < 0) {
+      return {
+        isValid: false,
+        value: num,
+        error: `${fieldName} cannot be negative`
+      };
+    }
+    
+    // Check range
+    if (num < min) {
+      return {
+        isValid: false,
+        value: num,
+        error: `${fieldName} must be at least ${min}`
+      };
+    }
+    
+    if (num > max) {
+      return {
+        isValid: false,
+        value: num,
+        error: `${fieldName} must not exceed ${max}`
+      };
+    }
+    
+    return {
+      isValid: true,
+      value: num,
+      error: null
+    };
+  }
+};
+
 // Demo utilities that mirror QGenUtils functionality
 const demoUtils = {
   // Validation examples
   validateEmail: (email) => {
+    // Enhanced input validation
+    const emailValidation = inputValidator.validateString(email, 'email', {
+      minLength: 3,
+      maxLength: 254,
+      allowEmpty: false,
+      trim: true
+    });
+    
+    if (!emailValidation.isValid) {
+      return {
+        isValid: false,
+        message: emailValidation.error,
+        input: email
+      };
+    }
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValid = emailRegex.test(email);
+    const isValid = emailRegex.test(emailValidation.value);
+    
     return {
       isValid,
       message: isValid ? 'Valid email format' : 'Invalid email format',
-      input: email
+      input: emailValidation.value
     };
   },
 
   validatePassword: (password) => {
+    // Enhanced input validation
+    const passwordValidation = inputValidator.validateString(password, 'password', {
+      minLength: 8,
+      maxLength: 128,
+      allowEmpty: false,
+      trim: false
+    });
+    
+    if (!passwordValidation.isValid) {
+      return {
+        strength: 0,
+        score: 0,
+        checks: {
+          length: false,
+          uppercase: false,
+          lowercase: false,
+          numbers: false,
+          special: false
+        },
+        isValid: false,
+        message: passwordValidation.error
+      };
+    }
+    
+    const pwd = passwordValidation.value;
     const checks = {
-      length: password.length >= 8,
-      uppercase: /[A-Z]/.test(password),
-      lowercase: /[a-z]/.test(password),
-      numbers: /\d/.test(password),
-      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      length: pwd.length >= 8,
+      uppercase: /[A-Z]/.test(pwd),
+      lowercase: /[a-z]/.test(pwd),
+      numbers: /\d/.test(pwd),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
     };
     
     const strength = Object.values(checks).filter(Boolean).length;
@@ -55,33 +227,62 @@ const demoUtils = {
 
   // Security examples
   maskApiKey: (apiKey) => {
-    if (!apiKey || typeof apiKey !== 'string') {
-      return { original: apiKey, masked: '****', error: 'Invalid API key' };
+    // Enhanced input validation
+    const apiKeyValidation = inputValidator.validateString(apiKey, 'apiKey', {
+      minLength: 8,
+      maxLength: 500,
+      allowEmpty: false,
+      trim: true
+    });
+    
+    if (!apiKeyValidation.isValid) {
+      return { 
+        original: apiKey, 
+        masked: '****', 
+        error: apiKeyValidation.error 
+      };
     }
     
-    if (apiKey.length <= 8) {
-      return { original: apiKey, masked: '****' };
+    const key = apiKeyValidation.value;
+    
+    if (key.length <= 8) {
+      return { original: key, masked: '****' };
     }
     
-    const masked = apiKey.substring(0, 4) + '****' + apiKey.substring(apiKey.length - 4);
-    return { original: apiKey, masked };
+    const masked = key.substring(0, 4) + '****' + key.substring(key.length - 4);
+    return { original: key, masked };
   },
 
   sanitizeString: (input) => {
-    if (typeof input !== 'string') {
-      input = String(input || '');
+    // Enhanced input validation
+    const inputValidation = inputValidator.validateString(input, 'input', {
+      minLength: 0,
+      maxLength: 100000,
+      allowEmpty: true,
+      trim: false
+    });
+    
+    if (!inputValidation.isValid) {
+      return {
+        original: input,
+        sanitized: '',
+        changed: true,
+        error: inputValidation.error
+      };
     }
     
-    const sanitized = input
+    const str = inputValidation.value;
+    
+    const sanitized = str
       .replace(/<script[^>]*>.*?<\/script>/gi, '')
       .replace(/<[^>]*>/g, '')
       .replace(/javascript:/gi, '')
       .replace(/on\w+\s*=/gi, '');
     
     return {
-      original: input,
+      original: str,
       sanitized,
-      changed: input.length !== sanitized.length
+      changed: str.length !== sanitized.length
     };
   },
 
@@ -138,12 +339,25 @@ const demoUtils = {
 
   // File examples
   formatFileSize: (bytes) => {
-    if (typeof bytes !== 'number' || bytes < 0) {
-      return { error: 'Invalid bytes value', formatted: '0 B' };
+    // Enhanced input validation
+    const bytesValidation = inputValidator.validateNumber(bytes, 'bytes', {
+      min: 0,
+      max: Number.MAX_SAFE_INTEGER,
+      allowFloat: false,
+      allowNegative: false
+    });
+    
+    if (!bytesValidation.isValid) {
+      return { 
+        error: bytesValidation.error, 
+        formatted: '0 B',
+        bytes: bytes
+      };
     }
     
+    const numBytes = bytesValidation.value;
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let size = bytes;
+    let size = numBytes;
     let unitIndex = 0;
     
     while (size >= 1024 && unitIndex < units.length - 1) {
@@ -154,7 +368,7 @@ const demoUtils = {
     const formatted = `${size.toFixed(unitIndex === 0 ? 0 : 2)} ${units[unitIndex]}`;
     
     return {
-      bytes,
+      bytes: numBytes,
       formatted,
       unit: units[unitIndex],
       size
@@ -223,15 +437,55 @@ const server = http.createServer((req, res) => {
   serveStaticFile(req, res, path, startTime);
 });
 
+// Standardized error response format
+function createErrorResponse(message, code = 'UNKNOWN_ERROR', details = null) {
+  const response = {
+    success: false,
+    error: {
+      message,
+      code,
+      timestamp: new Date().toISOString()
+    }
+  };
+  
+  if (details) {
+    response.error.details = details;
+  }
+  
+  return response;
+}
+
+// Standardized success response format
+function createSuccessResponse(data, meta = null) {
+  const response = {
+    success: true,
+    data,
+    timestamp: new Date().toISOString()
+  };
+  
+  if (meta) {
+    response.meta = meta;
+  }
+  
+  return response;
+}
+
 async function handleApiRequest(req, res, path, startTime) {
   if (req.method !== 'POST') {
-    sendJson(res, { error: 'Method not allowed' }, 405);
+    const errorResponse = createErrorResponse(
+      'Method not allowed',
+      'METHOD_NOT_ALLOWED',
+      { allowedMethods: ['POST'] }
+    );
+    sendJson(res, errorResponse, 405);
     return;
   }
 
   try {
     const body = await parseRequestBody(req);
-    const [, , category, action] = path.split('/');
+    const pathParts = path.split('/');
+    const category = pathParts[2] || '';
+    const action = pathParts[3] || '';
     
     let result;
     switch (category) {
@@ -257,104 +511,183 @@ async function handleApiRequest(req, res, path, startTime) {
         result = handlePerformance(action, body);
         break;
       default:
-        result = { error: 'Unknown endpoint category' };
+        result = createErrorResponse(
+          'Unknown endpoint category',
+          'UNKNOWN_CATEGORY',
+          { category, path }
+        );
     }
     
-    sendJson(res, result);
+    // Check if result is already a formatted response
+    if (result && typeof result === 'object' && (result.success !== undefined || result.error)) {
+      sendJson(res, result);
+    } else {
+      // Wrap legacy responses in standardized format
+      const successResponse = createSuccessResponse(result);
+      sendJson(res, successResponse);
+    }
+    
     logger.info('API Request', { path, action, responseTime: Date.now() - startTime });
     
   } catch (error) {
-    logger.error('API Request Error', { path, error: error.message });
-    sendJson(res, { error: 'Request processing failed' }, 500);
+    logger.error('API Request Error', { path, error: error.message, stack: error.stack });
+    const errorResponse = createErrorResponse(
+      'Request processing failed',
+      'PROCESSING_ERROR',
+      { path, error: error.message }
+    );
+    sendJson(res, errorResponse, 500);
   }
 }
 
 function handleValidation(action, body) {
   switch (action) {
     case 'email':
-      return demoUtils.validateEmail(body.email);
+      const emailResult = demoUtils.validateEmail(body.email);
+      return emailResult.error ? 
+        createErrorResponse(emailResult.message, 'VALIDATION_ERROR', { input: body.email }) :
+        createSuccessResponse(emailResult);
     case 'password':
-      return demoUtils.validatePassword(body.password);
+      const passwordResult = demoUtils.validatePassword(body.password);
+      return passwordResult.error ? 
+        createErrorResponse(passwordResult.message, 'VALIDATION_ERROR', { input: '***' }) :
+        createSuccessResponse(passwordResult);
     default:
-      return { error: 'Unknown validation action' };
+      return createErrorResponse(
+        'Unknown validation action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['email', 'password'] }
+      );
   }
 }
 
 function handleSecurity(action, body) {
   switch (action) {
     case 'mask-api-key':
-      return demoUtils.maskApiKey(body.apiKey);
+      const maskResult = demoUtils.maskApiKey(body.apiKey);
+      return maskResult.error ? 
+        createErrorResponse(maskResult.error, 'SECURITY_ERROR', { input: '***' }) :
+        createSuccessResponse(maskResult);
     case 'sanitize-string':
-      return demoUtils.sanitizeString(body.input);
+      const sanitizeResult = demoUtils.sanitizeString(body.input);
+      return sanitizeResult.error ? 
+        createErrorResponse(sanitizeResult.error, 'SECURITY_ERROR', { input: body.input }) :
+        createSuccessResponse(sanitizeResult);
     default:
-      return { error: 'Unknown security action' };
+      return createErrorResponse(
+        'Unknown security action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['mask-api-key', 'sanitize-string'] }
+      );
   }
 }
 
 function handleDateTime(action, body) {
   switch (action) {
     case 'format':
-      return demoUtils.formatDateTime(body.date, body.format);
+      const dateTimeResult = demoUtils.formatDateTime(body.date, body.format);
+      return dateTimeResult.error ? 
+        createErrorResponse(dateTimeResult.error, 'DATETIME_ERROR', { input: body.date }) :
+        createSuccessResponse(dateTimeResult);
     default:
-      return { error: 'Unknown datetime action' };
+      return createErrorResponse(
+        'Unknown datetime action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['format'] }
+      );
   }
 }
 
 function handleString(action, body) {
   switch (action) {
     case 'sanitize':
-      return demoUtils.sanitizeString(body.input);
+      const stringResult = demoUtils.sanitizeString(body.input);
+      return stringResult.error ? 
+        createErrorResponse(stringResult.error, 'STRING_ERROR', { input: body.input }) :
+        createSuccessResponse(stringResult);
     default:
-      return { error: 'Unknown string action' };
+      return createErrorResponse(
+        'Unknown string action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['sanitize'] }
+      );
   }
 }
 
 function handleUrl(action, body) {
   switch (action) {
     case 'ensure-protocol':
-      return demoUtils.ensureProtocol(body.url, body.protocol);
+      const urlResult = demoUtils.ensureProtocol(body.url, body.protocol);
+      return urlResult.error ? 
+        createErrorResponse(urlResult.error, 'URL_ERROR', { input: body.url }) :
+        createSuccessResponse(urlResult);
     default:
-      return { error: 'Unknown URL action' };
+      return createErrorResponse(
+        'Unknown URL action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['ensure-protocol'] }
+      );
   }
 }
 
 function handleFile(action, body) {
   switch (action) {
     case 'format-size':
-      return demoUtils.formatFileSize(body.bytes);
+      const fileResult = demoUtils.formatFileSize(body.bytes);
+      return fileResult.error ? 
+        createErrorResponse(fileResult.error, 'FILE_ERROR', { input: body.bytes }) :
+        createSuccessResponse(fileResult);
     default:
-      return { error: 'Unknown file action' };
+      return createErrorResponse(
+        'Unknown file action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['format-size'] }
+      );
   }
 }
 
 function handlePerformance(action, body) {
   switch (action) {
     case 'memoize':
-      const fn = new Function('return ' + body.function)();
-      const memoized = demoUtils.memoize(fn);
-      const results = [];
-      
-      for (let i = 0; i < 3; i++) {
-        results.push(memoized(...(body.args || [])));
+      try {
+        const fn = new Function('return ' + body.function)();
+        const memoized = demoUtils.memoize(fn);
+        const results = [];
+        
+        for (let i = 0; i < 3; i++) {
+          results.push(memoized(...(body.args || [])));
+        }
+        
+        const performanceResult = {
+          demo: results,
+          explanation: 'First call computes, subsequent calls return cached result'
+        };
+        return createSuccessResponse(performanceResult);
+      } catch (error) {
+        return createErrorResponse(
+          'Failed to execute memoization demo',
+          'PERFORMANCE_ERROR',
+          { error: error.message }
+        );
       }
-      
-      return {
-        demo: results,
-        explanation: 'First call computes, subsequent calls return cached result'
-      };
     default:
-      return { error: 'Unknown performance action' };
+      return createErrorResponse(
+        'Unknown performance action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['memoize'] }
+      );
   }
 }
 
 function parseRequestBody(req) {
   return new Promise((resolve) => {
-    let body = '';
+    const chunks = [];
     req.on('data', chunk => {
-      body += chunk.toString();
+      chunks.push(chunk);
     });
     req.on('end', () => {
       try {
+        const body = Buffer.concat(chunks).toString('utf8');
         resolve(JSON.parse(body));
       } catch {
         resolve({});
@@ -364,7 +697,18 @@ function parseRequestBody(req) {
 }
 
 function sendJson(res, data, statusCode = 200) {
-  const jsonData = JSON.stringify(data, null, 2);
+  let jsonData;
+  try {
+    jsonData = JSON.stringify(data, null, 2);
+  } catch (error) {
+    // Handle circular references and other JSON.stringify errors
+    jsonData = JSON.stringify({ 
+      success: false, 
+      error: 'Response serialization failed',
+      timestamp: new Date().toISOString()
+    }, null, 2);
+    statusCode = 500;
+  }
   res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(jsonData);
 }

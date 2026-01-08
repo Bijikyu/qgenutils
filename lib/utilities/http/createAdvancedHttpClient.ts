@@ -24,6 +24,7 @@ import axios from 'axios';
 import { setTimeout as sleep } from 'timers/promises';
 import { setSecurityHeaders } from '../security/index.js';
 import localVars from '../../../config/localVars.js';
+import { randomUUID } from 'crypto';
 
 interface ExtendedAxiosInstance {
   getWithRetry(url: any, config?: any): any;
@@ -192,9 +193,11 @@ function createAdvancedHttpClient(config: Config = {}) {
   return extendedClient;
 }
 
-// Helper function to generate request IDs
+// Helper function to generate request IDs using cryptographically secure random values
 function generateRequestId() {
-  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  const timestamp = Date.now();
+  const uuid = randomUUID().replace(/-/g, '').substring(0, 16); // Remove hyphens and truncate for shorter IDs
+  return `req_${timestamp}_${uuid}`;
 }
 
 // Helper function to determine if request should be retried
