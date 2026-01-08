@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-The project exhibits severe frontend-backend integration issues with a score of 39/100. There are 50 missing endpoints that the frontend expects but the backend doesn't provide, and 220 unused backend endpoints that the frontend never calls. This indicates a fundamental architectural disconnect.
+The project exhibits severe frontend-backend integration issues with a score of 39/100. There are 50 missing endpoints that the frontend expects but the backend doesn't provide, and 170+ unused backend endpoints that the frontend never calls. This indicates a fundamental architectural disconnect between a data science/AI platform frontend and an MCP (Model Context Protocol) focused backend.
 
 ## Key Findings
 
