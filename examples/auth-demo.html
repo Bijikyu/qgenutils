@@ -322,8 +322,10 @@
     </div>
 
     <script>
-        // Demo API endpoints (simulated)
-        const API_BASE = 'http://localhost:3001/api';
+        // API configuration with protocol security
+        const API_BASE = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//' + 
+                         window.location.hostname + 
+                         (window.location.port ? ':' + window.location.port : '') + '/api';
         let currentUser = null;
         let currentSession = null;
 
@@ -369,7 +371,8 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ name, email, password }),
+                    signal: AbortSignal.timeout(10000) // 10 second timeout
                 });
                 
                 const data = await response.json();
@@ -381,7 +384,12 @@
                     showMessage('register-message', data.message || 'Registration failed', 'error');
                 }
             } catch (error) {
-                showMessage('register-message', 'Network error. Please try again.', 'error');
+                if (error.name === 'AbortError') {
+                    showMessage('register-message', 'Request timed out. Please check your connection.', 'error');
+                } else {
+                    showMessage('register-message', 'Network error. Please try again.', 'error');
+                }
+                console.error('Registration error:', error);
             }
         });
 

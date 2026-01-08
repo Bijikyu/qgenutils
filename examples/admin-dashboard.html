@@ -400,6 +400,11 @@
     </div>
 
     <script>
+        // API configuration with protocol security
+        const API_BASE = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//' + 
+                         window.location.hostname + 
+                         (window.location.port ? ':' + window.location.port : '') + '/api';
+        
         let dashboardData = null;
         let refreshInterval = null;
 
@@ -414,10 +419,37 @@
             try {
                 document.body.classList.add('loading');
                 
-                const response = await fetch('/api/stats');
+                const response = await fetch(API_BASE + '/stats', {
+                    signal: AbortSignal.timeout(10000) // 10 second timeout
+                });
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
+                
+                dashboardData = await response.json();
+                updateMetrics();
+                updateRecentLogs();
+                
+                showNotification('Dashboard refreshed successfully', 'success');
+                
+            } catch (error) {
+                console.error('Failed to refresh dashboard:', error);
+                if (error.name === 'AbortError') {
+                    showNotification('Dashboard refresh timed out. Please check your connection.', 'error');
+                } else if (error.message.includes('Failed to fetch')) {
+                    showNotification('Unable to connect to server. Please ensure the backend is running.', 'error');
+                } else {
+                    showNotification('Failed to refresh dashboard: ' + error.message, 'error');
+                }
+                // Use cached data if available
+                if (dashboardData) {
+                    updateMetrics();
+                    updateRecentLogs();
+                    showNotification('Using cached data while offline', 'warning');
+                }
+            } finally {
+                document.body.classList.remove('loading');
+            }
                 
                 dashboardData = await response.json();
                 updateMetrics();
@@ -631,7 +663,7 @@
 
         window.clearCache = async function() {
             try {
-                const response = await fetch('/api/cache/clear', { method: 'POST' });
+                const response = await fetch(API_BASE + '/cache/clear', { method: 'POST' });
                 if (response.ok) {
                     showNotification('Cache cleared successfully', 'success');
                     setTimeout(refreshDashboard, 1000);
