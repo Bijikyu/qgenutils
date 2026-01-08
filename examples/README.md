@@ -2,7 +2,9 @@
 
 ## Overview
 
-The demo server (`examples/demo-server.cjs`) is a development and testing tool for the QGenUtils library. It provides an interactive web interface and REST API to demonstrate all utility functions in real-time.
+This repo includes two demo servers:
+- `examples/simple-demo-server.cjs` (default via `npm run start-demo`) - lightweight demo with a small set of endpoints
+- `examples/demo-server.cjs` - full-featured demo server used for deeper development/testing
 
 **⚠️ Important:** This demo server is **NOT** intended for production use and is excluded from the npm package.
 
@@ -48,9 +50,28 @@ npm install
 # Build the library
 npm run build
 
-# Start the demo server
+# Start the default (simple) demo server
 npm run start-demo
 ```
+
+To run the full demo server:
+
+```bash
+npm run start-full-demo
+```
+
+To run the auth example app + UI:
+
+```bash
+npm run start-auth-demo
+```
+
+## Admin Dashboard
+
+The admin dashboard UI is served as a static page by the demo server:
+
+- Start the demo server: `npm run start-demo`
+- Open: `http://localhost:3000/admin-dashboard.html`
 
 ### Access Points
 

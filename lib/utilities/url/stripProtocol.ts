@@ -47,7 +47,7 @@ const stripProtocol = (url: string | null | undefined): string => {
        return url || '';
      }
      
-     const processed = url
+     const processed = (url as string)
        .replace(/^https?:\/\//i, '')
        .replace(/\/$/, '');
      

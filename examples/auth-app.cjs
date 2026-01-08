@@ -5,15 +5,8 @@
  * Features: User registration, login, session management, API protection
  */
 
-import express from 'express';
-import { createRequire } from 'module';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Handle both ESM and CommonJS
-const require = createRequire(import.meta.url);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const path = require('path');
 
 // Import QGenUtils utilities
 let QGenUtils;
@@ -171,6 +164,14 @@ class AuthApp {
         version: '1.0.0',
         uptime: process.uptime()
       });
+    });
+
+    // Serve the demo UI (same-origin /api calls from auth-demo.html)
+    this.app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, 'auth-demo.html'));
+    });
+    this.app.get('/auth-demo.html', (req, res) => {
+      res.sendFile(path.join(__dirname, 'auth-demo.html'));
     });
 
     // User registration
@@ -556,4 +557,4 @@ if (require.main === module) {
   app.start();
 }
 
-export default AuthApp;
+module.exports = AuthApp;

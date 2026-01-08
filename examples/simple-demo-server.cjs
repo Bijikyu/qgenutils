@@ -21,6 +21,35 @@ const logger = {
   error: (msg, meta = {}) => console.error(`❌ ${msg}`, meta)
 };
 
+const serverState = {
+  startedAt: Date.now(),
+  cache: new Map(),
+  metrics: {
+    totalRequests: 0,
+    totalErrors: 0,
+    totalResponseTimeMs: 0,
+    byKind: {
+      api: { requests: 0, errors: 0, totalResponseTimeMs: 0 },
+      page: { requests: 0, errors: 0, totalResponseTimeMs: 0 },
+      static: { requests: 0, errors: 0, totalResponseTimeMs: 0 }
+    }
+  }
+};
+
+function recordMetric(kind, statusCode, responseTimeMs) {
+  const safeKind = kind in serverState.metrics.byKind ? kind : 'static';
+  const isError = statusCode >= 400;
+
+  serverState.metrics.totalRequests += 1;
+  serverState.metrics.totalResponseTimeMs += responseTimeMs;
+  if (isError) serverState.metrics.totalErrors += 1;
+
+  const bucket = serverState.metrics.byKind[safeKind];
+  bucket.requests += 1;
+  bucket.totalResponseTimeMs += responseTimeMs;
+  if (isError) bucket.errors += 1;
+}
+
 // Enhanced input validation utilities
 const inputValidator = {
   validateString: (input, fieldName = 'input', options = {}) => {
@@ -165,6 +194,7 @@ const demoUtils = {
     
     if (!emailValidation.isValid) {
       return {
+        error: emailValidation.error,
         isValid: false,
         message: emailValidation.error,
         input: email
@@ -192,6 +222,7 @@ const demoUtils = {
     
     if (!passwordValidation.isValid) {
       return {
+        error: passwordValidation.error,
         strength: 0,
         score: 0,
         checks: {
@@ -419,22 +450,22 @@ const server = http.createServer((req, res) => {
   }
 
   const parsedUrl = require('url').parse(req.url, true);
-  const path = parsedUrl.pathname;
+  const pathname = parsedUrl.pathname;
 
   // API routes
-  if (path.startsWith('/api/')) {
-    handleApiRequest(req, res, path, startTime);
+  if (pathname.startsWith('/api/')) {
+    handleApiRequest(req, res, pathname, startTime);
     return;
   }
 
   // Serve demo page
-  if (path === '/' || path === '/demo') {
+  if (pathname === '/' || pathname === '/demo') {
     serveDemoPage(res, startTime);
     return;
   }
 
   // Serve static files
-  serveStaticFile(req, res, path, startTime);
+  serveStaticFile(req, res, pathname, startTime);
 });
 
 // Standardized error response format
@@ -471,21 +502,26 @@ function createSuccessResponse(data, meta = null) {
 }
 
 async function handleApiRequest(req, res, path, startTime) {
-  if (req.method !== 'POST') {
+  const pathParts = path.split('/');
+  const category = pathParts[2] || '';
+  const action = pathParts[3] || '';
+
+  const isStats = category === 'stats' && !action;
+  const isCacheClear = category === 'cache' && action === 'clear';
+
+  if (req.method !== 'POST' && !(req.method === 'GET' && isStats)) {
     const errorResponse = createErrorResponse(
       'Method not allowed',
       'METHOD_NOT_ALLOWED',
-      { allowedMethods: ['POST'] }
+      { allowedMethods: isStats ? ['GET'] : ['POST'] }
     );
+    recordMetric('api', 405, Date.now() - startTime);
     sendJson(res, errorResponse, 405);
     return;
   }
 
   try {
-    const body = await parseRequestBody(req);
-    const pathParts = path.split('/');
-    const category = pathParts[2] || '';
-    const action = pathParts[3] || '';
+    const body = req.method === 'POST' ? await parseRequestBody(req) : {};
     
     let result;
     switch (category) {
@@ -498,9 +534,6 @@ async function handleApiRequest(req, res, path, startTime) {
       case 'datetime':
         result = handleDateTime(action, body);
         break;
-      case 'string':
-        result = handleString(action, body);
-        break;
       case 'url':
         result = handleUrl(action, body);
         break;
@@ -510,6 +543,12 @@ async function handleApiRequest(req, res, path, startTime) {
       case 'performance':
         result = handlePerformance(action, body);
         break;
+      case 'stats':
+        result = handleStats();
+        break;
+      case 'cache':
+        result = handleCache(action);
+        break;
       default:
         result = createErrorResponse(
           'Unknown endpoint category',
@@ -518,9 +557,13 @@ async function handleApiRequest(req, res, path, startTime) {
         );
     }
     
+    const statusCode =
+      result && result.success === false ? getStatusCodeForErrorCode(result.error?.code) : 200;
+    recordMetric('api', statusCode, Date.now() - startTime);
+
     // Check if result is already a formatted response
     if (result && typeof result === 'object' && (result.success !== undefined || result.error)) {
-      sendJson(res, result);
+      sendJson(res, result, statusCode);
     } else {
       // Wrap legacy responses in standardized format
       const successResponse = createSuccessResponse(result);
@@ -531,12 +574,90 @@ async function handleApiRequest(req, res, path, startTime) {
     
   } catch (error) {
     logger.error('API Request Error', { path, error: error.message, stack: error.stack });
-    const errorResponse = createErrorResponse(
-      'Request processing failed',
-      'PROCESSING_ERROR',
-      { path, error: error.message }
-    );
+    if (error && error.code === 'PAYLOAD_TOO_LARGE') {
+      const errorResponse = createErrorResponse('Request body too large', 'PAYLOAD_TOO_LARGE');
+      recordMetric('api', 413, Date.now() - startTime);
+      sendJson(res, errorResponse, 413);
+      return;
+    }
+    const errorResponse = createErrorResponse('Request processing failed', 'PROCESSING_ERROR', {
+      path,
+      error: error?.message
+    });
+    recordMetric('api', 500, Date.now() - startTime);
     sendJson(res, errorResponse, 500);
+  }
+}
+
+function getStatusCodeForErrorCode(code) {
+  switch (code) {
+    case 'METHOD_NOT_ALLOWED':
+      return 405;
+    case 'UNKNOWN_CATEGORY':
+    case 'UNKNOWN_ACTION':
+      return 404;
+    case 'VALIDATION_ERROR':
+    case 'SECURITY_ERROR':
+    case 'DATETIME_ERROR':
+    case 'URL_ERROR':
+    case 'FILE_ERROR':
+    case 'PERFORMANCE_ERROR':
+      return 400;
+    case 'PAYLOAD_TOO_LARGE':
+      return 413;
+    default:
+      return 400;
+  }
+}
+
+function handleStats() {
+  const total = serverState.metrics.totalRequests;
+  const avgResponseTime =
+    total > 0 ? serverState.metrics.totalResponseTimeMs / total : 0;
+  const errorRate = total > 0 ? (serverState.metrics.totalErrors / total) * 100 : 0;
+
+  const mem = process.memoryUsage();
+  const uptimeSeconds = Math.floor(process.uptime());
+
+  return createSuccessResponse({
+    requestCount: serverState.metrics.byKind.api.requests,
+    avgResponseTimeMs: Number(avgResponseTime.toFixed(2)),
+    errorRatePercent: Number(errorRate.toFixed(2)),
+    // Back-compat for existing dashboard fields
+    avgResponseTime: Number(avgResponseTime.toFixed(2)),
+    errorRate: Number(errorRate.toFixed(2)),
+    rateLimiting: {
+      activeClients: 0,
+      blockedRequests: 0,
+      rateLimitedRequests: 0,
+      quotaEntries: 0
+    },
+    caching: {
+      hitRate: 0,
+      cacheSize: serverState.cache.size,
+      memoryUsage: Math.round(mem.heapUsed / 1024),
+      evictions: 0
+    },
+    system: {
+      uptime: uptimeSeconds,
+      memory: { rss: mem.rss, heapUsed: mem.heapUsed },
+      platform: `${process.platform} ${process.arch}`
+    }
+  });
+}
+
+function handleCache(action) {
+  switch (action) {
+    case 'clear': {
+      const cleared = serverState.cache.size;
+      serverState.cache.clear();
+      return createSuccessResponse({ cleared });
+    }
+    default:
+      return createErrorResponse('Unknown cache action', 'UNKNOWN_ACTION', {
+        action,
+        availableActions: ['clear']
+      });
   }
 }
 
@@ -598,22 +719,6 @@ function handleDateTime(action, body) {
   }
 }
 
-function handleString(action, body) {
-  switch (action) {
-    case 'sanitize':
-      const stringResult = demoUtils.sanitizeString(body.input);
-      return stringResult.error ? 
-        createErrorResponse(stringResult.error, 'STRING_ERROR', { input: body.input }) :
-        createSuccessResponse(stringResult);
-    default:
-      return createErrorResponse(
-        'Unknown string action',
-        'UNKNOWN_ACTION',
-        { action, availableActions: ['sanitize'] }
-      );
-  }
-}
-
 function handleUrl(action, body) {
   switch (action) {
     case 'ensure-protocol':
@@ -650,25 +755,56 @@ function handlePerformance(action, body) {
   switch (action) {
     case 'memoize':
       try {
-        const fn = new Function('return ' + body.function)();
+        const demoValidation = inputValidator.validateString(body.demo, 'demo', {
+          minLength: 1,
+          maxLength: 50,
+          allowEmpty: false,
+          trim: true
+        });
+        const demo = demoValidation.isValid ? demoValidation.value : 'add';
+
+        const allowedDemos = new Set(['add', 'uppercase', 'filesize']);
+        if (!allowedDemos.has(demo)) {
+          return createErrorResponse('Unknown performance demo', 'PERFORMANCE_ERROR', {
+            demo,
+            availableDemos: Array.from(allowedDemos)
+          });
+        }
+
+        const args = Array.isArray(body.args) ? body.args.slice(0, 5) : undefined;
+
+        let fn;
+        let defaultArgs;
+        if (demo === 'add') {
+          fn = (a, b) => Number(a) + Number(b);
+          defaultArgs = [40, 2];
+        } else if (demo === 'uppercase') {
+          fn = (s) => String(s).toUpperCase();
+          defaultArgs = ['hello'];
+        } else {
+          fn = (bytes) => demoUtils.formatFileSize(bytes).formatted;
+          defaultArgs = [1048576];
+        }
+
         const memoized = demoUtils.memoize(fn);
         const results = [];
-        
+        const callArgs = args && args.length > 0 ? args : defaultArgs;
+
         for (let i = 0; i < 3; i++) {
-          results.push(memoized(...(body.args || [])));
+          results.push(memoized(...callArgs));
         }
-        
+
         const performanceResult = {
-          demo: results,
+          demo,
+          args: callArgs,
+          runs: results,
           explanation: 'First call computes, subsequent calls return cached result'
         };
         return createSuccessResponse(performanceResult);
       } catch (error) {
-        return createErrorResponse(
-          'Failed to execute memoization demo',
-          'PERFORMANCE_ERROR',
-          { error: error.message }
-        );
+        return createErrorResponse('Failed to execute memoization demo', 'PERFORMANCE_ERROR', {
+          error: error.message
+        });
       }
     default:
       return createErrorResponse(
@@ -680,14 +816,29 @@ function handlePerformance(action, body) {
 }
 
 function parseRequestBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const maxBytes = 1_000_000;
     const chunks = [];
+    let totalBytes = 0;
     req.on('data', chunk => {
+      totalBytes += chunk.length;
+      if (totalBytes > maxBytes) {
+        const err = new Error('Request body too large');
+        err.code = 'PAYLOAD_TOO_LARGE';
+        reject(err);
+        req.destroy();
+        return;
+      }
       chunks.push(chunk);
     });
+    req.on('error', reject);
     req.on('end', () => {
       try {
         const body = Buffer.concat(chunks).toString('utf8');
+        if (!body) {
+          resolve({});
+          return;
+        }
         resolve(JSON.parse(body));
       } catch {
         resolve({});
@@ -794,6 +945,15 @@ function serveDemoPage(res, startTime) {
             </div>
         </div>
 
+        <div class="section">
+            <h2>⚡ Performance</h2>
+            <div class="endpoint">
+                <span class="method">POST</span> /api/performance/memoize
+                <button onclick="testMemoize()">Test</button>
+                <div id="memoize-result" class="result"></div>
+            </div>
+        </div>
+
         <div class="examples">
             <h2>🧪 Test with curl</h2>
             <div class="example">
@@ -881,29 +1041,48 @@ function serveDemoPage(res, startTime) {
             const result = await response.json();
             document.getElementById('filesize-result').textContent = JSON.stringify(result, null, 2);
         }
+
+        async function testMemoize() {
+            const response = await fetch('/api/performance/memoize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ demo: 'add', args: [40, 2] })
+            });
+            const result = await response.json();
+            document.getElementById('memoize-result').textContent = JSON.stringify(result, null, 2);
+        }
     </script>
 </body>
 </html>`;
   
   res.writeHead(200, { 'Content-Type': 'text/html' });
   res.end(html);
+  recordMetric('page', 200, Date.now() - startTime);
   logger.info('Demo page served', { responseTime: Date.now() - startTime });
 }
 
-function serveStaticFile(req, res, path, startTime) {
-  let filePath = path;
-  if (path === '/') {
-    filePath = '/demo.html';
+function serveStaticFile(req, res, pathname, startTime) {
+  const baseDir = __dirname;
+  const requested = pathname === '/' ? '/demo.html' : pathname;
+
+  let normalized;
+  try {
+    normalized = path.normalize(decodeURIComponent(requested));
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad Request');
+    return;
   }
-  
-  // Try to serve from examples directory first
-  const examplesPath = path.join(__dirname, 'examples', filePath);
-  if (fs.existsSync(examplesPath)) {
-    filePath = examplesPath;
-  } else {
-    filePath = path.join(__dirname, filePath);
+
+  const relative = normalized.replace(/^\/+/, '');
+  const filePath = path.join(baseDir, relative);
+  const relativePath = path.relative(baseDir, filePath);
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
+    return;
   }
-  
+
   const extname = path.extname(filePath);
   const contentType = {
     '.html': 'text/html',
@@ -912,14 +1091,20 @@ function serveStaticFile(req, res, path, startTime) {
     '.json': 'application/json'
   }[extname] || 'text/plain';
 
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('File Not Found');
-      return;
+  const stream = fs.createReadStream(filePath);
+  stream.on('error', () => {
+    if (!res.headersSent) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
     }
-    res.writeHead(200, { 'Content-Type': contentType });
-    res.end(content);
+    res.end('File Not Found');
+    recordMetric('static', 404, Date.now() - startTime);
+  });
+  stream.on('open', () => {
+    if (!res.headersSent) {
+      res.writeHead(200, { 'Content-Type': contentType });
+    }
+    stream.pipe(res);
+    recordMetric('static', 200, Date.now() - startTime);
     logger.info('Static file served', { file: filePath, responseTime: Date.now() - startTime });
   });
 }

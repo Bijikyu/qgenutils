@@ -431,6 +431,7 @@
                 updateRecentLogs();
                 
                 showNotification('Dashboard refreshed successfully', 'success');
+                updateServerStatus(true);
                 
             } catch (error) {
                 console.error('Failed to refresh dashboard:', error);
@@ -441,26 +442,15 @@
                 } else {
                     showNotification('Failed to refresh dashboard: ' + error.message, 'error');
                 }
+                updateServerStatus(false);
                 // Use cached data if available
                 if (dashboardData) {
                     updateMetrics();
                     updateRecentLogs();
                     showNotification('Using cached data while offline', 'warning');
+                    updateServerStatus(true);
+                    return;
                 }
-            } finally {
-                document.body.classList.remove('loading');
-            }
-                
-                dashboardData = await response.json();
-                updateMetrics();
-                updateRecentLogs();
-                
-                showNotification('Dashboard refreshed successfully', 'success');
-                
-            } catch (error) {
-                console.error('Failed to refresh dashboard:', error);
-                showNotification('Failed to refresh dashboard: ' + error.message, 'error');
-                updateServerStatus(false);
                 
                 // Set default values when API is not available
                 dashboardData = {
@@ -495,14 +485,12 @@
         }
 
         // Update all metric displays
-        function updateMetrics() {
-            if (!dashboardData) return;
+	        function updateMetrics() {
+	            if (!dashboardData) return;
 
-            // Server Status
-            updateServerStatus(true);
-            document.getElementById('uptime').textContent = formatUptime(dashboardData.system?.uptime || 0);
-            
-            // Performance Metrics
+	            document.getElementById('uptime').textContent = formatUptime(dashboardData.system?.uptime || 0);
+	            
+	            // Performance Metrics
             document.getElementById('total-requests').textContent = 
                 dashboardData.requestCount?.toLocaleString() || '--';
             document.getElementById('avg-response-time').textContent = 

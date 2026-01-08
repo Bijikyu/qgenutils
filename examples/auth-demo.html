@@ -473,7 +473,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/security/mask-api-key`, {
+                const response = await fetch(`${API_BASE}/mask-api-key`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -485,11 +485,11 @@
                 
                 const resultEl = document.getElementById('mask-result');
                 if (response.ok) {
-                    resultEl.textContent = `Original: ${data.result.original}\n` +
-                        `Masked: ${data.result.masked}\n` +
-                        `Length: ${apiKey.length}`;
+                    resultEl.textContent = `Original: ${data.original}\n` +
+                        `Masked: ${data.masked}\n` +
+                        `Length: ${data.length}`;
                 } else {
-                    resultEl.textContent = `Error: ${data.error}`;
+                    resultEl.textContent = `Error: ${data.message || data.error || 'Request failed'}`;
                 }
                 resultEl.classList.remove('hidden');
             } catch (error) {

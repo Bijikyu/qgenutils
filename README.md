@@ -28,8 +28,12 @@ npm run build
 npm run start-demo
 ```
 
+Other demo servers:
+- `npm run start-full-demo` (full-featured demo server)
+- `npm run start-auth-demo` (auth example app + UI)
+
 The demo server provides:
-- **Interactive Web Interface**: Test all utilities at `http://localhost:3000`
+- **Interactive Web Interface**: Test core utilities at `http://localhost:3000`
 - **REST API Endpoints**: Try utilities via HTTP requests
 - **Live Documentation**: See functions in action with real data
 
@@ -38,12 +42,18 @@ The demo server provides:
 The demo server exposes these endpoints for testing:
 
 - `POST /api/validate/email` - Email validation
-- `POST /api/security/hash-password` - Password hashing
-- `POST /api/collections/group-by` - Array grouping
-- `POST /api/performance/memoize` - Performance testing
-- `POST /api/datetime/format-date` - Date formatting
+- `POST /api/validate/password` - Password validation
+- `POST /api/security/mask-api-key` - API key masking
+- `POST /api/security/sanitize-string` - String sanitization
+- `POST /api/datetime/format` - Date formatting
+- `POST /api/url/ensure-protocol` - Protocol normalization
+- `POST /api/file/format-size` - File size formatting
+- `POST /api/performance/memoize` - Memoization demo
 
 **Note:** These endpoints are for demonstration only and not part of the published package.
+
+Admin dashboard (served by the demo server):
+- Open `http://localhost:3000/admin-dashboard.html` (uses `GET /api/stats` and `POST /api/cache/clear`)
 
 ## Quick Start
 
