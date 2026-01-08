@@ -38,26 +38,26 @@ import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
 import isValidString from '../helpers/isValidString.js';
 
-const stripProtocol = (url: string): string => {
-  logger.debug(`stripProtocol is running with ${url}`);
-  
-  try {
-    if (!isValidString(url)) {
-      logger.debug(`stripProtocol returning original input due to invalid type`);
-      return url || '';
-    }
-    
-    const processed = url
-      .replace(/^https?:\/\//i, '')
-      .replace(/\/$/, '');
-    
-    logger.debug(`stripProtocol is returning ${processed}`);
-    return processed;
-  } catch (error) {
-    qerrors(error, `stripProtocol`);
-    logger.error(`stripProtocol failed with error: ${error instanceof Error ? error.message : String(error)}`);
-    return url;
-  }
+const stripProtocol = (url: string | null | undefined): string => {
+    logger.debug(`stripProtocol is running with ${url}`);
+   
+   try {
+     if (!isValidString(url)) {
+       logger.debug(`stripProtocol returning original input due to invalid type`);
+       return url || '';
+     }
+     
+     const processed = url
+       .replace(/^https?:\/\//i, '')
+       .replace(/\/$/, '');
+     
+     logger.debug(`stripProtocol is returning ${processed}`);
+     return processed;
+   } catch (error) {
+     qerrors(error, `stripProtocol`);
+     logger.error(`stripProtocol failed with error: ${error instanceof Error ? error.message : String(error)}`);
+     return url || '';
+   }
 };
 
 export default stripProtocol;
