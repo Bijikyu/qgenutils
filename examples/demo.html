@@ -586,6 +586,7 @@ Node.js & Browser Ready
                         <label>Email Address:</label>
                         <input type="email" id="emailInput" placeholder="Enter email to validate" oninput="validateEmail()">
                         <div id="emailFeedback"></div>
+                        <div id="emailValidationResult" class="result-box" style="display:none;"></div>
                     </div>
                 </div>
 
@@ -596,6 +597,7 @@ Node.js & Browser Ready
                         <input type="password" id="passwordInput" placeholder="Enter password" oninput="checkPasswordStrength()">
                         <div id="passwordStrength" class="password-strength"></div>
                         <div id="passwordFeedback"></div>
+                        <div id="passwordStrengthResult" class="result-box" style="display:none;"></div>
                     </div>
                 </div>
 
@@ -2485,19 +2487,21 @@ Node.js & Browser Ready
             .then(response => response.json())
             .then(data => {
                 displayResult('emailValidationResult', data.result, data.result.isValid ? 'success' : 'error');
+                
+                // Update feedback
+                const feedback = document.getElementById('emailFeedback');
+                if (data.result.isValid) {
+                    feedback.innerHTML = '<div class="validation-feedback valid">✓ Valid email address</div>';
+                } else {
+                    feedback.innerHTML = '<div class="validation-feedback invalid">✗ Invalid email format</div>';
+                }
+                
                 showNotification(`Email validation: ${data.result.isValid ? 'Valid' : 'Invalid'}`, data.result.isValid ? 'success' : 'error');
             })
             .catch(error => {
                 showNotification(`Validation failed: ${error.message}`, 'error');
             });
         }
-            
-            const result = utils.validateEmailFormat(email);
-            if (result.isValid) {
-                feedback.innerHTML = '<div class="validation-feedback valid">✓ Valid email address</div>';
-            } else {
-                feedback.innerHTML = '<div class="validation-feedback invalid">✗ Invalid email format</div>';
-            }
         }
 
         function checkPasswordStrength() {
@@ -2516,26 +2520,28 @@ Node.js & Browser Ready
             .then(response => response.json())
             .then(data => {
                 displayResult('passwordStrengthResult', data.result, 'info');
+                
+                // Update password strength indicator
+                const strengthBar = document.getElementById('passwordStrength');
+                const feedback = document.getElementById('passwordFeedback');
+                const strength = data.result.strength;
+                
+                if (strength <= 2) {
+                    strengthBar.className = 'password-strength weak';
+                    feedback.innerHTML = '<div class="validation-feedback invalid">Weak password - add more character types</div>';
+                } else if (strength <= 4) {
+                    strengthBar.className = 'password-strength medium';
+                    feedback.innerHTML = '<div class="validation-feedback valid">Medium strength - consider adding special characters</div>';
+                } else {
+                    strengthBar.className = 'password-strength strong';
+                    feedback.innerHTML = '<div class="validation-feedback valid">Strong password!</div>';
+                }
+                
                 showNotification('Password strength analysis complete', 'success');
             })
             .catch(error => {
                 showNotification(`Password validation failed: ${error.message}`, 'error');
             });
-        }
-            
-            const result = utils.validatePasswordStrength(password);
-            const strength = result.strength;
-            
-            if (strength <= 2) {
-                strengthBar.className = 'password-strength weak';
-                feedback.innerHTML = '<div class="validation-feedback invalid">Weak password - add more character types</div>';
-            } else if (strength <= 4) {
-                strengthBar.className = 'password-strength medium';
-                feedback.innerHTML = '<div class="validation-feedback valid">Medium strength - consider adding special characters</div>';
-            } else {
-                strengthBar.className = 'password-strength strong';
-                feedback.innerHTML = '<div class="validation-feedback valid">Strong password!</div>';
-            }
         }
 
         function validateApiKey() {

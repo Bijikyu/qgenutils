@@ -429,6 +429,34 @@
                 console.error('Failed to refresh dashboard:', error);
                 showNotification('Failed to refresh dashboard: ' + error.message, 'error');
                 updateServerStatus(false);
+                
+                // Set default values when API is not available
+                dashboardData = {
+                    requestCount: 0,
+                    avgResponseTime: 0,
+                    errorRate: 0,
+                    rateLimiting: {
+                        activeClients: 0,
+                        blockedRequests: 0,
+                        rateLimitedRequests: 0,
+                        quotaEntries: 0
+                    },
+                    caching: {
+                        hitRate: 0,
+                        cacheSize: 0,
+                        memoryUsage: 0,
+                        evictions: 0
+                    },
+                    system: {
+                        uptime: 0,
+                        memory: {
+                            rss: 0,
+                            heapUsed: 0
+                        },
+                        platform: 'Unknown'
+                    }
+                };
+                updateMetrics();
             } finally {
                 document.body.classList.remove('loading');
             }

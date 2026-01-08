@@ -250,6 +250,152 @@ class APIClient {
   }
 
   /**
+   * Validate monetary amount
+   */
+  async validateAmount(amount) {
+    if (!amount) {
+      throw new ValidationError('Amount is required');
+    }
+
+    try {
+      const result = await this.post('/api/validate/amount', { amount });
+      return {
+        success: true,
+        data: result.result,
+        message: 'Amount validation successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'amount validation')
+      };
+    }
+  }
+
+  /**
+   * Sanitize input string
+   */
+  async sanitizeInput(input) {
+    if (!input) {
+      throw new ValidationError('Input is required');
+    }
+
+    try {
+      const result = await this.post('/api/validate/sanitize', { input });
+      return {
+        success: true,
+        data: result.result,
+        message: 'Input sanitization successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'input sanitization')
+      };
+    }
+  }
+
+  /**
+   * Generate secure password
+   */
+  async generatePassword(options = {}) {
+    try {
+      const result = await this.post('/api/security/generate-password', { options });
+      return {
+        success: true,
+        data: result.result,
+        message: 'Password generated successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'password generation')
+      };
+    }
+  }
+
+  /**
+   * Hash password
+   */
+  async hashPassword(password) {
+    if (!password) {
+      throw new ValidationError('Password is required');
+    }
+
+    try {
+      const result = await this.post('/api/security/hash-password', { password });
+      return {
+        success: true,
+        data: result.result,
+        message: 'Password hashed successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'password hashing')
+      };
+    }
+  }
+
+  /**
+   * Verify password
+   */
+  async verifyPassword(password, hash) {
+    if (!password || !hash) {
+      throw new ValidationError('Password and hash are required');
+    }
+
+    try {
+      const result = await this.post('/api/security/verify-password', { password, hash });
+      return {
+        success: true,
+        data: result.result,
+        message: 'Password verification successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'password verification')
+      };
+    }
+  }
+
+  /**
+   * Chunk array
+   */
+  async chunk(array, size) {
+    if (!Array.isArray(array)) {
+      throw new ValidationError('Array is required');
+    }
+
+    try {
+      const result = await this.post('/api/collections/chunk', { array, size });
+      return {
+        success: true,
+        data: result.result,
+        message: 'Array chunked successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'array chunking')
+      };
+    }
+  }
+
+  /**
    * Format error messages for user display
    */
   formatErrorMessage(error, operation) {
@@ -297,7 +443,8 @@ class APIClient {
    */
   async healthCheck() {
     try {
-      const response = await this.get('/health');
+      // Use stats endpoint as health check since /health doesn't exist in backend
+      const response = await this.get('/api/stats');
       return {
         healthy: true,
         data: response
@@ -306,6 +453,48 @@ class APIClient {
       return {
         healthy: false,
         error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get server stats
+   */
+  async getStats() {
+    try {
+      const response = await this.get('/api/stats');
+      return {
+        success: true,
+        data: response,
+        message: 'Stats retrieved successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'stats retrieval')
+      };
+    }
+  }
+
+  /**
+   * Clear server cache
+   */
+  async clearCache() {
+    try {
+      const result = await this.post('/api/cache/clear', {});
+      return {
+        success: true,
+        data: result,
+        message: 'Cache cleared successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        code: error.status,
+        message: this.formatErrorMessage(error, 'cache clearing')
       };
     }
   }
