@@ -437,15 +437,21 @@
                 const data = await response.json();
                 
                 const resultEl = document.getElementById('password-result');
-                resultEl.textContent = `Generated Password: ${data.password}\n` +
-                    `Length: ${data.length}\n` +
-                    `Has Symbols: ${data.hasSymbols}\n` +
-                    `Has Uppercase: ${data.hasUppercase}\n` +
-                    `Has Lowercase: ${data.hasLowercase}\n` +
-                    `Has Numbers: ${data.hasNumbers}`;
+                if (response.ok) {
+                    resultEl.textContent = `Generated Password: ${data.password}\n` +
+                        `Length: ${data.length}\n` +
+                        `Has Symbols: ${data.hasSymbols}\n` +
+                        `Has Uppercase: ${data.hasUppercase}\n` +
+                        `Has Lowercase: ${data.hasLowercase}\n` +
+                        `Has Numbers: ${data.hasNumbers}`;
+                } else {
+                    resultEl.textContent = `Error: ${data.error}`;
+                }
                 resultEl.classList.remove('hidden');
             } catch (error) {
-                showMessage('password-result', 'Failed to generate password', 'error');
+                const resultEl = document.getElementById('password-result');
+                resultEl.textContent = 'Failed to generate password: ' + error.message;
+                resultEl.classList.remove('hidden');
             }
         }
 
@@ -459,7 +465,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/mask-api-key`, {
+                const response = await fetch(`${API_BASE}/security/mask-api-key`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -470,12 +476,18 @@
                 const data = await response.json();
                 
                 const resultEl = document.getElementById('mask-result');
-                resultEl.textContent = `Original: ${data.original}\n` +
-                    `Masked: ${data.masked}\n` +
-                    `Length: ${data.length}`;
+                if (response.ok) {
+                    resultEl.textContent = `Original: ${data.result.original}\n` +
+                        `Masked: ${data.result.masked}\n` +
+                        `Length: ${apiKey.length}`;
+                } else {
+                    resultEl.textContent = `Error: ${data.error}`;
+                }
                 resultEl.classList.remove('hidden');
             } catch (error) {
-                showMessage('mask-result', 'Failed to mask API key', 'error');
+                const resultEl = document.getElementById('mask-result');
+                resultEl.textContent = 'Failed to mask API key: ' + error.message;
+                resultEl.classList.remove('hidden');
             }
         }
 
@@ -498,14 +510,12 @@
                     resultEl.classList.remove('hidden');
                 } else {
                     const resultEl = document.getElementById('protected-result');
-                    resultEl.textContent = `Error: ${data.message}`;
-                    resultEl.classList.add('error');
+                    resultEl.textContent = `Error: ${data.error}`;
                     resultEl.classList.remove('hidden');
                 }
             } catch (error) {
                 const resultEl = document.getElementById('protected-result');
                 resultEl.textContent = 'Network error. Please check if the server is running.';
-                resultEl.classList.add('error');
                 resultEl.classList.remove('hidden');
             }
         }
