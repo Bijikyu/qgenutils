@@ -11,7 +11,7 @@
  * @throws {Error} If params is invalid or parts array is missing/empty
  */
 
-const makeIdempotencyKey: any = require('./makeIdempotencyKey');
+import makeIdempotencyKey from './makeIdempotencyKey.js';
 
 function makeIdempotencyKeyObj(params) {
   if (!params || typeof params !== 'object') {

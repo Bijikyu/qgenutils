@@ -22,9 +22,11 @@
  * @param {boolean} [config.xssFilter=true] - Enable XSS filter (deprecated but kept for compatibility)
  * @returns {Function} Express middleware function
  */
-const helmet: any = require('helmet');
+import helmet from 'helmet';
 
-function createSecurityHeaders(config = {}) {
+const helmetAny: any = helmet as any;
+
+function createSecurityHeaders(config: any = {}) {
   // Default configuration with qgenutils security-first approach
   const defaultConfig = {
     // Content Security Policy - Prevent XSS and data injection
@@ -97,23 +99,23 @@ function createSecurityHeaders(config = {}) {
   const finalConfig: any = { ...defaultConfig, ...config };
 
   // Return helmet middleware
-  return helmet(finalConfig);
+  return helmetAny(finalConfig);
 }
 
 // Export individual helmet middlewares for fine-grained control
-createSecurityHeaders.contentSecurityPolicy = helmet.contentSecurityPolicy;
-createSecurityHeaders.crossOriginEmbedderPolicy = helmet.crossOriginEmbedderPolicy;
-createSecurityHeaders.crossOriginOpenerPolicy = helmet.crossOriginOpenerPolicy;
-createSecurityHeaders.crossOriginResourcePolicy = helmet.crossOriginResourcePolicy;
-createSecurityHeaders.dnsPrefetchControl = helmet.dnsPrefetchControl;
-createSecurityHeaders.frameguard = helmet.frameguard;
-createSecurityHeaders.hidePoweredBy = helmet.hidePoweredBy;
-createSecurityHeaders.hsts = helmet.hsts;
-createSecurityHeaders.ieNoOpen = helmet.ieNoOpen;
-createSecurityHeaders.noSniff = helmet.noSniff;
-createSecurityHeaders.originAgentCluster = helmet.originAgentCluster;
-createSecurityHeaders.permittedCrossDomainPolicies = helmet.permittedCrossDomainPolicies;
-createSecurityHeaders.referrerPolicy = helmet.referrerPolicy;
-createSecurityHeaders.xssFilter = helmet.xssFilter;
+(createSecurityHeaders as any).contentSecurityPolicy = helmetAny.contentSecurityPolicy;
+(createSecurityHeaders as any).crossOriginEmbedderPolicy = helmetAny.crossOriginEmbedderPolicy;
+(createSecurityHeaders as any).crossOriginOpenerPolicy = helmetAny.crossOriginOpenerPolicy;
+(createSecurityHeaders as any).crossOriginResourcePolicy = helmetAny.crossOriginResourcePolicy;
+(createSecurityHeaders as any).dnsPrefetchControl = helmetAny.dnsPrefetchControl;
+(createSecurityHeaders as any).frameguard = helmetAny.frameguard;
+(createSecurityHeaders as any).hidePoweredBy = helmetAny.hidePoweredBy;
+(createSecurityHeaders as any).hsts = helmetAny.hsts;
+(createSecurityHeaders as any).ieNoOpen = helmetAny.ieNoOpen;
+(createSecurityHeaders as any).noSniff = helmetAny.noSniff;
+(createSecurityHeaders as any).originAgentCluster = helmetAny.originAgentCluster;
+(createSecurityHeaders as any).permittedCrossDomainPolicies = helmetAny.permittedCrossDomainPolicies;
+(createSecurityHeaders as any).referrerPolicy = helmetAny.referrerPolicy;
+(createSecurityHeaders as any).xssFilter = helmetAny.xssFilter;
 
 export default createSecurityHeaders;

@@ -21,8 +21,8 @@
 
 import { qerrors } from 'qerrors';
 import logger from '../../logger.js';
-const isValidDate: any = require('../helpers/isValidDate');
-const formatDate: any = require('./formatDate');
+import isValidDate from '../helpers/isValidDate.js';
+import formatDate from './formatDate.js';
 
 function formatDateWithPrefix(date, prefix = "Added", fallback = "Recently") {
   logger.debug(`formatDateWithPrefix processing input`, { prefix, fallback });

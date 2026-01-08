@@ -29,7 +29,7 @@ function ensureProtocolUrl(data) {
     return data.allowEmpty ? '' : 'https://';
   }
 
-  return ensureProtocol(input);
+  return ensureProtocol(input).processed;
 }
 
 export default ensureProtocolUrl;

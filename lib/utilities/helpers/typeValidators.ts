@@ -4,13 +4,13 @@
  */
 
 // Import individual validator modules
-import nullUndefinedValidators from './nullUndefinedValidators';
-import stringValidators from './stringValidators';
-import numberValidators from './numberValidators';
-import arrayValidators from './arrayValidators';
-import objectValidators from './objectValidators';
-import primitiveValidators from './primitiveValidators';
-import advancedTypeValidators from './advancedTypeValidators';
+import nullUndefinedValidators from './nullUndefinedValidators.js';
+import stringValidators from './stringValidators.js';
+import numberValidators from './numberValidators.js';
+import arrayValidators from './arrayValidators.js';
+import objectValidators from './objectValidators.js';
+import primitiveValidators from './primitiveValidators.js';
+import advancedTypeValidators from './advancedTypeValidators.js';
 
 // Export all validators for backward compatibility
 export default {

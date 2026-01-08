@@ -2,7 +2,8 @@
  * String validation utilities - refactored to use lodash and validator modules
  */
 
-import { isString as lodashIsString } from 'lodash';
+import lodash from 'lodash';
+const { isString: lodashIsString } = lodash as any;
 import validator from 'validator';
 
 /**

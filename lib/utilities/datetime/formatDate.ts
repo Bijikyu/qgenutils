@@ -27,24 +27,25 @@
 
 import { 
   handleUtilityError, 
-  validateInput, 
   createDebugLogger,
   isValidDate 
 } from '../helpers/index.js';
 
-function formatDate(date: string | Date | null | undefined, fallback: string = "Unknown"): string {
+function formatDate(date: string | Date | null | undefined, fallback: string = "N/A"): string {
   const debug = createDebugLogger('formatDate');
-  
-  // Validate input using centralized validation
-  const validationResult = validateInput(date, 'object', 'formatDate', null);
-  
-  if (!validationResult.isValid) {
-    debug.warn('returning fallback for null/undefined input');
-    return fallback;
-  }
   
   try {
     debug.start({ input: date, fallback });
+
+    if (date == null) {
+      debug.warn('returning fallback for null/undefined input');
+      return fallback;
+    }
+
+    if (typeof date !== 'string' && !(date instanceof Date)) {
+      debug.warn('returning fallback for unsupported input type');
+      return fallback;
+    }
     
     const dateObj: any = typeof date === `string` ? new Date(date) : date;
     if (!isValidDate(dateObj)) {

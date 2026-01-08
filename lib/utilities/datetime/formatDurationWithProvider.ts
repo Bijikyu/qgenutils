@@ -10,8 +10,8 @@
  * @returns {string} Duration in HH:MM:SS format
  */
 
-const isValidDate: any = require('../helpers/isValidDate');
-const createTimeProvider: any = require('./createTimeProvider');
+import isValidDate from '../helpers/isValidDate.js';
+import createTimeProvider from './createTimeProvider.js';
 
 function formatDurationWithProvider(startTime, endTime, timeProvider) {
   if (!startTime) {

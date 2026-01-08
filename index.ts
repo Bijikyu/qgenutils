@@ -72,6 +72,17 @@ export { default as parseUrlParts } from './lib/utilities/url/parseUrlParts.js';
 export { default as formatDateTime } from './lib/utilities/datetime/formatDateTime.js';
 export { default as formatDuration } from './lib/utilities/datetime/formatDuration.js';
 export { default as addDays } from './lib/utilities/datetime/addDays.js';
+export { default as formatDate } from './lib/utilities/datetime/formatDate.js';
+export { default as formatDateWithPrefix } from './lib/utilities/datetime/formatDateWithPrefix.js';
+
+// ID generation utilities
+export { default as generateExecutionId } from './lib/utilities/id-generation/generateExecutionId.js';
+
+// String utilities
+export { default as sanitizeString } from './lib/utilities/string/sanitizeString.js';
+
+// File utilities
+export { default as formatFileSize } from './lib/utilities/file/formatFileSize.js';
 
 // Legacy functions (for compatibility)
 export { 
@@ -107,6 +118,18 @@ import buildFeatureConfigImport from './lib/utilities/config/buildFeatureConfig.
 import createPerformanceMonitorImport from './lib/utilities/performance-monitor/createPerformanceMonitor.js';
 import createApiKeyValidatorImport from './lib/utilities/middleware/createApiKeyValidator.js';
 import loadAndFlattenModuleImport from './lib/utilities/module-loader/loadAndFlattenModule.js';
+import formatDateTimeImport from './lib/utilities/datetime/formatDateTime.js';
+import formatDurationImport from './lib/utilities/datetime/formatDuration.js';
+import addDaysImport from './lib/utilities/datetime/addDays.js';
+import formatDateImport from './lib/utilities/datetime/formatDate.js';
+import formatDateWithPrefixImport from './lib/utilities/datetime/formatDateWithPrefix.js';
+import ensureProtocolImport from './lib/utilities/url/ensureProtocol.js';
+import normalizeUrlOriginImport from './lib/utilities/url/normalizeUrlOrigin.js';
+import stripProtocolImport from './lib/utilities/url/stripProtocol.js';
+import parseUrlPartsImport from './lib/utilities/url/parseUrlParts.js';
+import generateExecutionIdImport from './lib/utilities/id-generation/generateExecutionId.js';
+import sanitizeStringImport from './lib/utilities/string/sanitizeString.js';
+import formatFileSizeImport from './lib/utilities/file/formatFileSize.js';
 
 export default {
   logger: loggerImport,
@@ -119,5 +142,17 @@ export default {
   buildFeatureConfig: buildFeatureConfigImport,
   createPerformanceMonitor: createPerformanceMonitorImport,
   createApiKeyValidator: createApiKeyValidatorImport,
-  loadAndFlattenModule: loadAndFlattenModuleImport
+  loadAndFlattenModule: loadAndFlattenModuleImport,
+  formatDateTime: formatDateTimeImport,
+  formatDuration: formatDurationImport,
+  addDays: addDaysImport,
+  formatDate: formatDateImport,
+  formatDateWithPrefix: formatDateWithPrefixImport,
+  ensureProtocol: ensureProtocolImport,
+  normalizeUrlOrigin: normalizeUrlOriginImport,
+  stripProtocol: stripProtocolImport,
+  parseUrlParts: parseUrlPartsImport,
+  generateExecutionId: generateExecutionIdImport,
+  sanitizeString: sanitizeStringImport,
+  formatFileSize: formatFileSizeImport
 };

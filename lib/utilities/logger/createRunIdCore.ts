@@ -10,7 +10,7 @@
  * @returns {string} Run identifier in the form `${prefix}-${token}`
  */
 
-const crypto: any = require('crypto');
+import { randomBytes } from 'crypto';
 
 function createRunIdCore(prefix, executionId, timestampProvider) {
   const safePrefix = typeof prefix === 'string' && prefix.trim()
@@ -21,22 +21,13 @@ function createRunIdCore(prefix, executionId, timestampProvider) {
     return `${safePrefix}-${executionId}`;
   }
 
-  try {
-    const qgenutils: any = require('qgenutils');
-    const generated: any = qgenutils?.generateExecutionId?.();
-    if (generated) {
-      return `${safePrefix}-${generated}`;
-    }
-  } catch {
-  }
-
   const ts: any = timestampProvider ? timestampProvider() : Date.now();
   
   if (timestampProvider) {
     return `${safePrefix}-${ts}`;
   }
 
-  const fallbackRandom: any = crypto.randomBytes(4).toString('hex');
+  const fallbackRandom: any = randomBytes(4).toString('hex');
   return `${safePrefix}-${ts}-${fallbackRandom}`;
 }
 

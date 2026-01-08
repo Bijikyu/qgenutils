@@ -1,8 +1,8 @@
 'use strict';
 
-const validateBucketName: any = require('./validateBucketName');
-const validateObjectName: any = require('./validateObjectName');
-const validateAndNormalizePath: any = require('./validateAndNormalizePath');
+import validateBucketName from './validateBucketName.js';
+import validateObjectName from './validateObjectName.js';
+import validateAndNormalizePath from './validateAndNormalizePath.js';
 
 /**
  * Creates a safe object path by combining bucket and object names

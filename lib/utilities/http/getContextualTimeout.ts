@@ -1,4 +1,5 @@
 import { qerrors } from 'qerrors';
+import contextualTimeouts from './contextualTimeouts.js';
 
 /**
  * Gets contextual timeout based on operation type.
@@ -9,28 +10,17 @@ import { qerrors } from 'qerrors';
  * @param {string} operation - Type of operation being performed
  * @returns {number} Appropriate timeout in milliseconds
  */
-let contextualTimeouts: any;
-try {
-  contextualTimeouts = require('./contextualTimeouts');
-} catch (moduleError) {
-  // Module loading failed - provide default fallback
-  contextualTimeouts = { default: 30000 };
-  if (typeof qerrors !== 'undefined') {
-    qerrors(new Error('Failed to load contextualTimeouts module'), 'getContextualTimeout', 'Module loading failed');
-  }
-}
-
 function getContextualTimeout(operation: string): number {
   try {
-    if (!operation || typeof operation !== 'string') {
-      throw new Error('Operation must be a non-empty string');
+    if (typeof operation !== 'string' || operation.trim() === '') {
+      return (contextualTimeouts as any).default;
     }
-    
-    return contextualTimeouts[operation] ?? contextualTimeouts.default;
+
+    return (contextualTimeouts as any)[operation] ?? (contextualTimeouts as any).default;
   } catch (error) {
-    const safeOperation = operation || 'undefined';
+    const safeOperation = typeof operation === 'string' ? operation : 'undefined';
     qerrors(error instanceof Error ? error : new Error(String(error)), 'getContextualTimeout', `Contextual timeout retrieval failed for operation: ${safeOperation}`);
-    return 30000; // Return safe default timeout
+    return (contextualTimeouts as any).default;
   }
 }
 

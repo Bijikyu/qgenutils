@@ -12,7 +12,7 @@
  * - Adaptive compression based on content type
  */
 
-import { createGzip, createBrotliCompress } from 'zlib';
+import { createGzip, createGunzip, createBrotliDecompress, createInflate } from 'zlib';
 import { promisify } from 'util';
 
 interface CompressionOptions {
@@ -265,7 +265,6 @@ class ResponseCompressor {
    */
   private async compressGzip(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const { createGzip } = require('zlib');
       const gzip = createGzip({ level: this.options.level });
       
       const chunks: Buffer[] = [];
@@ -281,7 +280,6 @@ class ResponseCompressor {
    */
   private async decompressGzip(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const { createGunzip } = require('zlib');
       const gunzip = createGunzip();
       
       const chunks: Buffer[] = [];
@@ -298,7 +296,6 @@ class ResponseCompressor {
    */
   private async decompressBrotli(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const { createBrotliDecompress } = require('zlib');
       const brotli = createBrotliDecompress();
       
       const chunks: Buffer[] = [];
@@ -315,7 +312,6 @@ class ResponseCompressor {
    */
   private async decompressDeflate(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const { createInflate } = require('zlib');
       const inflate = createInflate();
       
       const chunks: Buffer[] = [];

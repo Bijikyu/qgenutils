@@ -85,6 +85,7 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
   } = options;
 
   let timeoutId: any = null;
+  let immediateId: any = null;
   let executed = false;
   let cancelled = false;
 
@@ -115,7 +116,7 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
   };
 
   if (delayMs <= 0) { // if time has passed, execute immediately
-    setImmediate(executeCallback);
+    immediateId = setImmediate(executeCallback);
   } else {
     timeoutId = setTimeout(executeCallback, delayMs);
   }
@@ -128,12 +129,16 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
         clearTimeout(timeoutId);
         timeoutId = null;
       }
+      if (immediateId) {
+        clearImmediate(immediateId);
+        immediateId = null;
+      }
       cancelled = true;
       return !executed;
     },
 
     isRunning() { // check if job is pending
-      return !executed && !cancelled && (timeoutId !== null);
+      return !executed && !cancelled && (timeoutId !== null || immediateId !== null);
     },
 
     getScheduledFor() { // get scheduled execution time

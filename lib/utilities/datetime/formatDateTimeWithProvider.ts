@@ -11,7 +11,7 @@
  * @returns {string} Formatted date string or 'N/A' if invalid
  */
 
-const isValidDate: any = require('../helpers/isValidDate');
+import isValidDate from '../helpers/isValidDate.js';
 
 function formatDateTimeWithProvider(isoString, options = {}) {
   if (!isoString) {

@@ -1,7 +1,7 @@
-export { default as loadAndFlattenModule } from './loadAndFlattenModule';
-export { default as createCachedLoader } from './createCachedLoader';
-export { default as createSimpleLoader } from './createSimpleLoader';
-export { default as createDirectLoader } from './createDirectLoader';
+export { default as loadAndFlattenModule } from './loadAndFlattenModule.js';
+export { default as createCachedLoader } from './createCachedLoader.js';
+export { default as createSimpleLoader } from './createSimpleLoader.js';
+export { default as createDirectLoader } from './createDirectLoader.js';
 export {
   DynamicImportCache,
   getDynamicModule,
@@ -13,4 +13,4 @@ export {
   getDynamicImportCacheStats,
   hasCachedModule,
   invalidateCachedModule
-} from './DynamicImportCache';
+} from './DynamicImportCache.js';

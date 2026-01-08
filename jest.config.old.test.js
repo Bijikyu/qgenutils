@@ -1,1 +1,0 @@
-const mod=require('./jest.config.old.js');describe('jest.config.old.js',()=>{test('testTimeout works',async=>expect(typeof mod.testTimeout).toBeDefined());test('verbose works',async=>expect(typeof mod.verbose).toBeDefined());test('clearMocks works',async=>expect(typeof mod.clearMocks).toBeDefined())});

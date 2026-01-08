@@ -8,7 +8,7 @@
  */
 
 // Core string utilities
-import sanitizeString from './sanitizeString';
+import sanitizeString from './sanitizeString.js';
 
 // Named exports for better tree-shaking support
 export {

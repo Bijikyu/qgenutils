@@ -31,9 +31,9 @@
 
 import { qerrors } from 'qerrors';
 import * as metricCollectionUtils from './metricCollectionUtils.js'; // unified metric collection utilities
+import getPerformanceHealthStatus from './getPerformanceHealthStatus.js'; // health status calculation
+import analyzePerformanceMetrics from './analyzePerformanceMetrics.js'; // metric analysis and alerting
 const { createMetricsCollector, measureEventLoopLag } = metricCollectionUtils; // core metric collection functions
-const getPerformanceHealthStatus: any = require('./getPerformanceHealthStatus'); // health status calculation
-const analyzePerformanceMetrics: any = require('./analyzePerformanceMetrics'); // metric analysis and alerting
 
 interface PerformanceMonitorOptions {
   intervalMs?: number;

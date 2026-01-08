@@ -4,15 +4,12 @@
  */
 
 // Import individual error response modules
-import coreErrorResponse from './coreErrorResponse';
+import coreErrorResponse from './coreErrorResponse.js';
+import clientErrorResponses from './clientErrorResponses.js';
+import serverErrorResponses from './serverErrorResponses.js';
+
 const { sendErrorResponse } = coreErrorResponse;
-const {
-  sendValidationError,
-  sendAuthError,
-  sendForbiddenError,
-  sendNotFoundError
-} = require('./clientErrorResponses');
-import serverErrorResponses from './serverErrorResponses';
+const { sendValidationError, sendAuthError, sendForbiddenError, sendNotFoundError } = clientErrorResponses;
 const { sendServerError } = serverErrorResponses;
 
 // Export all error response functions for backward compatibility

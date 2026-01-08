@@ -5,7 +5,7 @@
  * to prevent event loop blocking on large JSON payloads (>1MB).
  */
 
-import { Transform } from 'stream';
+import { Readable, Transform } from 'stream';
 import { parser } from 'stream-json';
 
 // Create JSONParser constructor
@@ -161,7 +161,6 @@ export async function parseJSONAsync<T = any>(
       });
 
       // Create readable stream from string
-      const { Readable } = require('stream');
       const stream = Readable.from([jsonString]);
 
       // Pipe through streaming parser

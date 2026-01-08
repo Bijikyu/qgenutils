@@ -7,7 +7,7 @@
  * @param {object} [defaultOptions] - Default options for all wrappers
  * @returns {object} Exec helper instance with wrap method
  */
-const execHelperWrapper: any = require('./execHelperWrapper'); // rationale: core wrapper function
+import execHelperWrapper from './execHelperWrapper.js'; // rationale: core wrapper function
 
 const createExecHelper = (defaultOptions = {}) => ({
   wrap(fn, options = {}) {

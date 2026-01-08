@@ -2,11 +2,11 @@
  * Advanced type detection and validation utilities
  */
 
-import stringValidators from './stringValidators';
-import numberValidators from './numberValidators';
-import arrayValidators from './arrayValidators';
-import objectValidators from './objectValidators';
-import primitiveValidators from './primitiveValidators';
+import stringValidators from './stringValidators.js';
+import numberValidators from './numberValidators.js';
+import arrayValidators from './arrayValidators.js';
+import objectValidators from './objectValidators.js';
+import primitiveValidators from './primitiveValidators.js';
 
 /**
  * Gets type of a value in a more detailed way than typeof

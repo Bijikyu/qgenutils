@@ -7,6 +7,7 @@
  */
 
 import { Request } from 'express';
+import { loadavg } from 'os';
 import { handleError } from '../error/commonErrorHandling.js';
 
 /**
@@ -232,7 +233,7 @@ export class SystemMetricsCollector {
       const metrics: SystemMetrics = {
         cpu: {
           usage: Math.min(cpuPercent, 100), // Cap at 100%
-          loadAverage: require('os').loadavg()
+          loadAverage: loadavg()
         },
         memory: {
           used: memUsage.heapUsed,

@@ -17,37 +17,38 @@
  */
 
 // Authentication and comparison utilities
-import timingSafeCompare from './timingSafeCompare';
-import maskApiKey from './maskApiKey';
-import extractApiKey from './extractApiKey';import type{ExtractApiKeyOptions,Request}from'./extractApiKey';
-import maskString from './maskString';
-import maskUnified from './maskUnified';
+import timingSafeCompare from './timingSafeCompare.js';
+import maskApiKey from './maskApiKey.js';
+import extractApiKey from './extractApiKey.js';
+import type { ExtractApiKeyOptions, Request } from './extractApiKey.js';
+import maskString from './maskString.js';
+import maskUnified from './maskUnified.js';
 
 // Rate limiting and tracking
-import createIpTracker from './createIpTracker';
-import createRateLimitStore from './createRateLimitStore';
-import buildRateLimitKey from './buildRateLimitKey';
-import createSecurityRateLimiter from './createSecurityRateLimiter';
+import createIpTracker from './createIpTracker.js';
+import createRateLimitStore from './createRateLimitStore.js';
+import buildRateLimitKey from './buildRateLimitKey.js';
+import createSecurityRateLimiter from './createSecurityRateLimiter.js';
 
 // Input sanitization and data protection
-import sanitizeLogValue from './sanitizeLogValue';
-import sanitizeObject from './sanitizeObject';
-import sanitizeUrl from './sanitizeUrl';
-import createSafeLoggingContext from './createSafeLoggingContext';
-import createSafeObjectPath from './createSafeObjectPath';
+import sanitizeLogValue from './sanitizeLogValue.js';
+import sanitizeObject from './sanitizeObject.js';
+import sanitizeUrl from './sanitizeUrl.js';
+import createSafeLoggingContext from './createSafeLoggingContext.js';
+import createSafeObjectPath from './createSafeObjectPath.js';
 
 // Threat detection and analysis
-import detectSuspiciousPatterns from './detectSuspiciousPatterns';
-import isSensitiveField from './isSensitiveField';
+import detectSuspiciousPatterns from './detectSuspiciousPatterns.js';
+import isSensitiveField from './isSensitiveField.js';
 
 // Path and resource validation
-import validateAndNormalizePath from './validateAndNormalizePath';
-import validateBucketName from './validateBucketName';
-import validateObjectName from './validateObjectName';
+import validateAndNormalizePath from './validateAndNormalizePath.js';
+import validateBucketName from './validateBucketName.js';
+import validateObjectName from './validateObjectName.js';
 
 // Middleware factory functions
-import setSecurityHeaders from './setSecurityHeaders';
-import createSecurityMiddleware from './createSecurityMiddleware';
+import setSecurityHeaders from './setSecurityHeaders.js';
+import createSecurityMiddleware from './createSecurityMiddleware.js';
 
 // Named exports for better tree-shaking support
 export {

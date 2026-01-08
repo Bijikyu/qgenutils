@@ -2,7 +2,8 @@
  * JSON cloning and manipulation utilities
  */
 
-import { cloneDeep } from 'lodash';
+import lodash from 'lodash';
+const { cloneDeep } = lodash as any;
 
 /**
  * Safely deep clones an object using lodash.cloneDeep

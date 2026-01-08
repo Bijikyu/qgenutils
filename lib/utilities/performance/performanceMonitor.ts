@@ -15,6 +15,7 @@
 
 import { qerrors } from 'qerrors';
 import { BoundedLRUCache } from './boundedCache.js';
+import { loadavg } from 'os';
 
 interface PerformanceMetrics {
   timestamp: number;
@@ -109,7 +110,7 @@ class PerformanceMonitor {
       },
       cpuUsage: {
         percentage: this.calculateCpuPercentage(cpuUsage),
-        loadAverage: process.platform !== 'win32' ? require('os').loadavg() : [0, 0, 0]
+        loadAverage: process.platform !== 'win32' ? loadavg() : [0, 0, 0]
       },
       responseTime: {
         average: 0,

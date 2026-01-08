@@ -4,29 +4,16 @@
  */
 
 // Import individual JSON utility modules
-const {
-  safeJsonParse,
-  parseAndValidateJson,
-  isValidJson
-} = require('./jsonParsing');
+import jsonParsing from './jsonParsing.js';
+import jsonStringification from './jsonStringification.js';
+import jsonManipulation from './jsonManipulation.js';
+import jsonSizeUtils from './jsonSizeUtils.js';
+import createJsonUtils from './jsonFactory.js';
 
-const {
-  safeJsonStringify,
-  safeJsonStringifyWithSize
-} = require('./jsonStringification');
-
-const {
-  safeDeepClone,
-  safeJsonMerge
-} = require('./jsonManipulation');
-
-const {
-  getJsonSize,
-  truncateJson,
-  truncateObject
-} = require('./jsonSizeUtils');
-
-import createJsonUtils from './jsonFactory';
+const { safeJsonParse, parseAndValidateJson, isValidJson } = jsonParsing;
+const { safeJsonStringify, safeJsonStringifyWithSize } = jsonStringification;
+const { safeDeepClone, safeJsonMerge } = jsonManipulation;
+const { getJsonSize, truncateJson, truncateObject } = jsonSizeUtils;
 
 // Export all utilities for backward compatibility
 export default {

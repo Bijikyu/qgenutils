@@ -1,7 +1,7 @@
 'use strict';
 
-const sanitizeLogValue: any = require('./sanitizeLogValue');
-const sanitizeObject: any = require('./sanitizeObject');
+import sanitizeLogValue from './sanitizeLogValue.js';
+import sanitizeObject from './sanitizeObject.js';
 
 /**
  * Determines if a field name suggests sensitive information

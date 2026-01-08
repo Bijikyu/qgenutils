@@ -34,7 +34,8 @@
  * @param {WeakSet} visited - Set of visited objects for circular reference protection
  * @returns {boolean} True if prototype pollution is detected, false otherwise
  */
-import { hasIn, isObject } from 'lodash';
+import lodash from 'lodash';
+const { hasIn, isObject } = lodash as any;
 
 function checkPrototypePollution(obj: any, visited = new WeakSet()): boolean {
   // Use lodash.isObject for consistent object type checking

@@ -2,7 +2,7 @@
 
 import { qerrors } from 'qerrors';
 
-const sanitizeLogValue: any = require('./sanitizeLogValue');
+import sanitizeLogValue from './sanitizeLogValue.js';
 
 const REDACTED_FIELDS = [ // fields that should always be redacted
   'password', 'secret', 'token', 'apiKey', 'authToken',

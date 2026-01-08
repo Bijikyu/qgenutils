@@ -14,6 +14,8 @@
 
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import { performance } from 'perf_hooks';
+import { cpus } from 'os';
+import { parseJSONAsync as streamingParseJSONAsync } from './streamingJSONParser.js';
 
 interface JSONTask {
   id: string;
@@ -67,27 +69,11 @@ async function runJSONWorker(): Promise<void> {
         
         // Use streaming parser for large payloads (>1MB)
         if (jsonString.length > 1024 * 1024) {
-          const { parseJSONAsync } = require('../streamingJSONParser.js');
-          
-          // Handle async parsing in worker
-          result = await new Promise((resolve, reject) => {
-            try {
-              const parseResult = parseJSONAsync(jsonString, task.options);
-              if (parseResult.error) {
-                resolve({ error: parseResult.error });
-              } else {
-                resolve({ result: parseResult.data });
-              }
-            } catch (err) {
-              resolve({ error: err instanceof Error ? err : new Error(String(err)) });
-            }
-          }).then((response: any) => {
-            if (response.error) {
-              error = response.error;
-            } else {
-              result = response.result;
-            }
-          });
+          const parseResult = await streamingParseJSONAsync(jsonString, task.options);
+          if (parseResult.error) {
+            throw parseResult.error;
+          }
+          result = parseResult.data;
         } else {
           result = JSON.parse(jsonString, task.options?.reviver);
         }
@@ -113,15 +99,8 @@ async function runJSONWorker(): Promise<void> {
     };
   }
 
-  // Handle incoming tasks
-  parentPort?.on('message', (task: JSONTask) => {
-    const result = processTask(task);
-    parentPort?.postMessage(result);
-  });
-
-  // Respond to stats requests
-  parentPort?.on('message', (message: any) => {
-    if (message.type === 'stats') {
+  parentPort?.on('message', async (message: any) => {
+    if (message?.type === 'stats') {
       parentPort?.postMessage({
         type: 'stats',
         data: {
@@ -130,7 +109,12 @@ async function runJSONWorker(): Promise<void> {
           workerId
         }
       });
+      return;
     }
+
+    const task = message as JSONTask;
+    const result = await processTask(task);
+    parentPort?.postMessage(result);
   });
 }
 
@@ -155,7 +139,7 @@ export class JSONWorkerPool {
   };
   private cleanupInterval: NodeJS.Timeout | null = null;
 
-  constructor(maxWorkers: number = Math.max(2, Math.floor(require('os').cpus().length / 2))) {
+  constructor(maxWorkers: number = Math.max(2, Math.floor(cpus().length / 2))) {
     this.maxWorkers = maxWorkers;
     this.initializeWorkers();
     this.startCleanupInterval();
@@ -174,7 +158,7 @@ export class JSONWorkerPool {
    * Create a new worker
    */
   private createWorker(): void {
-    const worker = new Worker(__filename, {
+    const worker = new Worker(new URL(import.meta.url), {
       resourceLimits: {
         maxOldGenerationSizeMb: 64,
         maxYoungGenerationSizeMb: 32
@@ -415,17 +399,31 @@ export class JSONWorkerPool {
 
 // Convenience functions
 export async function parseJSONAsync<T = any>(jsonString: string, reviver?: (key: string, value: any) => any): Promise<T> {
-  return jsonWorkerPool.enqueueTask('parse', jsonString, { reviver });
+  return getJsonWorkerPool().enqueueTask('parse', jsonString, { reviver });
 }
 
 export async function stringifyJSONAsync(obj: any, replacer?: (key: string, value: any) => any, space?: string | number): Promise<string> {
-  return jsonWorkerPool.enqueueTask('stringify', obj, { replacer, space });
+  return getJsonWorkerPool().enqueueTask('stringify', obj, { replacer, space });
 }
 
-// Global worker pool instance
-export const jsonWorkerPool = new JSONWorkerPool();
+let globalJsonWorkerPool: JSONWorkerPool | null = null;
+
+export function getJsonWorkerPool(): JSONWorkerPool {
+  if (!globalJsonWorkerPool) globalJsonWorkerPool = new JSONWorkerPool();
+  return globalJsonWorkerPool;
+}
+
+export async function destroyJsonWorkerPool(): Promise<void> {
+  if (!globalJsonWorkerPool) return;
+  const pool = globalJsonWorkerPool;
+  globalJsonWorkerPool = null;
+  await pool.destroy();
+}
 
 // Run worker if this file is executed as worker
 if (!isMainThread) {
-  runJSONWorker();
+  runJSONWorker().catch((error) => {
+    console.error('JSON worker fatal error:', error);
+    process.exit(1);
+  });
 }

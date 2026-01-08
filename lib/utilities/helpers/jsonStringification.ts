@@ -27,7 +27,7 @@
  * - Graceful Degradation: Safe defaults for error conditions
  */
 
-interface JsonStringifyOptions {
+export interface JsonStringifyOptions {
   /** Number of spaces for indentation (pretty printing) */
   space?: number | string;
   /** JSON replacer function for custom serialization logic */
@@ -127,7 +127,8 @@ function safeJsonStringify(
   }
 }
 
-import { isArray, isObject, some } from 'lodash';
+import lodash from 'lodash';
+const { isArray, isObject, some } = lodash as any;
 
 /**
  * Detects circular references in objects to prevent infinite loops during JSON stringification

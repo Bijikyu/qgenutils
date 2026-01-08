@@ -1,3 +1,5 @@
+import { loadavg } from 'os';
+
 /**
  * Creates a performance state manager for tracking metrics over time
  * @param {Object} [initialState={}] - Initial state object
@@ -51,7 +53,7 @@ function createMetricsCollector() {
       const now = Date.now();
       const cpuUsage = process.cpuUsage(state.getState().lastCpuUsage);
       const memoryUsage = process.memoryUsage();
-      const loadAverage = require('os').loadavg();
+      const loadAverage = loadavg();
 
       state.incrementRequestCount();
       state.updateCpuUsage();

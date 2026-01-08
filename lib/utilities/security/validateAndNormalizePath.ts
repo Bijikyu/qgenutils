@@ -1,6 +1,6 @@
 'use strict';
 
-const path: any = require('path');
+import path from 'path';
 
 /**
  * Validates and sanitizes a file path to prevent directory traversal attacks

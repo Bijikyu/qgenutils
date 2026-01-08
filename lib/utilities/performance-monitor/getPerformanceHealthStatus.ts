@@ -10,7 +10,7 @@
  * const health: any = getPerformanceHealthStatus(metrics, alerts);
  * console.log(health.status); // 'healthy' | 'warning' | 'critical'
  */
-function getPerformanceHealthStatus(metrics, alerts = [], alertLimit = 10) { // compute overall health status
+function getPerformanceHealthStatus(metrics: any, alerts: any[] = [], alertLimit: number = 10) { // compute overall health status
   if (!metrics || typeof metrics !== 'object') { // validate metrics
     throw new Error('Metrics must be an object');
   }

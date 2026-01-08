@@ -10,7 +10,7 @@
  * @param {number} [multiplier=1] - Optional multiplier for base timeout
  * @returns {{ timeoutMs: number; operationType: string }} Timeout configuration
  */
-const getContextualTimeout: any = require('./getContextualTimeout');
+import getContextualTimeout from './getContextualTimeout.js';
 
 function createTimeoutConfig(operation, customTimeout, multiplier = 1) {
   const baseTimeout: any = getContextualTimeout(operation);

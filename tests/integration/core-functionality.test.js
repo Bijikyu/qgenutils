@@ -15,7 +15,7 @@ import {
   formatFileSize,
   createApiKeyValidator,
   createRateLimiter
-} from '../index-core.js';
+} from '../../dist/index-core.js';
 
 describe('QGenUtils Integration Tests', () => {
   describe('Authentication Flow Integration', () => {
@@ -134,8 +134,8 @@ describe('QGenUtils Integration Tests', () => {
       
       testCases.forEach(({ input, expected }) => {
         const result = ensureProtocol(input);
-        expect(result.processed).toBe(expected.expected.processed);
-        expect(result.added).toBe(expected.expected.added);
+        expect(result.processed).toBe(expected.processed);
+        expect(result.added).toBe(expected.added);
       });
     }, 5000);
   });
@@ -181,7 +181,7 @@ describe('QGenUtils Integration Tests', () => {
       expect(res.status).not.toHaveBeenCalledWith(401);
     }, 5000);
     
-    test('should create and test rate limiter', () => {
+    test('should create and test rate limiter', async () => {
       const limiter = createRateLimiter({
         windowMs: 60000, // 1 minute
         maxRequests: 5
@@ -190,24 +190,31 @@ describe('QGenUtils Integration Tests', () => {
       // Mock Express request/response
       const req = {
         ip: '192.168.1.1',
-        headers: {}
+        headers: {},
+        app: { get: jest.fn().mockReturnValue(false) }
       };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn().mockReturnThis(),
-        setHeader: jest.fn()
-      };
+      const res = { statusCode: 200 };
+      res.status = jest.fn((code) => {
+        res.statusCode = code;
+        return res;
+      });
+      res.json = jest.fn().mockReturnThis();
+      res.send = jest.fn().mockReturnThis();
+      res.setHeader = jest.fn();
+      res.headersSent = false;
+      res.writableEnded = false;
+
       const next = jest.fn();
       
       // First 5 requests should pass
       for (let i = 0; i < 5; i++) {
-        limiter(req, res, next);
-        expect(next).toHaveBeenCalledTimes(i + 1);
-        next.mockClear();
+        await limiter(req, res, next);
+        expect(next).toHaveBeenCalledTimes(1);
+        next.mockClear(); // reset for next iteration
       }
       
       // 6th request should be rate limited
-      limiter(req, res, next);
+      await limiter(req, res, next);
       expect(res.status).toHaveBeenCalledWith(429);
       expect(next).not.toHaveBeenCalled();
     }, 5000);

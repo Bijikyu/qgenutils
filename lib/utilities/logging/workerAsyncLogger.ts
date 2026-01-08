@@ -13,7 +13,7 @@
  */
 
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
-import { writeFile, appendFile, mkdir, access } from 'fs/promises';
+import { appendFile, mkdir, access, stat, rename } from 'fs/promises';
 import { join, dirname } from 'path';
 import { performance } from 'perf_hooks';
 
@@ -51,6 +51,7 @@ function runWorker(): void {
     maxBuffer: number;
   };
 
+  const workerStartTime = Date.now();
   let logBuffer: LogEntry[] = [];
   let stats: LogStats = {
     totalLogs: 0,
@@ -58,7 +59,7 @@ function runWorker(): void {
     warnCount: 0,
     avgProcessingTime: 0,
     bufferSize: 0,
-    workerUptime: Date.now()
+    workerUptime: 0
   };
 
   let lastFlush = Date.now();
@@ -80,9 +81,8 @@ function runWorker(): void {
    */
   async function needsRotation(): Promise<boolean> {
     try {
-      await access(logFile);
-      const stats = await require('fs/promises').stat(logFile);
-      return stats.size > maxFileSize;
+      const fileStats = await stat(logFile);
+      return fileStats.size > maxFileSize;
     } catch {
       return false;
     }
@@ -97,8 +97,7 @@ function runWorker(): void {
       const rotatedFile = logFile.replace('.log', `-${timestamp}.log`);
       
       try {
-        await access(logFile);
-        await require('fs/promises').rename(logFile, rotatedFile);
+        await rename(logFile, rotatedFile);
       } catch {
         // File doesn't exist, nothing to rotate
       }
@@ -168,30 +167,35 @@ function runWorker(): void {
   }
 
   // Handle messages from main thread
-  parentPort?.on('message', (message: WorkerMessage) => {
+  parentPort?.on('message', async (message: WorkerMessage) => {
     switch (message.type) {
       case 'log':
         addToBuffer(message.data);
         break;
         
       case 'flush':
-        flushBuffer();
+        await flushBuffer();
         parentPort?.postMessage({ type: 'flushed' });
         break;
         
       case 'rotate':
-        rotateLog();
+        await rotateLog();
         parentPort?.postMessage({ type: 'rotated' });
         break;
         
       case 'stats':
-        stats.bufferSize = logBuffer.length;
-        stats.workerUptime = Date.now() - stats.workerUptime;
-        parentPort?.postMessage({ type: 'stats', data: stats });
+        parentPort?.postMessage({
+          type: 'stats',
+          data: {
+            ...stats,
+            bufferSize: logBuffer.length,
+            workerUptime: Date.now() - workerStartTime
+          }
+        });
         break;
         
       case 'destroy':
-        flushBuffer();
+        await flushBuffer();
         process.exit(0);
         break;
     }
@@ -200,7 +204,7 @@ function runWorker(): void {
   // Periodic flush
   setInterval(() => {
     if (logBuffer.length > 0) {
-      flushBuffer();
+      flushBuffer().catch(console.error);
     }
   }, FLUSH_INTERVAL);
 }
@@ -229,7 +233,7 @@ export class WorkerAsyncLogger {
    */
   private startWorker(): void {
     try {
-      this.worker = new Worker(__filename, {
+      this.worker = new Worker(new URL(import.meta.url), {
         workerData: {
           logFile: this.logFile,
           maxFileSize: this.maxFileSize,
@@ -275,7 +279,7 @@ export class WorkerAsyncLogger {
    * Send message to worker with error handling
    */
   private sendMessage(message: WorkerMessage): boolean {
-    if (!this.worker || this.isDestroyed) {
+    if (!this.worker || (this.isDestroyed && message.type !== 'destroy')) {
       this.stats.droppedLogs++;
       return false;
     }
@@ -444,10 +448,10 @@ export class WorkerAsyncLogger {
       await this.flush();
       
       // Send destroy message
-      this.sendMessage!({ type: 'destroy' });
+      this.sendMessage({ type: 'destroy' });
       
       // Terminate worker
-      this.worker.terminate();
+      await this.worker.terminate();
       this.worker = null;
     }
 
@@ -459,6 +463,3 @@ export class WorkerAsyncLogger {
 if (!isMainThread) {
   runWorker();
 }
-
-// Export singleton instance
-export const asyncLogger = new WorkerAsyncLogger();

@@ -1,1 +1,0 @@
-const mod=require('./jest.config.js');describe('jest.config.js',()=>{test('collectCoverage works',async=>expect(typeof mod.collectCoverage).toBeDefined());test('branches works',async=>expect(typeof mod.branches).toBeDefined());test('functions works',async=>expect(typeof mod.functions).toBeDefined());test('lines works',async=>expect(typeof mod.lines).toBeDefined())});

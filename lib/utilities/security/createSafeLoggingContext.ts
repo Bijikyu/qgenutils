@@ -1,6 +1,6 @@
 'use strict';
 
-const sanitizeUrl: any = require('./sanitizeUrl');
+import sanitizeUrl from './sanitizeUrl.js';
 
 const ALLOWED_HEADERS = [ // headers safe to log
   'content-type', 'accept', 'x-requested-with',

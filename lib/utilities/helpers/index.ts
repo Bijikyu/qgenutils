@@ -51,34 +51,34 @@
 // ============================================================================
 
 // Core string validation with security and type safety
-import isValidString from './isValidString';
+import isValidString from './isValidString.js';
 
 // Core date validation with timezone and validity checking
-import isValidDate from './isValidDate';
+import isValidDate from './isValidDate.js';
 
 // ============================================================================
 // INPUT VALIDATION UTILITIES
 // ============================================================================
 
 // Required field validation with comprehensive error handling
-import validateRequired from './validateRequired';
+import validateRequired from './validateRequired.js';
 
 // ============================================================================
 // SECURE JSON PROCESSING UTILITIES
 // ============================================================================
 
 // Secure JSON parsing with prototype pollution protection
-import safeJsonParse from './safeJsonParse';
+import safeJsonParse from './safeJsonParse.js';
 
 // Secure JSON stringification with circular reference handling
-import safeJsonStringify from './safeJsonStringify';
+import safeJsonStringify from './safeJsonStringify.js';
 
 // ============================================================================
 // CORE UTILITY FUNCTIONS
 // ============================================================================
 
 // Conditional requirement with validation and error handling
-import requireAndValidate from './requireAndValidate';
+import requireAndValidate from './requireAndValidate.js';
 
 // ============================================================================
 // CENTRALIZED ERROR HANDLING UTILITIES

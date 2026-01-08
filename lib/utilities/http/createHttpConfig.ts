@@ -13,10 +13,10 @@
  * @param {number} [customTimeout] - Optional custom timeout override
  * @returns {{ headers?: Record<string, string>; auth?: { username: string; password: string }; timeout: number }}
  */
-const getContextualTimeout: any = require('./getContextualTimeout');
-const { qerrors } = require('qerrors');
+import { qerrors } from 'qerrors';
+import getContextualTimeout from './getContextualTimeout.js';
 
-function createHttpConfig(apiKey: string, additionalHeaders: Record<string, string>, customTimeout: number) {
+function createHttpConfig(apiKey: string | null = null, additionalHeaders: Record<string, string> | null = null, customTimeout?: number) {
   try {
     const config: any = {
       timeout: customTimeout || getContextualTimeout('http-api')
@@ -26,7 +26,7 @@ function createHttpConfig(apiKey: string, additionalHeaders: Record<string, stri
       config.auth = { username: 'anystring', password: apiKey };
     }
     
-    config.headers = { 'Content-Type': 'application/json', ...additionalHeaders };
+    config.headers = { 'Content-Type': 'application/json', ...(additionalHeaders || {}) };
     
     return config;
   } catch (err) {

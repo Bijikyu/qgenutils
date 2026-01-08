@@ -49,10 +49,10 @@ function parseUrlParts(url) {
   
   try {
     // First normalize the URL to ensure it has a protocol for valid parsing
-    const processedUrl: any = ensureProtocol(url);
+    const processedUrl: any = ensureProtocol(url)?.processed;
 
     // If protocol normalization failed, abort parsing
-    if (processedUrl === null) {
+    if (!processedUrl || typeof processedUrl !== 'string' || processedUrl.endsWith('://')) {
       logger.debug(`parseUrlParts is returning null`);
       return null;
     }

@@ -12,8 +12,7 @@
  * @param {function} [timer.elapsed] - Function that returns elapsed time in ms
  * @returns {function(): number} Function that returns elapsed time when called
  */
-
-const safeDurationFromTimer: any = require('./safeDurationFromTimer');
+import safeDurationFromTimer from './safeDurationFromTimer.js';
 
 const createSafeDurationExtractor: any = (timer) => () => safeDurationFromTimer(timer);
 

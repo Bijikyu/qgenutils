@@ -1,5 +1,11 @@
+import createSemaphore from './createSemaphore.js';
+import retryWithBackoff from './retryWithBackoff.js';
+import processBatch from './processBatch.js';
+
+export { createSemaphore, retryWithBackoff, processBatch };
+
 export default {
-  createSemaphore: require('./createSemaphore'),
-  retryWithBackoff: require('./retryWithBackoff'),
-  processBatch: require('./processBatch')
+  createSemaphore,
+  retryWithBackoff,
+  processBatch
 };

@@ -24,6 +24,7 @@ import buildRateLimitKey from '../security/buildRateLimitKey.js'; // rationale: 
 interface RateLimiterConfig {
   windowMs?: number;
   max?: number;
+  maxRequests?: number;
   message?: string;
   standardHeaders?: boolean;
   legacyHeaders?: boolean;
@@ -59,6 +60,7 @@ function createRateLimiter(config: RateLimiterConfig = {}) {
   const {
     windowMs = 60000,
     max = 100,
+    maxRequests,
     message = 'Too many requests',
     standardHeaders = true,
     legacyHeaders = false,
@@ -74,9 +76,11 @@ function createRateLimiter(config: RateLimiterConfig = {}) {
     prefix = 'rl'
   } = config;
 
+  const resolvedMax = typeof maxRequests === 'number' ? maxRequests : max;
+
   const expressRateLimitConfig: ExpressRateLimitConfig = {
     windowMs,
-    max,
+    max: resolvedMax,
     message,
     standardHeaders,
     legacyHeaders,
@@ -92,8 +96,8 @@ function createRateLimiter(config: RateLimiterConfig = {}) {
   };
 
   // Handle legacy option names for backward compatibility
-  const finalWindowMs: number = expressRateLimitConfig.windowMs || expressRateLimitConfig.durationMs || 60000;
-  const finalMax: number = expressRateLimitConfig.max || expressRateLimitConfig.points || 100;
+  const finalWindowMs: number = (expressRateLimitConfig.windowMs ?? expressRateLimitConfig.durationMs ?? 60000) as number;
+  const finalMax: number = (expressRateLimitConfig.max ?? expressRateLimitConfig.points ?? 100) as number;
   
   // Validate configuration
   if (typeof finalWindowMs !== 'number' || finalWindowMs <= 0) {

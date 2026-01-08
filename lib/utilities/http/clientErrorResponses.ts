@@ -2,7 +2,7 @@
  * Client error response utilities (4xx status codes)
  */
 
-import coreErrorResponse from './coreErrorResponse';
+import coreErrorResponse from './coreErrorResponse.js';
 const { sendErrorResponse } = coreErrorResponse;
 
 /**

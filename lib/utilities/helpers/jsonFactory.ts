@@ -2,10 +2,10 @@
  * JSON utility factory for creating customized JSON utilities
  */
 
-import jsonParsing from './jsonParsing';
-import jsonStringification from './jsonStringification';
-import jsonManipulation from './jsonManipulation';
-import jsonSizeUtils from './jsonSizeUtils';
+import jsonParsing from './jsonParsing.js';
+import jsonStringification from './jsonStringification.js';
+import jsonManipulation from './jsonManipulation.js';
+import jsonSizeUtils from './jsonSizeUtils.js';
 
 /**
  * Creates a JSON utility object with custom defaults

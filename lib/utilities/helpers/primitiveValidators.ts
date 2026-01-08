@@ -25,7 +25,8 @@
  * - Error handling and type assertions
  */
 
-import { isFunction as lodashIsFunction, isBoolean as lodashIsBoolean, isDate as lodashIsDate } from 'lodash';
+import lodash from 'lodash';
+const { isFunction: lodashIsFunction, isBoolean: lodashIsBoolean, isDate: lodashIsDate } = lodash as any;
 
 /**
  * Function Type Validator

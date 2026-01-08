@@ -2,30 +2,36 @@
 
 Analyze and address the following test failures:
 
-## Failed Test 1: /home/runner/workspace/tests/security/security.test.ts
+## Failed Test 1: /home/runner/workspace/tests/integration/core-functionality.test.js
 
 ### Output:
 ```
-  ● Test suite failed to run
+  ● QGenUtils Integration Tests › Middleware Integration › should create and test rate limiter
 
-    The name `expect` was looked up in the Haste module map. It cannot be resolved, because there exists several different files, or packages, that provide a module for that particular name and platform. The platform is generic (no extension). You must delete or exclude files until there remains only one of these:
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
 
-      * `/home/runner/workspace/.cache/.bun/install/cache/expect@29.7.0@@@1/package.json` (package)
-      * `/home/runner/workspace/.cache/.bun/install/cache/expect@30.2.0@@@1/package.json` (package)
+    Expected: 429
 
-      at ModuleMap._assertNoDuplicates (node_modules/jest-runtime/node_modules/jest-haste-map/build/ModuleMap.js:189:11)
-      at _expect (node_modules/@jest/expect/build/index.js:8:16)
-      at createJestExpect (node_modules/@jest/expect/build/index.js:29:3)
-      at Object.<anonymous> (node_modules/@jest/expect/build/index.js:39:20)
+    Number of calls: 0
+
+      216 |       // 6th request should be rate limited
+      217 |       await limiter(req, res, next);
+    > 218 |       expect(res.status).toHaveBeenCalledWith(429);
+          |                          ^
+      219 |       expect(next).not.toHaveBeenCalled();
+      220 |     }, 5000);
+      221 |   });
+
+      at Object.toHaveBeenCalledWith (tests/integration/core-functionality.test.js:218:26)
 
 ```
 
-### Duration: 0ms
+### Duration: 6145ms
 
 ---
 
 ## Summary
 
 - Total failed tests: 1
-- Failed test files: /home/runner/workspace/tests/security/security.test.ts
-- Generated: 2025-12-29T01:06:17.309Z
+- Failed test files: /home/runner/workspace/tests/integration/core-functionality.test.js
+- Generated: 2026-01-08T22:49:53.372Z

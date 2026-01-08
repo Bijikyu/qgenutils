@@ -1,4 +1,4 @@
-import loadAndFlattenModule from './loadAndFlattenModule';
+import loadAndFlattenModule from './loadAndFlattenModule.js';
 
 interface CachedModule {
   module: any;

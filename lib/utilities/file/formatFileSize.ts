@@ -67,58 +67,44 @@
  * const result = formatFileSize('invalid'); // "0 B" with warning logged
  */
 
-import { filesize } from 'filesize';
-import { 
-  handleUtilityError, 
-  validateNumber, 
-  createDebugLogger 
-} from '../helpers/index.js';
+type FileSizeFormatResult = {
+  bytes: number;
+  formatted: string;
+  unit: 'B' | 'KB' | 'MB' | 'GB' | 'TB';
+  size: number;
+  unitIndex: number;
+  error?: string;
+};
 
-function formatFileSize(bytes: number, options: Record<string, any> = {}) {
-  const debug = createDebugLogger('formatFileSize');
-  
-  // Validate input using centralized validation
-  const validationResult = validateNumber(bytes, 'formatFileSize', 0, { 
-    min: 0, 
-    allowNaN: false 
-  });
-  
-  if (!validationResult.isValid) {
-    return validationResult.value;
+const UNITS: Array<FileSizeFormatResult['unit']> = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+function formatFileSize(bytes: any): FileSizeFormatResult {
+  const fallback: FileSizeFormatResult = {
+    bytes: 0,
+    formatted: '0 B',
+    unit: 'B',
+    size: 0,
+    unitIndex: 0
+  };
+
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) {
+    return { ...fallback, error: 'Invalid bytes' };
   }
-  
-  const validatedBytes = validationResult.value;
-  
-  try {
-    debug.start({ bytes: validatedBytes, options });
 
-    // Default options for consistent output with original implementation
-    const defaultOptions = {
-      base: 2,        // Binary (1024) calculation
-      round: 1,       // 1 decimal place
-      spacer: ` `,    // Space between number and unit
-      suffix: [`B`, `KB`, `MB`, `GB`, `TB`],
-      standard: 'jedec'  // Use JEDEC standard (KB, MB, GB) instead of SI (KiB, MiB, GiB)
-    };
+  if (bytes === 0) return fallback;
 
-    const finalOptions: any = { ...defaultOptions, ...options };
-
-    // Handle zero bytes - filesize handles this but we maintain consistent logging
-    if (validatedBytes === 0) {
-      debug.step('zero bytes handling');
-    }
-
-    const result: any = filesize(validatedBytes, finalOptions);
-    
-    debug.success({ input: validatedBytes, output: result });
-    return result;
-
-  } catch (error) {
-    return handleUtilityError(error, 'formatFileSize', { 
-      bytes: validatedBytes,
-      options 
-    }, '0 B');
+  let unitIndex = 0;
+  let size = bytes;
+  while (size >= 1024 && unitIndex < UNITS.length - 1) {
+    size /= 1024;
+    unitIndex++;
   }
+
+  const unit = UNITS[unitIndex];
+  const formatted =
+    unit === 'B' ? `${bytes} B` : `${size.toFixed(1)} ${unit}`;
+
+  return { bytes, formatted, unit, size, unitIndex };
 }
 
 export default formatFileSize;

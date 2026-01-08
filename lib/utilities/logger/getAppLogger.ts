@@ -8,12 +8,10 @@
  * @returns {{info: function, warn: function, error: function, debug: function}}
  */
 
+import logger from '../../logger.js';
+
 const getAppLogger = (): any => {
-  try {
-    // Try to import logger - using dynamic import for ES modules
-    const logger = require('../../logger.js');
-    if (logger && typeof logger.info === 'function') return logger;
-  } catch {}
+  if (logger && typeof (logger as any).info === 'function') return logger;
 
   return {
     info: (...args: any[]) => console.info(...args),

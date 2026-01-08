@@ -13,7 +13,7 @@
  * @returns {{now: function(): Date, timestamp: function(): number, isoString: function(): string}}
  */
 
-function createTimeProvider(getNow) {
+function createTimeProvider(getNow: (() => Date) | null = null) {
   const getTime: any = typeof getNow === 'function' ? getNow : () => new Date();
 
   return {
