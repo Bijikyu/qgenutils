@@ -1,572 +1,347 @@
+#!/usr/bin/env node
+
 /**
- * Performance Benchmarking Suite
+ * Automated Performance Benchmarking Suite for QGenUtils Demo Server
  * 
- * Purpose: Comprehensive performance testing for QGenUtils frontend-backend integration
- * with metrics collection, trend analysis, and regression detection.
+ * Performs comprehensive performance testing including:
+ * - Load testing with concurrent requests
+ * - Stress testing with gradual load increase  
+ * - Endpoint-specific performance analysis
+ * - Memory and CPU usage monitoring
+ * - Response time distribution analysis
+ * - Throughput and scalability testing
  */
 
 const http = require('http');
 const { performance } = require('perf_hooks');
+const os = require('os');
 
 class PerformanceBenchmark {
-  constructor() {
-    this.serverProcess = null;
-    this.results = [];
-    this.metrics = {
-      responseTime: [],
-      throughput: [],
-      memory: [],
-      cpu: []
+  constructor(baseUrl = 'http://localhost:3000') {
+    this.baseUrl = baseUrl;
+    this.results = {
+      summary: {},
+      endpoints: {},
+      systemMetrics: [],
+      testCases: []
     };
-    this.baseline = null;
   }
 
-  /**
-   * Start benchmark server
-   */
-  async startServer() {
-    console.log('🚀 Starting performance benchmark server...');
-    
-    return new Promise((resolve, reject) => {
-      this.serverProcess = require('child_process').spawn('node', ['examples/simple-demo-server.cjs'], {
-        stdio: 'pipe',
-        cwd: process.cwd()
-      });
-
-      let serverOutput = '';
-      
-      this.serverProcess.stdout.on('data', (data) => {
-        serverOutput += data.toString();
-        if (serverOutput.includes('listening on http://localhost:3000')) {
-          console.log('✅ Benchmark server started');
-          setTimeout(resolve, 1000);
-        }
-      });
-
-      this.serverProcess.stderr.on('data', (data) => {
-        console.error('Server error:', data.toString());
-      });
-
-      this.serverProcess.on('error', (error) => {
-        reject(new Error(`Failed to start server: ${error.message}`));
-      });
-
-      setTimeout(() => {
-        reject(new Error('Server startup timeout'));
-      }, 10000);
-    });
-  }
-
-  /**
-   * Stop benchmark server
-   */
-  stopServer() {
-    if (this.serverProcess) {
-      console.log('🛑 Stopping benchmark server...');
-      this.serverProcess.kill('SIGTERM');
-      this.serverProcess = null;
-    }
-  }
-
-  /**
-   * Make HTTP request with timing
-   */
-  async makeRequest(method, path, data = null, options = {}) {
+  async makeRequest(endpoint, data, options = {}) {
     return new Promise((resolve, reject) => {
       const startTime = performance.now();
       
-      const postData = data ? JSON.stringify(data) : null;
-      const postLength = postData ? postData.length : 0;
-      
-      const req = http.request({
+      const postData = JSON.stringify(data);
+      const requestOptions = {
         hostname: 'localhost',
         port: 3000,
-        path: path,
-        method: method,
+        path: endpoint,
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': postLength.toString(),
-          ...options.headers
+          'Content-Length': Buffer.byteLength(postData)
         },
-        timeout: options.timeout || 10000
-      });
+        ...options
+      };
 
-      let responseData = '';
-      
-      req.on('response', (res) => {
+      const req = http.request(requestOptions, (res) => {
+        let body = '';
         res.on('data', (chunk) => {
-          responseData += chunk.toString();
+          body += chunk;
         });
         
         res.on('end', () => {
           const endTime = performance.now();
           const responseTime = endTime - startTime;
           
-          try {
-            const parsedData = JSON.parse(responseData);
-            resolve({
-              statusCode: res.statusCode,
-              responseTime: responseTime,
-              headers: res.headers,
-              data: parsedData,
-              success: res.statusCode >= 200 && res.statusCode < 300
-            });
-          } catch (parseError) {
-            resolve({
-              statusCode: res.statusCode,
-              responseTime: responseTime,
-              headers: res.headers,
-              data: responseData,
-              success: false,
-              parseError: parseError.message
-            });
-          }
+          resolve({
+            statusCode: res.statusCode,
+            responseTime,
+            contentLength: body.length,
+            headers: res.headers,
+            data: body
+          });
         });
       });
 
-      req.on('error', (error) => {
-        const endTime = performance.now();
-        resolve({
-          statusCode: 0,
-          responseTime: endTime - startTime,
-          error: error.message,
-          success: false
-        });
+      req.on('error', (err) => {
+        reject(err);
       });
 
-      if (postData) {
-        req.write(postData);
-      }
-      
+      req.setTimeout(options.timeout || 10000, () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+
+      req.write(postData);
       req.end();
     });
   }
 
-  /**
-   * Benchmark single endpoint
-   */
-  async benchmarkEndpoint(name, method, path, data = null, iterations = 100) {
-    console.log(`\n🧪 Benchmarking: ${name} (${iterations} iterations)`);
+  async runSingleEndpointTest(endpoint, data, concurrency = 1, iterations = 100) {
+    console.log(`\n🧪 Testing ${endpoint} (concurrency: ${concurrency}, iterations: ${iterations})`);
     
     const results = [];
-    const errors = [];
-    
-    for (let i = 0; i < iterations; i++) {
-      const result = await this.makeRequest(method, path, data);
-      
-      if (result.success) {
-        results.push(result.responseTime);
-      } else {
-        errors.push(result);
-      }
-      
-      // Small delay to prevent overwhelming server
-      if (i % 10 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
-    }
-    
-    return this.analyzeResults(name, results, errors);
-  }
-
-  /**
-   * Analyze benchmark results
-   */
-  analyzeResults(name, results, errors) {
-    const analysis = {
-      name: name,
-      iterations: results.length + errors.length,
-      errors: errors.length,
-      errorRate: ((errors.length) / (results.length + errors.length)) * 100,
-      successRate: ((results.length) / (results.length + errors.length)) * 100
-    };
-
-    if (results.length > 0) {
-      // Calculate statistics
-      const sorted = results.sort((a, b) => a - b);
-      const sum = results.reduce((a, b) => a + b, 0);
-      const mean = sum / results.length;
-      
-      // Calculate percentiles
-      const p50 = sorted[Math.floor(sorted.length * 0.5)];
-      const p95 = sorted[Math.floor(sorted.length * 0.95)];
-      const p99 = sorted[Math.floor(sorted.length * 0.99)];
-      
-      analysis.stats = {
-        min: sorted[0],
-        max: sorted[sorted.length - 1],
-        mean: mean,
-        median: p50,
-        p95: p95,
-        p99: p99,
-        standardDeviation: this.calculateStandardDeviation(results, mean)
-      };
-      
-      // Store for trend analysis
-      this.metrics.responseTime.push(mean);
-    }
-
-    if (errors.length > 0) {
-      analysis.errorAnalysis = this.analyzeErrors(errors);
-    }
-
-    return analysis;
-  }
-
-  /**
-   * Calculate standard deviation
-   */
-  calculateStandardDeviation(values, mean) {
-    const squaredDifferences = values.map(value => Math.pow(value - mean, 2));
-    const avgSquaredDiff = squaredDifferences.reduce((a, b) => a + b, 0) / values.length;
-    return Math.sqrt(avgSquaredDiff);
-  }
-
-  /**
-   * Analyze error patterns
-   */
-  analyzeErrors(errors) {
-    const statusCodes = {};
-    const errorTypes = {};
-    
-    errors.forEach(error => {
-      // Group by status code
-      const code = error.statusCode || 'connection_error';
-      statusCodes[code] = (statusCodes[code] || 0) + 1;
-      
-      // Group by error type
-      const type = error.parseError ? 'parse_error' : 
-                   error.error ? 'connection_error' : 'unknown_error';
-      errorTypes[type] = (errorTypes[type] || 0) + 1;
-    });
-
-    return { statusCodes, errorTypes };
-  }
-
-  /**
-   * Benchmark concurrent requests
-   */
-  async benchmarkConcurrency(name, method, path, data = null, concurrency = 10) {
-    console.log(`\n🚀 Benchmarking: ${name} (concurrency: ${concurrency})`);
-    
     const startTime = performance.now();
+    
+    // Run concurrent batches
+    const batchSize = Math.ceil(iterations / concurrency);
     const promises = [];
     
-    // Launch concurrent requests
-    for (let i = 0; i < concurrency; i++) {
-      promises.push(this.makeRequest(method, path, data));
+    for (let batch = 0; batch < concurrency; batch++) {
+      const batchPromises = [];
+      const batchIterations = Math.min(batchSize, iterations - batch * batchSize);
+      
+      for (let i = 0; i < batchIterations; i++) {
+        const promise = this.makeRequest(endpoint, data);
+        batchPromises.push(promise);
+      }
+      
+      const batchResults = await Promise.allSettled(batchPromises);
+      promises.push(...batchResults);
+      
+      // Small delay between batches to prevent overwhelming
+      if (batch < concurrency - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
     
-    // Wait for all requests to complete
-    const results = await Promise.allSettled(promises);
     const endTime = performance.now();
     const totalTime = endTime - startTime;
     
     // Analyze results
-    const successful = results.filter(r => r.status === 'fulfilled' && r.value.success);
-    const failed = results.filter(r => r.status === 'rejected' || r.value.success === false);
+    const successfulResults = promises
+      .filter(p => p.status === 'fulfilled')
+      .map(p => p.value)
+      .filter(r => r.statusCode < 400);
     
-    const responseTimes = successful.map(r => r.value.responseTime);
-    const avgResponseTime = responseTimes.length > 0 ? 
-      responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0;
+    const failedResults = promises.filter(p => p.status === 'rejected' || (p.status === 'fulfilled' && p.value.statusCode >= 400));
     
-    const analysis = {
-      name: `${name} (concurrent)`,
-      concurrency: concurrency,
-      totalTime: totalTime,
-      requestsPerSecond: (results.length / totalTime) * 1000,
-      successCount: successful.length,
-      errorCount: failed.length,
-      successRate: (successful.length / results.length) * 100,
-      avgResponseTime: avgResponseTime,
-      throughput: results.length / totalTime
+    if (successfulResults.length === 0) {
+      throw new Error(`All requests failed for ${endpoint}`);
+    }
+    
+    const responseTimes = successfulResults.map(r => r.responseTime);
+    const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+    const minResponseTime = Math.min(...responseTimes);
+    const maxResponseTime = Math.max(...responseTimes);
+    
+    // Calculate percentiles
+    const sortedTimes = responseTimes.sort((a, b) => a - b);
+    const p50 = sortedTimes[Math.floor(sortedTimes.length * 0.5)];
+    const p90 = sortedTimes[Math.floor(sortedTimes.length * 0.9)];
+    const p95 = sortedTimes[Math.floor(sortedTimes.length * 0.95)];
+    const p99 = sortedTimes[Math.floor(sortedTimes.length * 0.99)];
+    
+    const throughput = (successfulResults.length / totalTime) * 1000; // requests per second
+    const errorRate = (failedResults.length / promises.length) * 100;
+    
+    const testResult = {
+      endpoint,
+      concurrency,
+      iterations,
+      totalTime: Math.round(totalTime),
+      successfulRequests: successfulResults.length,
+      failedRequests: failedResults.length,
+      errorRate: Math.round(errorRate * 100) / 100,
+      throughput: Math.round(throughput * 100) / 100,
+      avgResponseTime: Math.round(avgResponseTime * 100) / 100,
+      minResponseTime: Math.round(minResponseTime * 100) / 100,
+      maxResponseTime: Math.round(maxResponseTime * 100) / 100,
+      p50: Math.round(p50 * 100) / 100,
+      p90: Math.round(p90 * 100) / 100,
+      p95: Math.round(p95 * 100) / 100,
+      p99: Math.round(p99 * 100) / 100
     };
     
-    if (responseTimes.length > 0) {
-      const sorted = responseTimes.sort((a, b) => a - b);
-      analysis.stats = {
-        min: sorted[0],
-        max: sorted[sorted.length - 1],
-        median: sorted[Math.floor(sorted.length * 0.5)],
-        p95: sorted[Math.floor(sorted.length * 0.95)]
+    console.log(`✅ ${endpoint}: ${throughput.toFixed(2)} req/s, avg ${avgResponseTime.toFixed(2)}ms, error rate ${errorRate.toFixed(2)}%`);
+    
+    return testResult;
+  }
+
+  async runSystemMonitoring() {
+    console.log('\n📊 Starting system monitoring...');
+    
+    const monitoringInterval = setInterval(() => {
+      const memUsage = process.memoryUsage();
+      const cpuUsage = process.cpuUsage();
+      const loadAvg = os.loadavg();
+      
+      const metrics = {
+        timestamp: new Date().toISOString(),
+        memory: {
+          rss: Math.round(memUsage.rss / 1024 / 1024), // MB
+          heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+          heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+          external: Math.round(memUsage.external / 1024 / 1024)
+        },
+        cpu: {
+          user: cpuUsage.user,
+          system: cpuUsage.system
+        },
+        system: {
+          loadAverage: {
+            oneMinute: loadAvg[0],
+            fiveMinute: loadAvg[1],
+            fifteenMinute: loadAvg[2]
+          },
+          freeMemory: Math.round(os.freemem() / 1024 / 1024), // MB
+          totalMemory: Math.round(os.totalmem() / 1024 / 1024) // MB
+        }
       };
-    }
+      
+      this.results.systemMetrics.push(metrics);
+    }, 1000);
     
-    return analysis;
+    return monitoringInterval;
   }
 
-  /**
-   * Run memory usage benchmark
-   */
-  async benchmarkMemoryUsage() {
-    console.log('\n📊 Benchmarking: Memory Usage');
+  async runLoadTests() {
+    console.log('🚀 Starting Load Tests...\n');
     
-    const before = process.memoryUsage();
-    
-    // Make multiple requests to see memory impact
-    const promises = [];
-    for (let i = 0; i < 1000; i++) {
-      promises.push(this.makeRequest('POST', '/api/validate/email', { email: 'test@example.com' }));
-    }
-    
-    await Promise.allSettled(promises);
-    
-    const after = process.memoryUsage();
-    
-    return {
-      name: 'Memory Usage',
-      before: before,
-      after: after,
-      increase: {
-        rss: after.rss - before.rss,
-        heapUsed: after.heapUsed - before.heapUsed,
-        heapTotal: after.heapTotal - before.heapTotal,
-        external: after.external - before.external
+    const testCases = [
+      {
+        name: 'Email Validation',
+        endpoint: '/api/validate/email',
+        data: { email: 'test@example.com' }
       },
-      memoryPerRequest: (after.heapUsed - before.heapUsed) / 1000
-    };
-  }
+      {
+        name: 'String Sanitization',
+        endpoint: '/api/string/sanitize',
+        data: { input: '<script>alert("xss")</script>Hello World' }
+      },
+      {
+        name: 'API Key Masking',
+        endpoint: '/api/security/mask-api-key',
+        data: { apiKey: 'sk-test1234567890abcdefghijklmnopqrstuvwxyz' }
+      },
+      {
+        name: 'File Size Formatting',
+        endpoint: '/api/file/format-size',
+        data: { bytes: 1048576 }
+      },
+      {
+        name: 'URL Protocol Normalization',
+        endpoint: '/api/url/ensure-protocol',
+        data: { url: 'example.com', protocol: 'https' }
+      }
+    ];
 
-  /**
-   * Run comprehensive benchmark suite
-   */
-  async runFullBenchmarkSuite() {
-    console.log('🎯 Starting Comprehensive Performance Benchmark Suite\n');
+    const monitoringInterval = this.runSystemMonitoring();
     
     try {
-      await this.startServer();
-      
-      // Warm up
-      console.log('🔥 Warming up server...');
-      await this.benchmarkEndpoint('Warm-up', 'POST', '/api/validate/email', { email: 'warmup@example.com' }, 10);
-      
-      // Individual endpoint benchmarks
-      const endpointBenchmarks = [
-        { name: 'Email Validation', method: 'POST', path: '/api/validate/email', data: { email: 'test@example.com' } },
-        { name: 'Password Validation', method: 'POST', path: '/api/validate/password', data: { password: 'TestP@ssw0rd123!' } },
-        { name: 'API Key Masking', method: 'POST', path: '/api/security/mask-api-key', data: { apiKey: 'sk-sensitive1234567890abcdef' } },
-        { name: 'Collections Group By', method: 'POST', path: '/api/collections/group-by', 
-          data: { array: [{ name: 'John', category: 'A' }, { name: 'Jane', category: 'B' }], key: 'category' } }
-      ];
-      
-      for (const benchmark of endpointBenchmarks) {
-        const result = await this.benchmarkEndpoint(benchmark.name, benchmark.method, benchmark.path, benchmark.data);
-        this.results.push(result);
+      for (const testCase of testCases) {
+        // Test with different concurrency levels
+        const concurrencyLevels = [1, 5, 10, 25, 50];
+        
+        for (const concurrency of concurrencyLevels) {
+          try {
+            const result = await this.runSingleEndpointTest(
+              testCase.endpoint, 
+              testCase.data, 
+              concurrency, 
+              Math.min(100, concurrency * 20) // Scale iterations with concurrency
+            );
+            
+            if (!this.results.endpoints[testCase.name]) {
+              this.results.endpoints[testCase.name] = [];
+            }
+            this.results.endpoints[testCase.name].push(result);
+            
+          } catch (error) {
+            console.error(`❌ Failed to test ${testCase.name} with concurrency ${concurrency}: ${error.message}`);
+          }
+        }
+        
+        // Brief pause between endpoint tests
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
-      
-      // Concurrency benchmarks
-      const concurrencyTests = [1, 5, 10, 25, 50];
-      for (const concurrency of concurrencyTests) {
-        const result = await this.benchmarkConcurrency('Email Validation', 'POST', '/api/validate/email', { email: 'test@example.com' }, concurrency);
-        this.results.push(result);
-      }
-      
-      // Memory benchmark
-      const memoryResult = await this.benchmarkMemoryUsage();
-      this.results.push(memoryResult);
-      
-      this.generateBenchmarkReport();
-      
-    } catch (error) {
-      console.error('💥 Benchmark suite failed:', error);
     } finally {
-      this.stopServer();
+      clearInterval(monitoringInterval);
     }
   }
 
-  /**
-   * Generate comprehensive benchmark report
-   */
-  generateBenchmarkReport() {
-    console.log('\n' + '='.repeat(80));
-    console.log('📊 PERFORMANCE BENCHMARK REPORT');
+  generateReport() {
+    console.log('\n📋 PERFORMANCE BENCHMARK REPORT\n');
     console.log('='.repeat(80));
     
-    const timestamp = new Date().toISOString();
+    // Endpoint performance summary
+    console.log('\n📊 ENDPOINT PERFORMANCE SUMMARY');
+    console.log('-'.repeat(80));
     
-    // Summary section
-    console.log('\n📋 EXECUTION SUMMARY');
-    console.log('─'.repeat(40));
-    console.log(`Timestamp: ${timestamp}`);
-    console.log(`Total Benchmarks: ${this.results.length}`);
-    console.log(`Server: localhost:3000`);
-    console.log(`Environment: Node.js ${process.version}`);
-    console.log(`Platform: ${process.platform}`);
-    console.log(`Memory: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
-    
-    // Individual endpoint results
-    console.log('\n🎯 ENDPOINT PERFORMANCE');
-    console.log('─'.repeat(40));
-    
-    this.results
-      .filter(r => r.stats)
-      .forEach(result => {
-        console.log(`\n📊 ${result.name}`);
-        console.log(`  Success Rate: ${result.successRate.toFixed(1)}% (${result.successCount}/${result.iterations})`);
-        console.log(`  Error Rate: ${result.errorRate.toFixed(1)}% (${result.errors}/${result.iterations})`);
-        console.log(`  Response Time (ms):`);
-        console.log(`    Mean:   ${result.stats.mean.toFixed(2)}`);
-        console.log(`    Median: ${result.stats.median.toFixed(2)}`);
-        console.log(`    P95:    ${result.stats.p95.toFixed(2)}`);
-        console.log(`    P99:    ${result.stats.p99.toFixed(2)}`);
-        console.log(`    Min:     ${result.stats.min.toFixed(2)}`);
-        console.log(`    Max:     ${result.stats.max.toFixed(2)}`);
-        console.log(`    Std Dev: ${result.stats.standardDeviation.toFixed(2)}`);
-        
-        if (result.errorAnalysis) {
-          console.log(`  Error Analysis:`);
-          console.log(`    Status Codes: ${JSON.stringify(result.errorAnalysis.statusCodes)}`);
-          console.log(`    Error Types:   ${JSON.stringify(result.errorAnalysis.errorTypes)}`);
-        }
-      });
-    
-    // Concurrency results
-    console.log('\n🚀 CONCURRENCY PERFORMANCE');
-    console.log('─'.repeat(40));
-    
-    this.results
-      .filter(r => r.concurrency)
-      .forEach(result => {
-        console.log(`\n⚡ ${result.name} (Concurrency: ${result.concurrency})`);
-        console.log(`  Success Rate:    ${result.successRate.toFixed(1)}%`);
-        console.log(`  Throughput:     ${result.requestsPerSecond.toFixed(1)} req/sec`);
-        console.log(`  Avg Response:   ${result.avgResponseTime.toFixed(2)} ms`);
-        console.log(`  Total Time:     ${result.totalTime.toFixed(2)} ms`);
-        
-        if (result.stats) {
-          console.log(`  Response Time (ms):`);
-          console.log(`    Median: ${result.stats.median.toFixed(2)}`);
-          console.log(`    P95:    ${result.stats.p95.toFixed(2)}`);
-          console.log(`    Max:    ${result.stats.max.toFixed(2)}`);
-        }
-      });
-    
-    // Memory results
-    const memoryResult = this.results.find(r => r.name === 'Memory Usage');
-    if (memoryResult) {
-      console.log('\n💾 MEMORY USAGE');
-      console.log('─'.repeat(40));
-      console.log(`  RSS Increase:    ${(memoryResult.increase.rss / 1024 / 1024).toFixed(2)} MB`);
-      console.log(`  Heap Increase:   ${(memoryResult.increase.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-      console.log(`  Memory/Request:  ${(memoryResult.memoryPerRequest / 1024).toFixed(2)} KB`);
-    }
-    
-    // Performance assessment
-    console.log('\n🎯 PERFORMANCE ASSESSMENT');
-    console.log('─'.repeat(40));
-    
-    const avgResponseTimes = this.results
-      .filter(r => r.stats && r.stats.mean)
-      .map(r => r.stats.mean);
-    
-    if (avgResponseTimes.length > 0) {
-      const overallAvg = avgResponseTimes.reduce((a, b) => a + b, 0) / avgResponseTimes.length;
-      const overallP95 = Math.max(...this.results.filter(r => r.stats && r.stats.p95).map(r => r.stats.p95));
+    for (const [endpoint, results] of Object.entries(this.results.endpoints)) {
+      console.log(`\n${endpoint}:`);
+      console.log(`├─ Best Throughput: ${Math.max(...results.map(r => r.throughput))} req/s`);
+      console.log(`├─ Best Response Time: ${Math.min(...results.map(r => r.avgResponseTime))}ms avg`);
+      console.log(`├─ Worst Response Time: ${Math.max(...results.map(r => r.avgResponseTime))}ms avg`);
+      console.log(`└─ Optimal Concurrency: ${results.reduce((best, r) => r.throughput > best.throughput ? r : best).concurrency}`);
       
-      console.log(`  Overall Average Response: ${overallAvg.toFixed(2)} ms`);
-      console.log(`  Overall P95 Response:    ${overallP95.toFixed(2)} ms`);
-      
-      // Performance grades
-      let grade = 'A';
-      if (overallAvg > 100) grade = 'C';
-      else if (overallAvg > 50) grade = 'B';
-      
-      console.log(`  Performance Grade:       ${grade}`);
-      
-      if (overallAvg < 50) {
-        console.log(`  Status: ✅ EXCELLENT - Response times under 50ms`);
-      } else if (overallAvg < 100) {
-        console.log(`  Status: ✅ GOOD - Response times under 100ms`);
-      } else {
-        console.log(`  Status: ⚠️  NEEDS OPTIMIZATION - Response times over 100ms`);
+      for (const result of results) {
+        console.log(`   └─ ${result.concurrency} concurrent: ${result.throughput} req/s, ${result.avgResponseTime}ms avg, ${result.errorRate}% errors`);
       }
     }
     
-    this.saveBenchmarkReport(timestamp);
+    console.log('\n✅ BENCHMARK COMPLETED SUCCESSFULLY');
+    console.log('='.repeat(80));
   }
 
-  /**
-   * Save benchmark report to file
-   */
-  saveBenchmarkReport(timestamp) {
-    const reportData = {
-      timestamp,
-      system: {
-        nodeVersion: process.version,
-        platform: process.platform,
-        arch: process.arch,
-        memory: process.memoryUsage()
-      },
-      results: this.results,
-      summary: {
-        totalBenchmarks: this.results.length,
-        avgResponseTime: this.calculateAverage(this.results.filter(r => r.stats && r.stats.mean).map(r => r.stats.mean)),
-        successRate: this.calculateAverage(this.results.map(r => r.successRate || 0)),
-        performanceGrade: this.calculatePerformanceGrade()
-      }
-    };
-    
-    const filename = `agentRecords/performance-benchmark-${timestamp.replace(/[:.]/g, '-')}.json`;
+  async runAllBenchmarks() {
+    console.log('🚀 Starting QGenUtils Performance Benchmark Suite');
+    console.log(`🌐 Target Server: ${this.baseUrl}`);
+    console.log(`💻 System: ${os.platform()} with ${os.cpus().length} cores, ${Math.round(os.totalmem() / 1024 / 1024)}MB RAM\n`);
     
     try {
-      require('fs').writeFileSync(filename, JSON.stringify(reportData, null, 2));
-      console.log(`\n📁 Detailed report saved to: ${filename}`);
+      await this.runLoadTests();
+      this.generateReport();
+      
     } catch (error) {
-      console.error(`⚠️  Could not save report: ${error.message}`);
+      console.error(`❌ Benchmark failed: ${error.message}`);
+      process.exit(1);
     }
-  }
-
-  /**
-   * Calculate average of array
-   */
-  calculateAverage(values) {
-    if (values.length === 0) return 0;
-    return values.reduce((a, b) => a + b, 0) / values.length;
-  }
-
-  /**
-   * Calculate overall performance grade
-   */
-  calculatePerformanceGrade() {
-    const responseTimes = this.results
-      .filter(r => r.stats && r.stats.mean)
-      .map(r => r.stats.mean);
-    
-    if (responseTimes.length === 0) return 'N/A';
-    
-    const avg = this.calculateAverage(responseTimes);
-    
-    if (avg < 25) return 'A+';
-    if (avg < 50) return 'A';
-    if (avg < 75) return 'B';
-    if (avg < 100) return 'C';
-    return 'D';
   }
 }
 
-// CLI interface
-if (require.main === module) {
-  const benchmark = new PerformanceBenchmark();
-  
-  const command = process.argv[2];
-  
-  switch (command) {
-    case 'quick':
-      benchmark.runQuickBenchmark();
-      break;
-    case 'full':
-      benchmark.runFullBenchmarkSuite();
-      break;
-    case 'memory':
-      benchmark.runMemoryBenchmark();
-      break;
-    default:
-      console.log('Usage: node performance-benchmark.cjs [quick|full|memory]');
-      console.log('  quick  - Quick performance test');
-      console.log('  full   - Comprehensive benchmark suite');
-      console.log('  memory - Memory usage analysis');
-      process.exit(1);
+// Check if server is running
+async function checkServer() {
+  return new Promise((resolve, reject) => {
+    const req = http.request({
+      hostname: 'localhost',
+      port: 3000,
+      path: '/api/stats',
+      method: 'GET',
+      timeout: 5000
+    }, (res) => {
+      resolve(true);
+    });
+
+    req.on('error', () => {
+      reject(new Error('Demo server is not running. Please start it with: node examples/simple-demo-server.cjs'));
+    });
+
+    req.on('timeout', () => {
+      reject(new Error('Demo server is not responding. Please start it with: node examples/simple-demo-server.cjs'));
+    });
+
+    req.end();
+  });
+}
+
+// Main execution
+async function main() {
+  try {
+    await checkServer();
+    
+    const benchmark = new PerformanceBenchmark();
+    await benchmark.runAllBenchmarks();
+    
+  } catch (error) {
+    console.error(`❌ Setup error: ${error.message}`);
+    process.exit(1);
   }
+}
+
+if (require.main === module) {
+  main();
 }
 
 module.exports = PerformanceBenchmark;

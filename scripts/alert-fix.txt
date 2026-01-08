@@ -1,0 +1,3 @@
+// Fixed line - removed double quote
+    console.log(`🔔 Channels: ${notifications.map(n => n.status === 'fulfilled' ? '✅' : '❌').join(', ')}`);
+  }

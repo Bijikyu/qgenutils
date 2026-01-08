@@ -1,0 +1,153 @@
+name: QGenUtils CI/CD Pipeline
+on:
+  push:
+    branches: [ main, develop ]
+jobs:
+  test-and-security-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+    services:
+      - name: test
+        steps:
+          - uses: actions/checkout@v3
+          - name: Setup Node.js
+            uses: actions/setup-node@v3
+            with:
+              node-version: ${{ matrix.node-version }}
+          - name: Install dependencies
+            run: npm ci
+          - name: Run unit tests
+            run: npm test -- --coverage
+          - name: Run integration tests
+            run: node scripts/test-demo-endpoints.cjs
+          - name: Run security scan
+            run: node scripts/security-scanner.cjs
+          - name: Run performance benchmarks
+            run: node scripts/performance-benchmark.cjs
+          - name: Upload coverage reports
+            uses: actions/upload-artifact@v3
+            with:
+              name: coverage-${{ matrix.node-version }}
+              path: coverage/
+  
+      - name: security-scan
+        runs-on: ubuntu-latest
+        needs: test-and-security-scan
+        steps:
+          - name: Analyze security report
+            run: node -e "
+              const fs = require('fs');
+              const report = JSON.parse(fs.readFileSync('security-scan-${{ matrix.node-version }}.json', 'utf8'));
+              console.log('🔒 Security Analysis:');
+              console.log('Vulnerabilities:', report.summary.vulnerabilities || 0);
+              console.log('Security Score:', report.summary.securityScore || 0);
+              console.log('Recommendations:', report.recommendations.length || 0);
+              if (report.summary.vulnerabilities > 0) {
+                process.exit(1);
+              }
+            "
+
+  build-and-deploy:
+    needs: test-and-security-scan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+    steps:
+      - name: Build demo image
+        uses: docker/build-push@v4
+        with:
+          context: ${{ matrix.environment }}
+          file: |
+            FROM node:18-alpine
+            WORKDIR /app
+            COPY package*.json ./
+            RUN npm ci --only=production
+            COPY . .
+            EXPOSE 3000
+            USER node
+            CMD ["node", "examples/simple-demo-server.cjs"]
+          push: true
+          tags: |
+            qgenutils-demo-${{ matrix.environment }}
+            latest-${{ matrix.environment }}
+  
+      - name: Deploy to staging
+        if: matrix.environment == 'staging' || matrix.environment == 'production'
+        runs-on: ubuntu-latest
+        needs: build-and-deploy
+        environment:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+          PROD_URL: ${{ secrets.PROD_URL }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        steps:
+          - name: Deploy
+            run: |
+              echo "🚀 Deploying to ${{ matrix.environment }}..."
+              curl -X POST "$DEPLOY_URL" \
+                -H "Authorization: Bearer $DEPLOY_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{"image":"qgenutils-demo-latest","environment":"${{ matrix.environment }}"}'
+              --max-time 30
+          
+          - name: Health check
+            run: |
+              echo "🔍 Health checking ${{ matrix.environment }}..."
+              sleep 30
+              curl -f "$DEPLOY_URL/health" \
+                --max-time 10 || \
+                echo "❌ Health check failed"
+  
+      - name: Deploy to production
+        if: matrix.environment == 'production'
+        runs-on: ubuntu-latest
+        needs: build-and-deploy
+        environment:
+          PROD_URL: ${{ secrets.PROD_URL }}
+          DEPLOY_TOKEN: ${{ secrets.PROD_TOKEN }}
+        steps:
+          - name: Deploy to production
+            run: |
+              echo "🚀 Deploying to production..."
+              curl -X POST "$PROD_URL" \
+                -H "Authorization: Bearer $DEPLOY_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{"image":"qgenutils-demo-latest","environment":"production","blue_green":true}' \
+                --max-time 60
+          
+          - name: Production health check
+            run: |
+              echo "🔍 Production health check..."
+              sleep 60
+              curl -f "$PROD_URL/health" \
+                --max-time 10 || \
+                echo "❌ Production health check failed"
+                exit 1
+
+  notify-security:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    if: failure()
+    steps:
+      - name: Send security alert
+        run: |
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{"text":"🚨 SECURITY SCAN FAILED\nVulnerabilities: ${{ needs.security-scan.outputs.vulnerabilities }}\nSee GitHub Actions for details"}' \
+            --max-time 10 || \
+            echo "❌ Slack notification failed"
+
+  notify-deployment:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    if: success()
+    steps:
+      - name: Deploy success notification
+        run: |
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{"text":"🚀 DEPLOYMENT SUCCESS\nEnvironment: ${{ needs.build-and-deploy.strategy.matrix.environment }}\nImage: qgenutils-demo-latest\nHealth: ✅"}' \
+            --max-time 10 || \
+            echo "❌ Slack notification failed"

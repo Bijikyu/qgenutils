@@ -1,13 +1,25 @@
-# qgenutils Production Deployment Guide
+# Production Deployment Guide for QGenUtils Demo Infrastructure
 
 ## Overview
-This guide provides step-by-step instructions for deploying qgenutils v1.0.3 to production environments.
 
-## Prerequisites
+This guide provides comprehensive instructions for deploying QGenUtils demo server in production environments. The demo server is designed for showcasing QGenUtils utilities and can be deployed as a standalone service or integrated into existing infrastructure.
 
-### System Requirements
-- Node.js 18.x or higher
-- Docker & Docker Compose (for containerized deployment)
+## 🏗️ Architecture Options
+
+### Option 1: Standalone Single Instance
+- **Best for**: Small teams, development, proof-of-concept
+- **Resources**: 1 CPU, 512MB RAM, 10GB storage
+- **Traffic**: ~1000 requests/minute
+
+### Option 2: Load-Balanced Multi-Instance
+- **Best for**: Medium traffic, high availability
+- **Resources**: 2-4 instances, 1 CPU each, 1GB RAM each
+- **Traffic**: ~10,000 requests/minute
+
+### Option 3: Containerized Deployment
+- **Best for**: Scalable production, CI/CD integration
+- **Resources**: Kubernetes, Docker Swarm, or ECS
+- **Traffic**: 50,000+ requests/minute
 - Kubernetes cluster (for K8s deployment)
 - At least 2GB RAM
 - 10GB disk space

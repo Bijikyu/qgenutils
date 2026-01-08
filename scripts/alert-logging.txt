@@ -1,0 +1,9 @@
+// Alert channels result logging
+    let resultText = '';
+    notifications.forEach(notification => {
+      const status = notification.status === 'fulfilled' ? '✅' : '❌';
+      resultText += status + ' ';
+    });
+    
+    console.log(`🔔 Channels: ${resultText.trim()}`);
+  }
