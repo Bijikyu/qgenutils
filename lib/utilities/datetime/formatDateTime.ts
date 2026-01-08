@@ -3,7 +3,7 @@
  * 
  * RATIONALE: APIs typically return dates in ISO format (2023-12-25T10:30:00.000Z)
  * which is machine-readable but not user-friendly. This function converts ISO
- * dates to formats that users expect to see in interfaces using the robust date-fns library.
+ * dates to formats that users expect to see in interfaces using robust date-fns library.
  * 
  * IMPLEMENTATION DECISIONS:
  * - Use date-fns formatLocale function for consistent locale adaptation
@@ -29,6 +29,39 @@
  * @throws Never throws - returns "N/A" on any error for graceful degradation
  */
 
-import{format as formatDateFn,parseISO,isValid}from'date-fns';import{qerrors}from'qerrors';import logger from'../../logger.js';const formatDateTime=(dateString:string):string=>{logger.debug(`formatDateTime is running with ${dateString}`);try{if(!dateString){logger.debug(`formatDateTime is returning N/A`);return`N/A`;}const date:any=parseISO(dateString);if(!isValid(date)){logger.debug(`formatDateTime is returning N/A`);return`N/A`;}const formatted:any=formatDateFn(date,'Ppp');logger.debug(`formatDateTime is returning ${formatted}`);return formatted;}catch(err){if(err instanceof Error){qerrors(err,`formatDateTime`);logger.error(`formatDateTime failed`,err);}else{const error=new Error(String(err));qerrors(error,`formatDateTime`);logger.error(`formatDateTime failed`,error);}return`N/A`;}};
+import { format as formatDateFn, parseISO, isValid } from 'date-fns';
+import { qerrors } from 'qerrors';
+import logger from '../../logger.js';
+
+const formatDateTime = (dateString: string): string => {
+  logger.debug(`formatDateTime is running with ${dateString}`);
+  
+  try {
+    if (!dateString) {
+      logger.debug(`formatDateTime is returning N/A`);
+      return 'N/A';
+    }
+    
+    const date: any = parseISO(dateString);
+    if (!isValid(date)) {
+      logger.debug(`formatDateTime is returning N/A`);
+      return 'N/A';
+    }
+    
+    const formatted: any = formatDateFn(date, 'Ppp');
+    logger.debug(`formatDateTime is returning ${formatted}`);
+    return formatted;
+  } catch (err) {
+    if (err instanceof Error) {
+      qerrors(err, `formatDateTime`);
+      logger.error(`formatDateTime failed`, err);
+    } else {
+      const error = new Error(String(err));
+      qerrors(error, `formatDateTime`);
+      logger.error(`formatDateTime failed`, error);
+    }
+    return 'N/A';
+  }
+};
 
 export default formatDateTime;

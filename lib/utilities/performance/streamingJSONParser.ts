@@ -6,7 +6,10 @@
  */
 
 import { Transform } from 'stream';
-import { JSONParser } from 'stream-json';
+import { parser } from 'stream-json';
+
+// Create JSONParser constructor
+const JSONParser = parser;
 
 export interface StreamingParseOptions {
   reviver?: (key: string, value: any) => any;
@@ -36,7 +39,7 @@ export class StreamingJSONParser extends Transform {
     super({ objectMode: true });
     
     // Initialize stream-json parser
-    this.parser = new JSONParser({
+    this.parser = parser({
       streamValues: false,
       packKeys: true,
       ...options
