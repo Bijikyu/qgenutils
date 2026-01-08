@@ -139,3 +139,4 @@ All items above have been addressed, and `npm test` now passes end-to-end.
 - Logger initialization race: `lib/logger.ts` now ensures the log directory exists synchronously before constructing the rotating file transport, avoiding startup failures when the directory is missing.
 - Rate limiter validation correctness: `createRateLimiter` now uses nullish coalescing (`??`) instead of `||` when resolving `windowMs`/`max`, so invalid `0` values are not silently replaced with defaults.
 - Protocol param correctness: `ensureProtocol(url, protocol)` now normalizes the provided protocol (e.g. handles `https:` / `https://`) to avoid producing invalid outputs like `https:://`.
+- Security rate limiter correctness: `lib/utilities/security/createSecurityRateLimiter.ts` now validates `windowMs`/`maxRequests`/`blockDurationMs` and actually enforces `maxUrlLength` and `maxRequestSize` (via URL length and `Content-Length`) instead of accepting unused options.

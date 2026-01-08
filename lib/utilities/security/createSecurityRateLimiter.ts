@@ -23,22 +23,38 @@ function createSecurityRateLimiter(options: {
   keyGenerator?: Function;
   onLimitExceeded?: Function;
 } = {}) { // factory for security rate limiter
-  // Validate input parameters to prevent memory exhaustion
-  const maxRequestSize: number = options.maxRequestSize || 1024 * 1024; // 1MB default
-  const maxUrlLength: number = options.maxUrlLength || 2048; // 2KB default
-  
+  const maxRequestSize: number = (options.maxRequestSize ?? 1024 * 1024) as number; // 1MB default
+  const maxUrlLength: number = (options.maxUrlLength ?? 2048) as number; // 2KB default
+  const windowMs: number = (options.windowMs ?? SECURITY_CONFIG.RATE_LIMIT_WINDOW_MS) as number;
+  const maxRequests: number = (options.maxRequests ?? SECURITY_CONFIG.RATE_LIMIT_MAX_REQUESTS) as number;
+  const blockDurationMs: number = (options.blockDurationMs ?? SECURITY_CONFIG.BLOCK_DURATION_MS) as number;
+
+  if (!Number.isFinite(maxRequestSize) || maxRequestSize <= 0) {
+    throw new Error('maxRequestSize must be a positive number');
+  }
   if (maxRequestSize > 100 * 1024 * 1024) { // 100MB max
     throw new Error('maxRequestSize too large (max 100MB)');
+  }
+
+  if (!Number.isFinite(maxUrlLength) || maxUrlLength <= 0) {
+    throw new Error('maxUrlLength must be a positive number');
   }
   if (maxUrlLength > 65536) { // 64KB max
     throw new Error('maxUrlLength too large (max 64KB)');
   }
 
-  const windowMs: number = options.windowMs || SECURITY_CONFIG.RATE_LIMIT_WINDOW_MS;
-  const maxRequests: number = options.maxRequests || SECURITY_CONFIG.RATE_LIMIT_MAX_REQUESTS;
-  const blockDurationMs: number = options.blockDurationMs || SECURITY_CONFIG.BLOCK_DURATION_MS;
-  const keyGenerator: Function = options.keyGenerator || defaultKeyGenerator;
-  const onLimitExceeded: Function | null = options.onLimitExceeded || null;
+  if (!Number.isFinite(windowMs) || windowMs <= 0) {
+    throw new Error('windowMs must be a positive number');
+  }
+  if (!Number.isFinite(maxRequests) || maxRequests <= 0) {
+    throw new Error('maxRequests must be a positive number');
+  }
+  if (!Number.isFinite(blockDurationMs) || blockDurationMs <= 0) {
+    throw new Error('blockDurationMs must be a positive number');
+  }
+
+  const keyGenerator: Function = typeof options.keyGenerator === 'function' ? options.keyGenerator : defaultKeyGenerator;
+  const onLimitExceeded: Function | null = typeof options.onLimitExceeded === 'function' ? options.onLimitExceeded : null;
 
   // Use bounded caches to prevent memory leaks
   const requestCounts = new BoundedLRUCache<string, { count: number; windowStart: number }>(
@@ -63,6 +79,25 @@ function createSecurityRateLimiter(options: {
   return function rateLimiterMiddleware(req: any, res: any, next: any) { // rate limiter middleware
     const now: any = Date.now();
     const key: any = keyGenerator(req);
+
+    const requestUrl: string = String(req?.originalUrl ?? req?.url ?? '');
+    if (requestUrl.length > maxUrlLength) {
+      res.status(414).json({
+        error: 'URI Too Long',
+        message: `Request URL exceeds maximum length (${maxUrlLength})`
+      });
+      return;
+    }
+
+    const contentLengthHeader = req?.headers?.['content-length'];
+    const contentLength = typeof contentLengthHeader === 'string' ? parseInt(contentLengthHeader, 10) : null;
+    if (Number.isFinite(contentLength as any) && (contentLength as number) > maxRequestSize) {
+      res.status(413).json({
+        error: 'Payload Too Large',
+        message: `Request payload exceeds maximum size (${maxRequestSize} bytes)`
+      });
+      return;
+    }
 
     // Enhanced cleanup strategy to prevent memory leaks
     if (Math.random() < 0.05 || requestCounts.size > 1000 || blockedKeys.size > 500) {

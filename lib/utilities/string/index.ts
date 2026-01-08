@@ -1,6 +1,6 @@
 /**
  * String Processing Utilities Module Export
- * 
+ *
  * PURPOSE: Provides centralized access to core string utilities
  * with security-focused sanitization and transformation capabilities.
  * This barrel export makes it easier to import multiple string
