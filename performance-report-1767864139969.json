@@ -1,0 +1,191 @@
+{
+  "timestamp": "2026-01-08T09:22:19.880Z",
+  "benchmarks": [
+    {
+      "category": "validation",
+      "name": "Email Validation",
+      "iterations": 10000,
+      "totalTime": 3.42,
+      "avgTime": 0.000342,
+      "opsPerSec": 2924251,
+      "performance": "excellent"
+    },
+    {
+      "category": "validation",
+      "name": "String Sanitization",
+      "iterations": 5000,
+      "totalTime": 3.412,
+      "avgTime": 0.000682,
+      "opsPerSec": 1465219,
+      "performance": "excellent"
+    },
+    {
+      "category": "validation",
+      "name": "Password Strength Check",
+      "iterations": 3000,
+      "totalTime": 2.828,
+      "avgTime": 0.000943,
+      "opsPerSec": 1060948,
+      "performance": "excellent"
+    },
+    {
+      "category": "security",
+      "name": "API Key Masking",
+      "iterations": 5000,
+      "totalTime": 2.385,
+      "avgTime": 0.000477,
+      "opsPerSec": 2096779,
+      "performance": "excellent"
+    },
+    {
+      "category": "security",
+      "name": "Hash Comparison",
+      "iterations": 20000,
+      "totalTime": 0.788,
+      "avgTime": 0.000039,
+      "opsPerSec": 25395535,
+      "performance": "excellent"
+    },
+    {
+      "category": "security",
+      "name": "Input Sanitization",
+      "iterations": 8000,
+      "totalTime": 5.432,
+      "avgTime": 0.000679,
+      "opsPerSec": 1472627,
+      "performance": "excellent"
+    },
+    {
+      "category": "performance",
+      "name": "Memoization",
+      "iterations": 10000,
+      "totalTime": 3.862,
+      "avgTime": 0.000386,
+      "opsPerSec": 2589030,
+      "performance": "excellent"
+    },
+    {
+      "category": "performance",
+      "name": "Debounce Logic",
+      "iterations": 5000,
+      "totalTime": 1.094,
+      "avgTime": 0.000219,
+      "opsPerSec": 4572265,
+      "performance": "excellent"
+    },
+    {
+      "category": "performance",
+      "name": "Throttle Logic",
+      "iterations": 5000,
+      "totalTime": 1.095,
+      "avgTime": 0.000219,
+      "opsPerSec": 4565251,
+      "performance": "excellent"
+    },
+    {
+      "category": "datetime",
+      "name": "Date Formatting",
+      "iterations": 10000,
+      "totalTime": 27.252,
+      "avgTime": 0.002725,
+      "opsPerSec": 366940,
+      "performance": "good"
+    },
+    {
+      "category": "datetime",
+      "name": "Duration Calculation",
+      "iterations": 15000,
+      "totalTime": 1.674,
+      "avgTime": 0.000112,
+      "opsPerSec": 8958593,
+      "performance": "excellent"
+    },
+    {
+      "category": "datetime",
+      "name": "Date Validation",
+      "iterations": 8000,
+      "totalTime": 2.133,
+      "avgTime": 0.000267,
+      "opsPerSec": 3750111,
+      "performance": "excellent"
+    },
+    {
+      "category": "string",
+      "name": "URL Protocol Addition",
+      "iterations": 8000,
+      "totalTime": 1.551,
+      "avgTime": 0.000194,
+      "opsPerSec": 5157101,
+      "performance": "excellent"
+    },
+    {
+      "category": "string",
+      "name": "File Size Formatting",
+      "iterations": 6000,
+      "totalTime": 1.748,
+      "avgTime": 0.000291,
+      "opsPerSec": 3433378,
+      "performance": "excellent"
+    }
+  ],
+  "memoryUsage": {
+    "baseline": {
+      "rss": 63713280,
+      "heapTotal": 6529024,
+      "heapUsed": 4620512,
+      "external": 1721384,
+      "arrayBuffers": 10515
+    },
+    "afterCreation": {
+      "rss": 63713280,
+      "heapTotal": 6529024,
+      "heapUsed": 4846392,
+      "external": 1721424,
+      "arrayBuffers": 10515
+    },
+    "afterCleanup": {
+      "rss": 63713280,
+      "heapTotal": 6529024,
+      "heapUsed": 4858616,
+      "external": 1721424,
+      "arrayBuffers": 10515
+    },
+    "cacheCreated": 1000,
+    "cacheCleared": 500,
+    "memoryEfficiency": {
+      "creationOverhead": 225880,
+      "cleanupReclaimed": -12224,
+      "reclaimRate": -5.411723038781654
+    }
+  },
+  "bundleAnalysis": {},
+  "recommendations": [
+    {
+      "type": "performance",
+      "priority": "info",
+      "message": "13 utilities have excellent performance",
+      "details": [
+        "Email Validation (2924251 ops/sec)",
+        "String Sanitization (1465219 ops/sec)",
+        "Password Strength Check (1060948 ops/sec)",
+        "API Key Masking (2096779 ops/sec)",
+        "Hash Comparison (25395535 ops/sec)",
+        "Input Sanitization (1472627 ops/sec)",
+        "Memoization (2589030 ops/sec)",
+        "Debounce Logic (4572265 ops/sec)",
+        "Throttle Logic (4565251 ops/sec)",
+        "Duration Calculation (8958593 ops/sec)",
+        "Date Validation (3750111 ops/sec)",
+        "URL Protocol Addition (5157101 ops/sec)",
+        "File Size Formatting (3433378 ops/sec)"
+      ],
+      "solution": "These can be used as performance benchmarks"
+    },
+    {
+      "type": "memory",
+      "priority": "medium",
+      "message": "Memory reclaim rate is -5%",
+      "solution": "Improve cleanup logic and consider weak references"
+    }
+  ]
+}

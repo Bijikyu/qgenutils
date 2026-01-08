@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGenUtils Auth Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #333;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .demo-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .demo-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .demo-result {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 QGenUtils Auth Demo</h1>
+            <p>Secure authentication system with QGenUtils utilities</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('register')">Register</button>
+            <button class="tab" onclick="showTab('login')">Login</button>
+            <button class="tab" onclick="showTab('tools')">Tools</button>
+            <button class="tab" onclick="showTab('protected')">Protected API</button>
+        </div>
+
+        <!-- Register Tab -->
+        <div id="register-tab" class="tab-content active">
+            <div id="register-message"></div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Name</label>
+                    <input type="text" id="register-name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Register</button>
+            </form>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="login-tab" class="tab-content">
+            <div id="login-message"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+
+        <!-- Tools Tab -->
+        <div id="tools-tab" class="tab-content">
+            <div class="form-group">
+                <label for="password-length">Password Length</label>
+                <input type="number" id="password-length" value="16" min="8" max="32">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="include-symbols" checked> Include Symbols
+                </label>
+            </div>
+            <button type="button" class="btn" onclick="generatePassword()">Generate Password</button>
+            <div id="password-result" class="demo-result hidden"></div>
+
+            <div class="demo-section">
+                <h3>API Key Masking</h3>
+                <div class="form-group">
+                    <label for="api-key">API Key</label>
+                    <input type="text" id="api-key" placeholder="Enter API key to mask">
+                </div>
+                <button type="button" class="btn" onclick="maskApiKey()">Mask API Key</button>
+                <div id="mask-result" class="demo-result hidden"></div>
+            </div>
+        </div>
+
+        <!-- Protected API Tab -->
+        <div id="protected-tab" class="tab-content">
+            <div class="form-group">
+                <label for="api-key-input">API Key</label>
+                <input type="text" id="api-key-input" placeholder="demo-api-key-12345" value="demo-api-key-12345">
+            </div>
+            <button type="button" class="btn" onclick="callProtectedAPI()">Call Protected API</button>
+            <div id="protected-result" class="demo-result hidden"></div>
+        </div>
+
+        <!-- User Info (shown when logged in) -->
+        <div id="user-info" class="hidden">
+            <div class="message success">
+                <strong>Welcome!</strong> You are logged in.
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="user-name">-</div>
+                    <div class="stat-label">Name</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="user-email">-</div>
+                    <div class="stat-label">Email</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="session-expires">-</div>
+                    <div class="stat-label">Session Expires</div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Demo API endpoints (simulated)
+        const API_BASE = 'http://localhost:3001/api';
+        let currentUser = null;
+        let currentSession = null;
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Show message
+        function showMessage(elementId, message, type = 'info') {
+            const messageEl = document.getElementById(elementId);
+            messageEl.className = `message ${type}`;
+            messageEl.textContent = message;
+            messageEl.style.display = 'block';
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Register form handler
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('register-message', 'Registration successful! You can now log in.', 'success');
+                    document.getElementById('register-form').reset();
+                } else {
+                    showMessage('register-message', data.message || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showMessage('register-message', 'Network error. Please try again.', 'error');
+            }
+        });
+
+        // Login form handler
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store session
+                    currentSession = data.session;
+                    currentUser = data.user;
+                    
+                    // Show user info
+                    document.getElementById('user-name').textContent = currentUser.name;
+                    document.getElementById('user-email').textContent = currentUser.email;
+                    document.getElementById('session-expires').textContent = new Date(data.session.expiresAt).toLocaleString();
+                    
+                    // Hide login form and show user info
+                    document.getElementById('login-tab').classList.remove('active');
+                    document.getElementById('user-info').classList.remove('hidden');
+                    
+                    showMessage('login-message', 'Login successful!', 'success');
+                    document.getElementById('login-form').reset();
+                } else {
+                    showMessage('login-message', data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showMessage('login-message', 'Network error. Please try again.', 'error');
+            }
+        });
+
+        // Generate password
+        async function generatePassword() {
+            const length = document.getElementById('password-length').value;
+            const includeSymbols = document.getElementById('include-symbols').checked;
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate-password?length=${length}&includeSymbols=${includeSymbols}`);
+                const data = await response.json();
+                
+                const resultEl = document.getElementById('password-result');
+                resultEl.textContent = `Generated Password: ${data.password}\n` +
+                    `Length: ${data.length}\n` +
+                    `Has Symbols: ${data.hasSymbols}\n` +
+                    `Has Uppercase: ${data.hasUppercase}\n` +
+                    `Has Lowercase: ${data.hasLowercase}\n` +
+                    `Has Numbers: ${data.hasNumbers}`;
+                resultEl.classList.remove('hidden');
+            } catch (error) {
+                showMessage('password-result', 'Failed to generate password', 'error');
+            }
+        }
+
+        // Mask API key
+        async function maskApiKey() {
+            const apiKey = document.getElementById('api-key').value;
+            
+            if (!apiKey) {
+                showMessage('mask-result', 'Please enter an API key', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/mask-api-key`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ apiKey })
+                });
+                
+                const data = await response.json();
+                
+                const resultEl = document.getElementById('mask-result');
+                resultEl.textContent = `Original: ${data.original}\n` +
+                    `Masked: ${data.masked}\n` +
+                    `Length: ${data.length}`;
+                resultEl.classList.remove('hidden');
+            } catch (error) {
+                showMessage('mask-result', 'Failed to mask API key', 'error');
+            }
+        }
+
+        // Call protected API
+        async function callProtectedAPI() {
+            const apiKey = document.getElementById('api-key-input').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/protected/data`, {
+                    headers: {
+                        'x-api-key': apiKey
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultEl = document.getElementById('protected-result');
+                    resultEl.textContent = `Protected Data:\n\n${JSON.stringify(data, null, 2)}`;
+                    resultEl.classList.remove('hidden');
+                } else {
+                    const resultEl = document.getElementById('protected-result');
+                    resultEl.textContent = `Error: ${data.message}`;
+                    resultEl.classList.add('error');
+                    resultEl.classList.remove('hidden');
+                }
+            } catch (error) {
+                const resultEl = document.getElementById('protected-result');
+                resultEl.textContent = 'Network error. Please check if the server is running.';
+                resultEl.classList.add('error');
+                resultEl.classList.remove('hidden');
+            }
+        }
+
+        // Logout
+        function logout() {
+            currentSession = null;
+            currentUser = null;
+            
+            // Hide user info and show login tab
+            document.getElementById('user-info').classList.add('hidden');
+            document.getElementById('login-tab').classList.add('active');
+            
+            showMessage('login-message', 'You have been logged out.', 'info');
+        }
+
+        // Check if user is logged in on page load
+        window.addEventListener('load', () => {
+            // In a real app, you'd check for stored session token
+            // For demo, we'll just show the login tab
+        });
+    </script>
+</body>
+</html>

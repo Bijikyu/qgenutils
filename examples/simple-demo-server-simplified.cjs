@@ -9,8 +9,14 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// Since this is an ESM module, we'll use demo utilities directly
-// Commenting out QGenUtils import for demo server simplicity
+// Import QGenUtils utilities (when built)
+let QGenUtils;
+try {
+  QGenUtils = require('./dist/index.js');
+} catch (error) {
+  console.log('⚠️  QGenUtils not built yet. Run `npm run build` first');
+  process.exit(1);
+}
 
 const port = process.env.PORT || 3000;
 

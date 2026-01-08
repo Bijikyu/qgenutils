@@ -1,0 +1,111 @@
+{
+  "totalSize": 726357,
+  "fileCount": 180,
+  "largestFiles": [
+    {
+      "path": "lib/utilities/datetime/commonDateTimePatterns.js",
+      "size": 15076,
+      "sizeKB": 15
+    },
+    {
+      "path": "lib/utilities/module-loader/DynamicImportCache.js",
+      "size": 14922,
+      "sizeKB": 15
+    },
+    {
+      "path": "lib/utilities/security/securityValidator.js",
+      "size": 14061,
+      "sizeKB": 14
+    },
+    {
+      "path": "lib/utilities/api/commonApiClientPatterns.js",
+      "size": 13878,
+      "sizeKB": 14
+    },
+    {
+      "path": "lib/utilities/legacy/missingLegacyFunctions.js",
+      "size": 13404,
+      "sizeKB": 13
+    },
+    {
+      "path": "lib/utilities/performance-monitor/createPerformanceMonitor.js",
+      "size": 12686,
+      "sizeKB": 12
+    },
+    {
+      "path": "lib/utilities/performance/commonPerformancePatterns.js",
+      "size": 12451,
+      "sizeKB": 12
+    },
+    {
+      "path": "lib/utilities/middleware/commonMiddlewarePatterns.js",
+      "size": 12432,
+      "sizeKB": 12
+    },
+    {
+      "path": "lib/utilities/batch/processBatch.js",
+      "size": 12058,
+      "sizeKB": 12
+    },
+    {
+      "path": "lib/utilities/logging/workerAsyncLogger.js",
+      "size": 11842,
+      "sizeKB": 12
+    }
+  ],
+  "categorySizes": {
+    "validation": {
+      "size": 8711,
+      "sizeKB": 9,
+      "fileCount": 1
+    },
+    "security": {
+      "size": 120344,
+      "sizeKB": 118,
+      "fileCount": 30
+    },
+    "performance": {
+      "size": 113264,
+      "sizeKB": 111,
+      "fileCount": 22
+    },
+    "datetime": {
+      "size": 41021,
+      "sizeKB": 40,
+      "fileCount": 12
+    },
+    "middleware": {
+      "size": 28009,
+      "sizeKB": 27,
+      "fileCount": 5
+    },
+    "utilities": {
+      "size": 98813,
+      "sizeKB": 96,
+      "fileCount": 28
+    },
+    "legacy": {
+      "size": 13404,
+      "sizeKB": 13,
+      "fileCount": 1
+    }
+  },
+  "complexity": {
+    "totalLines": 0,
+    "avgFileSize": 4035
+  },
+  "recommendations": [
+    {
+      "type": "size",
+      "priority": "high",
+      "message": "Bundle is 709KB - Consider tree-shaking optimization",
+      "solution": "Use focused imports instead of full library imports"
+    },
+    {
+      "type": "category",
+      "priority": "medium",
+      "message": "security category is 118KB",
+      "solution": "Consider modularizing security utilities further"
+    }
+  ]
+}
