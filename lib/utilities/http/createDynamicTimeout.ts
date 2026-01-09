@@ -22,11 +22,11 @@ function createDynamicTimeout(baseTimeout: number, payloadSize: number): number 
     if (typeof baseTimeout !== 'number' || !Number.isFinite(baseTimeout) || baseTimeout <= 0) {
       throw new Error('Base timeout must be a positive number');
     }
-    
+
     if (typeof payloadSize !== 'number' || !Number.isFinite(payloadSize) || payloadSize <= 0) {
       return baseTimeout;
     }
-    
+
     const sizeMB: number = payloadSize / (1024 * 1024);
     const additionalTime: number = Math.min(sizeMB * 10000, 120000);
     return baseTimeout + additionalTime;

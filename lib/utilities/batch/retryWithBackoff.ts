@@ -1,11 +1,11 @@
 /**
  * EXPONENTIAL BACKOFF RETRY UTILITY
- * 
+ *
  * PURPOSE: Provides robust retry logic with exponential backoff for handling
  * transient failures in distributed systems. Essential for network operations,
  * API calls, database connections, and any operations that may experience
  * temporary failures.
- * 
+ *
  * TRANSIENT FAILURE HANDLING:
  * - Network timeouts and connection issues
  * - Rate limiting and service throttling
@@ -13,21 +13,21 @@
  * - Database connection pool exhaustion
  * - Resource contention and temporary locks
  * - Cloud service intermittent failures
- * 
+ *
  * EXPONENTIAL BACKOFF STRATEGY:
  * - Initial delay followed by exponential increase (2^n)
  * - Prevents overwhelming recovering services
  * - Reduces retry storms in distributed systems
  * - Gives services time to recover between attempts
  * - Configurable maximum delay to prevent excessive waiting
- * 
+ *
  * RETRY LOGIC FEATURES:
  * - Configurable maximum retry attempts
  * - Customizable delay parameters and jitter
  * - Selective retry based on error types
  * - Comprehensive attempt tracking and reporting
  * - Immediate retry termination for non-retryable errors
- * 
+ *
  * PERFORMANCE AND RELIABILITY:
  * - Prevents cascading failures through backoff
  * - Reduces system load during recovery periods
@@ -67,29 +67,29 @@ interface RetryResult<T> {
 
 /**
  * Retries an async operation with exponential backoff and configurable options.
- * 
+ *
  * This function implements a robust retry strategy with exponential backoff to handle
  * transient failures in distributed systems. It provides fine-grained control over
  * retry behavior while preventing retry storms and overwhelming recovering services.
- * 
+ *
  * @param fn - Async function to retry. Should return a Promise<T>.
  * @param options - Configuration options for retry behavior
- * 
+ *
  * @returns Promise<RetryResult<T>> - Result object with success status and detailed attempt information
- * 
+ *
  * @example
  * ```typescript
  * // Basic retry with default settings
  * const result = await retryWithBackoff(async () => {
  *   return await fetchApiData();
  * });
- * 
+ *
  * if (result.ok) {
  *   console.log('Success:', result.value);
  * } else {
  *   console.error('Failed after', result.attempts, 'attempts:', result.error?.message);
  * }
- * 
+ *
  * // Advanced configuration with selective retry
  * const apiResult = await retryWithBackoff(
  *   async () => {
@@ -103,14 +103,14 @@ interface RetryResult<T> {
  *     maxDelay: 60000,
  *     shouldRetry: (error) => {
  *       // Only retry on network or server errors
- *       return error.message.includes('ECONNRESET') || 
+ *       return error.message.includes('ECONNRESET') ||
  *              error.message.includes('ETIMEDOUT') ||
  *              error.message.includes('HTTP 5');
  *     },
  *     jitter: (delay) => delay + Math.random() * 1000 // Add jitter
  *   }
  * );
- * 
+ *
  * // Database operation with timeout and retry
  * const dbResult = await retryWithBackoff(
  *   async () => {
@@ -123,13 +123,13 @@ interface RetryResult<T> {
  *   }
  * );
  * ```
- * 
+ *
  * @warning Be careful with shouldRetry logic - some errors should never be retried (authentication, validation)
  * @note Exponential backoff: delay = min(baseDelay * 2^attempt, maxDelay)
  * @see Circuit breaker pattern for complementary failure handling
  */
 async function retryWithBackoff<T>(
-  fn: () => Promise<T>, 
+  fn: () => Promise<T>,
   options: RetryOptions<T> = {}
 ): Promise<RetryResult<T>> {
   // OPTIONS CONFIGURATION: Merge defaults with provided options
@@ -147,49 +147,49 @@ async function retryWithBackoff<T>(
   // RETRY LOOP: Execute function with retry logic
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     attempts = attempt + 1;    // Count attempts starting from 1
-    
+
     try {
       // ATTEMPT EXECUTION: Try to execute the function
       const result = await fn();
-      
+
       // SUCCESS: Return successful result immediately
       return { ok: true, value: result, attempts };
-      
+
     } catch (error) {
       // ERROR HANDLING: Store error and determine retry strategy
       lastError = error;
-      
+
       // RETRY CONDITION: Check if we should retry this error
       const isRetryable = shouldRetry(error);
       const isLastAttempt = attempt === maxRetries;
-      
+
       if (isLastAttempt || !isRetryable) {
         // TERMINATION: No more retries or non-retryable error
-        return { 
-          ok: false, 
-          error: error instanceof Error ? error : new Error(String(error)), 
-          attempts 
+        return {
+          ok: false,
+          error: error instanceof Error ? error : new Error(String(error)),
+          attempts
         };
       }
-      
+
       // EXPONENTIAL BACKOFF: Calculate delay for next attempt
       // Formula: delay = min(baseDelay * 2^attempt, maxDelay)
       const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
-      
+
       // JITTER APPLICATION: Add randomness to prevent thundering herd
       // This helps distribute retry attempts when multiple clients retry simultaneously
       const actualDelay = jitter(exponentialDelay);
-      
+
       // WAIT BEFORE RETRY: Pause for calculated delay
       await new Promise(resolve => setTimeout(resolve, actualDelay));
     }
   }
 
   // SAFETY FALLBACK: This should never be reached but ensures type safety
-  return { 
-    ok: false, 
-    error: lastError instanceof Error ? lastError : new Error(String(lastError)), 
-    attempts 
+  return {
+    ok: false,
+    error: lastError instanceof Error ? lastError : new Error(String(lastError)),
+    attempts
   };
 }
 

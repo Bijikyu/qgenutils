@@ -9,7 +9,7 @@
  * Default sensitive key patterns to detect sensitive data
  */
 const SENSITIVE_KEYS = [
-  'api_key', 'password', 'secret', 'token', 'key', 
+  'api_key', 'password', 'secret', 'token', 'key',
   'credential', 'auth', 'private', 'confidential'
 ];
 
@@ -31,7 +31,7 @@ const maskStringCore = (value: any, options: any = {}): any => {
 
   const {
     visibleStart = 4,
-    visibleEnd = 4, 
+    visibleEnd = 4,
     maskChar = '*',
     maxMaskLength = 12,
     minLength = visibleStart + visibleEnd + 1
@@ -78,7 +78,7 @@ const maskSensitiveValue = (value: any, key: any, options: any = {}): any => {
   }
 
   // Check if key indicates sensitive data
-  const isSensitive = SENSITIVE_KEYS.some(sensitive => 
+  const isSensitive = SENSITIVE_KEYS.some(sensitive =>
     key.toLowerCase().includes(sensitive)
   );
 
@@ -112,7 +112,7 @@ const isSensitiveKey = (key: any, customSensitiveKeys: any = SENSITIVE_KEYS): an
     return false;
   }
 
-  return customSensitiveKeys.some(sensitive => 
+  return customSensitiveKeys.some(sensitive =>
     key.toLowerCase().includes(sensitive)
   );
 };
@@ -129,7 +129,7 @@ const maskObject = (obj: any, options: any = {}): any => {
   }
 
   const masked: any = {};
-  
+
   for (const [key, value] of Object.entries(obj)) {
     if (isSensitiveKey(key, options.sensitiveKeys)) {
       masked[key] = maskSensitiveValue(String(value), key, options);

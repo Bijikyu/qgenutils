@@ -46,7 +46,7 @@ function validateRequired(value: any, options: ValidateRequiredOptions = {}) {
   }
 
   // Check for empty object
-  if (typeof value === 'object' && value !== null && !Array.isArray(value) && 
+  if (typeof value === 'object' && value !== null && !Array.isArray(value) &&
       !allowEmptyObject && Object.keys(value).length === 0) {
     errors.push(`${fieldName} cannot be empty`);
   }
@@ -83,7 +83,7 @@ function validateMultipleRequired(data, fieldConfigs) {
   for (const config of fieldConfigs) {
     const { field, options = {} } = config;
     const result: any = validateRequired(data[field], { fieldName: field, ...options });
-    
+
     if (!result.valid) {
       allErrors[field] = result.errors;
       isValid = false;

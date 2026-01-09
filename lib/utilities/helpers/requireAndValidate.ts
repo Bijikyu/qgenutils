@@ -45,65 +45,65 @@ function requireAndValidate(value: any, name: string, type: string, options: Req
 
   // Type validation
   switch (type) {
-    case 'string':
-      if (typeof value !== 'string') {
-        throw new Error(`${name} must be a string`);
-      }
-      if (!allowEmpty && value.trim() === '') {
-        throw new Error(`${name} cannot be empty`);
-      }
-      if (minLength !== null && value.length < minLength) {
-        throw new Error(`${name} must be at least ${minLength} characters long`);
-      }
-      if (maxLength !== null && value.length > maxLength) {
-        throw new Error(`${name} must be at most ${maxLength} characters long`);
-      }
-      break;
+  case 'string':
+    if (typeof value !== 'string') {
+      throw new Error(`${name} must be a string`);
+    }
+    if (!allowEmpty && value.trim() === '') {
+      throw new Error(`${name} cannot be empty`);
+    }
+    if (minLength !== null && value.length < minLength) {
+      throw new Error(`${name} must be at least ${minLength} characters long`);
+    }
+    if (maxLength !== null && value.length > maxLength) {
+      throw new Error(`${name} must be at most ${maxLength} characters long`);
+    }
+    break;
 
-    case 'number':
-      if (typeof value !== 'number' || isNaN(value)) {
-        throw new Error(`${name} must be a valid number`);
-      }
-      if (min !== null && value < min) {
-        throw new Error(`${name} must be at least ${min}`);
-      }
-      if (max !== null && value > max) {
-        throw new Error(`${name} must be at most ${max}`);
-      }
-      break;
+  case 'number':
+    if (typeof value !== 'number' || isNaN(value)) {
+      throw new Error(`${name} must be a valid number`);
+    }
+    if (min !== null && value < min) {
+      throw new Error(`${name} must be at least ${min}`);
+    }
+    if (max !== null && value > max) {
+      throw new Error(`${name} must be at most ${max}`);
+    }
+    break;
 
-    case 'boolean':
-      if (typeof value !== 'boolean') {
-        throw new Error(`${name} must be a boolean`);
-      }
-      break;
+  case 'boolean':
+    if (typeof value !== 'boolean') {
+      throw new Error(`${name} must be a boolean`);
+    }
+    break;
 
-    case 'object':
-      if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-        throw new Error(`${name} must be an object`);
-      }
-      if (!allowEmpty && Object.keys(value).length === 0) {
-        throw new Error(`${name} cannot be empty`);
-      }
-      break;
+  case 'object':
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+      throw new Error(`${name} must be an object`);
+    }
+    if (!allowEmpty && Object.keys(value).length === 0) {
+      throw new Error(`${name} cannot be empty`);
+    }
+    break;
 
-    case 'array':
-      if (!Array.isArray(value)) {
-        throw new Error(`${name} must be an array`);
-      }
-      if (!allowEmpty && value.length === 0) {
-        throw new Error(`${name} cannot be empty`);
-      }
-      if (minLength !== null && value.length < minLength) {
-        throw new Error(`${name} must have at least ${minLength} item(s)`);
-      }
-      if (maxLength !== null && value.length > maxLength) {
-        throw new Error(`${name} must have at most ${maxLength} item(s)`);
-      }
-      break;
+  case 'array':
+    if (!Array.isArray(value)) {
+      throw new Error(`${name} must be an array`);
+    }
+    if (!allowEmpty && value.length === 0) {
+      throw new Error(`${name} cannot be empty`);
+    }
+    if (minLength !== null && value.length < minLength) {
+      throw new Error(`${name} must have at least ${minLength} item(s)`);
+    }
+    if (maxLength !== null && value.length > maxLength) {
+      throw new Error(`${name} must have at most ${maxLength} item(s)`);
+    }
+    break;
 
-    default:
-      throw new Error(`Unknown type: ${type}`);
+  default:
+    throw new Error(`Unknown type: ${type}`);
   }
 
   return value;

@@ -32,6 +32,6 @@ const getAppLoggerCore = async (): Promise<any> => {
     error: console.error.bind(console),
     debug: console.debug.bind(console)
   };
-}
+};
 
 export default getAppLoggerCore;

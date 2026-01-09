@@ -1,19 +1,19 @@
 /**
  * URL Utilities Module - Comprehensive URL Processing and Validation
- * 
+ *
  * PURPOSE: This module provides a collection of URL manipulation and validation
  * utilities designed to handle common URL processing tasks safely and efficiently.
  * These utilities are essential for web applications, API integrations, and
  * data processing pipelines that work with URLs.
- * 
+ *
  * SECURITY CONSIDERATIONS: All utilities include input validation and
  * sanitization to prevent URL injection attacks and malformed URL handling.
  * They follow defense-in-depth principles with comprehensive error handling.
- * 
+ *
  * COMPATIBILITY: These utilities maintain backward compatibility with existing
  * code while providing enhanced security and functionality. They handle edge
  * cases and malformed input gracefully without throwing exceptions.
- * 
+ *
  * USE CASES:
  * - API endpoint normalization and validation
  * - Redirect URL processing and security checks

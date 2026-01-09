@@ -19,13 +19,15 @@ function isSensitiveField(fieldName) { // check if field name is sensitive
 
   const lowerFieldName: any = fieldName.toLowerCase();
 
-  const isRedactedField = sanitizeObject.REDACTED_FIELDS.some(field => 
+  const isRedactedField = sanitizeObject.REDACTED_FIELDS.some(field =>
     lowerFieldName === field.toLowerCase() || lowerFieldName.includes(field.toLowerCase())
   );
 
-  if (isRedactedField) return true;
+  if (isRedactedField) {
+    return true;
+  }
 
-  const matchesSensitivePattern = sanitizeLogValue.SENSITIVE_PATTERNS.some(pattern => 
+  const matchesSensitivePattern = sanitizeLogValue.SENSITIVE_PATTERNS.some(pattern =>
     pattern.test(lowerFieldName)
   );
 

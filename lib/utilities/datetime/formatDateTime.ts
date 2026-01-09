@@ -1,10 +1,10 @@
 /**
  * DateTime Formatting Utility
- * 
+ *
  * PURPOSE: Provides robust date/time parsing and formatting with comprehensive
  * error handling. This utility handles various input formats and provides
  * consistent output for display purposes.
- * 
+ *
  * WHY: Date handling in JavaScript is notoriously inconsistent across
  * different environments and input formats. This utility provides a
  * standardized approach with proper error handling and logging.
@@ -26,17 +26,17 @@ type DateTimeFormatResult = {
 
 /**
  * Formats a date/time value with comprehensive error handling
- * 
+ *
  * This function accepts both Date objects and ISO string formats,
  * validates the input, and returns a standardized result with
  * both formatted string and timestamp for flexibility.
- * 
+ *
  * @param input - Date object or ISO string to format
  * @returns DateTimeFormatResult with formatted data or error information
  */
 const formatDateTime = (input: string | Date): DateTimeFormatResult => {
   // Log the operation for debugging and monitoring
-  logger.debug(`formatDateTime is running`, { inputType: typeof input });
+  logger.debug('formatDateTime is running', { inputType: typeof input });
 
   try {
     // Validate input is not null or undefined
@@ -71,8 +71,8 @@ const formatDateTime = (input: string | Date): DateTimeFormatResult => {
     // Comprehensive error handling with proper error types
     const errorObj = err instanceof Error ? err : new Error(String(err));
     qerrors(errorObj, 'formatDateTime');  // Log to error tracking system
-    logger.error(`formatDateTime failed`, { error: errorObj.message });
-    
+    logger.error('formatDateTime failed', { error: errorObj.message });
+
     // Return error result with original input preserved
     return {
       original: input as any,

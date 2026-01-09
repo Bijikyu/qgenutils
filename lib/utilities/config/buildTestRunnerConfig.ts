@@ -1,8 +1,8 @@
 /**
  * Build Test Runner Configuration
- * 
+ *
  * Creates a test runner configuration with execution, coverage, and file pattern settings.
- * 
+ *
  * @param {object} [options] - Test runner configuration options
  * @returns {object} Validated test runner configuration
  */

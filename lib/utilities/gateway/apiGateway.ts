@@ -1,6 +1,6 @@
 /**
  * API Gateway Patterns Implementation - Fixed Version
- * 
+ *
  * PURPOSE: Enterprise-grade API gateway providing unified entry point,
  * request routing, load balancing, security, and traffic management for
  * microservices architecture.
@@ -89,13 +89,13 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 /**
  * Enterprise API Gateway Implementation
- * 
+ *
  * This class provides a comprehensive API gateway solution for microservices
  * architecture, offering unified entry point, request routing, load balancing,
  * security, and traffic management capabilities.
- * 
+ *
  * ## Core Features
- * 
+ *
  * - **Request Routing**: Intelligent routing based on path, method, and headers
  * - **Load Balancing**: Weight-based load distribution across service instances
  * - **Circuit Breaking**: Automatic failure detection and service isolation
@@ -105,30 +105,30 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
  * - **Response Caching**: Intelligent caching with TTL support
  * - **Metrics Collection**: Comprehensive performance and usage metrics
  * - **Middleware Support**: Extensible middleware chain architecture
- * 
+ *
  * ## Routing Algorithm
- * 
+ *
  * The gateway uses a hierarchical routing approach:
  * 1. **Path Matching**: Exact path matches first, then pattern matching
  * 2. **Method Filtering**: HTTP method filtering (GET, POST, etc.)
  * 3. **Header Routing**: Optional routing based on request headers
  * 4. **Load Balancing**: Weighted round-robin across healthy instances
  * 5. **Circuit Breaking**: Service health monitoring and failover
- * 
+ *
  * ## Circuit Breaker Implementation
- * 
+ *
  * Each route gets its own circuit breaker with configurable thresholds:
  * - **Failure Threshold**: Number of failures before opening circuit
  * - **Recovery Timeout**: Time before attempting recovery
  * - **Success Threshold**: Number of successes before closing circuit
- * 
+ *
  * States:
  * - **CLOSED**: Normal operation, requests pass through
  * - **OPEN**: All requests fail immediately
  * - **HALF_OPEN**: Limited requests test service health
- * 
+ *
  * ## Performance Metrics
- * 
+ *
  * The gateway tracks comprehensive metrics:
  * - Request throughput (requests/second)
  * - Response time percentiles (p50, p95, p99)
@@ -136,7 +136,7 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
  * - Active connections
  * - Cache hit/miss ratios
  * - Circuit breaker state changes
- * 
+ *
  * @example
  * // Basic gateway setup
  * const gateway = new APIGateway({
@@ -149,7 +149,7 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
  *     methods: ['GET', 'POST', 'PUT', 'DELETE']
  *   }
  * });
- * 
+ *
  * // Add a route
  * gateway.addRoute({
  *   id: 'user-service',
@@ -167,7 +167,7 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
  *   timeout: 5000,
  *   retries: 3
  * });
- * 
+ *
  * @example
  * // With middleware and authentication
  * const gateway = new APIGateway({
@@ -177,7 +177,7 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
  *     jwtSecret: process.env.JWT_SECRET
  *   }
  * });
- * 
+ *
  * // Add authentication middleware
  * gateway.use(async (req, res, next) => {
  *   const token = req.headers.authorization?.replace('Bearer ', '');
@@ -187,7 +187,7 @@ import { BoundedLRUCache } from '../performance/boundedCache.js';
  *   // Verify token and attach user to request
  *   next();
  * });
- * 
+ *
  * @extends EventEmitter
  * @emits 'routeAdded' - When a new route is added
  * @emits 'circuitBreakerOpen' - When a circuit breaker opens
@@ -209,7 +209,7 @@ class APIGateway extends EventEmitter {
 
   constructor(config: GatewayConfig) {
     super();
-    
+
     this.config = {
       enableTracing: false,
       enableMetrics: true,
@@ -239,7 +239,7 @@ class APIGateway extends EventEmitter {
 
     this.circuitBreakers = new BoundedLRUCache(1000);
     this.responseCache = new BoundedLRUCache(1000);
-    
+
     this.metrics = {
       totalRequests: 0,
       successfulRequests: 0,
@@ -251,20 +251,20 @@ class APIGateway extends EventEmitter {
     this.startCleanupInterval();
   }
 
-/**
+  /**
  * Add a new route to the gateway routing table
- * 
+ *
  * This method registers a new route with the gateway and sets up
  * associated circuit breaker, caching, and monitoring. The route
  * becomes immediately available for request routing.
- * 
+ *
  * Route Registration Process:
  * 1. Validate route configuration
  * 2. Generate unique route identifier
  * 3. Create circuit breaker if enabled
  * 4. Register route in routing table
  * 5. Emit routeAdded event for monitoring
- * 
+ *
  * @param {Route} route - The route configuration object
  * @param {string} route.id - Unique identifier for the route
  * @param {string} route.path - URL path pattern (supports wildcards)
@@ -277,7 +277,7 @@ class APIGateway extends EventEmitter {
  * @param {Function[]} [route.middleware] - Route-specific middleware
  * @param {number} [route.timeout] - Request timeout in milliseconds
  * @param {number} [route.retries] - Number of retry attempts
- * 
+ *
  * @example
  * // Simple route
  * gateway.addRoute({
@@ -292,7 +292,7 @@ class APIGateway extends EventEmitter {
  *     port: 8080
  *   }
  * });
- * 
+ *
  * @example
  * // Advanced route with middleware and load balancing
  * gateway.addRoute({
@@ -319,13 +319,13 @@ class APIGateway extends EventEmitter {
  *     }
  *   ]
  * });
- * 
+ *
  * @throws {Error} When route configuration is invalid
  * @emits 'routeAdded' - With the route object as payload
  */
-addRoute(route: Route): void {
+  addRoute(route: Route): void {
     const routeId = `${route.method}:${route.path}`;
-    
+
     // Create circuit breaker if enabled
     if (this.config.enableCircuitBreaker) {
       const circuitBreaker = {
@@ -334,16 +334,16 @@ addRoute(route: Route): void {
           return this.forwardRequest(route, data);
         }
       };
-      
+
       this.circuitBreakers.set(routeId, circuitBreaker);
     }
 
     this.emit('routeAdded', route);
   }
 
-/**
+  /**
  * Main request handler - entry point for all incoming requests
- * 
+ *
  * This method orchestrates the complete request processing pipeline:
  * 1. Request metrics collection
  * 2. CORS header application
@@ -352,37 +352,37 @@ addRoute(route: Route): void {
  * 5. Route matching and forwarding
  * 6. Response processing
  * 7. Error handling and metrics update
- * 
+ *
  * Request Processing Pipeline:
  * ```
- * Incoming Request → Metrics → CORS → Preflight → Middleware → 
- * Route Matching → Circuit Breaker → Service Forward → Response → 
+ * Incoming Request → Metrics → CORS → Preflight → Middleware →
+ * Route Matching → Circuit Breaker → Service Forward → Response →
  * Metrics Update → Response Sent
  * ```
- * 
+ *
  * @param {Request} req - Incoming request object
  * @param {Response} res - Outgoing response object
  * @returns {Promise<void>} Promise that resolves when request is processed
- * 
+ *
  * @example
  * // Express.js integration
  * app.use('*', async (req, res) => {
  *   await gateway.handleRequest(req, res);
  * });
- * 
+ *
  * @example
  * // Fastify integration
  * app.addHook('onRequest', async (request, reply) => {
  *   await gateway.handleRequest(request.raw, reply.raw);
  * });
- * 
+ *
  * @performance This method typically completes in 5-50ms depending
  * on middleware complexity and service response times.
- * 
+ *
  * @emits 'requestProcessed' - After successful request processing
  * @emits 'requestError' - When request processing fails
  */
-async handleRequest(req: Request, res: Response): Promise<void> {
+  async handleRequest(req: Request, res: Response): Promise<void> {
     const startTime = Date.now();
     this.metrics.totalRequests++;
     this.metrics.activeConnections++;
@@ -437,13 +437,13 @@ async handleRequest(req: Request, res: Response): Promise<void> {
     }
   }
 
-/**
+  /**
  * Forward request to target microservice
- * 
+ *
  * This method handles the actual HTTP request forwarding to the
  * target service. It manages connection pooling, request transformation,
  * and response handling.
- * 
+ *
  * Forwarding Process:
  * 1. Build target URL from route configuration
  * 2. Transform request headers and body
@@ -451,29 +451,29 @@ async handleRequest(req: Request, res: Response): Promise<void> {
  * 4. Send request with timeout and retry logic
  * 5. Process response headers and status
  * 6. Return standardized response object
- * 
+ *
  * @param {Route} route - The route configuration for forwarding
  * @param {Request} req - The original request object
  * @returns {Promise<any>} Promise resolving to the service response
- * 
+ *
  * @example
  * // Forwarded request structure
  * const response = await forwardRequest(route, request);
  * // Returns: { status: 200, data: {...}, headers: {...} }
- * 
+ *
  * @note This is a simplified implementation. In production,
  * this would use a proper HTTP client like axios or fetch with
  * connection pooling, retries, and proper error handling.
- * 
+ *
  * @private
  */
-private async forwardRequest(route: Route, req: Request): Promise<any> {
+  private async forwardRequest(route: Route, req: Request): Promise<any> {
     const targetUrl = `${route.target.protocol}://${route.target.host}:${route.target.port}${route.target.endpoint}`;
-    
+
     // In a real implementation, this would make HTTP request
     return {
       status: 200,
-      data: { 
+      data: {
         message: 'Request forwarded successfully',
         target: targetUrl,
         originalRequest: {
@@ -497,44 +497,44 @@ private async forwardRequest(route: Route, req: Request): Promise<any> {
     }
   }
 
-/**
+  /**
  * Execute the middleware chain for request processing
- * 
+ *
  * This method implements the Express-style middleware pattern,
  * allowing each middleware to modify the request/response and
  * either call the next middleware or end the request processing.
- * 
+ *
  * Middleware Chain Execution:
  * 1. Initialize middleware index
  * 2. Create next() function for chain progression
  * 3. Execute current middleware
  * 4. Handle errors in the chain
  * 5. Call final handler when chain completes
- * 
+ *
  * Error Handling:
  * - Errors in middleware are caught and passed to error handler
  * - If next() is called with an error, chain execution stops
  * - Unhandled middleware errors trigger gateway error handling
- * 
+ *
  * @param {Request} req - Request object passed through middleware
  * @param {Response} res - Response object passed through middleware
  * @param {Function} final - Final handler to call after all middleware
  * @returns {Promise<void>} Promise resolving when chain completes
- * 
+ *
  * @example
  * // Middleware execution flow
  * await applyMiddleware(req, res, async () => {
  *   // This runs after all middleware complete
  *   await processRequest(req, res);
  * });
- * 
+ *
  * @private
  */
-private async applyMiddleware(
-  req: Request, 
-  res: Response, 
-  final: () => Promise<void>
-): Promise<void> {
+  private async applyMiddleware(
+    req: Request,
+    res: Response,
+    final: () => Promise<void>
+  ): Promise<void> {
     let index = 0;
 
     const next = async (error?: any): Promise<void> => {
@@ -559,7 +559,9 @@ private async applyMiddleware(
    * Apply CORS headers
    */
   private applyCorsHeaders(req: Request, res: Response): void {
-    if (!this.config.cors.enabled) return;
+    if (!this.config.cors.enabled) {
+      return;
+    }
 
     const origin = req.headers['origin'];
     const allowedOrigins = this.config.cors.origins;
@@ -643,14 +645,14 @@ private async applyMiddleware(
     }
   }
 
-/**
+  /**
  * Add middleware to the gateway middleware chain
- * 
+ *
  * Middleware functions are executed in the order they are added
  * for every request that passes through the gateway. This allows
  * for cross-cutting concerns like authentication, logging,
  * validation, and transformation.
- * 
+ *
  * Middleware Pattern:
  * ```javascript
  * const middleware = (req, res, next) => {
@@ -661,7 +663,7 @@ private async applyMiddleware(
  *   // 4. Handle errors with next(error)
  * };
  * ```
- * 
+ *
  * Common Use Cases:
  * - **Authentication**: Verify API keys, JWT tokens
  * - **Authorization**: Check user permissions
@@ -670,12 +672,12 @@ private async applyMiddleware(
  * - **Rate Limiting**: Per-client rate limiting
  * - **CORS**: Cross-origin request handling
  * - **Compression**: Response compression
- * 
+ *
  * @param {Function} middleware - Middleware function to add
  * @param {Request} middleware.req - Request object
  * @param {Response} middleware.res - Response object
  * @param {NextFunction} middleware.next - Function to call next middleware
- * 
+ *
  * @example
  * // Authentication middleware
  * gateway.use((req, res, next) => {
@@ -687,7 +689,7 @@ private async applyMiddleware(
  *   req.user = decodedToken;
  *   next();
  * });
- * 
+ *
  * @example
  * // Logging middleware
  * gateway.use((req, res, next) => {
@@ -697,7 +699,7 @@ private async applyMiddleware(
  *   });
  *   next();
  * });
- * 
+ *
  * @example
  * // Error handling middleware
  * gateway.use((req, res, next) => {
@@ -709,7 +711,7 @@ private async applyMiddleware(
  *   }
  * });
  */
-use(middleware: (req: Request, res: Response, next: NextFunction) => void): void {
+  use(middleware: (req: Request, res: Response, next: NextFunction) => void): void {
     this.middleware.push(middleware);
   }
 

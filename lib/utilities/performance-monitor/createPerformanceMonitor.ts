@@ -2,29 +2,29 @@
 
 /**
  * Performance Monitor - Real-time System Health Monitoring
- * 
+ *
  * Purpose: Provides comprehensive performance monitoring for Node.js applications
  * Architecture: Factory pattern returning a monitor instance with configurable thresholds
- * 
+ *
  * Key Features:
  * - Real-time metric collection (CPU, memory, event loop, response times)
  * - Configurable alerting with severity levels
  * - Automatic memory optimization through garbage collection
  * - Health status calculation and reporting
  * - Request throughput tracking
- * 
+ *
  * Security Considerations:
  * - Validates all input parameters to prevent injection
  * - Uses error boundaries to prevent monitor crashes
  * - Limits alert history to prevent memory exhaustion
  * - Sanitizes error messages in callbacks
- * 
+ *
  * Performance Strategy:
  * - Non-blocking async metric collection
  * - Efficient metric aggregation using unified collector
  * - Configurable monitoring intervals to balance overhead
  * - Memory optimization triggers only on critical alerts
- * 
+ *
  * @author Performance Monitoring Team
  * @since 1.0.0
  */
@@ -48,17 +48,17 @@ interface PerformanceMonitorOptions {
 
 /**
  * Default Performance Thresholds
- * 
+ *
  * These thresholds are carefully selected based on industry best practices
  * and real-world performance requirements for production Node.js applications.
- * 
+ *
  * Threshold Rationale:
  * - maxEventLoopLag (25ms): Ensures responsive event loop, prevents request queuing
  * - maxCpuUsage (80%): Leaves headroom for burst traffic and system processes
  * - maxMemoryUsage (85%): Prevents OOM kills while allowing efficient memory use
  * - maxResponseTime (2000ms): SLA-compliant response time for user experience
  * - minThroughput (10 req/min): Minimum viable throughput for health monitoring
- * 
+ *
  * Performance Impact:
  * - Conservative thresholds ensure early detection of performance degradation
  * - Configurable per-application requirements
@@ -97,11 +97,21 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
   const onAlert: any = options.onAlert || null; // alert callback
   const logger: any = options.logger || console; // logger
 
-  if (typeof options.maxEventLoopLag === 'number') thresholds.maxEventLoopLag = options.maxEventLoopLag;
-  if (typeof options.maxCpuUsage === 'number') thresholds.maxCpuUsage = options.maxCpuUsage;
-  if (typeof options.maxMemoryUsage === 'number') thresholds.maxMemoryUsage = options.maxMemoryUsage;
-  if (typeof options.maxResponseTime === 'number') thresholds.maxResponseTime = options.maxResponseTime;
-  if (typeof options.minThroughput === 'number') thresholds.minThroughput = options.minThroughput;
+  if (typeof options.maxEventLoopLag === 'number') {
+    thresholds.maxEventLoopLag = options.maxEventLoopLag;
+  }
+  if (typeof options.maxCpuUsage === 'number') {
+    thresholds.maxCpuUsage = options.maxCpuUsage;
+  }
+  if (typeof options.maxMemoryUsage === 'number') {
+    thresholds.maxMemoryUsage = options.maxMemoryUsage;
+  }
+  if (typeof options.maxResponseTime === 'number') {
+    thresholds.maxResponseTime = options.maxResponseTime;
+  }
+  if (typeof options.minThroughput === 'number') {
+    thresholds.minThroughput = options.minThroughput;
+  }
 
   const metricsCollector: any = createMetricsCollector(); // unified metric collection
   let monitoringInterval: NodeJS.Timeout | null = null; // interval timer
@@ -110,22 +120,22 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
 
   /**
    * Core Monitoring Loop - Collect Metrics and Analyze Performance
-   * 
+   *
    * This function is the heart of the performance monitoring system.
    * It runs on a configurable interval and performs the following steps:
-   * 
+   *
    * 1. Metric Collection: Gathers current system metrics using unified collector
    * 2. Event Loop Measurement: Async measurement to prevent blocking
    * 3. Performance Analysis: Compares metrics against thresholds to generate alerts
    * 4. Alert Processing: Handles alert history, logging, and callbacks
    * 5. Memory Optimization: Triggers GC on critical memory alerts
-   * 
+   *
    * Error Handling Strategy:
    * - Isolates metric collection failures from analysis
    * - Protects alert callbacks with try-catch boundaries
    * - Uses qerrors for consistent error reporting
    * - Continues monitoring even if individual components fail
-   * 
+   *
    * Performance Considerations:
    * - Async event loop measurement prevents blocking
    * - Immutable metric objects prevent unintended mutations
@@ -136,12 +146,12 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
     // Step 1: Collect current system metrics with validation
     try {
       const rawMetrics = metricsCollector.collect();
-      
+
       // Validate metrics to prevent injection attacks
       if (typeof rawMetrics !== 'object' || rawMetrics === null) {
         throw new Error('Invalid metrics data received');
       }
-      
+
       metrics = rawMetrics;
     } catch (error) {
       logger.error('[performance] Failed to collect metrics:', error);
@@ -150,14 +160,14 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
 
     // Step 2: Measure event loop lag asynchronously (non-blocking)
     const lag = await measureEventLoopLag();
-    
+
     // Validate lag value
     let validLag = lag;
     if (typeof lag !== 'number' || !isFinite(lag) || lag < 0) {
       logger.warn('[performance] Invalid event loop lag detected, using fallback');
       validLag = 0;
     }
-    
+
     // Create immutable metrics object to prevent unintended mutations
     const updatedMetrics = { ...metrics, eventLoopLag: validLag };
 
@@ -201,27 +211,27 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
 
   /**
    * Memory Optimization - Automatic Garbage Collection
-   * 
+   *
    * This function attempts to optimize memory usage by triggering garbage collection
    * when critical memory alerts are detected. This is a defensive measure to prevent
    * out-of-memory crashes in production environments.
-   * 
+   *
    * Optimization Strategy:
    * - Only runs when GC is explicitly enabled (requires --expose-gc flag)
    * - Triggered automatically on critical memory alerts
    * - Uses try-catch to handle GC failures gracefully
    * - Logs optimization attempts for monitoring and debugging
-   * 
+   *
    * Security Considerations:
    * - Validates GC function existence before calling
    * - Handles potential GC exceptions without crashing monitor
    * - No direct memory manipulation to prevent security issues
-   * 
+   *
    * Performance Impact:
    * - GC pause times are unavoidable but necessary for memory health
    * - Only triggered on critical alerts to minimize overhead
    * - Asynchronous nature reduces impact on request processing
-   * 
+   *
    * Usage Requirements:
    * - Node.js must be started with --expose-gc flag for manual GC
    * - Monitor will log if GC is not available

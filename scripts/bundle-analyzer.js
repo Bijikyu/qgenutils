@@ -2,7 +2,7 @@
 
 /**
  * Bundle Analyzer for QGenUtils
- * 
+ *
  * Analyzes bundle size, complexity, and provides optimization recommendations
  */
 
@@ -27,30 +27,30 @@ class BundleAnalyzer {
 
   async analyze() {
     console.log('🔍 Analyzing QGenUtils Bundle...\n');
-    
+
     // Get file stats
     await this.collectFileStats();
-    
+
     // Analyze categories
     await this.analyzeCategories();
-    
+
     // Generate recommendations
     await this.generateRecommendations();
-    
+
     // Print results
     this.printResults();
-    
+
     return this.stats;
   }
 
   async collectFileStats() {
     const files = await this.getAllJsFiles(this.distPath);
-    
+
     for (const file of files) {
       const stats = fs.statSync(file);
       const size = stats.size;
       const relativePath = path.relative(this.distPath, file);
-      
+
       this.stats.totalSize += size;
       this.stats.fileCount++;
       this.stats.largestFiles.push({
@@ -59,11 +59,11 @@ class BundleAnalyzer {
         sizeKB: Math.round(size / 1024)
       });
     }
-    
+
     // Sort largest files
     this.stats.largestFiles.sort((a, b) => b.size - a.size);
     this.stats.largestFiles = this.stats.largestFiles.slice(0, 10);
-    
+
     this.stats.complexity.avgFileSize = Math.round(this.stats.totalSize / this.stats.fileCount);
   }
 
@@ -77,13 +77,13 @@ class BundleAnalyzer {
       'utilities': /helpers/,
       'legacy': /legacy/
     };
-    
+
     for (const [category, pattern] of Object.entries(categories)) {
       const files = await this.getFilesByPattern(pattern);
       const size = files.reduce((total, file) => {
         return total + fs.statSync(path.join(this.distPath, file)).size;
       }, 0);
-      
+
       this.stats.categorySizes[category] = {
         size,
         sizeKB: Math.round(size / 1024),
@@ -94,7 +94,7 @@ class BundleAnalyzer {
 
   async generateRecommendations() {
     const totalKB = this.stats.totalSize / 1024;
-    
+
     // Size recommendations
     if (totalKB > 500) {
       this.stats.recommendations.push({
@@ -104,7 +104,7 @@ class BundleAnalyzer {
         solution: 'Use focused imports instead of full library imports'
       });
     }
-    
+
     // Large file recommendations
     const largeFiles = this.stats.largestFiles.filter(f => f.sizeKB > 50);
     if (largeFiles.length > 0) {
@@ -115,11 +115,11 @@ class BundleAnalyzer {
         solution: 'Consider splitting large modules into smaller focused modules'
       });
     }
-    
+
     // Category recommendations
     const largestCategory = Object.entries(this.stats.categorySizes)
       .sort(([,a], [,b]) => b.size - a.size)[0];
-    
+
     if (largestCategory && largestCategory[1].sizeKB > 100) {
       this.stats.recommendations.push({
         type: 'category',
@@ -132,14 +132,14 @@ class BundleAnalyzer {
 
   async getAllJsFiles(dir) {
     const files = [];
-    
+
     function traverse(currentDir) {
       const items = fs.readdirSync(currentDir);
-      
+
       for (const item of items) {
         const fullPath = path.join(currentDir, item);
         const stat = fs.statSync(fullPath);
-        
+
         if (stat.isDirectory()) {
           traverse(fullPath);
         } else if (item.endsWith('.js')) {
@@ -147,7 +147,7 @@ class BundleAnalyzer {
         }
       }
     }
-    
+
     traverse(dir);
     return files;
   }
@@ -162,16 +162,16 @@ class BundleAnalyzer {
   printResults() {
     console.log('📊 Bundle Analysis Results');
     console.log('═'.repeat(50));
-    
+
     console.log(`📦 Total Size: ${Math.round(this.stats.totalSize / 1024)}KB`);
     console.log(`📄 Total Files: ${this.stats.fileCount}`);
     console.log(`📏 Average File Size: ${Math.round(this.stats.complexity.avgFileSize / 1024)}KB\n`);
-    
+
     console.log('📈 Largest Files:');
     this.stats.largestFiles.slice(0, 5).forEach((file, index) => {
       console.log(`  ${index + 1}. ${file.path} (${file.sizeKB}KB)`);
     });
-    
+
     console.log('\n📂 Category Breakdown:');
     Object.entries(this.stats.categorySizes)
       .sort(([,a], [,b]) => b.size - a.size)
@@ -179,15 +179,15 @@ class BundleAnalyzer {
         const percentage = Math.round((stats.size / this.stats.totalSize) * 100);
         console.log(`  ${category}: ${stats.sizeKB}KB (${percentage}% of total)`);
       });
-    
+
     console.log('\n💡 Recommendations:');
     this.stats.recommendations.forEach((rec, index) => {
-      const priority = rec.priority === 'high' ? '🔴' : 
-                     rec.priority === 'medium' ? '🟡' : '🟢';
+      const priority = rec.priority === 'high' ? '🔴' :
+        rec.priority === 'medium' ? '🟡' : '🟢';
       console.log(`  ${index + 1}. ${priority} ${rec.message}`);
       console.log(`     💊 ${rec.solution}`);
     });
-    
+
     console.log('\n' + '═'.repeat(50));
   }
 }
@@ -198,7 +198,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   analyzer.analyze()
     .then(results => {
       console.log('\n✅ Bundle analysis completed');
-      
+
       // Write results to file
       fs.writeFileSync(
         path.join(process.cwd(), 'bundle-analysis.json'),

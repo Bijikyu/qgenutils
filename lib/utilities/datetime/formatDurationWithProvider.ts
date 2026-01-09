@@ -20,14 +20,14 @@ function formatDurationWithProvider(startTime, endTime, timeProvider) {
 
   try {
     const startDate: any = new Date(startTime);
-    
+
     if (!isValidDate(startDate)) {
       return '00:00:00';
     }
 
     const provider: any = timeProvider || createTimeProvider();
     const endDate: any = endTime ? new Date(endTime) : provider.now();
-    
+
     if (endTime && !isValidDate(endDate)) {
       return '00:00:00';
     }

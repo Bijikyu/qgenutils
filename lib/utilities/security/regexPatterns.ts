@@ -1,6 +1,6 @@
 /**
  * Pre-compiled Regex Patterns for Performance
- * 
+ *
  * Centralizes regex compilation to prevent ReDoS attacks and improve performance
  * by avoiding repeated regex creation in hot paths.
  */
@@ -73,13 +73,13 @@ export function safeRegexTest(pattern: RegExp, value: string): boolean {
  */
 export function createBoundedRegexMatcher(pattern: string, flags: string = '', maxLength: number = 1000) {
   const regex = new RegExp(pattern, flags);
-  
+
   return (value: string): boolean => {
     // Prevent ReDoS by limiting input length
     if (value.length > maxLength) {
       return false;
     }
-    
+
     try {
       return safeRegexTest(regex, value);
     } catch (error) {
@@ -98,14 +98,14 @@ export function createBoundedRegexMatcher(pattern: string, flags: string = '', m
  */
 export function benchmarkRegex(pattern: RegExp, testString: string, iterations: number = 1000) {
   const startTime = performance.now();
-  
+
   for (let i = 0; i < iterations; i++) {
     pattern.test(testString);
   }
-  
+
   const endTime = performance.now();
   const duration = endTime - startTime;
-  
+
   return {
     pattern: pattern.toString(),
     testString,

@@ -1,18 +1,18 @@
 /**
  * Timestamp utilities using date-fns
- * 
+ *
  * PURPOSE: Provides timestamp operations using well-tested date-fns library
  * instead of custom implementations for better reliability and
  * locale-aware functionality.
  */
 
-import { 
-  add, 
-  sub, 
-  differenceInMilliseconds, 
-  differenceInSeconds, 
-  differenceInMinutes, 
-  differenceInHours, 
+import {
+  add,
+  sub,
+  differenceInMilliseconds,
+  differenceInSeconds,
+  differenceInMinutes,
+  differenceInHours,
   differenceInDays,
   parseISO,
   isValid,
@@ -127,10 +127,18 @@ function addToTimestamp(timestamp: number, timeToAdd: TimeToAdd = {}): number {
 
   let result = date;
 
-  if (days > 0) result = add(result, { days });
-  if (hours > 0) result = add(result, { hours });
-  if (minutes > 0) result = add(result, { minutes });
-  if (seconds > 0) result = add(result, { seconds });
+  if (days > 0) {
+    result = add(result, { days });
+  }
+  if (hours > 0) {
+    result = add(result, { hours });
+  }
+  if (minutes > 0) {
+    result = add(result, { minutes });
+  }
+  if (seconds > 0) {
+    result = add(result, { seconds });
+  }
   if (milliseconds > 0) {
     // Add milliseconds separately as date-fns doesn't support milliseconds in duration
     result = new Date(result.getTime() + milliseconds);
@@ -157,10 +165,18 @@ function subtractFromTimestamp(timestamp: number, timeToSubtract: TimeToAdd = {}
 
   let result = date;
 
-  if (days > 0) result = sub(result, { days });
-  if (hours > 0) result = sub(result, { hours });
-  if (minutes > 0) result = sub(result, { minutes });
-  if (seconds > 0) result = sub(result, { seconds });
+  if (days > 0) {
+    result = sub(result, { days });
+  }
+  if (hours > 0) {
+    result = sub(result, { hours });
+  }
+  if (minutes > 0) {
+    result = sub(result, { minutes });
+  }
+  if (seconds > 0) {
+    result = sub(result, { seconds });
+  }
   if (milliseconds > 0) {
     // Subtract milliseconds separately as date-fns doesn't support milliseconds in duration
     result = new Date(result.getTime() - milliseconds);
@@ -202,11 +218,11 @@ function isValidTimestamp(value: unknown): boolean {
   if (typeof value !== 'number' || isNaN(value)) {
     return false;
   }
-  
+
   // Check if it's within reasonable range (not too far in past or future)
   const minTimestamp = new Date('1970-01-01').getTime();
   const maxTimestamp = new Date('2100-01-01').getTime();
-  
+
   return value >= minTimestamp && value <= maxTimestamp;
 }
 
@@ -219,17 +235,17 @@ function parseTimestamp(timestamp: unknown): number | null {
   if (typeof timestamp === 'number') {
     return isValidTimestamp(timestamp) ? timestamp : null;
   }
-  
+
   if (typeof timestamp === 'string') {
     const parsed = parseISO(timestamp);
     return isValid(parsed) ? parsed.getTime() : null;
   }
-  
+
   if (timestamp instanceof Date) {
     const parsed = timestamp.getTime();
     return isValidTimestamp(parsed) ? parsed : null;
   }
-  
+
   return null;
 }
 

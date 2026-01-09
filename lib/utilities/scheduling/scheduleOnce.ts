@@ -1,45 +1,45 @@
 /**
  * One-Time Job Scheduler - Precise Timing with Error Handling
- * 
+ *
  * PURPOSE: Provides a robust mechanism for scheduling functions to execute
  * exactly once at a specified future time. This utility is designed for
  * critical tasks like notifications, cleanup operations, and delayed processing
  * where precise timing and reliability are essential.
- * 
+ *
  * TIMING CHARACTERISTICS:
  * - Precision: Uses setTimeout/setImmediate for millisecond accuracy
  * - Flexibility: Accepts both Date objects and Unix timestamps
  * - Immediate Execution: Handles past dates by executing immediately
  * - Cancellation: Supports job cancellation before execution
  * - State Management: Tracks job lifecycle (pending, executed, cancelled)
- * 
+ *
  * ERROR HANDLING STRATEGY:
  * - Async Support: Fully supports async/await callback functions
  * - Graceful Degradation: Never throws during callback execution
  * - Error Isolation: Callback errors don't affect scheduler stability
  * - Optional Error Handlers: Custom error handling for application logic
  * - Comprehensive Logging: Errors are logged for debugging and monitoring
- * 
+ *
  * PRODUCTION CONSIDERATIONS:
  * - Memory Management: Proper cleanup of timeout references
  * - Race Conditions: Atomic state transitions prevent concurrent execution
  * - Process Boundaries: Works correctly across Node.js event loop cycles
  * - Monitoring: Job identifiers enable tracking and debugging
- * 
+ *
  * @param {Function} callback - Function to execute (supports async/await)
  * @param {Date|number} when - When to execute (Date object or Unix timestamp in milliseconds)
  * @param {object} [options] - Scheduling options for customization and error handling
  * @param {string} [options.identifier] - Custom job identifier for tracking and debugging
  * @param {Function} [options.onError] - Error handler callback called when execution fails
  * @returns {object} Job object with control methods (cancel, isRunning, getScheduledFor)
- * 
+ *
  * @example
  * // Schedule notification for 5 minutes from now
  * const job = scheduleOnce(
  *   () => console.log('Meeting reminder!'),
  *   Date.now() + 5 * 60 * 1000
  * );
- * 
+ *
  * @example
  * // Schedule with error handling and custom ID
  * const backupJob = scheduleOnce(
@@ -55,7 +55,7 @@
  *     }
  *   }
  * );
- * 
+ *
  * @example
  * // Cancel scheduled job
  * const job = scheduleOnce(myCallback, futureTime);
@@ -96,14 +96,16 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
   const delayMs = Math.max(0, scheduledTime - currentTime); // Ensure non-negative
 
   const executeCallback = async (): Promise<any> => {
-    if (cancelled) return;
+    if (cancelled) {
+      return;
+    }
     executed = true;
 
     try {
       await callback();
     } catch (error) {
       qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleOnce', `One-time job execution failed for: ${jobId}`);
-      
+
       if (onError && typeof onError === 'function') {
         try {
           onError(error, { identifier: jobId, scheduledFor: executionDate });

@@ -9,6 +9,7 @@
     // STRICTNESS CONFIGURATION
     // Disabled strict mode for gradual migration and compatibility
     // This allows mixing JavaScript and TypeScript during transition
+    // NOTE: Enabling strict mode reveals type safety issues that should be addressed
     "strict": false,
     "noImplicitAny": false,
     // Enabled specific strict checks that provide high value with low migration cost

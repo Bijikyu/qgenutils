@@ -26,11 +26,17 @@ const detectSuspiciousPatterns = (req: any): string[] => {
   const patterns: string[] = [];
   const userAgent = req.headers?.['user-agent'] || '';
   const url = req.url || '';
-  
-  if (url.includes('../') || url.includes('..\\')) patterns.push('path-traversal');
-  if (url.includes('<script>') || url.includes('javascript:')) patterns.push('xss-attempt');
-  if (userAgent.includes('sqlmap') || userAgent.includes('nmap')) patterns.push('scanner-detected');
-  
+
+  if (url.includes('../') || url.includes('..\\')) {
+    patterns.push('path-traversal');
+  }
+  if (url.includes('<script>') || url.includes('javascript:')) {
+    patterns.push('xss-attempt');
+  }
+  if (userAgent.includes('sqlmap') || userAgent.includes('nmap')) {
+    patterns.push('scanner-detected');
+  }
+
   return patterns;
 };
 
@@ -38,27 +44,29 @@ const createIpTracker = () => {
   const tracker = {
     blockedIps: new Map(),
     cleanupInterval: undefined as NodeJS.Timeout | undefined,
-    
+
     isBlocked: (ip: string): boolean => {
       const block = tracker.blockedIps.get(ip);
       return block && block.expiry > Date.now();
     },
-    
+
     block: (ip: string, durationMs: number = 3600000): number => {
       const expiry = Date.now() + durationMs;
       tracker.blockedIps.set(ip, { expiry, timestamp: Date.now() });
       return expiry;
     },
-    
+
     track: (ip: string, patterns: string[] = []): { shouldBlock: boolean } => {
       if (patterns.length > 3) {
         return { shouldBlock: true };
       }
       return { shouldBlock: false };
     },
-    
+
     startPeriodicCleanup: () => {
-      if (tracker.cleanupInterval) return;
+      if (tracker.cleanupInterval) {
+        return;
+      }
       tracker.cleanupInterval = setInterval(() => {
         const now = Date.now();
         for (const [ip, block] of tracker.blockedIps.entries()) {
@@ -68,7 +76,7 @@ const createIpTracker = () => {
         }
       }, 300000); // Cleanup every 5 minutes
     },
-    
+
     stopPeriodicCleanup: () => {
       if (tracker.cleanupInterval) {
         clearInterval(tracker.cleanupInterval);
@@ -76,7 +84,7 @@ const createIpTracker = () => {
       }
     }
   };
-  
+
   return tracker;
 };
 
@@ -140,7 +148,7 @@ function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}) {
       }
     }
 
-    // Track normal requests  
+    // Track normal requests
     ipTracker.track(clientIp);
 
     const isSensitive = sensitiveEndpoints.some((ep: string) => req.path?.startsWith(ep));

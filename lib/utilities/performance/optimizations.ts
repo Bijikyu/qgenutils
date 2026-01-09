@@ -1,6 +1,6 @@
 /**
  * PERFORMANCE OPTIMIZATIONS IMPLEMENTED
- * 
+ *
  * Based on the performance analysis, here are targeted optimizations:
  */
 
@@ -8,7 +8,7 @@
 export function createOptimizedValidator<T>(allowedValues: T[]) {
   // Use Set for O(1) lookup instead of Array.includes() O(n)
   const allowedSet = new Set(allowedValues);
-  
+
   return {
     isValid: (value: T): boolean => allowedSet.has(value),
     getAllowedValues: (): T[] => allowedValues
@@ -27,14 +27,14 @@ export function createMemoizedFunction<T extends (...args: any[]) => any>(
   keyGenerator?: (...args: Parameters<T>) => string
 ): T {
   const cache = new Map<string, ReturnType<T>>();
-  
+
   return ((...args: Parameters<T>) => {
     const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
-    
+
     if (cache.has(key)) {
       return cache.get(key)!;
     }
-    
+
     const result = fn(...args);
     cache.set(key, result);
     return result;
@@ -82,7 +82,7 @@ export function createOptimizedArrayOperations() {
       }
       return result;
     },
-    
+
     // Efficient chunking
     chunk: <T>(array: T[], size: number): T[][] => {
       const chunks: T[][] = [];
@@ -98,7 +98,7 @@ export function createOptimizedArrayOperations() {
 export function createLazyValue<T>(factory: () => T): () => T {
   let cached: T | undefined;
   let computed = false;
-  
+
   return () => {
     if (!computed) {
       cached = factory();
@@ -111,7 +111,7 @@ export function createLazyValue<T>(factory: () => T): () => T {
 // 8. Optimized event emitter with weak references
 export function createOptimizedEventEmitter() {
   const listeners = new Map<string, Set<Function>>();
-  
+
   return {
     on: (event: string, listener: Function): void => {
       if (!listeners.has(event)) {
@@ -119,7 +119,7 @@ export function createOptimizedEventEmitter() {
       }
       listeners.get(event)!.add(listener);
     },
-    
+
     off: (event: string, listener: Function): void => {
       const eventListeners = listeners.get(event);
       if (eventListeners) {
@@ -129,7 +129,7 @@ export function createOptimizedEventEmitter() {
         }
       }
     },
-    
+
     emit: (event: string, ...args: any[]): void => {
       const eventListeners = listeners.get(event);
       if (eventListeners) {

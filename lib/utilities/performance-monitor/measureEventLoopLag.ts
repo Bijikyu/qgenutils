@@ -10,7 +10,9 @@ import { qerrors } from 'qerrors';
  * });
  */
 const measureEventLoopLag = (callback: any) => {
-  if (typeof callback !== 'function') throw new Error('Callback must be a function');
+  if (typeof callback !== 'function') {
+    throw new Error('Callback must be a function');
+  }
   const start: bigint = process.hrtime.bigint();
   setImmediate((): any => {
     try {

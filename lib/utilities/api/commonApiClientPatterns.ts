@@ -1,6 +1,6 @@
 /**
  * Common API Client Utilities
- * 
+ *
  * Centralized API client utilities to eliminate code duplication across
  * codebase. These utilities handle common API patterns including
  * HTTP client creation, request/response interceptors, and error handling.
@@ -74,7 +74,7 @@ export function createHttpClient(config: HttpClientConfig = {}) {
     interceptors = {},
     validateStatus = (status) => status >= 200 && status < 300
   } = config;
-  
+
   // Base configuration
   const baseConfig = {
     baseURL,
@@ -82,7 +82,7 @@ export function createHttpClient(config: HttpClientConfig = {}) {
     headers: { ...headers },
     validateStatus
   };
-  
+
   // Add authentication if provided
   if (auth) {
     if (auth.bearer) {
@@ -92,40 +92,40 @@ export function createHttpClient(config: HttpClientConfig = {}) {
       baseConfig.headers.Authorization = `Basic ${credentials}`;
     }
   }
-  
+
   // Request interceptor chain
   const applyRequestInterceptors = (requestConfig: any): any => {
     let config = { ...requestConfig };
-    
+
     for (const interceptor of interceptors.request || []) {
       config = interceptor(config) || config;
     }
-    
+
     return config;
   };
-  
+
   // Response interceptor chain
   const applyResponseInterceptors = (response: any): any => {
     let result = response;
-    
+
     for (const interceptor of interceptors.response || []) {
       result = interceptor(result) || result;
     }
-    
+
     return result;
   };
-  
+
   // Error interceptor chain
   const applyErrorInterceptors = (error: any): any => {
     let result = error;
-    
+
     for (const interceptor of interceptors.error || []) {
       result = interceptor(result) || result;
     }
-    
+
     return result;
   };
-  
+
   // Core request function
   const request = async (options: ApiRequestOptions = {}): Promise<ApiResponse> => {
     const {
@@ -138,7 +138,7 @@ export function createHttpClient(config: HttpClientConfig = {}) {
       retries: requestRetries,
       signal
     } = options;
-    
+
     // Merge with base configuration
     const requestConfig = applyRequestInterceptors({
       ...baseConfig,
@@ -150,14 +150,14 @@ export function createHttpClient(config: HttpClientConfig = {}) {
       timeout: requestTimeout || baseConfig.timeout,
       signal
     });
-    
+
     // Create URL with query parameters
     let finalUrl = requestConfig.url;
     if (params) {
       const queryString = new URLSearchParams(params).toString();
       finalUrl = `${finalUrl}${finalUrl.includes('?') ? '&' : '?'}${queryString}`;
     }
-    
+
     // Execute request with retry logic
     const executeRequest = withRetry(
       async (): Promise<ApiResponse> => {
@@ -165,7 +165,7 @@ export function createHttpClient(config: HttpClientConfig = {}) {
           // Create AbortController if not provided
           const controller = new AbortController();
           const finalSignal = signal || controller.signal;
-          
+
           // Fetch request
           const response = await fetch(finalUrl, {
             method: requestConfig.method,
@@ -173,11 +173,11 @@ export function createHttpClient(config: HttpClientConfig = {}) {
             body: data ? JSON.stringify(data) : undefined,
             signal: finalSignal
           });
-          
+
           // Parse response
           const responseData = await getResponseData(response);
           const responseHeaders = getResponseHeaders(response);
-          
+
           const apiResponse: ApiResponse = {
             data: responseData,
             status: response.status,
@@ -185,12 +185,12 @@ export function createHttpClient(config: HttpClientConfig = {}) {
             headers: responseHeaders,
             config: requestConfig
           };
-          
+
           // Check status validation
           if (!validateStatus(response.status)) {
             throw createApiError(response.status, response.statusText, apiResponse);
           }
-          
+
           // Apply response interceptors
           return applyResponseInterceptors(apiResponse);
         } catch (error) {
@@ -202,26 +202,26 @@ export function createHttpClient(config: HttpClientConfig = {}) {
       retryDelay,
       'createHttpClient'
     );
-    
+
     return executeRequest();
   };
-  
+
   // Convenience methods
   return {
     request,
-    get: (url: string, options: Omit<ApiRequestOptions, 'method' | 'url'> = {}) => 
+    get: (url: string, options: Omit<ApiRequestOptions, 'method' | 'url'> = {}) =>
       request({ ...options, method: 'GET', url }),
-    
-    post: (url: string, data?: any, options: Omit<ApiRequestOptions, 'method' | 'url' | 'data'> = {}) => 
+
+    post: (url: string, data?: any, options: Omit<ApiRequestOptions, 'method' | 'url' | 'data'> = {}) =>
       request({ ...options, method: 'POST', url, data }),
-    
-    put: (url: string, data?: any, options: Omit<ApiRequestOptions, 'method' | 'url' | 'data'> = {}) => 
+
+    put: (url: string, data?: any, options: Omit<ApiRequestOptions, 'method' | 'url' | 'data'> = {}) =>
       request({ ...options, method: 'PUT', url, data }),
-    
-    delete: (url: string, options: Omit<ApiRequestOptions, 'method' | 'url'> = {}) => 
+
+    delete: (url: string, options: Omit<ApiRequestOptions, 'method' | 'url'> = {}) =>
       request({ ...options, method: 'DELETE', url }),
-    
-    patch: (url: string, data?: any, options: Omit<ApiRequestOptions, 'method' | 'url' | 'data'> = {}) => 
+
+    patch: (url: string, data?: any, options: Omit<ApiRequestOptions, 'method' | 'url' | 'data'> = {}) =>
       request({ ...options, method: 'PATCH', url, data })
   };
 }
@@ -233,7 +233,7 @@ export function createHttpClient(config: HttpClientConfig = {}) {
  */
 async function getResponseData(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type') || '';
-  
+
   if (contentType.includes('application/json')) {
     return response.json();
   } else if (contentType.includes('text/')) {
@@ -252,11 +252,11 @@ async function getResponseData(response: Response): Promise<any> {
  */
 function getResponseHeaders(response: Response): Record<string, string> {
   const headers: Record<string, string> = {};
-  
+
   response.headers.forEach((value, key) => {
     headers[key] = value;
   });
-  
+
   return headers;
 }
 
@@ -282,7 +282,7 @@ function createApiError(status: number, message: string, response: ApiResponse):
  */
 export function createApiClient(config: HttpClientConfig = {}) {
   const client = createHttpClient(config);
-  
+
   // Wrap all methods with consistent error handling
   const wrapMethod = (method: Function): Function => {
     return async (...args: any[]): Promise<any> => {
@@ -295,7 +295,7 @@ export function createApiClient(config: HttpClientConfig = {}) {
       }
     };
   };
-  
+
   return {
     get: wrapMethod(client.get),
     post: wrapMethod(client.post),
@@ -303,7 +303,7 @@ export function createApiClient(config: HttpClientConfig = {}) {
     delete: wrapMethod(client.delete),
     patch: wrapMethod(client.patch),
     request: wrapMethod(client.request),
-    
+
     // Raw access if needed
     raw: client
   };
@@ -326,19 +326,19 @@ export function createBatchClient(
     maxConcurrent = 10,
     delayBetweenBatches = 100
   } = options;
-  
+
   return {
     /**
      * Executes multiple requests concurrently
      */
     async batch<T>(requests: Array<() => Promise<T>>): Promise<T[]> {
       const results: T[] = [];
-      
+
       // Process in batches
       for (let i = 0; i < requests.length; i += maxConcurrent) {
         const batch = requests.slice(i, i + maxConcurrent);
         const batchResults = await Promise.allSettled(batch);
-        
+
         // Extract successful results
         batchResults.forEach((result, index) => {
           if (result.status === 'fulfilled') {
@@ -347,16 +347,16 @@ export function createBatchClient(
             handleError((result as any).reason, 'batchClient', `Batch request ${index} failed`);
           }
         });
-        
+
         // Add delay between batches
         if (i + maxConcurrent < requests.length) {
           await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
         }
       }
-      
+
       return results;
     },
-    
+
     /**
      * Executes requests with fallback on failure
      */
@@ -364,7 +364,7 @@ export function createBatchClient(
       requests: Array<{ request: () => Promise<T>; fallback?: () => Promise<T> }>
     ): Promise<T[]> {
       const results: T[] = [];
-      
+
       for (let i = 0; i < requests.length; i += maxConcurrent) {
         const batch = requests.slice(i, i + maxConcurrent);
         const batchPromises = batch.map(async ({ request, fallback }, index) => {
@@ -378,15 +378,15 @@ export function createBatchClient(
             throw error;
           }
         });
-        
+
         const batchResults = await Promise.all(batchPromises);
         results.push(...batchResults);
-        
+
         if (i + maxConcurrent < requests.length) {
           await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
         }
       }
-      
+
       return results;
     }
   };
@@ -411,55 +411,55 @@ export function createCachedClient(
     maxSize = 100,
     keyGenerator = (url, options) => `${url}:${JSON.stringify(options)}`
   } = options;
-  
+
   const cache = new Map<string, { data: any; timestamp: number }>();
-  
+
   const cleanCache = (): void => {
     const cutoff = Date.now() - ttl;
-    
+
     for (const [key, entry] of cache.entries()) {
       if (entry.timestamp < cutoff) {
         cache.delete(key);
       }
     }
-    
+
     // Limit cache size
     if (cache.size > maxSize) {
       const entries = Array.from(cache.entries());
       const oldest = entries
         .sort((a, b) => a[1].timestamp - b[1].timestamp)
         .slice(0, cache.size - maxSize);
-      
+
       oldest.forEach(([key]) => cache.delete(key));
     }
   };
-  
+
   // Periodic cleanup
   setInterval(cleanCache, Math.min(ttl / 4, 60000)); // At least every minute
-  
+
   return {
     /**
      * Cached GET request
      */
     async get<T>(url: string, options: any = {}): Promise<T> {
       const key = keyGenerator(url, options);
-      
+
       // Check cache
       const cached = cache.get(key);
       if (cached && Date.now() - cached.timestamp < ttl) {
         return cached.data;
       }
-      
+
       // Make request
       const data = await client.get(url, options);
-      
+
       // Cache result
       cache.set(key, { data, timestamp: Date.now() });
       cleanCache();
-      
+
       return data;
     },
-    
+
     /**
      * Invalidates cache entry
      */
@@ -467,14 +467,14 @@ export function createCachedClient(
       const key = keyGenerator(url, options);
       cache.delete(key);
     },
-    
+
     /**
      * Clears all cache
      */
     clear(): void {
       cache.clear();
     },
-    
+
     /**
      * Gets cache statistics
      */
@@ -484,13 +484,13 @@ export function createCachedClient(
         key,
         age: now - entry.timestamp
       }));
-      
+
       return {
         size: cache.size,
         entries
       };
     },
-    
+
     // Pass through methods
     post: client.post,
     put: client.put,
@@ -506,7 +506,7 @@ export const ApiClientFactories = {
   /**
    * Creates a JSON API client
    */
-  json: (baseURL: string, config: HttpClientConfig = {}) => 
+  json: (baseURL: string, config: HttpClientConfig = {}) =>
     createApiClient({
       ...config,
       baseURL,
@@ -516,11 +516,11 @@ export const ApiClientFactories = {
         ...config.headers
       }
     }),
-  
+
   /**
    * Creates a form data API client
    */
-  formData: (baseURL: string, config: HttpClientConfig = {}) => 
+  formData: (baseURL: string, config: HttpClientConfig = {}) =>
     createApiClient({
       ...config,
       baseURL,
@@ -529,11 +529,11 @@ export const ApiClientFactories = {
         ...config.headers
       }
     }),
-  
+
   /**
    * Creates an authenticated API client
    */
-  authenticated: (baseURL: string, token: string, config: HttpClientConfig = {}) => 
+  authenticated: (baseURL: string, token: string, config: HttpClientConfig = {}) =>
     createApiClient({
       ...config,
       baseURL,
@@ -543,11 +543,11 @@ export const ApiClientFactories = {
         ...config.headers
       }
     }),
-  
+
   /**
    * Creates a client with basic auth
    */
-  basicAuth: (baseURL: string, username: string, password: string, config: HttpClientConfig = {}) => 
+  basicAuth: (baseURL: string, username: string, password: string, config: HttpClientConfig = {}) =>
     createApiClient({
       ...config,
       baseURL,

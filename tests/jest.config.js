@@ -4,7 +4,7 @@
 export default {
   // Test environment
   testEnvironment: 'node',
-  
+
   // Test file patterns - only test compiled JavaScript files, exclude TypeScript
   testMatch: [
     '**/tests/**/*.test.js',
@@ -12,7 +12,7 @@ export default {
     'lib/**/*.test.js',
     'lib/**/*.spec.js'
   ],
-  
+
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
 
@@ -26,12 +26,12 @@ export default {
     'node_modules/(?!(qgenutils)/',
     'dist/'
   ],
-  
+
   // Coverage configuration
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  
+
   // Coverage thresholds
   coverageThreshold: {
     global: {
@@ -41,7 +41,7 @@ export default {
       statements: 80
     }
   },
-  
+
   // Files to collect coverage from
   collectCoverageFrom: [
     'lib/**/*.js',
@@ -54,26 +54,26 @@ export default {
     '!**/*.test.js',
     '!**/*.spec.js'
   ],
-  
+
   // Module paths
   modulePathIgnorePatterns: ['<rootDir>/coverage/'],
-  
+
   // Test timeout
   testTimeout: 10000,
-  
+
   // Parallel test execution for scalability
   maxWorkers: '50%',
-  
+
   // Enable test caching for faster subsequent runs
   cache: true,
   cacheDirectory: '<rootDir>/.jest-cache',
-  
+
   // Verbose output
   verbose: true,
-  
+
   // Clear mocks between tests
   clearMocks: true,
-  
+
   // Restore mocks after each test
   restoreMocks: true
 };

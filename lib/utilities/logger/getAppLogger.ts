@@ -11,7 +11,9 @@
 import logger from '../../logger.js';
 
 const getAppLogger = (): any => {
-  if (logger && typeof (logger as any).info === 'function') return logger;
+  if (logger && typeof (logger as any).info === 'function') {
+    return logger;
+  }
 
   return {
     info: (...args: any[]) => console.info(...args),

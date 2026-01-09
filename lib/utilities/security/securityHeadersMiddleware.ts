@@ -1,11 +1,11 @@
 /**
  * Security Headers Middleware
- * 
+ *
  * PURPOSE: Provides comprehensive HTTP security headers to protect against
  * common web vulnerabilities including XSS, clickjacking, MIME-type sniffing,
  * and other client-side attacks. This middleware should be applied to all
  * HTTP responses to ensure robust security posture.
- * 
+ *
  * SECURITY HEADERS IMPLEMENTED:
  * - Content-Security-Policy (CSP): Prevents XSS and code injection
  * - X-Frame-Options: Prevents clickjacking attacks
@@ -17,7 +17,7 @@
  * - Cross-Origin-Embedder-Policy: Controls cross-origin resource loading
  * - Cross-Origin-Opener-Policy: Controls cross-origin window access
  * - Cross-Origin-Resource-Policy: Controls cross-origin resource access
- * 
+ *
  * ENVIRONMENTAL CONSIDERATIONS:
  * - Production: Strict security policies with HTTPS enforcement
  * - Development: Relaxed policies for local development and testing
@@ -57,24 +57,24 @@ const defaultConfig: SecurityHeadersConfig = {
  */
 const getCSPDirectives = (environment: string): string => {
   const baseDirectives = [
-    "default-src 'self'",
-    "script-src 'self'", // Removed unsafe-inline and unsafe-eval for security
-    "style-src 'self'", // Removed unsafe-inline for security
-    "img-src 'self' data: https:",
-    "font-src 'self' data:",
-    "connect-src 'self' https:", // Restrict to HTTPS only in production
-    "frame-src 'none'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests"
+    'default-src \'self\'',
+    'script-src \'self\'', // Removed unsafe-inline and unsafe-eval for security
+    'style-src \'self\'', // Removed unsafe-inline for security
+    'img-src \'self\' data: https:',
+    'font-src \'self\' data:',
+    'connect-src \'self\' https:', // Restrict to HTTPS only in production
+    'frame-src \'none\'',
+    'object-src \'none\'',
+    'base-uri \'self\'',
+    'form-action \'self\'',
+    'frame-ancestors \'none\'',
+    'upgrade-insecure-requests'
   ];
 
   if (environment === 'development') {
-    baseDirectives.splice(1, 1, "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*"); // Replace script-src
-    baseDirectives.splice(2, 1, "style-src 'self' 'unsafe-inline'"); // Replace style-src
-    baseDirectives.splice(5, 1, "connect-src 'self' http://localhost:* ws://localhost:* https:"); // Replace connect-src
+    baseDirectives.splice(1, 1, 'script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' http://localhost:* ws://localhost:*'); // Replace script-src
+    baseDirectives.splice(2, 1, 'style-src \'self\' \'unsafe-inline\''); // Replace style-src
+    baseDirectives.splice(5, 1, 'connect-src \'self\' http://localhost:* ws://localhost:* https:'); // Replace connect-src
   }
 
   return baseDirectives.join('; ');
@@ -82,13 +82,13 @@ const getCSPDirectives = (environment: string): string => {
 
 /**
  * Creates security headers middleware
- * 
+ *
  * @param config - Security configuration options
  * @returns Express middleware function
  */
-export const createSecurityHeaders = (config: SecurityHeadersConfig = {}): 
+export const createSecurityHeaders = (config: SecurityHeadersConfig = {}):
   (req: Request, res: Response, next: NextFunction) => void => {
-  
+
   const finalConfig = { ...defaultConfig, ...config };
   const { environment = 'production', enableCSP, enableHSTS, enableCORP, customCSP } = finalConfig;
 
@@ -147,7 +147,7 @@ export const createSecurityHeaders = (config: SecurityHeadersConfig = {}):
       res.setHeader('X-Download-Options', 'noopen');
       res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
       res.setHeader('X-Powered-By', ''); // Remove server fingerprinting
-      
+
       // Cache control for API responses
       if (req.path.startsWith('/api/')) {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -173,15 +173,15 @@ export const createSecurityHeaders = (config: SecurityHeadersConfig = {}):
 export const securityHeaders = {
   /** Production security middleware */
   production: createSecurityHeaders({ environment: 'production' }),
-  
+
   /** Development security middleware */
-  development: createSecurityHeaders({ 
+  development: createSecurityHeaders({
     environment: 'development',
     enableHSTS: false // Disable HSTS in development
   }),
-  
+
   /** Test security middleware */
-  test: createSecurityHeaders({ 
+  test: createSecurityHeaders({
     environment: 'test',
     enableHSTS: false,
     enableCORP: false // More permissive for testing

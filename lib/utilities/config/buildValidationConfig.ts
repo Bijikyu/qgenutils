@@ -3,9 +3,9 @@ import { ValidationConfigOptions, ValidationConfig } from '../../../types/config
 
 /**
  * Build Validation Configuration
- * 
+ *
  * Creates a validation configuration for input sanitization and limits.
- * 
+ *
  * @param {ValidationConfigOptions} [options] - Validation configuration options
  * @returns {ValidationConfig} Validated validation configuration
  */

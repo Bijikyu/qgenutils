@@ -23,7 +23,7 @@ function validateArrayInput(value: any, options: ValidateArrayInputOptions = {})
     defaultValue = [],
     minLength = null,
     maxLength = null,
-    fieldName = `array`
+    fieldName = 'array'
   } = options;
 
   // Handle null/undefined cases

@@ -2,14 +2,14 @@ import { qerrors } from 'qerrors';
 
 /**
  * Advanced HTTP Client using Axios
- * 
+ *
  * Provides enhanced HTTP client capabilities for complex operations including
  * request/response interceptors, automatic retries, timeout management,
  * and comprehensive error handling using to battle-tested axios library.
- * 
+ *
  * This is intended for complex HTTP operations. For simple requests,
  * consider using Node.js built-in fetch API or existing HTTP utilities.
- * 
+ *
  * @param {object} [config] - Axios configuration options
  * @param {number} [config.timeout=10000] - Request timeout in milliseconds
  * @param {number} [config.maxRetries=3] - Maximum number of retry attempts
@@ -71,7 +71,7 @@ function createAdvancedHttpClient(config: Config = {}) {
     (requestConfig: any): any => {
       // Add request ID for tracing
       requestConfig.headers['X-Request-ID'] = generateRequestId();
-      
+
       // Log request details (if logger is available)
       if (localVars.NODE_ENV !== 'production') {
         // Use proper logger in production - this is for debugging only
@@ -82,7 +82,7 @@ function createAdvancedHttpClient(config: Config = {}) {
           });
         }
       }
-      
+
       return requestConfig;
     },
     (error: any): any => {
@@ -103,56 +103,56 @@ function createAdvancedHttpClient(config: Config = {}) {
           data: response.data
         });
       }
-      
+
       return response;
     },
     async (error: any): Promise<any> => {
       try {
         const originalRequest: any = error.config;
-        
+
         // Handle timeout errors
         if (error.code === 'ECONNABORTED' && onTimeout) {
           onTimeout(error);
         }
-        
+
         // Implement retry logic for specific errors
         if (shouldRetry(error) && !originalRequest._retry && maxRetries > 0) {
           // Initialize retry count if not set
           if (!originalRequest._retryCount) {
             originalRequest._retryCount = 0;
           }
-          
+
           // Check if we've exceeded max retries before retrying
           if (originalRequest._retryCount >= maxRetries) {
             qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP request max retries exceeded for: ${originalRequest.url}`);
             return Promise.reject(error);
           }
-          
+
           originalRequest._retry = true;
-          
+
           if (onRetry) {
             onRetry(originalRequest._retryCount, error);
           }
-          
+
           // Exponential backoff with jitter and minimum delay
           originalRequest._retryCount += 1;
           const baseDelay: any = retryDelay * Math.pow(2, originalRequest._retryCount);
           const jitter: any = Math.random() * 1000; // Always positive (0-1000)
           const delay: any = Math.max(baseDelay + jitter, 100); // Minimum 100ms delay
-          
+
           await sleep(delay);
-          
+
           return httpClient(originalRequest);
         }
-        
+
         // Enhance error information
         error.isNetworkError = isNetworkError(error);
         error.isTimeoutError = error.code === 'ECONNABORTED';
         error.isServerError = error.response?.status >= 500;
         error.isClientError = error.response?.status >= 400 && error.response?.status < 500;
-        
+
         qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP response error for: ${originalRequest.url}`);
-        
+
         return Promise.reject(error);
       } catch (handlerError) {
         qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'createAdvancedHttpClient', 'HTTP response interceptor error');
@@ -195,23 +195,23 @@ function createAdvancedHttpClient(config: Config = {}) {
 
 /**
  * Generate cryptographically secure request IDs for tracing
- * 
+ *
  * This function creates unique request identifiers that combine timestamp
  * with UUID fragments to ensure both uniqueness and chronological ordering.
  * The IDs are suitable for distributed tracing and request correlation.
- * 
+ *
  * ID Format: `req_{timestamp}_{uuid_fragment}`
  * - `req_`: Prefix identifying HTTP requests
  * - `{timestamp}`: Unix timestamp for chronological ordering
  * - `{uuid_fragment}`: 16-character UUID fragment for uniqueness
- * 
+ *
  * @returns {string} Unique request identifier
- * 
+ *
  * @example
  * // Generated ID: req_1703123456789_a1b2c3d4e5f6g7h8
  * const requestId = generateRequestId();
  * console.log(requestId); // req_1703123456789_a1b2c3d4e5f6g7h8
- * 
+ *
  * @security Uses cryptographically secure random UUID generation
  * @performance Generates IDs in ~0.1ms, suitable for high-throughput scenarios
  */
@@ -223,47 +223,47 @@ function generateRequestId() {
 
 /**
  * Determine if an HTTP request should be retried based on error type
- * 
+ *
  * This function implements intelligent retry logic by analyzing error
  * characteristics and determining if the request is likely to succeed
  * on retry. It follows HTTP best practices for retryable conditions.
- * 
+ *
  * ## Retry Logic Algorithm
- * 
+ *
  * 1. **Network Errors**: Retry on connection issues (no response received)
  * 2. **Server Errors**: Retry on 5xx status codes (temporary server issues)
  * 3. **Specific Client Errors**: Retry on recoverable 4xx status codes
  * 4. **Non-Retryable Errors**: Don't retry on permanent client errors (4xx except specific cases)
- * 
+ *
  * ## Retryable Status Codes
- * 
+ *
  * - **5xx Server Errors**: Internal server issues, temporary failures
  * - **429 Too Many Requests**: Rate limiting, retry after delay
  * - **408 Request Timeout**: Server took too long, may succeed on retry
  * - **409 Conflict**: Resource conflicts, may resolve on retry
- * 
+ *
  * ## Non-Retryable Status Codes
- * 
+ *
  * - **4xx Client Errors** (except above): Permanent issues, retry won't help
  * - **3xx Redirection**: Should be handled by HTTP client, not retried
  * - **1xx Informational**: Should not occur in normal flow
- * 
+ *
  * @param {any} error - Axios error object or network error
  * @returns {boolean} True if request should be retried
- * 
+ *
  * @example
  * // Network error - should retry
  * const networkError = { code: 'ECONNRESET' };
  * console.log(shouldRetry(networkError)); // true
- * 
+ *
  * // Server error - should retry
  * const serverError = { response: { status: 500 } };
  * console.log(shouldRetry(serverError)); // true
- * 
+ *
  * // Client error - should not retry
  * const clientError = { response: { status: 400 } };
  * console.log(shouldRetry(clientError)); // false
- * 
+ *
  * // Rate limit - should retry
  * const rateLimitError = { response: { status: 429 } };
  * console.log(shouldRetry(rateLimitError)); // true
@@ -273,9 +273,9 @@ function shouldRetry(error) {
     // Network errors or no response
     return isNetworkError(error);
   }
-  
+
   const status: any = error.response.status;
-  
+
   // Retry on server errors (5xx) and specific client errors
   return (
     status >= 500 || // Server errors
@@ -287,52 +287,52 @@ function shouldRetry(error) {
 
 /**
  * Identify network-level connection errors
- * 
+ *
  * This function detects low-level network connectivity issues that
  * are typically transient and may resolve on retry. These errors
  * occur at the TCP/IP layer rather than the HTTP layer.
- * 
+ *
  * ## Network Error Types
- * 
+ *
  * ### Connection Errors
  * - **ECONNRESET**: Connection reset by peer (server closed connection)
  * - **ECONNREFUSED**: Connection actively refused (server not listening)
- * 
+ *
  * ### Timeout Errors
  * - **ETIMEDOUT**: Connection timeout (no response within time limit)
  * - **EAI_AGAIN**: DNS lookup timeout (temporary DNS resolution failure)
- * 
+ *
  * ### Resolution Errors
  * - **ENOTFOUND**: Hostname not found (DNS resolution failed)
- * 
+ *
  * ## Error Classification Logic
- * 
+ *
  * Network errors are characterized by:
  * 1. **No HTTP Response**: Error occurs before HTTP response is received
  * 2. **System-Level Codes**: Error codes from operating system/network stack
  * 3. **Transient Nature**: Errors that may resolve with retry
  * 4. **Infrastructure Issues**: Problems with network connectivity or DNS
- * 
+ *
  * @param {any} error - Error object from HTTP request
  * @returns {boolean} True if error is a network-level error
- * 
+ *
  * @example
  * // Connection reset by server
  * const resetError = { code: 'ECONNRESET' };
  * console.log(isNetworkError(resetError)); // true
- * 
+ *
  * // Server not available
  * const refusedError = { code: 'ECONNREFUSED' };
  * console.log(isNetworkError(refusedError)); // true
- * 
+ *
  * // DNS resolution failed
  * const dnsError = { code: 'ENOTFOUND' };
  * console.log(isNetworkError(dnsError)); // true
- * 
+ *
  * // HTTP error (not network)
  * const httpError = { response: { status: 404 } };
  * console.log(isNetworkError(httpError)); // false
- * 
+ *
  * @note These error codes are specific to Node.js HTTP client
  * @see https://nodejs.org/api/errors.html#errors_common_system_errors
  */

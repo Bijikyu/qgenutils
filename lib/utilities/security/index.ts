@@ -1,11 +1,11 @@
 /**
  * Security Utilities Module Export
- * 
+ *
  * PURPOSE: Provides centralized access to all security-focused utilities
  * for authentication, input sanitization, rate limiting, and threat detection.
  * This barrel export makes it easier to import multiple security
  * utilities while maintaining tree-shaking support.
- * 
+ *
  * SECURITY CATEGORIES:
  * - Authentication: API key validation and timing-safe comparisons
  * - Sanitization: XSS-safe string and object sanitization
@@ -58,29 +58,29 @@ export {
   extractApiKey,
   maskString,
   maskUnified,
-  
+
   // Rate limiting
   createIpTracker,
   createRateLimitStore,
   buildRateLimitKey,
   createSecurityRateLimiter,
-  
+
   // Sanitization
   sanitizeLogValue,
   sanitizeObject,
   sanitizeUrl,
   createSafeLoggingContext,
   createSafeObjectPath,
-  
+
   // Threat detection
   detectSuspiciousPatterns,
   isSensitiveField,
-  
+
   // Validation
   validateAndNormalizePath,
   validateBucketName,
   validateObjectName,
-  
+
   // Middleware
   setSecurityHeaders,
   createSecurityMiddleware

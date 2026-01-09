@@ -1,6 +1,6 @@
 /**
  * Common Error Handling Utilities
- * 
+ *
  * Centralized error handling functions to eliminate code duplication across
  * the codebase. These utilities handle common error patterns including
  * try-catch blocks, error logging, error creation, and standardized error responses.
@@ -36,14 +36,14 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
   return ((...args: any[]) => {
     try {
       const result = fn(...args);
-      
+
       // Handle async functions
       if (result && typeof result.then === 'function') {
         return result.catch((error: any) => {
           throw handleError(error, functionName, context);
         });
       }
-      
+
       return result;
     } catch (error) {
       throw handleError(error, functionName, context);
@@ -68,7 +68,7 @@ export function createSafeFunction<T extends (...args: any[]) => any>(
   return ((...args: any[]) => {
     try {
       const result = fn(...args);
-      
+
       // Handle async functions
       if (result && typeof result.then === 'function') {
         return result.catch((error: any) => {
@@ -76,7 +76,7 @@ export function createSafeFunction<T extends (...args: any[]) => any>(
           return defaultValue;
         });
       }
-      
+
       return result;
     } catch (error) {
       handleError(error, functionName, context);
@@ -290,11 +290,11 @@ export async function withAsyncErrorHandling<T>(
     return await asyncFn();
   } catch (error) {
     const normalizedError = error instanceof Error ? error : new Error(String(error));
-    
+
     if (errorHandler) {
       return await errorHandler(normalizedError);
     }
-    
+
     throw normalizedError;
   }
 }
@@ -315,26 +315,26 @@ export function withRetry<T extends (...args: any[]) => Promise<any>>(
 ): T {
   return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         return await fn(...args);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt === maxRetries) {
           handleError(lastError, functionName, `Failed after ${maxRetries} retries`);
           throw lastError;
         }
-        
+
         // Log retry attempt
         handleError(lastError, functionName, `Attempt ${attempt + 1} failed, retrying...`);
-        
+
         // Wait before retry
         await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt)));
       }
     }
-    
+
     throw lastError!;
   }) as T;
 }

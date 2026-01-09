@@ -40,42 +40,44 @@ function buildRateLimitKey(req: RequestObject, options: RateLimitOptions = {}): 
   let identifier = 'anonymous'; // fallback identifier
 
   switch (strategy) {
-    case 'ip':
-      // Safe property access with proper null checks
-      identifier = req.ip || 
-                   (req.connection && typeof req.connection === 'object' && req.connection.remoteAddress) || 
+  case 'ip':
+    // Safe property access with proper null checks
+    identifier = req.ip ||
+                   (req.connection && typeof req.connection === 'object' && req.connection.remoteAddress) ||
                    'unknown-ip';
-      break;
+    break;
 
-    case 'user':
-      identifier = getNestedValue(req, userIdPath) || 'unknown-user';
-      break;
+  case 'user':
+    identifier = getNestedValue(req, userIdPath) || 'unknown-user';
+    break;
 
-    case 'apiKey':
-      const apiKey = req[apiKeyPath] || getNestedValue(req, apiKeyPath);
-      identifier = apiKey ? hashKey(apiKey) : 'unknown-key';
-      break;
+  case 'apiKey':
+    const apiKey = req[apiKeyPath] || getNestedValue(req, apiKeyPath);
+    identifier = apiKey ? hashKey(apiKey) : 'unknown-key';
+    break;
 
-    case 'custom':
-      if (typeof customKeyFn === 'function') {
-        try {
-          const customResult = customKeyFn(req);
-          identifier = customResult || 'custom-unknown';
-        } catch (error) {
-          identifier = 'custom-error';
-        }
+  case 'custom':
+    if (typeof customKeyFn === 'function') {
+      try {
+        const customResult = customKeyFn(req);
+        identifier = customResult || 'custom-unknown';
+      } catch (error) {
+        identifier = 'custom-error';
       }
-      break;
+    }
+    break;
 
-    default:
-      identifier = req.ip || 'unknown';
+  default:
+    identifier = req.ip || 'unknown';
   }
 
   return `${prefix}:${identifier}`;
 }
 
 function getNestedValue(obj: any, path: string): any { // helper to get nested property
-  if (!obj || typeof path !== 'string') return undefined;
+  if (!obj || typeof path !== 'string') {
+    return undefined;
+  }
   const keys = path.split('.');
   let current = obj;
   for (const key of keys) {

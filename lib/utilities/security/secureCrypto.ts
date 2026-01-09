@@ -1,10 +1,10 @@
 /**
  * Password Security Utilities - Bcrypt Implementation
- * 
+ *
  * PURPOSE: Provides secure password hashing and verification using industry-standard
  * bcrypt library. This replaces the custom cryptographic implementation with
  * battle-tested, professionally audited bcrypt for better security and maintainability.
- * 
+ *
  * SECURITY NOTE: Bcrypt is the industry standard for password hashing:
  * - Automatically handles salt generation and management
  * - Includes adaptive work factor to resist brute force attacks
@@ -22,7 +22,7 @@ interface PasswordHashResult {
 
 /**
  * Hashes a password using bcrypt with automatic salt generation
- * 
+ *
  * @param password - Password to hash
  * @param saltRounds - Number of salt rounds (default: 10)
  * @returns Promise resolving to hash and salt
@@ -44,14 +44,14 @@ async function hashPassword(
       salt
     };
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashPassword', `Password hashing failed`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashPassword', 'Password hashing failed');
     throw new Error('Password hashing failed');
   }
 }
 
 /**
  * Verifies a password against a bcrypt hash
- * 
+ *
  * @param password - Password to verify
  * @param hash - Stored bcrypt hash
  * @returns Promise resolving to true if password matches
@@ -68,14 +68,14 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
 
     return await bcrypt.compare(password, hash);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', `Password verification failed`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', 'Password verification failed');
     return false;
   }
 }
 
 /**
  * Generates a secure random salt using bcrypt
- * 
+ *
  * @param saltRounds - Number of salt rounds (default: 10)
  * @returns Promise resolving to base64 encoded salt
  */
@@ -83,14 +83,14 @@ async function generateSalt(saltRounds: number = 10): Promise<string> {
   try {
     return await bcrypt.genSalt(saltRounds);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'generateSalt', `Salt generation failed`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'generateSalt', 'Salt generation failed');
     throw new Error('Salt generation failed');
   }
 }
 
 /**
  * Checks if input is secure for processing (basic validation)
- * 
+ *
  * @param input - Input to check
  * @returns True if input appears secure
  */
@@ -99,12 +99,12 @@ function isSecureInput(input: any): boolean {
     if (!input || typeof input !== 'string') {
       return false;
     }
-    
+
     // Basic security checks
     if (input.length > 10000) {
       return false; // Too long, potential DoS
     }
-    
+
     // Check for dangerous patterns
     const dangerousPatterns = [
       /<script/i,
@@ -112,7 +112,7 @@ function isSecureInput(input: any): boolean {
       /vbscript:/i,
       /on\w+\s*=/i
     ];
-    
+
     return !dangerousPatterns.some(pattern => pattern.test(input));
   } catch (error) {
     return false;

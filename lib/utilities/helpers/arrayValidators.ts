@@ -13,23 +13,23 @@
  */
 function isArray(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, minLength = null, maxLength = null }: any = options;
-  
+
   if (!Array.isArray(value)) {
     return false;
   }
-  
+
   if (!allowEmpty && value.length === 0) {
     return false;
   }
-  
+
   if (minLength !== null && value.length < minLength) {
     return false;
   }
-  
+
   if (maxLength !== null && value.length > maxLength) {
     return false;
   }
-  
+
   return true;
 }
 

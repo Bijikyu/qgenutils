@@ -1,6 +1,6 @@
 /**
  * Common Logging and Debugging Utilities
- * 
+ *
  * Centralized logging and debugging utilities to eliminate code duplication across
  * codebase. These utilities handle common patterns including
  * structured logging, debugging helpers, and development diagnostics.
@@ -108,7 +108,7 @@ export class InMemoryLogger implements Logger {
   }
 
   getEntriesByTimeRange(startTime: Date, endTime: Date): LogEntry[] {
-    return this.entries.filter(entry => 
+    return this.entries.filter(entry =>
       entry.timestamp >= startTime && entry.timestamp <= endTime
     );
   }
@@ -166,14 +166,14 @@ export class DebugUtils {
   } = {}): (fn: T) => T {
     const { logSlowCalls = true, slowThreshold = 1000, trackCallCount = true } = options;
     let callCount = 0;
-    
+
     return ((fn: T) => T => {
       callCount++;
-      
+
       const wrappedFn = (...args: any[]): any => {
         const timer = DebugUtils.createTimer(name);
         timer.start();
-        
+
         try {
           const result = fn(...args);
           timer.logElapsed('Function call completed');
@@ -184,7 +184,7 @@ export class DebugUtils {
           throw error;
         }
       };
-      
+
       return wrappedFn;
     }) as any;
   }
@@ -221,7 +221,7 @@ export const CommonLoggingUtilities = {
     const level = entry.level.padEnd(5);
     const correlationId = entry.correlationId ? ` [${entry.correlationId}]` : '';
     const context = entry.context ? ` ${JSON.stringify(entry.context)}` : '';
-    
+
     return `[${timestamp}] ${level}${correlationId} ${entry.message}${context}`;
   },
 

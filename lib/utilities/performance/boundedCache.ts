@@ -1,9 +1,9 @@
 /**
  * Bounded LRU Cache Implementation
- * 
+ *
  * PURPOSE: Replace unbounded Maps with size-limited, TTL-based caching
  * to prevent memory leaks and unbounded growth.
- * 
+ *
  * FEATURES:
  * - LRU eviction when size limit reached
  * - TTL-based item expiration
@@ -96,8 +96,10 @@ export class BoundedLRUCache<K, V> {
     const item = this.cache.get(cacheKey);
     const now = Date.now();
 
-    if (!item) return false;
-    
+    if (!item) {
+      return false;
+    }
+
     if (now - item.timestamp > item.ttl) {
       this.cache.delete(cacheKey);
       this.stats.expirations++;
@@ -137,7 +139,7 @@ export class BoundedLRUCache<K, V> {
     hitRate: number;
     currentSize: number;
     maxSize: number;
-  } {
+    } {
     const total = this.stats.hits + this.stats.misses;
     return {
       ...this.stats,
@@ -163,9 +165,15 @@ export class BoundedLRUCache<K, V> {
    * Serialize key to string
    */
   private serializeKey(key: K): string {
-    if (typeof key === 'string') return key;
-    if (typeof key === 'number') return key.toString();
-    if (key === null || key === undefined) return 'null';
+    if (typeof key === 'string') {
+      return key;
+    }
+    if (typeof key === 'number') {
+      return key.toString();
+    }
+    if (key === null || key === undefined) {
+      return 'null';
+    }
     try {
       return JSON.stringify(key);
     } catch {
@@ -227,19 +235,19 @@ export class BoundedLRUCache<K, V> {
     }
   }
 
-/**
+  /**
     * Get all values (for compatibility with Map interface)
     */
   values(): V[] {
     const result: V[] = [];
     const now = Date.now();
-    
+
     for (const [key, item] of this.cache.entries()) {
       if (now - item.timestamp <= item.ttl) {
         result.push(item.value);
       }
     }
-    
+
     return result;
   }
 
@@ -249,14 +257,14 @@ export class BoundedLRUCache<K, V> {
   entries(): Array<[K, V]> {
     const result: Array<[K, V]> = [];
     const now = Date.now();
-    
+
     for (const [cacheKey, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp <= item.ttl) {
         const key = this.deserializeKey(cacheKey);
         result.push([key, item.value]);
       }
     }
-    
+
     return result;
   }
 
@@ -266,14 +274,14 @@ export class BoundedLRUCache<K, V> {
   keys(): K[] {
     const result: K[] = [];
     const now = Date.now();
-    
+
     for (const [cacheKey, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp <= item.ttl) {
         const key = this.deserializeKey(cacheKey);
         result.push(key);
       }
     }
-    
+
     return result;
   }
 
@@ -322,7 +330,7 @@ export class CircularBuffer<T> {
   push(item: T): void {
     this.buffer[this.tail] = item;
     this.tail = (this.tail + 1) % this.capacity;
-    
+
     if (this.size < this.capacity) {
       this.size++;
     } else {
@@ -334,7 +342,9 @@ export class CircularBuffer<T> {
    * Get oldest item from buffer
    */
   shift(): T | undefined {
-    if (this.size === 0) return undefined;
+    if (this.size === 0) {
+      return undefined;
+    }
 
     const item = this.buffer[this.head];
     this.buffer[this.head] = undefined as any;

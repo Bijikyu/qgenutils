@@ -29,62 +29,62 @@ interface SanitizeOptions {
  */
 function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number = 0, visited: WeakSet<any> = new WeakSet()) { // recursively sanitize object
   try {
-  const additionalFields: any = options.additionalFields || [];
-  const maxDepth: any = options.maxDepth || 10;
-  const allRedactedFields: any = [...REDACTED_FIELDS, ...additionalFields];
+    const additionalFields: any = options.additionalFields || [];
+    const maxDepth: any = options.maxDepth || 10;
+    const allRedactedFields: any = [...REDACTED_FIELDS, ...additionalFields];
 
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
 
-  // Prevent circular reference infinite recursion
-  if (visited.has(obj)) {
-    return '[CIRCULAR_REFERENCE]';
-  }
-  visited.add(obj);
+    // Prevent circular reference infinite recursion
+    if (visited.has(obj)) {
+      return '[CIRCULAR_REFERENCE]';
+    }
+    visited.add(obj);
 
-  if (depth > maxDepth) { // prevent infinite recursion
-    return '[MAX_DEPTH_EXCEEDED]';
-  }
+    if (depth > maxDepth) { // prevent infinite recursion
+      return '[MAX_DEPTH_EXCEEDED]';
+    }
 
-  if (Array.isArray(obj)) { // handle arrays
-    return obj.map(item => sanitizeObject(item, options, depth + 1, visited));
-  }
+    if (Array.isArray(obj)) { // handle arrays
+      return obj.map(item => sanitizeObject(item, options, depth + 1, visited));
+    }
 
-  if (typeof obj === 'object') { // handle objects
-    const sanitized: any = {};
+    if (typeof obj === 'object') { // handle objects
+      const sanitized: any = {};
 
-    for (const [key, value] of Object.entries(obj)) {
+      for (const [key, value] of Object.entries(obj)) {
       // Prevent prototype pollution by checking for dangerous keys
-      if (typeof key !== 'string' || 
-          key === '__proto__' || 
-          key === 'constructor' || 
+        if (typeof key !== 'string' ||
+          key === '__proto__' ||
+          key === 'constructor' ||
           key === 'prototype' ||
           key.startsWith('__') ||
           key.includes('proto') ||
           key.includes('constructor')) {
-        continue;
-      }
-      
-      const lowerKey: any = key.toLowerCase();
-      const shouldRedact = allRedactedFields.some(field => 
-        lowerKey === field.toLowerCase() || lowerKey.includes(field.toLowerCase())
-      );
+          continue;
+        }
 
-      if (shouldRedact) {
-        sanitized[key] = '[REDACTED]';
-      } else {
-        sanitized[key] = sanitizeObject(value, options, depth + 1, visited);
+        const lowerKey: any = key.toLowerCase();
+        const shouldRedact = allRedactedFields.some(field =>
+          lowerKey === field.toLowerCase() || lowerKey.includes(field.toLowerCase())
+        );
+
+        if (shouldRedact) {
+          sanitized[key] = '[REDACTED]';
+        } else {
+          sanitized[key] = sanitizeObject(value, options, depth + 1, visited);
+        }
       }
+
+      return sanitized;
     }
 
-    return sanitized;
-  }
-
-  return sanitizeLogValue(obj);
+    return sanitizeLogValue(obj);
   } catch (error) {
     qerrors(error instanceof Error ? error : new Error(String(error)), 'sanitizeObject', `Object sanitization failed at depth: ${depth}`);
-  return '[SANITIZATION_ERROR]';
+    return '[SANITIZATION_ERROR]';
   }
 }
 

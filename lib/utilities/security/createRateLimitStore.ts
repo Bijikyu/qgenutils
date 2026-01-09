@@ -1,16 +1,16 @@
 /**
  * In-Memory Rate Limit Store
- * 
+ *
  * Creates a simple in-memory store for tracking rate limit usage.
  * Supports automatic cleanup of expired entries to prevent memory leaks.
- * 
+ *
  * @param {object} [options] - Store options
  * @param {number} [options.cleanupInterval=60000] - Interval for cleanup in ms (0 to disable)
  * @returns {object} Rate limit store with consume, get, reset, and destroy methods
  */
 function createRateLimitStore(options: any = {}) {
   const { cleanupInterval = 60000 } = options;
-  
+
   const store = new Map(); // key -> { points, resetTime }
   let cleanupTimer: any = null;
 
@@ -33,7 +33,9 @@ function createRateLimitStore(options: any = {}) {
 
   if (cleanupInterval > 0) { // start periodic cleanup
     cleanupTimer = setInterval(cleanup, cleanupInterval);
-    if (cleanupTimer.unref) cleanupTimer.unref(); // don't block process exit
+    if (cleanupTimer.unref) {
+      cleanupTimer.unref();
+    } // don't block process exit
   }
 
   // Add automatic cleanup when store is garbage collected (if supported)
@@ -83,7 +85,9 @@ function createRateLimitStore(options: any = {}) {
      */
     get(key: string) {
       const entry = store.get(key);
-      if (!entry) return null;
+      if (!entry) {
+        return null;
+      }
       const now = Date.now();
       if (now >= entry.resetTime) { // expired
         store.delete(key);

@@ -16,20 +16,20 @@ import validator from 'validator';
  */
 function isString(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, allowWhitespaceOnly = false }: any = options;
-  
+
   // Use lodash.isString for consistent type checking across the codebase
   if (!lodashIsString(value)) {
     return false;
   }
-  
+
   if (!allowEmpty && value === '') {
     return false;
   }
-  
+
   if (!allowWhitespaceOnly && validator.isEmpty(value, { ignore_whitespace: false })) {
     return false;
   }
-  
+
   return true;
 }
 

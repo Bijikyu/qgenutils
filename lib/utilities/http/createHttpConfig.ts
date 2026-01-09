@@ -21,13 +21,13 @@ function createHttpConfig(apiKey: string | null = null, additionalHeaders: Recor
     const config: any = {
       timeout: customTimeout || getContextualTimeout('http-api')
     };
-    
+
     if (apiKey) {
       config.auth = { username: 'anystring', password: apiKey };
     }
-    
+
     config.headers = { 'Content-Type': 'application/json', ...(additionalHeaders || {}) };
-    
+
     return config;
   } catch (err) {
     qerrors(err, 'createHttpConfig', 'HTTP config creation failed');

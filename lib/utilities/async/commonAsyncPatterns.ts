@@ -1,6 +1,6 @@
 /**
  * Common Retry and Async Utilities
- * 
+ *
  * Simplified version with core functionality to avoid compilation issues
  */
 
@@ -41,32 +41,32 @@ export async function withRetry<T>(
       if (attempt === maxRetries || (retryCondition && !retryCondition(error))) {
         throw error;
       }
-      
+
       if (onRetry) {
         onRetry(error, attempt + 1);
       }
-      
+
       let nextDelay = delay;
       switch (backoff) {
-        case 'linear':
-          nextDelay = delay * (attempt + 1);
-          break;
-        case 'exponential':
-          nextDelay = delay * Math.pow(2, attempt);
-          break;
-        case 'fixed':
-          nextDelay = delay;
-          break;
+      case 'linear':
+        nextDelay = delay * (attempt + 1);
+        break;
+      case 'exponential':
+        nextDelay = delay * Math.pow(2, attempt);
+        break;
+      case 'fixed':
+        nextDelay = delay;
+        break;
       }
-      
+
       if (jitter) {
         nextDelay = nextDelay * (0.5 + Math.random() * 0.5);
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, nextDelay));
     }
   }
-  
+
   throw new Error('Max retries exceeded');
 }
 
@@ -129,21 +129,21 @@ export function createRateLimiter(maxRequests: number, windowMs: number = 60000)
   return {
     async acquire<T>(fn: () => Promise<T>): Promise<T> {
       const now = Date.now();
-      
+
       if (now - lastReset >= windowMs) {
         requests = 0;
         lastReset = now;
       }
-      
+
       if (requests >= maxRequests) {
         const timeToReset = windowMs - (now - lastReset);
         await delay(timeToReset);
       }
-      
+
       requests++;
       return fn();
     },
-    
+
     getStats() {
       return {
         requests,

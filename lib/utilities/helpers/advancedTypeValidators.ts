@@ -14,12 +14,24 @@ import primitiveValidators from './primitiveValidators.js';
  * @returns {string} Detailed type string
  */
 function getDetailedType(value: any): string {
-  if (value === null) return `null`;
-  if (value === undefined) return `undefined`;
-  if (Array.isArray(value)) return `array`;
-  if (value instanceof Date) return `date`;
-  if (value instanceof RegExp) return `regexp`;
-  if (value instanceof Error) return `error`;
+  if (value === null) {
+    return 'null';
+  }
+  if (value === undefined) {
+    return 'undefined';
+  }
+  if (Array.isArray(value)) {
+    return 'array';
+  }
+  if (value instanceof Date) {
+    return 'date';
+  }
+  if (value instanceof RegExp) {
+    return 'regexp';
+  }
+  if (value instanceof Error) {
+    return 'error';
+  }
   return typeof value;
 }
 
@@ -42,11 +54,11 @@ function isValidType(value: any, allowedTypes: string[]): boolean {
  */
 function createTypeValidator(type: string | string[], options: Record<string, any> = {}) {
   const allowedTypes: string[] = Array.isArray(type) ? type : [type];
-  
+
   return function(value: any, customOptions: Record<string, any> = {}) {
     const mergedOptions: any = { ...options, ...customOptions };
     const actualType: any = getDetailedType(value);
-    
+
     if (!allowedTypes.includes(actualType)) {
       return {
         valid: false,
@@ -54,39 +66,39 @@ function createTypeValidator(type: string | string[], options: Record<string, an
         expectedTypes: allowedTypes
       };
     }
-    
+
     // Additional type-specific validation
     switch (actualType) {
-      case `string`:
-        return {
-          valid: stringValidators.isString(value, mergedOptions),
-          value
-        };
-      case `number`:
-        return {
-          valid: numberValidators.isNumber(value, mergedOptions),
-          value
-        };
-      case `array`:
-        return {
-          valid: arrayValidators.isArray(value, mergedOptions),
-          value
-        };
-      case `object`:
-        return {
-          valid: objectValidators.isObject(value, mergedOptions),
-          value
-        };
-      case `date`:
-        return {
-          valid: primitiveValidators.isDate(value, mergedOptions),
-          value
-        };
-      default:
-        return {
-          valid: true,
-          value
-        };
+    case 'string':
+      return {
+        valid: stringValidators.isString(value, mergedOptions),
+        value
+      };
+    case 'number':
+      return {
+        valid: numberValidators.isNumber(value, mergedOptions),
+        value
+      };
+    case 'array':
+      return {
+        valid: arrayValidators.isArray(value, mergedOptions),
+        value
+      };
+    case 'object':
+      return {
+        valid: objectValidators.isObject(value, mergedOptions),
+        value
+      };
+    case 'date':
+      return {
+        valid: primitiveValidators.isDate(value, mergedOptions),
+        value
+      };
+    default:
+      return {
+        valid: true,
+        value
+      };
     }
   };
 }

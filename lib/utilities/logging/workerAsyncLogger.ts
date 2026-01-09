@@ -1,9 +1,9 @@
 /**
  * Worker-Based Async Logger
- * 
+ *
  * PURPOSE: Eliminate blocking I/O operations by using worker threads
  * for all file operations and JSON processing.
- * 
+ *
  * FEATURES:
  * - Non-blocking file operations
  * - Worker thread JSON processing
@@ -43,7 +43,9 @@ interface LogStats {
 
 // Worker implementation
 function runWorker(): void {
-  if (isMainThread) return;
+  if (isMainThread) {
+    return;
+  }
 
   const { logFile, maxFileSize, maxBuffer } = workerData as {
     logFile: string;
@@ -95,7 +97,7 @@ function runWorker(): void {
     try {
       const timestamp = new Date().toISOString().replace(/[.:]/g, '-');
       const rotatedFile = logFile.replace('.log', `-${timestamp}.log`);
-      
+
       try {
         await rename(logFile, rotatedFile);
       } catch {
@@ -110,10 +112,12 @@ function runWorker(): void {
    * Flush buffer to file (async)
    */
   async function flushBuffer(): Promise<void> {
-    if (logBuffer.length === 0) return;
+    if (logBuffer.length === 0) {
+      return;
+    }
 
     const startTime = performance.now();
-    
+
     try {
       // Rotate if needed
       if (await needsRotation()) {
@@ -122,7 +126,7 @@ function runWorker(): void {
 
       // CRITICAL BUG FIX: Create copy of buffer before clearing to prevent race condition
       const entriesToFlush = logBuffer.splice(0, logBuffer.length);
-      
+
       // Batch write all logs
       const logLines = entriesToFlush.map(entry => {
         const logLine = JSON.stringify(entry);
@@ -153,12 +157,12 @@ function runWorker(): void {
     if (logBuffer.length >= maxBuffer) {
       logBuffer.shift();
     }
-    
+
     logBuffer.push(entry);
-    
+
     // Auto-flush if needed (async) - BUG FIX: Prevent concurrent flushes
     const now = Date.now();
-    if (logBuffer.length >= FLUSH_THRESHOLD || 
+    if (logBuffer.length >= FLUSH_THRESHOLD ||
         now - lastFlush > FLUSH_INTERVAL) {
       // Debounce flush calls to prevent race conditions
       lastFlush = now;
@@ -169,35 +173,35 @@ function runWorker(): void {
   // Handle messages from main thread
   parentPort?.on('message', async (message: WorkerMessage) => {
     switch (message.type) {
-      case 'log':
-        addToBuffer(message.data);
-        break;
-        
-      case 'flush':
-        await flushBuffer();
-        parentPort?.postMessage({ type: 'flushed' });
-        break;
-        
-      case 'rotate':
-        await rotateLog();
-        parentPort?.postMessage({ type: 'rotated' });
-        break;
-        
-      case 'stats':
-        parentPort?.postMessage({
-          type: 'stats',
-          data: {
-            ...stats,
-            bufferSize: logBuffer.length,
-            workerUptime: Date.now() - workerStartTime
-          }
-        });
-        break;
-        
-      case 'destroy':
-        await flushBuffer();
-        process.exit(0);
-        break;
+    case 'log':
+      addToBuffer(message.data);
+      break;
+
+    case 'flush':
+      await flushBuffer();
+      parentPort?.postMessage({ type: 'flushed' });
+      break;
+
+    case 'rotate':
+      await rotateLog();
+      parentPort?.postMessage({ type: 'rotated' });
+      break;
+
+    case 'stats':
+      parentPort?.postMessage({
+        type: 'stats',
+        data: {
+          ...stats,
+          bufferSize: logBuffer.length,
+          workerUptime: Date.now() - workerStartTime
+        }
+      });
+      break;
+
+    case 'destroy':
+      await flushBuffer();
+      process.exit(0);
+      break;
     }
   });
 
@@ -267,7 +271,7 @@ export class WorkerAsyncLogger {
       this.worker.terminate();
       this.worker = null;
     }
-    
+
     setTimeout(() => {
       if (!this.isDestroyed) {
         this.startWorker();
@@ -344,11 +348,13 @@ export class WorkerAsyncLogger {
    * Force flush buffer
    */
   async flush(): Promise<void> {
-    if (!this.worker || this.isDestroyed) return;
+    if (!this.worker || this.isDestroyed) {
+      return;
+    }
 
     return new Promise<void>((resolve) => {
       this.pendingFlushes++;
-      
+
       const messageHandler = (message: any) => {
         if (message.type === 'flushed') {
           this.pendingFlushes--;
@@ -359,7 +365,7 @@ export class WorkerAsyncLogger {
 
       this.worker!.on('message', messageHandler);
       this.sendMessage({ type: 'flush' });
-      
+
       // Timeout fallback
       setTimeout(() => {
         this.worker?.off('message', messageHandler);
@@ -395,7 +401,7 @@ export class WorkerAsyncLogger {
 
       this.worker!.on('message', messageHandler);
       this.sendMessage({ type: 'stats' });
-      
+
       setTimeout(() => {
         this.worker?.off('message', messageHandler);
         resolve({
@@ -415,7 +421,9 @@ export class WorkerAsyncLogger {
    * Rotate log file
    */
   async rotate(): Promise<void> {
-    if (!this.worker || this.isDestroyed) return;
+    if (!this.worker || this.isDestroyed) {
+      return;
+    }
 
     return new Promise<void>((resolve) => {
       const messageHandler = (message: any) => {
@@ -427,7 +435,7 @@ export class WorkerAsyncLogger {
 
       this.worker!.on('message', messageHandler);
       this.sendMessage({ type: 'rotate' });
-      
+
       setTimeout(() => {
         this.worker?.off('message', messageHandler);
         resolve();
@@ -439,17 +447,19 @@ export class WorkerAsyncLogger {
    * Destroy logger and cleanup
    */
   async destroy(): Promise<void> {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed) {
+      return;
+    }
 
     this.isDestroyed = true;
 
     if (this.worker) {
       // Flush pending logs
       await this.flush();
-      
+
       // Send destroy message
       this.sendMessage({ type: 'destroy' });
-      
+
       // Terminate worker
       await this.worker.terminate();
       this.worker = null;

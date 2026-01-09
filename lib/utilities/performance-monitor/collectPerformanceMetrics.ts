@@ -35,24 +35,26 @@ function enforceMaxInProgress(): void {
 }
 
 function startCleanupTimer(): void {
-  if (cleanupTimer) return;
-  
+  if (cleanupTimer) {
+    return;
+  }
+
   cleanupTimer = setInterval(() => {
     try {
       const now = Date.now();
       const staleIds: string[] = [];
-      
+
       // Enforce size limits before cleanup
       enforceMaxInProgress();
-      
+
       for (const [id, timestamp] of inProgress.entries()) {
         if (now - timestamp > 30000) { // 30 second timeout
           staleIds.push(id);
         }
       }
-      
+
       staleIds.forEach(id => inProgress.delete(id));
-      
+
       // If no more in-progress calls, stop the timer
       if (inProgress.size === 0 && cleanupTimer) {
         clearInterval(cleanupTimer);
@@ -105,17 +107,17 @@ function collectPerformanceMetrics(state: PerformanceState = {}, callId?: string
   // Generate unique call ID if not provided for race condition protection
   const now: number = Date.now(); // current timestamp
   const id = callId || `${now}-${Math.random().toString(36).substr(2, 9)}`;
-  
+
   // Start cleanup timer if needed
   if (inProgress.size > 0 && !cleanupTimer) {
     startCleanupTimer();
   }
-  
+
   // Check if this call is already in progress to prevent race conditions
   if (inProgress.has(id)) {
     throw new Error(`Concurrent call detected with ID: ${id}`);
   }
-  
+
   try {
     inProgress.set(id, now);
     const lastCpuUsage: NodeJS.CpuUsage = state.lastCpuUsage || process.cpuUsage(); // get previous CPU usage or initialize
@@ -132,29 +134,29 @@ function collectPerformanceMetrics(state: PerformanceState = {}, callId?: string
 
     const heapUsedPercent: any = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100; // calculate heap utilization
 
-  let activeHandles = 0; // count of active handles
-  let activeRequests = 0; // count of active requests
+    let activeHandles = 0; // count of active handles
+    let activeRequests = 0; // count of active requests
 
-  // These internal APIs are no longer available in modern Node.js
-  // Use handle counts via performance monitoring alternatives
-  try {
+    // These internal APIs are no longer available in modern Node.js
+    // Use handle counts via performance monitoring alternatives
+    try {
     // Note: In modern Node.js, these APIs are not available
     // This functionality should be replaced with performance metrics alternatives
-    activeHandles = 0; // Placeholder - requires modern implementation
-    activeRequests = 0; // Placeholder - requires modern implementation
-  } catch {
-    activeHandles = 0;
-    activeRequests = 0;
-  }
+      activeHandles = 0; // Placeholder - requires modern implementation
+      activeRequests = 0; // Placeholder - requires modern implementation
+    } catch {
+      activeHandles = 0;
+      activeRequests = 0;
+    }
 
-  let responseTime = 0; // average response time
-  if (responseTimes.length > 0) {
-    responseTime = responseTimes.reduce((sum: number, time: number) => sum + time, 0) / responseTimes.length; // calculate average
-  }
+    let responseTime = 0; // average response time
+    if (responseTimes.length > 0) {
+      responseTime = responseTimes.reduce((sum: number, time: number) => sum + time, 0) / responseTimes.length; // calculate average
+    }
 
-  const oneMinuteAgo: any = now - 60000; // timestamp one minute ago
-  const recentRequests: number[] = requestTimestamps.filter((ts: number) => ts > oneMinuteAgo); // filter to last minute
-  const throughput: any = recentRequests.length; // requests in the last minute (rolling window)
+    const oneMinuteAgo: any = now - 60000; // timestamp one minute ago
+    const recentRequests: number[] = requestTimestamps.filter((ts: number) => ts > oneMinuteAgo); // filter to last minute
+    const throughput: any = recentRequests.length; // requests in the last minute (rolling window)
 
     const result = {
       metrics: {
@@ -175,7 +177,7 @@ function collectPerformanceMetrics(state: PerformanceState = {}, callId?: string
         lastCollectionTime: now // store collection time for next CPU normalization
       }
     };
-    
+
     return result;
   } finally {
     // Always clean up the in-progress flag

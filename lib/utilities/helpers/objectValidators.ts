@@ -12,19 +12,19 @@
  */
 function isObject(value: any, options: Record<string, any> = {}) {
   const { allowEmpty = true, allowArray = false }: any = options;
-  
-  if (typeof value !== `object` || value === null) {
+
+  if (typeof value !== 'object' || value === null) {
     return false;
   }
-  
+
   if (!allowArray && Array.isArray(value)) {
     return false;
   }
-  
+
   if (value !== null && !allowEmpty && Object.keys(value).length === 0) {
     return false;
   }
-  
+
   return true;
 }
 

@@ -1,40 +1,40 @@
 /**
  * Feature Configuration Builder - Production-Ready Feature Flag Management
- * 
+ *
  * PURPOSE: Creates a comprehensive feature configuration object designed for
  * modern feature flag systems, A/B testing, and gradual rollouts. This utility
  * provides the foundation for controlled feature releases and experimentation.
- * 
+ *
  * FEATURE MANAGEMENT STRATEGY:
  * - Gradual Rollouts: Percentage-based deployment for risk mitigation
  * - Environment Awareness: Different configurations per deployment environment
  * - Dependency Tracking: Automatic validation of feature dependencies
  * - Metadata Support: Extensible configuration for complex feature needs
  * - Audit Trail: Timestamps for tracking feature lifecycle events
- * 
+ *
  * PRODUCTION USE CASES:
  * - Canary releases to small percentage of users
  * - Feature flags for emergency toggles
  * - A/B testing configuration management
  * - Environment-specific feature enablement
  * - Gradual migration from old to new implementations
- * 
+ *
  * SAFETY CONSIDERATIONS:
  * - Input validation prevents malformed feature configurations
  * - Immutable deep copies prevent runtime mutations
  * - Type safety ensures consistent data types across the system
  * - Error handling maintains system stability during configuration errors
- * 
+ *
  * @param {Object} params - Feature configuration parameters with validation
  * @returns {Object} Validated and normalized feature configuration object
- * 
+ *
  * @example
  * // Simple feature flag
  * const basicFeature = buildFeatureConfig({
  *   name: 'new-dashboard',
  *   enabled: true
  * });
- * 
+ *
  * @example
  * // Gradual rollout feature
  * const rolloutFeature = buildFeatureConfig({
@@ -44,7 +44,7 @@
  *   version: '2.1.0',
  *   environment: 'production'
  * });
- * 
+ *
  * @example
  * // Complex feature with dependencies
  * const complexFeature = buildFeatureConfig({
@@ -104,7 +104,7 @@ function buildFeatureConfig(options: FeatureConfigOptions = {}) {
 
   const timestamp: any = new Date().toISOString();
 
-try {
+  try {
     return {
       name,
       enabled,

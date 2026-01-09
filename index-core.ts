@@ -1,9 +1,9 @@
 /**
  * QGenUtils - Core Exports (Tree Shakable)
- * 
+ *
  * This is the main entry point focused on tree-shaking.
  * Import only what you need:
- * 
+ *
  * import { validateEmail, hashPassword } from 'qgenutils';
  */
 
@@ -11,7 +11,7 @@
 export { default as logger } from './lib/logger.js';
 
 // Essential validation
-export { 
+export {
   validateEmail,
   validateUrl,
   validateNumber,

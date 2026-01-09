@@ -4,7 +4,7 @@
 try {
   // Use CommonJS require to load side-effectful setup when present.
   // Wrapped to avoid top-level await and to be resilient in non-Node environments.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+
   // @ts-ignore - require may not be typed in ESM context here
   typeof require === 'function' && require('qtests/setup');
 } catch {}

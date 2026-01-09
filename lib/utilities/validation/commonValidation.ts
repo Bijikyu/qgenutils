@@ -1,6 +1,6 @@
 /**
  * Common Validation Utilities
- * 
+ *
  * Centralized validation functions to eliminate code duplication across
  * the codebase. These utilities handle common validation patterns including
  * type checking, null/undefined validation, string validation, and more.
@@ -32,20 +32,20 @@ export function isNullOrEmpty(value: any): boolean {
  */
 export function validateType(value: any, type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'function'): boolean {
   switch (type) {
-    case 'string':
-      return typeof value === 'string';
-    case 'number':
-      return typeof value === 'number' && !isNaN(value);
-    case 'boolean':
-      return typeof value === 'boolean';
-    case 'object':
-      return typeof value === 'object' && value !== null && !Array.isArray(value);
-    case 'array':
-      return Array.isArray(value);
-    case 'function':
-      return typeof value === 'function';
-    default:
-      return false;
+  case 'string':
+    return typeof value === 'string';
+  case 'number':
+    return typeof value === 'number' && !isNaN(value);
+  case 'boolean':
+    return typeof value === 'boolean';
+  case 'object':
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  case 'array':
+    return Array.isArray(value);
+  case 'function':
+    return typeof value === 'function';
+  default:
+    return false;
   }
 }
 
@@ -139,17 +139,17 @@ export function hasPrototypePollution(obj: any): boolean {
   }
 
   const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
-  
+
   for (const key of Object.keys(obj)) {
     if (dangerousKeys.includes(key)) {
       return true;
     }
-    
+
     if (typeof obj[key] === 'object' && hasPrototypePollution(obj[key])) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -164,7 +164,7 @@ export function validateEmail(email: string): boolean {
   }
 
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  
+
   return emailRegex.test(email) && email.length <= 254;
 }
 
@@ -312,7 +312,7 @@ export function validatePattern(value: any, pattern: RegExp, options: {
 
   // Convert to string and test pattern
   const strValue = String(value);
-  
+
   if (!pattern.test(strValue)) {
     throw new Error(errorMessage);
   }

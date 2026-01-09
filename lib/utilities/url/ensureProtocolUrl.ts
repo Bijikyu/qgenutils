@@ -24,7 +24,7 @@ function ensureProtocolUrl(data) {
   }
 
   const input: any = (data.url ?? '').trim();
-  
+
   if (!input) {
     return data.allowEmpty ? '' : 'https://';
   }

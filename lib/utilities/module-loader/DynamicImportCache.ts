@@ -17,10 +17,10 @@ interface DynamicImportCacheOptions {
 
 /**
  * Dynamic Import Cache Manager
- * 
+ *
  * Caches and manages dynamic import() calls to avoid redundant module loading.
  * Provides LRU eviction, timeout-based expiry, hit/miss statistics, and lifecycle helpers.
- * 
+ *
  * Features:
  * - Pre-caching of commonly used modules at startup
  * - LRU eviction when cache is full
@@ -28,7 +28,7 @@ interface DynamicImportCacheOptions {
  * - Hit/miss statistics tracking
  * - Database driver name normalization
  * - CJS/ESM interop via loadAndFlattenModule
- * 
+ *
  * EDGE CASES HANDLED:
  * - Module import failures: Graceful fallback with error logging
  * - Memory pressure: LRU eviction prevents unbounded growth
@@ -38,34 +38,34 @@ interface DynamicImportCacheOptions {
  * - Circular dependencies: Proper handling via import() promise
  * - Memory leaks: Explicit cleanup and garbage collection
  * - Process exit: Automatic interval cleanup
- * 
+ *
  * MEMORY MANAGEMENT:
  * - Bounded cache size prevents memory exhaustion
  * - LRU eviction prioritizes frequently used modules
  * - Timeout-based cleanup removes unused modules
  * - Explicit cleanup methods for manual management
  * - Statistics tracking for performance monitoring
- * 
+ *
  * PERFORMANCE CHARACTERISTICS:
  * - Cache hit: Near-instant module retrieval
  * - Cache miss: Standard dynamic import() + caching
  * - Pre-cached modules: Available without import() calls
  * - LRU operations: O(1) complexity for access/eviction
- * 
+ *
  * @example
  * ```typescript
  * // Basic usage with default settings
  * const cache = new DynamicImportCache({ maxCacheSize: 50, cacheTimeoutMs: 300000 });
  * await cache.preCacheModules();
- * 
+ *
  * // Cache a database driver
  * const redis = await cache.getModule('redis');
  * console.log(redis); // Redis client instance
- * 
+ *
  * // Check cache statistics
  * const stats = cache.getStats();
  * console.log(`Cache hit ratio: ${stats.hitRate}%`);
- * 
+ *
  * // Custom configuration
  * const productionCache = new DynamicImportCache({
  *   maxCacheSize: 200,        // Larger cache for production
@@ -73,7 +73,7 @@ interface DynamicImportCacheOptions {
  *   cleanupIntervalMs: 300000, // Cleanup every 5 minutes
  *   flattenModules: true        // Flatten CJS/ESM modules
  * });
- * 
+ *
  * // Handling cache misses
  * try {
  *   const customModule = await cache.getModule('@company/custom-module');
@@ -82,11 +82,11 @@ interface DynamicImportCacheOptions {
  *   console.error('Module not available:', error);
  *   // Handle missing module appropriately
  * }
- * 
+ *
  * // Manual cache management
  * await cache.clear(); // Clear all cached modules
  * await cache.cleanup(); // Force cleanup of expired modules
- * 
+ *
  * // Advanced usage with conditional caching
  * class ModuleManager {
  *   constructor() {
@@ -95,7 +95,7 @@ interface DynamicImportCacheOptions {
  *       cacheTimeoutMs: process.env.NODE_ENV === 'production' ? 1800000 : 300000
  *     });
  *   }
- *   
+ *
  *   async loadFeatureModule(featureName: string) {
  *     const moduleName = `@company/features/${featureName}`;
  *     try {
@@ -105,7 +105,7 @@ interface DynamicImportCacheOptions {
  *       return this.cache.getModule('@company/features/fallback');
  *     }
  *   }
- *   
+ *
  *   async preloadCriticalFeatures() {
  *     const critical = ['auth', 'user-profile', 'payment'];
  *     await Promise.all(
@@ -113,11 +113,11 @@ interface DynamicImportCacheOptions {
  *     );
  *   }
  * }
- * 
+ *
  * // Database connection pooling with cached drivers
  * class DatabasePool {
  *   private cache: DynamicImportCache;
- *   
+ *
  *   constructor() {
  *     this.cache = new DynamicImportCache({
  *       maxCacheSize: 10,
@@ -125,13 +125,13 @@ interface DynamicImportCacheOptions {
  *       flattenModules: true
  *     });
  *   }
- *   
+ *
  *   async getConnection(type: 'postgres' | 'mysql' | 'mongodb') {
  *     const driver = await this.cache.getModule(type);
  *     return new driver.Connection(process.env.DATABASE_URL);
  *   }
  * }
- * 
+ *
  * // Edge case handling
  * try {
  *   // This might fail if module is malformed
@@ -140,7 +140,7 @@ interface DynamicImportCacheOptions {
  *   // Cache automatically handles failed imports
  *   // Module is not cached, error is logged, execution continues
  *   console.warn('Module loading failed:', error.message);
- *   
+ *
  *   // Fallback to alternative implementation
  *   const stableModule = await cache.getModule('stable-module');
  * }
@@ -214,7 +214,7 @@ class DynamicImportCache {
   /**
    * Get a module from cache or load it dynamically
    * Uses LRU eviction when cache is full
-   * 
+   *
    * @param moduleName - Name of the module to load
    * @param options - Optional loading options
    * @returns Loaded module or null if unavailable
@@ -252,7 +252,7 @@ class DynamicImportCache {
     // Create loading promise atomically to prevent race conditions
     const loadingPromise = (async () => {
       let module: any;
-      
+
       if (shouldFlatten) {
         module = await loadAndFlattenModule(moduleName);
       } else {
@@ -291,11 +291,11 @@ class DynamicImportCache {
         // If theirs failed, proceed with ours
       }
     }
-    
+
     if (!existingPromise) {
       this.moduleLoading.set(cacheKey, loadingPromise);
     }
-    
+
     try {
       const result = await loadingPromise;
       return result;
@@ -310,7 +310,7 @@ class DynamicImportCache {
   /**
    * Get database-specific modules with driver name normalization
    * Maps common database type names to their npm package names
-   * 
+   *
    * @param dbType - Database type (redis, postgresql, postgres, mysql, mongodb, generic)
    * @returns Loaded database module
    */
@@ -334,7 +334,9 @@ class DynamicImportCache {
    */
   has(moduleName: string): boolean {
     const cached = this.cache.get(moduleName);
-    if (!cached) return false;
+    if (!cached) {
+      return false;
+    }
     const now = Date.now();
     return (now - cached.loadTime) < this.cacheTimeoutMs;
   }
@@ -351,7 +353,7 @@ class DynamicImportCache {
     if (this.lruTail) {
       const tailKey = this.lruTail;
       const tailModule = this.cache.get(tailKey);
-      
+
       if (tailModule) {
         // Update linked list
         if (tailModule.prev) {
@@ -365,7 +367,7 @@ class DynamicImportCache {
           this.lruHead = null;
           this.lruTail = null;
         }
-        
+
         this.cache.delete(tailKey);
       }
     }
@@ -402,7 +404,7 @@ class DynamicImportCache {
           // This was the head
           this.lruHead = cached.next || null;
         }
-        
+
         if (cached.next) {
           const nextModule = this.cache.get(cached.next);
           if (nextModule) {
@@ -412,19 +414,23 @@ class DynamicImportCache {
           // This was the tail
           this.lruTail = cached.prev || null;
         }
-        
+
         this.cache.delete(key);
       }
     });
   }
 
-// LRU management methods
+  // LRU management methods
   private moveToHead(key: string): void {
     const cached = this.cache.get(key);
-    if (!cached) return;
+    if (!cached) {
+      return;
+    }
 
     // If already at head, no action needed
-    if (this.lruHead === key) return;
+    if (this.lruHead === key) {
+      return;
+    }
 
     // Remove from current position
     if (cached.prev) {
@@ -447,16 +453,16 @@ class DynamicImportCache {
     // Add to head
     cached.prev = undefined;
     cached.next = this.lruHead || undefined;
-    
+
     if (this.lruHead) {
       const headModule = this.cache.get(this.lruHead);
       if (headModule) {
         headModule.prev = key;
       }
     }
-    
+
     this.lruHead = key;
-    
+
     if (!this.lruTail) {
       this.lruTail = key;
     }
@@ -466,20 +472,22 @@ class DynamicImportCache {
 
   private addToHead(key: string): void {
     const cached = this.cache.get(key);
-    if (!cached) return;
+    if (!cached) {
+      return;
+    }
 
     cached.prev = undefined;
     cached.next = this.lruHead || undefined;
-    
+
     if (this.lruHead) {
       const headModule = this.cache.get(this.lruHead);
       if (headModule) {
         headModule.prev = key;
       }
     }
-    
+
     this.lruHead = key;
-    
+
     if (!this.lruTail) {
       this.lruTail = key;
     }
@@ -491,7 +499,7 @@ class DynamicImportCache {
       if (this.cleanupInterval) {
         clearInterval(this.cleanupInterval);
       }
-      
+
       this.cleanupInterval = setInterval(() => {
         try {
           this.cleanup();
@@ -514,14 +522,14 @@ class DynamicImportCache {
    * Get cache statistics
    * @returns Object containing size, maxSize, hitRate, hitCount, and missCount
    */
-  getStats(): { 
-    size: number; 
-    maxSize: number; 
-    hitRate: number; 
-    hitCount: number; 
+  getStats(): {
+    size: number;
+    maxSize: number;
+    hitRate: number;
+    hitCount: number;
     missCount: number;
     cacheTimeoutMs: number;
-  } {
+    } {
     const totalRequests = this.hitCount + this.missCount;
     const hitRate = totalRequests > 0 ? (this.hitCount / totalRequests) * 100 : 0;
 

@@ -11,26 +11,26 @@ interface HashOptions {
 
 /**
  * Hash password using secure implementation
- * 
+ *
  * SECURITY NOTE: Intentionally NO CACHING of password hashes to prevent:
  * - Rainbow table attacks
- * - Timing attacks  
+ * - Timing attacks
  * - Hash leakage through memory inspection
  * - Cross-contamination between user passwords
  */
 export default async function hashPassword(password: string, options?: HashOptions): Promise<string> {
   const { saltRounds = BCRYPT_SALT_ROUNDS } = options || {};
-  
+
   try {
     // Input Validation
     if (!password || typeof password !== 'string') {
       throw new Error('Password must be a non-empty string');
     }
-    
+
     if (password.length < 8) {
       throw new Error('Password must be at least 8 characters long');
     }
-    
+
     if (password.length > 128) {
       throw new Error('Password must not exceed 128 characters');
     }
@@ -47,15 +47,15 @@ export default async function hashPassword(password: string, options?: HashOptio
     });
 
     return hash;
-    
+
   } catch (error) {
     // Secure Error Logging - No Information Disclosure
     qerrors(
-      error instanceof Error ? error : new Error(String(error)), 
-      'hashPassword', 
+      error instanceof Error ? error : new Error(String(error)),
+      'hashPassword',
       'Password hashing operation failed'
     );
-    
+
     // Generic Error Message - Prevents Information Disclosure
     throw new Error('Password hashing failed');
   }
@@ -70,7 +70,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
     if (!password || typeof password !== 'string') {
       throw new Error('Password must be a non-empty string');
     }
-    
+
     if (!hash || typeof hash !== 'string') {
       throw new Error('Hash must be a non-empty string');
     }
@@ -84,14 +84,14 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
         }
       });
     });
-    
+
   } catch (error) {
     qerrors(
-      error instanceof Error ? error : new Error(String(error)), 
-      'verifyPassword', 
+      error instanceof Error ? error : new Error(String(error)),
+      'verifyPassword',
       'Password verification failed'
     );
-    
+
     throw new Error('Password verification failed');
   }
 }

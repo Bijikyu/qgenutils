@@ -1,9 +1,9 @@
 /**
  * Exec Helper Wrapper
- * 
+ *
  * Higher-order function that wraps functions with standardized
  * error handling, logging, timeout, and retry capabilities.
- * 
+ *
  * @param {Function} fn - Function to wrap
  * @param {object} [options] - Wrapper options
  * @param {string} [options.context='Unknown'] - Execution context name
@@ -20,7 +20,9 @@
  * @returns {Function} Wrapped async function
  */
 const execHelperWrapper = (fn: any, options: any = {}): any => {
-  if (typeof fn !== 'function') throw new Error('Function to wrap must be a valid function');
+  if (typeof fn !== 'function') {
+    throw new Error('Function to wrap must be a valid function');
+  }
 
   const {
     context = 'Unknown',
@@ -36,7 +38,9 @@ const execHelperWrapper = (fn: any, options: any = {}): any => {
     logger = console
   } = options;
 
-  if (retryCount > 0 && retryDelay <= 0) throw new Error('retryDelay must be positive when retryCount > 0');
+  if (retryCount > 0 && retryDelay <= 0) {
+    throw new Error('retryDelay must be positive when retryCount > 0');
+  }
 
   const functionName: any = fn.name || 'anonymous', wrapperContext = `${context}:${functionName}`;
 
@@ -48,7 +52,9 @@ const execHelperWrapper = (fn: any, options: any = {}): any => {
 
       if (validateInput && typeof validateInput === 'function') {
         const validationResult: any = validateInput(...args);
-        if (validationResult !== true) throw new Error(`Input validation failed: ${validationResult}`);
+        if (validationResult !== true) {
+          throw new Error(`Input validation failed: ${validationResult}`);
+        }
       }
 
       let result;
@@ -62,7 +68,9 @@ const execHelperWrapper = (fn: any, options: any = {}): any => {
 
       if (validateOutput && typeof validateOutput === 'function') {
         const validationResult: any = validateOutput(result);
-        if (validationResult !== true) throw new Error(`Output validation failed: ${validationResult}`);
+        if (validationResult !== true) {
+          throw new Error(`Output validation failed: ${validationResult}`);
+        }
       }
 
       logExecution && logger.log(`[ExecHelper] Completed ${wrapperContext}`);
@@ -80,7 +88,7 @@ const execHelperWrapper = (fn: any, options: any = {}): any => {
         try {
           finalError = errorTransform(error);
         } catch (transformError) {
-          logErrors && logger.error(`[ExecHelper] Error transformation failed:`, transformError);
+          logErrors && logger.error('[ExecHelper] Error transformation failed:', transformError);
         }
       }
 
@@ -118,10 +126,14 @@ const executeWithRetry = async (fn: any, args: any, retryCount: any, retryDelay:
     } catch (error) {
       lastError = error;
 
-      if (error && typeof error === 'object' && 'statusCode' in error && 
-          (error.statusCode === 400 || error.statusCode === 401 || error.statusCode === 403)) throw error;
+      if (error && typeof error === 'object' && 'statusCode' in error &&
+          (error.statusCode === 400 || error.statusCode === 401 || error.statusCode === 403)) {
+        throw error;
+      }
 
-      if (attempt === retryCount) throw error;
+      if (attempt === retryCount) {
+        throw error;
+      }
 
       retryDelay > 0 && await new Promise(resolve => setTimeout(resolve, retryDelay));
     }

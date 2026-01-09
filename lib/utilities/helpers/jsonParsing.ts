@@ -11,12 +11,12 @@
 function safeJsonParse(jsonString: string, defaultValue: any = null): any {
   try {
     const parsed = JSON.parse(jsonString);
-    
+
     // Protect against prototype pollution
     if (parsed && typeof parsed === 'object') {
       return sanitizeObject(parsed);
     }
-    
+
     return parsed;
   } catch (error) {
     return defaultValue;
@@ -32,17 +32,17 @@ function sanitizeObject(obj: any): any {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
-  
+
   // Create a clean object without prototype chain
   const sanitized = Array.isArray(obj) ? [] : Object.create(null);
-  
+
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
       // Skip dangerous prototype properties
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
         continue;
       }
-      
+
       const value = obj[key];
       if (value && typeof value === 'object') {
         sanitized[key] = sanitizeObject(value);
@@ -51,7 +51,7 @@ function sanitizeObject(obj: any): any {
       }
     }
   }
-  
+
   return sanitized;
 }
 
@@ -64,14 +64,14 @@ function sanitizeObject(obj: any): any {
  */
 function parseAndValidateJson(jsonString: string, expectedType: string | string[] = 'object', defaultValue: any = null): any {
   const parsed = safeJsonParse(jsonString, defaultValue);
-  
+
   if (parsed === defaultValue) {
     return defaultValue;
   }
-  
+
   const expectedTypes = Array.isArray(expectedType) ? expectedType : [expectedType];
   const actualType = Array.isArray(parsed) ? 'array' : typeof parsed;
-  
+
   return expectedTypes.includes(actualType) ? parsed : defaultValue;
 }
 

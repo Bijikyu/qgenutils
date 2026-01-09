@@ -1,8 +1,8 @@
 /**
  * Create Performance Metrics Configuration
- * 
+ *
  * Creates a configuration for performance metrics collection and reporting.
- * 
+ *
  * @param {PerformanceMetricsOptions} [options] - Performance metrics options
  * @returns {PerformanceMetricsConfig} Performance metrics configuration
  */

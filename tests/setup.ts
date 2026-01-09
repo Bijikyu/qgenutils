@@ -7,5 +7,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (server) server.close();
+  if (server) {
+    server.close();
+  }
 });

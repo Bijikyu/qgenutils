@@ -20,17 +20,17 @@ function formatDateTimeWithProvider(isoString, options = {}) {
 
   try {
     const date: any = new Date(isoString);
-    
+
     if (!isValidDate(date)) {
       return 'N/A';
     }
 
     const { locale, formatOptions }: any = options;
-    
+
     if (locale || formatOptions) {
       return date.toLocaleString(locale, formatOptions);
     }
-    
+
     return date.toLocaleString();
   } catch {
     return 'N/A';

@@ -1,6 +1,6 @@
 /**
  * Common Configuration Utilities
- * 
+ *
  * Centralized configuration utilities to eliminate code duplication across
  * codebase. These utilities handle common configuration patterns including
  * default merging, validation, and builder patterns.
@@ -30,20 +30,20 @@ export function mergeConfig(
   options: MergeOptions = {}
 ): Record<string, any> {
   const { deep = false, overwrite = true, filter } = options;
-  
+
   try {
     const result = { ...defaultConfig };
-    
+
     for (const [key, userValue] of Object.entries(userConfig)) {
       // Skip if filter function returns false
       if (filter && !filter(key, userValue)) {
         continue;
       }
-      
+
       const defaultValue = result[key];
-      
+
       // Handle deep merging
-      if (deep && 
+      if (deep &&
           typeof defaultValue === 'object' && defaultValue !== null &&
           typeof userValue === 'object' && userValue !== null) {
         result[key] = mergeConfig(defaultValue, userValue, { deep, overwrite, filter });
@@ -51,7 +51,7 @@ export function mergeConfig(
         result[key] = userValue;
       }
     }
-    
+
     return result;
   } catch (error) {
     handleError(error, 'mergeConfig', 'Configuration merging failed');
@@ -84,27 +84,27 @@ export function validateConfig(
   schema: Record<string, ConfigFieldSchema>
 ): Record<string, any> {
   const result: Record<string, any> = {};
-  
+
   try {
     for (const [key, fieldSchema] of Object.entries(schema)) {
       let value = config[key];
-      
+
       // Apply default value if missing
       if (value === undefined && 'defaultValue' in fieldSchema) {
         value = (fieldSchema as any).defaultValue;
       }
-      
+
       // Check if required
       if (fieldSchema.required && (value === undefined || value === null)) {
         throw new Error(`Required configuration field '${key}' is missing`);
       }
-      
+
       // Skip validation if value is optional and missing
       if (!fieldSchema.required && (value === undefined || value === null)) {
         result[key] = value;
         continue;
       }
-      
+
       // Type validation
       if (fieldSchema.type) {
         const isValidType = validateFieldType(value, fieldSchema.type);
@@ -112,7 +112,7 @@ export function validateConfig(
           throw new Error(`Configuration field '${key}' must be of type ${fieldSchema.type}`);
         }
       }
-      
+
       // Range validation for numbers
       if (typeof value === 'number') {
         if (fieldSchema.min !== undefined && value < fieldSchema.min) {
@@ -122,30 +122,30 @@ export function validateConfig(
           throw new Error(`Configuration field '${key}' cannot exceed ${fieldSchema.max}`);
         }
       }
-      
+
       // Pattern validation for strings
       if (typeof value === 'string' && fieldSchema.pattern && !fieldSchema.pattern.test(value)) {
         throw new Error(`Configuration field '${key}' does not match required pattern`);
       }
-      
+
       // Allowed values validation
       if (fieldSchema.allowedValues && !fieldSchema.allowedValues.includes(value)) {
         throw new Error(`Configuration field '${key}' must be one of: ${fieldSchema.allowedValues.join(', ')}`);
       }
-      
+
       // Custom validator
       if (fieldSchema.validator && !fieldSchema.validator(value)) {
         throw new Error(`Configuration field '${key}' failed custom validation`);
       }
-      
+
       // Apply transformer
       if (fieldSchema.transformer) {
         value = fieldSchema.transformer(value);
       }
-      
+
       result[key] = value;
     }
-    
+
     return result;
   } catch (error) {
     handleError(error, 'validateConfig', 'Configuration validation failed');
@@ -161,18 +161,18 @@ export function validateConfig(
  */
 function validateFieldType(value: any, type: string): boolean {
   switch (type) {
-    case 'string':
-      return typeof value === 'string';
-    case 'number':
-      return typeof value === 'number' && !isNaN(value);
-    case 'boolean':
-      return typeof value === 'boolean';
-    case 'object':
-      return typeof value === 'object' && value !== null && !Array.isArray(value);
-    case 'array':
-      return Array.isArray(value);
-    default:
-      return false;
+  case 'string':
+    return typeof value === 'string';
+  case 'number':
+    return typeof value === 'number' && !isNaN(value);
+  case 'boolean':
+    return typeof value === 'boolean';
+  case 'object':
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  case 'array':
+    return Array.isArray(value);
+  default:
+    return false;
   }
 }
 
@@ -189,7 +189,7 @@ export function createConfigBuilder(
   return (userConfig: Record<string, any> = {}): Record<string, any> => {
     // Merge with defaults
     const merged = mergeConfig(defaultConfig, userConfig);
-    
+
     // Validate against schema
     return validateConfig(merged, schema);
   };
@@ -210,7 +210,7 @@ export function loadEnvironmentConfig(
   try {
     // Get environment-specific config
     const envConfig = environments[currentEnv] || {};
-    
+
     // Merge with base config
     return mergeConfig(baseConfig, envConfig);
   } catch (error) {
@@ -241,17 +241,17 @@ export async function loadFromSources(
   try {
     // Sort sources by priority (higher = higher priority)
     const sortedSources = sources.sort((a, b) => (b.priority || 0) - (a.priority || 0));
-    
+
     let mergedConfig = { ...defaultConfig };
-    
+
     for (const source of sortedSources) {
       const sourceConfig = await source.load();
-      
+
       if (sourceConfig && typeof sourceConfig === 'object') {
         mergedConfig = mergeConfig(mergedConfig, sourceConfig);
       }
     }
-    
+
     return mergedConfig;
   } catch (error) {
     handleError(error, 'loadFromSources', 'Failed to load configuration from sources');
@@ -273,7 +273,7 @@ export const CommonSchemas = {
     max: 65535,
     defaultValue: 3000
   },
-  
+
   /**
    * Host string schema
    */
@@ -283,7 +283,7 @@ export const CommonSchemas = {
     pattern: /^([a-zA-Z0-9\-\.]+)$/,
     defaultValue: 'localhost'
   },
-  
+
   /**
    * Boolean enable flag schema
    */
@@ -292,7 +292,7 @@ export const CommonSchemas = {
     required: false,
     defaultValue
   }),
-  
+
   /**
    * Timeout in milliseconds schema
    */
@@ -303,7 +303,7 @@ export const CommonSchemas = {
     max: 300000,
     defaultValue
   }),
-  
+
   /**
    * Array of strings schema
    */
@@ -313,7 +313,7 @@ export const CommonSchemas = {
     defaultValue,
     validator: (value: any) => Array.isArray(value) && value.every(item => typeof item === 'string')
   }),
-  
+
   /**
    * API key schema
    */
@@ -323,7 +323,7 @@ export const CommonSchemas = {
     pattern: /^[a-zA-Z0-9\-_]{16,}$/,
     transformer: (value: any) => typeof value === 'string' ? value.trim() : value
   },
-  
+
   /**
    * Environment schema
    */
@@ -333,7 +333,7 @@ export const CommonSchemas = {
     defaultValue: 'development',
     allowedValues: ['development', 'staging', 'production', 'test']
   },
-  
+
   /**
    * Log level schema
    */

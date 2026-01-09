@@ -1,6 +1,6 @@
 /**
  * Common Date/Time Utilities
- * 
+ *
  * Centralized date/time utilities to eliminate code duplication across
  * codebase. These utilities handle common date manipulation patterns
  * including formatting, parsing, validation, and calculations.
@@ -37,7 +37,7 @@ interface TimeDuration {
  */
 export function formatDate(date: Date, options: DateFormatOptions = {}): string {
   const { includeTime = true, locale = 'en-US', format } = options;
-  
+
   if (format) {
     // Use custom format
     return format.replace(/YYYY/g, date.getFullYear().toString())
@@ -47,7 +47,7 @@ export function formatDate(date: Date, options: DateFormatOptions = {}): string 
       .replace(/mm/g, date.getMinutes().toString().padStart(2, '0'))
       .replace(/ss/g, date.getSeconds().toString().padStart(2, '0'));
   }
-  
+
   // Use locale-specific formatting
   if (includeTime) {
     return date.toLocaleString(locale);
@@ -63,14 +63,16 @@ export function formatDate(date: Date, options: DateFormatOptions = {}): string 
  * @returns Parsed date or null
  */
 export function parseDate(dateString: string, formats: string[] = []): Date | null {
-  if (!dateString) return null;
-  
+  if (!dateString) {
+    return null;
+  }
+
   // Try built-in Date parsing first
   const date = new Date(dateString);
   if (!isNaN(date.getTime())) {
     return date;
   }
-  
+
   // Try custom formats
   const defaultFormats = [
     'YYYY-MM-DD',
@@ -79,18 +81,20 @@ export function parseDate(dateString: string, formats: string[] = []): Date | nu
     'YYYY-MM-DDTHH:mm:ss',
     'ISO8601'
   ];
-  
+
   const allFormats = formats.length > 0 ? formats : defaultFormats;
-  
+
   for (const format of allFormats) {
     try {
       const parsed = parseWithFormat(dateString, format);
-      if (parsed) return parsed;
+      if (parsed) {
+        return parsed;
+      }
     } catch {
       continue;
     }
   }
-  
+
   return null;
 }
 
@@ -109,22 +113,24 @@ function parseWithFormat(dateString: string, format: string): Date | null {
     'mm': '(\\d{2})',
     'ss': '(\\d{2})'
   };
-  
+
   let regex = format;
   for (const [key, pattern] of Object.entries(mapping)) {
     regex = regex.replace(key, pattern);
   }
-  
+
   const match = new RegExp(`^${regex}$`).exec(dateString);
-  if (!match) return null;
-  
+  if (!match) {
+    return null;
+  }
+
   const year = parseInt(match[1]);
   const month = parseInt(match[2]) - 1;
   const day = parseInt(match[3]);
   const hour = parseInt(match[4] || '0');
   const minute = parseInt(match[5] || '0');
   const second = parseInt(match[6] || '0');
-  
+
   return new Date(year, month, day, hour, minute, second);
 }
 
@@ -152,17 +158,31 @@ export function addTime(date: Date, options: {
     seconds = 0,
     milliseconds = 0
   } = options;
-  
+
   const result = new Date(date.getTime());
-  
-  if (years > 0) result.setFullYear(result.getFullYear() + years);
-  if (months > 0) result.setMonth(result.getMonth() + months);
-  if (days > 0) result.setDate(result.getDate() + days);
-  if (hours > 0) result.setHours(result.getHours() + hours);
-  if (minutes > 0) result.setMinutes(result.getMinutes() + minutes);
-  if (seconds > 0) result.setSeconds(result.getSeconds() + seconds);
-  if (milliseconds > 0) result.setMilliseconds(result.getMilliseconds() + milliseconds);
-  
+
+  if (years > 0) {
+    result.setFullYear(result.getFullYear() + years);
+  }
+  if (months > 0) {
+    result.setMonth(result.getMonth() + months);
+  }
+  if (days > 0) {
+    result.setDate(result.getDate() + days);
+  }
+  if (hours > 0) {
+    result.setHours(result.getHours() + hours);
+  }
+  if (minutes > 0) {
+    result.setMinutes(result.getMinutes() + minutes);
+  }
+  if (seconds > 0) {
+    result.setSeconds(result.getSeconds() + seconds);
+  }
+  if (milliseconds > 0) {
+    result.setMilliseconds(result.getMilliseconds() + milliseconds);
+  }
+
   return result;
 }
 
@@ -181,7 +201,7 @@ export function subtractTime(date: Date, options: {
   seconds?: number;
   milliseconds?: number;
 } = {}): Date {
-return addTime(date, {
+  return addTime(date, {
     years: -(options.years || 0),
     months: -(options.months || 0),
     days: -(options.days || 0),
@@ -200,7 +220,7 @@ return addTime(date, {
  */
 export function timeDifference(startDate: Date, endDate: Date): TimeDuration {
   const diffMs = endDate.getTime() - startDate.getTime();
-  
+
   if (diffMs < 0) {
     return {
       years: 0, months: 0, days: 0,
@@ -208,21 +228,21 @@ export function timeDifference(startDate: Date, endDate: Date): TimeDuration {
       milliseconds: 0
     };
   }
-  
+
   const seconds = Math.floor(diffMs / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  
+
   // Approximate months and years
   const monthsApprox = Math.floor(days / 30.44);
   const yearsApprox = Math.floor(monthsApprox / 12);
-  
+
   const remainingDays = days % 30.44;
   const remainingHours = hours % 24;
   const remainingMinutes = minutes % 60;
   const remainingSeconds = seconds % 60;
-  
+
   return {
     years: yearsApprox,
     months: monthsApprox % 12,
@@ -372,14 +392,16 @@ export function formatDuration(
   } = {}
 ): string {
   const { precision = 2, largestUnit = 'years', showLargestOnly = false } = options;
-  
+
   if (showLargestOnly) {
     const units = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
     const index = units.indexOf(largestUnit);
     const relevantDuration = index >= 0 ? duration : duration;
-    
+
     for (let i = 0; i < units.length; i++) {
-      if (i < index) continue;
+      if (i < index) {
+        continue;
+      }
       const unit = units[i] as keyof TimeDuration;
       const value = (relevantDuration as any)[unit];
       if (value > 0) {
@@ -388,9 +410,9 @@ export function formatDuration(
     }
     return '0';
   }
-  
+
   const parts: string[] = [];
-  
+
   if (duration.years > 0) {
     parts.push(`${duration.years}y`);
   }
@@ -410,7 +432,7 @@ export function formatDuration(
     const totalSeconds = duration.seconds + duration.milliseconds / 1000;
     parts.push(`${totalSeconds.toFixed(precision)}s`);
   }
-  
+
   return parts.join(' ');
 }
 
@@ -423,23 +445,43 @@ export function formatDuration(
 export function getRelativeTime(date: Date, baseDate: Date = new Date()): string {
   const diff = timeDifference(baseDate, date);
   const diffMs = date.getTime() - baseDate.getTime();
-  
+
   // Future dates
   if (diffMs > 0) {
-    if (diff.years > 0) return `in ${diff.years} years`;
-    if (diff.months > 0) return `in ${diff.months} months`;
-    if (diff.days > 0) return `in ${diff.days} days`;
-    if (diff.hours > 0) return `in ${diff.hours} hours`;
-    if (diff.minutes > 0) return `in ${diff.minutes} minutes`;
+    if (diff.years > 0) {
+      return `in ${diff.years} years`;
+    }
+    if (diff.months > 0) {
+      return `in ${diff.months} months`;
+    }
+    if (diff.days > 0) {
+      return `in ${diff.days} days`;
+    }
+    if (diff.hours > 0) {
+      return `in ${diff.hours} hours`;
+    }
+    if (diff.minutes > 0) {
+      return `in ${diff.minutes} minutes`;
+    }
     return `in ${diff.seconds} seconds`;
   }
-  
+
   // Past dates
-  if (diff.years > 0) return `${diff.years} years ago`;
-  if (diff.months > 0) return `${diff.months} months ago`;
-  if (diff.days > 0) return `${diff.days} days ago`;
-  if (diff.hours > 0) return `${diff.hours} hours ago`;
-  if (diff.minutes > 0) return `${diff.minutes} minutes ago`;
+  if (diff.years > 0) {
+    return `${diff.years} years ago`;
+  }
+  if (diff.months > 0) {
+    return `${diff.months} months ago`;
+  }
+  if (diff.days > 0) {
+    return `${diff.days} days ago`;
+  }
+  if (diff.hours > 0) {
+    return `${diff.hours} hours ago`;
+  }
+  if (diff.minutes > 0) {
+    return `${diff.minutes} minutes ago`;
+  }
   return `${diff.seconds} seconds ago`;
 }
 
@@ -558,11 +600,11 @@ export const DateCalculations = {
   getAge: (birthdate: Date, referenceDate: Date = new Date()) => {
     let age = referenceDate.getFullYear() - birthdate.getFullYear();
     const monthDiff = referenceDate.getMonth() - birthdate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && referenceDate.getDate() < birthdate.getDate())) {
       age--;
     }
-    
+
     return age;
   },
 
@@ -599,7 +641,7 @@ export const DateCalculations = {
     const firstDay = new Date(year, month, 0);
     const lastDay = new Date(year, month, 0);
     lastDay.setDate(0); // Last day of previous month
-    
+
     return lastDay.getDate();
   }
 };

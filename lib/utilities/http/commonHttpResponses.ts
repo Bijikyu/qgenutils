@@ -1,6 +1,6 @@
 /**
  * Common HTTP Response Utilities
- * 
+ *
  * Centralized HTTP response utilities to eliminate code duplication across
  * the codebase. These utilities handle common response patterns including
  * success responses, error responses, and standardized response formatting.
@@ -34,7 +34,7 @@ export function createSuccessResponse(data: any, options: SuccessResponseOptions
   metadata?: Record<string, any>;
 } {
   const { message, status = 200, metadata } = options;
-  
+
   return {
     success: true,
     data,
@@ -53,7 +53,7 @@ export function createSuccessResponse(data: any, options: SuccessResponseOptions
 export function sendSuccessResponse(res: Response, data: any, options: SuccessResponseOptions = {}): Response {
   const { status = 200, ...responseOptions } = options;
   const response = createSuccessResponse(data, responseOptions);
-  
+
   return res.status(status).json(response);
 }
 
@@ -64,31 +64,31 @@ export const ResponseTypes = {
   /**
    * OK response (200)
    */
-  ok: (res: Response, data: any, message?: string) => 
+  ok: (res: Response, data: any, message?: string) =>
     sendSuccessResponse(res, data, { message, status: 200 }),
 
   /**
    * Created response (201)
    */
-  created: (res: Response, data: any, message?: string) => 
+  created: (res: Response, data: any, message?: string) =>
     sendSuccessResponse(res, data, { message, status: 201 }),
 
   /**
    * Accepted response (202)
    */
-  accepted: (res: Response, data?: any, message?: string) => 
+  accepted: (res: Response, data?: any, message?: string) =>
     sendSuccessResponse(res, data || {}, { message, status: 202 }),
 
   /**
    * No Content response (204)
    */
-  noContent: (res: Response, message?: string) => 
+  noContent: (res: Response, message?: string) =>
     sendSuccessResponse(res, null, { message, status: 204 }),
 
   /**
    * Partial Content response (206)
    */
-  partialContent: (res: Response, data: any, message?: string) => 
+  partialContent: (res: Response, data: any, message?: string) =>
     sendSuccessResponse(res, data, { message, status: 206 }),
 
   /**
@@ -119,10 +119,10 @@ export const ResponseTypes = {
    * Not Found response (404)
    */
   notFound: (res: Response, resource = 'Resource') => {
-    const response = createErrorResponse({ 
-      status: 404, 
-      type: 'NOT_FOUND', 
-      message: `${resource} not found` 
+    const response = createErrorResponse({
+      status: 404,
+      type: 'NOT_FOUND',
+      message: `${resource} not found`
     });
     return res.status(404).json(response);
   },
@@ -131,9 +131,9 @@ export const ResponseTypes = {
    * Method Not Allowed response (405)
    */
   methodNotAllowed: (res: Response, allowedMethods?: string[]) => {
-    const response = createErrorResponse({ 
-      status: 405, 
-      type: 'METHOD_NOT_ALLOWED', 
+    const response = createErrorResponse({
+      status: 405,
+      type: 'METHOD_NOT_ALLOWED',
       message: 'Method not allowed',
       metadata: allowedMethods ? { allowedMethods } : undefined
     });
@@ -163,9 +163,9 @@ export const ResponseTypes = {
    * Too Many Requests response (429)
    */
   tooManyRequests: (res: Response, retryAfter?: number, message = 'Too many requests') => {
-    const response = createErrorResponse({ 
-      status: 429, 
-      type: 'TOO_MANY_REQUESTS', 
+    const response = createErrorResponse({
+      status: 429,
+      type: 'TOO_MANY_REQUESTS',
       message,
       metadata: retryAfter ? { retryAfter } : undefined
     });
@@ -210,17 +210,17 @@ export function sendValidatedResponse<T>(
   } = {}
 ): Response {
   const { successMessage, successStatus = 200 } = options;
-  
+
   const validationResult = validation(data);
-  
+
   if (!validationResult.isValid) {
     return ResponseTypes.unprocessableEntity(res, validationResult.error);
   }
-  
+
   const responseData = successHandler(data);
-  return sendSuccessResponse(res, responseData, { 
-    message: successMessage, 
-    status: successStatus 
+  return sendSuccessResponse(res, responseData, {
+    message: successMessage,
+    status: successStatus
   });
 }
 
@@ -268,22 +268,22 @@ export function sendFileResponse(
   } = {}
 ): Response {
   const { filename, contentType, cacheMaxAge = 3600, download = false } = options;
-  
+
   // Set cache headers
   if (cacheMaxAge > 0) {
     res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);
   }
-  
+
   // Set content type
   if (contentType) {
     res.set('Content-Type', contentType);
   }
-  
+
   // Set download disposition
   if (download && filename) {
     res.set('Content-Disposition', `attachment; filename="${filename}"`);
   }
-  
+
   return res.sendFile(filePath);
 }
 
@@ -304,7 +304,7 @@ export function createApiResponseHandler<T = any>(
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const result = await handler(req, res);
-      
+
       if (!res.headersSent) {
         const { successMessage, statusCode = 200 } = options;
         sendSuccessResponse(res, result, { message: successMessage, status: statusCode });
@@ -342,16 +342,16 @@ export function sendConditionalResponse(
 ): Response {
   const acceptHeader = req.get('Accept') || '';
   const contentType = acceptHeader.includes('text/html') ? 'html' :
-                     acceptHeader.includes('text/plain') ? 'text' : 'json';
-  
+    acceptHeader.includes('text/plain') ? 'text' : 'json';
+
   const selectedContent = content[contentType] || content[content.default];
-  
+
   switch (contentType) {
-    case 'html':
-      return res.type('html').send(selectedContent as string);
-    case 'text':
-      return res.type('text').send(selectedContent as string);
-    default:
-      return sendSuccessResponse(res, selectedContent);
+  case 'html':
+    return res.type('html').send(selectedContent as string);
+  case 'text':
+    return res.type('text').send(selectedContent as string);
+  default:
+    return sendSuccessResponse(res, selectedContent);
   }
 }

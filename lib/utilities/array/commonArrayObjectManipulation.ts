@@ -1,6 +1,6 @@
 /**
  * Common Array and Object Manipulation Utilities
- * 
+ *
  * Centralized array and object manipulation utilities to eliminate code duplication across
  * codebase. These utilities handle common patterns including
  * iteration, filtering, mapping, reducing, deep operations, and type checking.
@@ -287,9 +287,15 @@ export const ObjectUtils = {
    * Checks if object is empty
    */
   isEmpty: (obj: any): boolean => {
-    if (obj == null) return true;
-    if (typeof obj !== 'object') return true;
-    if (Array.isArray(obj)) return obj.length === 0;
+    if (obj == null) {
+      return true;
+    }
+    if (typeof obj !== 'object') {
+      return true;
+    }
+    if (Array.isArray(obj)) {
+      return obj.length === 0;
+    }
     return Object.keys(obj).length === 0;
   },
 
@@ -309,20 +315,32 @@ export const ComparisonUtils = {
    * Deep equality check
    */
   deepEqual: (a: any, b: any): boolean => {
-    if (a === b) return true;
-    if (typeof a !== typeof b) return false;
-    if (a == null || b == null) return a === b;
+    if (a === b) {
+      return true;
+    }
+    if (typeof a !== typeof b) {
+      return false;
+    }
+    if (a == null || b == null) {
+      return a === b;
+    }
     if (Array.isArray(a) && Array.isArray(b)) {
-      if (a.length !== b.length) return false;
+      if (a.length !== b.length) {
+        return false;
+      }
       for (let i = 0; i < a.length; i++) {
-        if (!ComparisonUtils.deepEqual(a[i], b[i])) return false;
+        if (!ComparisonUtils.deepEqual(a[i], b[i])) {
+          return false;
+        }
       }
       return true;
     }
     if (typeof a === 'object' && typeof b === 'object') {
       const aKeys = Object.keys(a);
       const bKeys = Object.keys(b);
-      if (aKeys.length !== bKeys.length) return false;
+      if (aKeys.length !== bKeys.length) {
+        return false;
+      }
       for (const key of aKeys) {
         if (!b.hasOwnProperty(key) || !ComparisonUtils.deepEqual(a[key], (b as any)[key])) {
           return false;
@@ -337,22 +355,36 @@ export const ComparisonUtils = {
    * Shallow equality check
    */
   shallowEqual: (a: any, b: any): boolean => {
-    if (a === b) return true;
-    if (typeof a !== typeof b) return false;
-    if (a == null || b == null) return a === b;
+    if (a === b) {
+      return true;
+    }
+    if (typeof a !== typeof b) {
+      return false;
+    }
+    if (a == null || b == null) {
+      return a === b;
+    }
     if (Array.isArray(a) && Array.isArray(b)) {
-      if (a.length !== b.length) return false;
+      if (a.length !== b.length) {
+        return false;
+      }
       for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return false;
+        if (a[i] !== b[i]) {
+          return false;
+        }
       }
       return true;
     }
     if (typeof a === 'object' && typeof b === 'object') {
       const aKeys = Object.keys(a);
       const bKeys = Object.keys(b);
-      if (aKeys.length !== bKeys.length) return false;
+      if (aKeys.length !== bKeys.length) {
+        return false;
+      }
       for (const key of aKeys) {
-        if (!b.hasOwnProperty(key) || a[key] !== (b as any)[key]) return false;
+        if (!b.hasOwnProperty(key) || a[key] !== (b as any)[key]) {
+          return false;
+        }
       }
       return true;
     }
@@ -429,7 +461,9 @@ export const ConversionUtils = {
    * Converts array-like to array
    */
   toArray: <T>(value: ArrayLike<T> | null | undefined): T[] => {
-    if (value == null) return [];
+    if (value == null) {
+      return [];
+    }
     return Array.from(value);
   },
 
@@ -466,8 +500,12 @@ export const ConversionUtils = {
    * Converts value to boolean safely
    */
   toBoolean: (value: any, defaultValue: boolean = false): boolean => {
-    if (value === null || value === undefined) return defaultValue;
-    if (typeof value === 'boolean') return value;
+    if (value === null || value === undefined) {
+      return defaultValue;
+    }
+    if (typeof value === 'boolean') {
+      return value;
+    }
     return Boolean(value);
   }
 };

@@ -1,6 +1,6 @@
 /**
  * Integration Tests for QGenUtils Core Functionality
- * 
+ *
  * Tests real-world usage scenarios and integration between utilities
  */
 
@@ -24,8 +24,8 @@ describe('QGenUtils Integration Tests', () => {
     });
 
     it('should hash and verify passwords', async () => {
-      const { hash, salt } = await hashPassword('testPassword123!');
-      const isValid = await verifyPassword('testPassword123!', hash, salt);
+      const hash = await hashPassword('testPassword123!');
+      const isValid = await verifyPassword('testPassword123!', hash);
       expect(isValid).toBe(true);
     });
   });
@@ -37,13 +37,13 @@ describe('QGenUtils Integration Tests', () => {
         callCount++;
         return n * 2;
       };
-      
+
       const memoizedFn = memoize(expensiveFn);
-      
+
       // First call should execute function
       expect(memoizedFn(5)).toBe(10);
       expect(callCount).toBe(1);
-      
+
       // Second call should use cache
       expect(memoizedFn(5)).toBe(10);
       expect(callCount).toBe(1);
@@ -54,10 +54,10 @@ describe('QGenUtils Integration Tests', () => {
       const debouncedFn = debounce(() => {
         callCount++;
       }, 100);
-      
+
       debouncedFn();
       debouncedFn();
-      
+
       // Should only call once due to debouncing
       setTimeout(() => {
         expect(callCount).toBe(1);
@@ -91,7 +91,7 @@ describe('QGenUtils Integration Tests', () => {
         headerName: 'X-API-Key',
         required: true
       });
-      
+
       expect(typeof validator).toBe('function');
     });
 
@@ -100,7 +100,7 @@ describe('QGenUtils Integration Tests', () => {
         windowMs: 60000,
         max: 100
       });
-      
+
       expect(typeof limiter).toBe('function');
     });
   });

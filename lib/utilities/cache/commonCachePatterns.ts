@@ -1,6 +1,6 @@
 /**
  * Common Caching Utilities
- * 
+ *
  * Simplified cache implementation for performance optimization
  */
 
@@ -62,7 +62,7 @@ export function createCachedFunction<T extends (...args: any[]) => any>(
   return ((...args: Parameters<T>) => {
     const key = JSON.stringify(args);
     const cached = cache.get(key);
-    
+
     if (cached !== undefined) {
       return cached;
     }

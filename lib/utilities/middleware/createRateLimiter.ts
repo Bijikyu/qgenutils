@@ -1,10 +1,10 @@
 /**
  * Rate Limiter Middleware Factory
- * 
+ *
  * Creates Express-compatible middleware for rate limiting requests using
  * the express-rate-limit npm module which provides robust, battle-tested
  * rate limiting with multiple store options and comprehensive features.
- * 
+ *
  * @param {object} config - Rate limiter configuration
  * @param {number} [config.windowMs=60000] - Window duration in ms (express-rate-limit naming)
  * @param {number} [config.max=100] - Max requests per window (express-rate-limit naming)
@@ -98,7 +98,7 @@ function createRateLimiter(config: RateLimiterConfig = {}) {
   // Handle legacy option names for backward compatibility
   const finalWindowMs: number = (expressRateLimitConfig.windowMs ?? expressRateLimitConfig.durationMs ?? 60000) as number;
   const finalMax: number = (expressRateLimitConfig.max ?? expressRateLimitConfig.points ?? 100) as number;
-  
+
   // Validate configuration
   if (typeof finalWindowMs !== 'number' || finalWindowMs <= 0) {
     throw new Error('Rate limiter windowMs must be a positive number');

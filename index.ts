@@ -1,12 +1,12 @@
 /**
  * QGenUtils - Security-First Node.js Utility Library
- * 
- * A focused utility library providing authentication, validation, security, 
- * performance, and common operations. Designed as a lightweight alternative 
+ *
+ * A focused utility library providing authentication, validation, security,
+ * performance, and common operations. Designed as a lightweight alternative
  * to heavy npm packages with comprehensive error handling and fail-closed security patterns.
- * 
+ *
  * This library supports tree-shaking - import only what you need!
- * 
+ *
  * @version 1.0.3
  * @author Q
  */
@@ -26,7 +26,7 @@ export { default as validateConfigValue } from './lib/utilities/secure-config/va
 export { default as buildSecureConfig } from './lib/utilities/secure-config/buildSecureConfig.js';
 
 // Validation utilities - most important
-export { 
+export {
   validateEmail,
   validateUrl,
   validateNumber,
@@ -37,7 +37,7 @@ export {
   isNullOrEmpty
 } from './lib/utilities/validation/commonValidation.js';
 
-// Configuration utilities  
+// Configuration utilities
 export { default as buildFeatureConfig } from './lib/utilities/config/buildFeatureConfig.js';
 export { default as buildSecurityConfig } from './lib/utilities/config/buildSecurityConfig.js';
 export { default as buildValidationConfig } from './lib/utilities/config/buildValidationConfig.js';
@@ -85,7 +85,7 @@ export { default as sanitizeString } from './lib/utilities/string/sanitizeString
 export { default as formatFileSize } from './lib/utilities/file/formatFileSize.js';
 
 // Legacy functions (for compatibility)
-export { 
+export {
   requireFields,
   checkPassportAuth,
   hasGithubStrategy,

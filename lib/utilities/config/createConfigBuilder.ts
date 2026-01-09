@@ -8,29 +8,29 @@ interface ConfigBuilderOptions {
 
 /**
  * Creates a generic configuration builder with validation and defaults
- * 
+ *
  * This function implements a flexible configuration builder pattern that
  * provides schema-based validation, default value application, and data
  * transformation capabilities. It's designed for creating type-safe,
  * validated configuration objects for applications and services.
- * 
+ *
  * ## Validation Pattern Explanation
- * 
+ *
  * The configuration builder uses a declarative validation approach:
  * 1. **Schema Definition**: Define defaults, validators, and transformers
  * 2. **Input Application**: Apply user input with transformation
  * 3. **Validation**: Run field-level validation with context
  * 4. **Error Handling**: Collect and report validation errors
  * 5. **Output Generation**: Return validated, transformed configuration
- * 
+ *
  * ## Transformer Usage Examples
- * 
+ *
  * Transformers are applied before validation and can be used for:
  * - **Type Coercion**: Convert strings to numbers, booleans, etc.
  * - **Data Sanitization**: Trim whitespace, normalize values
  * - **Format Standardization**: Ensure consistent data formats
  * - **Value Mapping**: Map enum values to internal representations
- * 
+ *
  * @param {Object} schema - Configuration schema definition
  * @param {Object} schema.defaults - Default values for configuration fields
  * @param {Object} schema.validators - Validation functions for each field
@@ -39,9 +39,9 @@ interface ConfigBuilderOptions {
  * @param {boolean} [options.deepClone=true] - Whether to deep clone objects to prevent mutation
  * @param {boolean} [options.addTimestamps=true] - Whether to add createdAt/updatedAt timestamps
  * @param {Function} [options.errorHandler=null] - Custom error handler for validation failures
- * 
+ *
  * @returns {Function} Configuration builder function that takes input options and returns validated config
- * 
+ *
  * @example
  * // Basic configuration builder
  * const buildDatabaseConfig = createConfigBuilder({
@@ -63,14 +63,14 @@ interface ConfigBuilderOptions {
  *     maxConnections: (val) => Number(val)
  *   }
  * });
- * 
+ *
  * const config = buildDatabaseConfig({
  *   host: 'db.example.com',
  *   port: '5432',
  *   ssl: 'true',
  *   maxConnections: '20'
  * });
- * 
+ *
  * @example
  * // Advanced configuration with custom error handling
  * const buildApiConfig = createConfigBuilder({
@@ -97,12 +97,12 @@ interface ConfigBuilderOptions {
  *     return { error: error.message, input };
  *   }
  * });
- * 
+ *
  * @throws {Error} When schema is not provided or is invalid
  * @throws {ValidationError} When validation fails (if no error handler provided)
  */
 function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
-  const { 
+  const {
     deepClone = true,
     addTimestamps = true,
     errorHandler = null
@@ -130,10 +130,10 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
         if (transformers[key] && typeof transformers[key] === 'function') {
           try {
             config[key] = transformers[key](value);
-} catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      throw new Error(`Transform error for field '${key}': ${errorMessage}`);
-    }
+          } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            throw new Error(`Transform error for field '${key}': ${errorMessage}`);
+          }
         } else {
           config[key] = value;
         }
@@ -147,10 +147,10 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
             if (!isValid) {
               throw new Error(`Validation failed for field '${key}'`);
             }
-} catch (err) {
-      const typedError = err instanceof Error ? err : new Error(String(err));
-      throw new Error(`Validation error for field '${key}': ${typedError.message}`);
-    }
+          } catch (err) {
+            const typedError = err instanceof Error ? err : new Error(String(err));
+            throw new Error(`Validation error for field '${key}': ${typedError.message}`);
+          }
         }
       }
 
@@ -174,14 +174,14 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
 
 /**
  * Creates an enhanced configuration builder with built-in validation helpers
- * 
+ *
  * This function extends the basic config builder with a comprehensive set
  * of pre-built validation functions and transformers for common data types
  * and validation patterns. It eliminates the need to write boilerplate
  * validation code for standard use cases.
- * 
+ *
  * ## Built-in Validation Helpers
- * 
+ *
  * ### Type Validators
  * - `required`: Ensures value is present and not empty
  * - `string`: Validates string type
@@ -189,44 +189,44 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
  * - `boolean`: Validates boolean type
  * - `array`: Validates array type
  * - `object`: Validates object type (excluding arrays)
- * 
+ *
  * ### Format Validators
  * - `email`: Validates email format using regex
  * - `url`: Validates URL format using URL constructor
  * - `pattern(regex)`: Validates against custom regex pattern
  * - `enum(values)`: Validates value is in allowed set
- * 
+ *
  * ### Numeric Validators
  * - `range(min, max)`: Validates number is within range
  * - `positive`: Validates number is greater than 0
  * - `nonNegative`: Validates number is >= 0
  * - `percentage`: Validates number is between 0-100
- * 
+ *
  * ### String Validators
  * - `minLength(length)`: Validates minimum string length
  * - `maxLength(length)`: Validates maximum string length
- * 
+ *
  * ## Built-in Transformers
- * 
+ *
  * ### Type Coercion
  * - `string`: Converts any value to string
  * - `number`: Converts to number (throws if invalid)
  * - `boolean`: Converts to boolean
  * - `array`: Wraps non-array values in array
- * 
+ *
  * ### String Manipulation
  * - `trim`: Trims whitespace from strings
  * - `lowercase`: Converts to lowercase
  * - `uppercase`: Converts to uppercase
- * 
+ *
  * ### Data Operations
  * - `clone`: Deep clones value using JSON serialization
- * 
+ *
  * @param {Object} schema - Configuration schema with custom validators/transformers
  * @param {Object} [options={}] - Builder options (same as createConfigBuilder)
- * 
+ *
  * @returns {Function} Enhanced configuration builder with built-in helpers
- * 
+ *
  * @example
  * // Using built-in validators
  * const buildUserConfig = createEnhancedConfigBuilder({
@@ -250,7 +250,7 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
  *     active: ['boolean']
  *   }
  * });
- * 
+ *
  * @example
  * // Complex validation with multiple rules
  * const buildServerConfig = createEnhancedConfigBuilder({
@@ -275,7 +275,7 @@ function createConfigBuilder(schema: any, options: ConfigBuilderOptions = {}) {
  *     timeout: ['number']
  *   }
  * });
- * 
+ *
  * @example
  * // Custom validation with built-in helpers
  * const buildApiConfig = createEnhancedConfigBuilder({
@@ -330,16 +330,22 @@ function createEnhancedConfigBuilder(schema, options = {}) {
   // Common transformers
   const transformers = {
     string: (value) => {
-      if (value === null || value === undefined) return '';
+      if (value === null || value === undefined) {
+        return '';
+      }
       return String(value);
     },
     number: (value) => {
       const num = Number(value);
-      if (!Number.isFinite(num)) throw new Error('Invalid number');
+      if (!Number.isFinite(num)) {
+        throw new Error('Invalid number');
+      }
       return num;
     },
     boolean: (value) => {
-      if (value === null || value === undefined) return false;
+      if (value === null || value === undefined) {
+        return false;
+      }
       return Boolean(value);
     },
     array: (value) => Array.isArray(value) ? value : [value],
@@ -361,41 +367,41 @@ function createEnhancedConfigBuilder(schema, options = {}) {
 
 /**
  * Creates a field schema definition for individual configuration fields
- * 
+ *
  * This function provides a structured way to define field-level validation,
  * transformation, and default value rules. It's particularly useful when
  * building complex configuration schemas with field-specific requirements.
- * 
+ *
  * ## Field Configuration Structure
- * 
+ *
  * Each field can have:
  * - **Default Value**: Fallback value when not provided
  * - **Validation Rules**: Array of validation functions or helper names
  * - **Transformation Rules**: Array of transformation functions or helper names
  * - **Required Flag**: Whether the field must have a non-empty value
- * 
+ *
  * ## Validation Rule Format
- * 
+ *
  * Validation rules can be specified as:
  * - **Function**: Custom validation function `(value, config) => boolean`
  * - **String**: Built-in validator name (from enhanced builder)
  * - **Array**: Built-in validator with parameters `['range', 0, 100]`
- * 
+ *
  * ## Transformation Rule Format
- * 
+ *
  * Transformation rules follow the same pattern:
  * - **Function**: Custom transformer function `(value) => transformedValue`
  * - **String**: Built-in transformer name
  * - **Array**: Built-in transformer with parameters
- * 
+ *
  * @param {Object} fieldConfig - Field configuration object
  * @param {*} fieldConfig.default - Default value for the field
  * @param {Array<Function|string>} [fieldConfig.validate=[]] - Validation rules array
  * @param {Array<Function|string>} [fieldConfig.transform=[]] - Transformation rules array
  * @param {boolean} [fieldConfig.required=false] - Whether field is required
- * 
+ *
  * @returns {Object} Field schema object with validator and transformer functions
- * 
+ *
  * @example
  * // Simple required field
  * const nameField = createFieldSchema({
@@ -404,7 +410,7 @@ function createEnhancedConfigBuilder(schema, options = {}) {
  *   validate: ['string', ['minLength', 2]],
  *   transform: ['trim']
  * });
- * 
+ *
  * @example
  * // Numeric field with range validation
  * const ageField = createFieldSchema({
@@ -413,7 +419,7 @@ function createEnhancedConfigBuilder(schema, options = {}) {
  *   validate: ['number', ['range', 18, 120]],
  *   transform: ['number']
  * });
- * 
+ *
  * @example
  * // Email field with custom validation
  * const emailField = createFieldSchema({
@@ -432,7 +438,7 @@ function createEnhancedConfigBuilder(schema, options = {}) {
  *   ],
  *   transform: ['trim', 'lowercase']
  * });
- * 
+ *
  * @example
  * // Optional field with conditional validation
  * const phoneField = createFieldSchema({
@@ -447,7 +453,7 @@ function createEnhancedConfigBuilder(schema, options = {}) {
  *   ],
  *   transform: ['trim']
  * });
- * 
+ *
  * @returns {Object} Schema object with:
  * - `default`: Default value
  * - `validator`: Compiled validation function
@@ -485,7 +491,7 @@ function createFieldSchema(fieldConfig) {
 
   const transformer = (value: any): any => {
     let result = value;
-    
+
     for (const rule of transform) {
       if (typeof rule === 'function') {
         try {
@@ -508,25 +514,25 @@ function createFieldSchema(fieldConfig) {
 
 /**
  * Builds a complete configuration schema from field definitions
- * 
+ *
  * This function processes an object of field definitions (created with
  * createFieldSchema) and compiles them into a complete schema that
  * can be used with createConfigBuilder. It extracts defaults, validators,
  * and transformers from each field definition.
- * 
+ *
  * ## Schema Compilation Process
- * 
+ *
  * 1. **Field Processing**: Iterate through each field definition
  * 2. **Default Extraction**: Collect default values for each field
  * 3. **Validator Compilation**: Compile field validators into schema validators
  * 4. **Transformer Compilation**: Compile field transformers into schema transformers
  * 5. **Schema Assembly**: Combine all components into final schema object
- * 
+ *
  * ## Field Definition Object Structure
- * 
+ *
  * The input should be an object where keys are field names and values
  * are field configurations created by createFieldSchema:
- * 
+ *
  * ```javascript
  * {
  *   fieldName: createFieldSchema({
@@ -538,9 +544,9 @@ function createFieldSchema(fieldConfig) {
  *   anotherField: createFieldSchema({...})
  * }
  * ```
- * 
+ *
  * ## Generated Schema Structure
- * 
+ *
  * The output schema has the following structure:
  * ```javascript
  * {
@@ -558,11 +564,11 @@ function createFieldSchema(fieldConfig) {
  *   }
  * }
  * ```
- * 
+ *
  * @param {Object} fieldDefinitions - Object mapping field names to field schema definitions
- * 
+ *
  * @returns {Object} Complete schema object with defaults, validators, and transformers
- * 
+ *
  * @example
  * // Define field schemas
  * const fieldDefinitions = {
@@ -591,13 +597,13 @@ function createFieldSchema(fieldConfig) {
  *     transform: ['boolean']
  *   })
  * };
- * 
+ *
  * // Build complete schema
  * const schema = buildSchema(fieldDefinitions);
- * 
+ *
  * // Create config builder
  * const buildUserConfig = createConfigBuilder(schema);
- * 
+ *
  * @example
  * // Using with enhanced builder
  * const enhancedFieldDefinitions = {
@@ -620,10 +626,10 @@ function createFieldSchema(fieldConfig) {
  *     transform: ['number']
  *   })
  * };
- * 
+ *
  * const schema = buildSchema(enhancedFieldDefinitions);
  * const buildApiConfig = createEnhancedConfigBuilder(schema);
- * 
+ *
  * @throws {Error} When field definitions contain invalid field schemas
  */
 function buildSchema(fieldDefinitions) {
@@ -633,18 +639,18 @@ function buildSchema(fieldDefinitions) {
 
   for (const [fieldName, fieldConfig] of Object.entries(fieldDefinitions)) {
     const schema: any = createFieldSchema(fieldConfig);
-    
+
     if (schema.default !== undefined) {
       defaults[fieldName] = schema.default;
     }
-    
+
     validators[fieldName] = schema.validator;
-    
-     if (schema.transformer) {
-        transformers[fieldName] = schema.transformer;
-      } else if (schema.transformers && schema.transformers[fieldName]) {
-        transformers[fieldName] = schema.transformers[fieldName];
-      }
+
+    if (schema.transformer) {
+      transformers[fieldName] = schema.transformer;
+    } else if (schema.transformers && schema.transformers[fieldName]) {
+      transformers[fieldName] = schema.transformers[fieldName];
+    }
   }
 
   return { defaults, validators, transformers };

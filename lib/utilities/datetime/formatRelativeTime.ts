@@ -18,7 +18,7 @@ function formatRelativeTime(isoString: string, timeProvider?: { now: () => Date 
 
   try {
     const date = parseISO(isoString);
-    
+
     if (!isValid(date)) {
       return 'N/A';
     }

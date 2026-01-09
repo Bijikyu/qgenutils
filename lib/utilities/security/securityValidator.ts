@@ -1,6 +1,6 @@
 /**
  * Security Validation and Audit Utilities
- * 
+ *
  * Comprehensive security validation functions for input validation,
  * security audits, and vulnerability prevention.
  */
@@ -68,26 +68,26 @@ function validateSecurity(data: any, validationOptions: {
     sanitize = true,
     checkInjections = true
   } = validationOptions;
-  
+
   const result: SecurityValidationResult = {
     isValid: true,
     errors: [],
     warnings: [],
     riskLevel: 'low'
   };
-  
+
   // Check required fields
   if (required && (data === null || data === undefined || data === '')) {
     result.isValid = false;
     result.errors.push('Field is required');
     result.riskLevel = 'medium';
   }
-  
+
   // Handle null/undefined for optional fields
   if (!required && (data === null || data === undefined)) {
     return result;
   }
-  
+
   // Type validation
   if (type) {
     const validationResult = validateType(data, type);
@@ -98,7 +98,7 @@ function validateSecurity(data: any, validationOptions: {
       return result;
     }
   }
-  
+
   // Length validation for strings
   if (type === 'string') {
     const str = String(data);
@@ -107,20 +107,20 @@ function validateSecurity(data: any, validationOptions: {
       result.errors.push(`Input exceeds maximum length of ${maxLength}`);
       result.riskLevel = 'medium';
     }
-    
+
     if (str.length < minLength) {
       result.isValid = false;
       result.errors.push(`Input is below minimum length of ${minLength}`);
       result.riskLevel = 'low';
     }
-    
+
     // Pattern validation
     if (pattern && !pattern.test(str)) {
       result.isValid = false;
       result.errors.push('Input does not match required pattern');
       result.riskLevel = 'medium';
     }
-    
+
     // Optimized injection detection with cached patterns
     if (checkInjections) {
       // Fast regex checks first
@@ -136,7 +136,7 @@ function validateSecurity(data: any, validationOptions: {
         result.warnings.push('Input contains potentially dangerous content');
         result.riskLevel = 'medium';
       }
-      
+
       // Only run expensive detection if fast patterns pass
       if (result.isValid && !detectSqlInjection(str)) {
         result.isValid = false;
@@ -148,7 +148,7 @@ function validateSecurity(data: any, validationOptions: {
         result.riskLevel = 'critical';
       }
     }
-    
+
     // Sanitization
     if (sanitize && result.isValid) {
       try {
@@ -159,7 +159,7 @@ function validateSecurity(data: any, validationOptions: {
       }
     }
   }
-  
+
   // Object validation for prototype pollution
   if (type === 'object' && typeof data === 'object' && data !== null) {
     if (hasPrototypePollution(data)) {
@@ -168,7 +168,7 @@ function validateSecurity(data: any, validationOptions: {
       result.riskLevel = 'critical';
     }
   }
-  
+
   return result;
 }
 
@@ -180,25 +180,25 @@ function validateSecurity(data: any, validationOptions: {
  */
 function validateType(data: any, type: string): { isValid: boolean; error?: string } {
   switch (type) {
-    case 'string':
-      return { isValid: typeof data === 'string' };
-    case 'number':
-      return { isValid: typeof data === 'number' && !isNaN(data) };
-    case 'email':
-      return { isValid: typeof data === 'string' && EMAIL_REGEX.test(data) };
-    case 'url':
-      try {
-        new URL(String(data));
-        return { isValid: true };
-      } catch {
-        return { isValid: false, error: 'Invalid URL format' };
-      }
-    case 'object':
-      return { isValid: typeof data === 'object' && data !== null && !Array.isArray(data) };
-    case 'array':
-      return { isValid: Array.isArray(data) };
-    default:
-      return { isValid: false, error: 'Unknown validation type' };
+  case 'string':
+    return { isValid: typeof data === 'string' };
+  case 'number':
+    return { isValid: typeof data === 'number' && !isNaN(data) };
+  case 'email':
+    return { isValid: typeof data === 'string' && EMAIL_REGEX.test(data) };
+  case 'url':
+    try {
+      new URL(String(data));
+      return { isValid: true };
+    } catch {
+      return { isValid: false, error: 'Invalid URL format' };
+    }
+  case 'object':
+    return { isValid: typeof data === 'object' && data !== null && !Array.isArray(data) };
+  case 'array':
+    return { isValid: Array.isArray(data) };
+  default:
+    return { isValid: false, error: 'Unknown validation type' };
   }
 }
 
@@ -214,13 +214,13 @@ function hasPrototypePollution(obj: any): boolean {
       if (DANGEROUS_KEYS_SET.has(key)) {
         return true;
       }
-      
+
       if (typeof obj[key] === 'object' && hasPrototypePollution(obj[key])) {
         return true;
       }
     }
   }
-  
+
   return false;
 }
 
@@ -236,7 +236,7 @@ function auditConfiguration(config: Record<string, any>): SecurityValidationResu
     warnings: [],
     riskLevel: 'low'
   };
-  
+
   // Check for dangerous configuration values - optimized with pre-compiled patterns
   for (const [key, value] of Object.entries(config)) {
     if (typeof value === 'string') {
@@ -250,14 +250,14 @@ function auditConfiguration(config: Record<string, any>): SecurityValidationResu
         }
       }
     }
-    
+
     // Check for hardcoded secrets
     if (typeof value === 'string' && isHardcodedSecret(key, value)) {
       result.warnings.push(`Potential hardcoded secret detected in: ${key}`);
       result.riskLevel = 'medium';
     }
   }
-  
+
   return result;
 }
 
@@ -272,15 +272,15 @@ function isHardcodedSecret(key: string, value: string): boolean {
     'password', 'secret', 'key', 'token', 'api_key', 'private_key',
     'passphrase', 'credential', 'auth', 'certificate'
   ];
-  
-  const hasSecretKey = secretKeys.some(secretKey => 
+
+  const hasSecretKey = secretKeys.some(secretKey =>
     key.toLowerCase().includes(secretKey)
   );
-  
+
   if (!hasSecretKey) {
     return false;
   }
-  
+
   // Check for common secret patterns
   const secretPatterns = [
     /^[A-Za-z0-9+/]{40,}={0,2}$/, // Base64 encoded
@@ -289,7 +289,7 @@ function isHardcodedSecret(key: string, value: string): boolean {
     /^sk-[a-zA-Z0-9]{48}$/, // Stripe-like
     /^ghp_[a-zA-Z0-9]{36}$/, // GitHub-like
   ];
-  
+
   return secretPatterns.some(pattern => pattern.test(value));
 }
 
@@ -316,28 +316,28 @@ function validateFileUpload(file: {
     allowedExtensions = [],
     scanContent = false
   } = options;
-  
+
   const result: SecurityValidationResult = {
     isValid: true,
     errors: [],
     warnings: [],
     riskLevel: 'low'
   };
-  
+
   // Size validation
   if (file.size > maxSize) {
     result.isValid = false;
     result.errors.push(`File size exceeds maximum allowed size of ${maxSize} bytes`);
     result.riskLevel = 'medium';
   }
-  
+
   // File type validation
   if (allowedTypes.length > 0 && !allowedTypes.includes(file.type)) {
     result.isValid = false;
     result.errors.push(`File type ${file.type} is not allowed`);
     result.riskLevel = 'medium';
   }
-  
+
   // Extension validation
   const extension = file.name.split('.').pop()?.toLowerCase();
   if (allowedExtensions.length > 0 && (!extension || !allowedExtensions.includes(extension))) {
@@ -345,42 +345,42 @@ function validateFileUpload(file: {
     result.errors.push(`File extension .${extension} is not allowed`);
     result.riskLevel = 'medium';
   }
-  
+
   // Dangerous file extensions
   const dangerousExtensions = [
     'exe', 'bat', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js', 'jar',
     'php', 'asp', 'aspx', 'jsp', 'cgi', 'sh', 'ps1', 'py', 'rb'
   ];
-  
+
   if (extension && dangerousExtensions.includes(extension)) {
     result.isValid = false;
     result.errors.push(`Dangerous file extension: .${extension}`);
     result.riskLevel = 'high';
   }
-  
+
   // Filename validation
   const dangerousNames = [
     '..', '.htaccess', 'web.config', '.env', 'config', 'password',
     'secret', 'key', 'private', 'admin', 'root'
   ];
-  
+
   const lowerName = file.name.toLowerCase();
   if (dangerousNames.some(name => lowerName.includes(name))) {
     result.warnings.push('Filename contains potentially dangerous keywords');
     result.riskLevel = 'medium';
   }
-  
+
   // Content scanning (basic)
   if (scanContent && file.content) {
     const contentStr = file.content.toString('utf8', 0, Math.min(1024, file.content.length));
-    
+
     if (detectSqlInjection(contentStr) || detectCommandInjection(contentStr)) {
       result.isValid = false;
       result.errors.push('File content contains potentially malicious code');
       result.riskLevel = 'critical';
     }
   }
-  
+
   return result;
 }
 
@@ -413,7 +413,7 @@ function generateSecurityReport(auditData: {
     }>,
     recommendations: [] as string[]
   };
-  
+
   // Audit configurations
   if (auditData.configurations) {
     auditData.configurations.forEach((config, index) => {
@@ -426,7 +426,7 @@ function generateSecurityReport(auditData: {
           location: `configuration[${index}]`
         });
       });
-      
+
       audit.warnings.forEach(warning => {
         report.issues.push({
           type: 'warning',
@@ -437,26 +437,26 @@ function generateSecurityReport(auditData: {
       });
     });
   }
-  
+
   // Calculate overall risk - optimized single pass
   let criticalIssues = 0;
   let highIssues = 0;
   let mediumIssues = 0;
-  
+
   for (const issue of report.issues) {
     switch (issue.severity) {
-      case 'critical':
-        criticalIssues++;
-        break;
-      case 'high':
-        highIssues++;
-        break;
-      case 'medium':
-        mediumIssues++;
-        break;
+    case 'critical':
+      criticalIssues++;
+      break;
+    case 'high':
+      highIssues++;
+      break;
+    case 'medium':
+      mediumIssues++;
+      break;
     }
   }
-  
+
   if (criticalIssues > 0) {
     report.overallRisk = 'critical';
   } else if (highIssues > 0) {
@@ -464,24 +464,24 @@ function generateSecurityReport(auditData: {
   } else if (mediumIssues > 0) {
     report.overallRisk = 'medium';
   }
-  
+
   // Generate recommendations
   if (criticalIssues > 0) {
     report.recommendations.push('CRITICAL: Address critical security vulnerabilities immediately');
   }
-  
+
   if (highIssues > 0) {
     report.recommendations.push('HIGH: Review and fix high-severity security issues');
   }
-  
+
   if (mediumIssues > 0) {
     report.recommendations.push('MEDIUM: Implement additional security measures for medium-risk issues');
   }
-  
+
   if (report.issues.length === 0) {
     report.recommendations.push('No security issues detected. Continue following security best practices.');
   }
-  
+
   return report;
 }
 

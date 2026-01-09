@@ -1,16 +1,16 @@
 /**
  * JSDoc Template Utilities for Consistent Documentation
- * 
+ *
  * PURPOSE: Provides standardized JSDoc templates and documentation helpers
  * to ensure consistent API documentation across all utility functions.
- * 
+ *
  * IMPLEMENTATION STRATEGY:
  * - Create reusable JSDoc templates for common function patterns
  * - Standardize parameter and return value documentation
  * - Provide consistent error handling documentation
  * - Maintain comprehensive example documentation
  * - Support TypeScript-specific documentation
- * 
+ *
  * USAGE PATTERNS:
  * - Standardize utility function documentation
  * - Consistent parameter descriptions and types
@@ -20,7 +20,7 @@
 
 /**
  * JSDoc template for utility validation functions
- * 
+ *
  * @param {string} input - Input value to validate
  * @param {string} fieldName - Name of the field being validated (for error messages)
  * @param {Object} [options] - Validation options
@@ -28,14 +28,14 @@
  * @param {string} [options.message] - Custom error message
  * @returns {string|null} Error message or null if valid
  * @throws Never throws - always returns string or null
- * 
+ *
  * @example
  * // Basic usage
  * const error = validateFunction(input, 'fieldName');
  * if (error) {
  *   console.error('Validation failed:', error);
  * }
- * 
+ *
  * @example
  * // With options
  * const error = validateFunction(input, 'fieldName', {
@@ -62,17 +62,17 @@ export const validationFunctionTemplate = `
 
 /**
  * JSDoc template for utility transformation functions
- * 
+ *
  * @param {any} input - Input value to transform
  * @param {Object} [options] - Transformation options
  * @returns {any} Transformed value
  * @throws Never throws - returns safe fallback value on error
- * 
+ *
  * @example
  * // Basic transformation
  * const result = transformFunction(input);
  * console.log('Transformed:', result);
- * 
+ *
  * @example
  * // With options
  * const result = transformFunction(input, { option: 'value' });
@@ -93,19 +93,19 @@ export const transformationFunctionTemplate = `
 
 /**
  * JSDoc template for utility format functions
- * 
+ *
  * @param {any} input - Input value to format
  * @param {Object} [options] - Formatting options
  * @param {string} [options.format='default'] - Default format to use
  * @param {string} [options.locale] - Locale for formatting
  * @returns {string} Formatted string
  * @throws Never throws - returns safe fallback string on error
- * 
+ *
  * @example
  * // Basic formatting
  * const formatted = formatFunction(input);
  * console.log('Formatted:', formatted);
- * 
+ *
  * @example
  * // With custom format
  * const formatted = formatFunction(input, { format: 'custom' });
@@ -126,19 +126,19 @@ export const formatFunctionTemplate = `
 
 /**
  * JSDoc template for utility generator functions
- * 
+ *
  * @param {Object} [options] - Generator options
  * @param {string} [options.prefix=''] - Prefix for generated values
  * @param {number} [options.length=10] - Length of generated values
  * @param {string} [options.charset] - Character set to use
  * @returns {string} Generated value
  * @throws Never throws - returns safe fallback value on error
- * 
+ *
  * @example
  * // Basic generation
  * const value = generateFunction();
  * console.log('Generated:', value);
- * 
+ *
  * @example
  * // With options
  * const value = generateFunction({ prefix: 'test_', length: 20 });
@@ -158,23 +158,23 @@ export const generatorFunctionTemplate = `
 
 /**
  * JSDoc template for utility configuration functions
- * 
+ *
  * @param {Object} config - Configuration object
  * @param {string} config.name - Configuration name
  * @param {any} config.value - Configuration value
  * @param {Object} [options] - Additional options
  * @returns {Object} Processed configuration
  * @throws Never throws - returns safe default config on error
- * 
+ *
  * @example
  * // Basic configuration
  * const config = configFunction({ name: 'test', value: true });
  * console.log('Config:', config);
- * 
+ *
  * @example
  * // With options
- * const config = configFunction({ name: 'test', value: true }, { 
- *   validate: true 
+ * const config = configFunction({ name: 'test', value: true }, {
+ *   validate: true
  * });
  */
 export const configFunctionTemplate = `
@@ -193,7 +193,7 @@ export const configFunctionTemplate = `
 
 /**
  * Generates standardized JSDoc for utility functions
- * 
+ *
  * @param type - Type of utility function
  * @param functionName - Name of the function
  * @param description - Brief description of function purpose
@@ -243,15 +243,15 @@ export function generateJSDoc(
 
   // Add return value
   jsdoc += ` * @returns {${returns.type}} ${returns.description}\n`;
-  
+
   // Add error handling note
-  jsdoc += ` * @throws Never throws - returns safe fallback value on error\n`;
+  jsdoc += ' * @throws Never throws - returns safe fallback value on error\n';
 
   // Add examples
   if (examples && examples.length > 0) {
     jsdoc += ' * \n';
     examples.forEach((example, index) => {
-      jsdoc += ` * @example\n`;
+      jsdoc += ' * @example\n';
       jsdoc += ` * ${example}\n`;
     });
   }
@@ -262,7 +262,7 @@ export function generateJSDoc(
 
 /**
  * Creates parameter object for JSDoc generation
- * 
+ *
  * @param name - Parameter name
  * @param type - Parameter type
  * @param description - Parameter description
@@ -286,7 +286,7 @@ export function createJSDocParam(
 
 /**
  * Creates return value object for JSDoc generation
- * 
+ *
  * @param type - Return type
  * @param description - Return value description
  * @returns Return value object for JSDoc generation

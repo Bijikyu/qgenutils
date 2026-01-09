@@ -9,7 +9,7 @@
  */
 function safeJsonStringify(value, defaultValue = '{}', replacerOptions = {}) {
   const { space = null, replacer = null }: any = replacerOptions;
-  
+
   try {
     if (space !== null || replacer !== null) {
       return JSON.stringify(value, replacer, space);

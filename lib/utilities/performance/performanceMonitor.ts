@@ -1,9 +1,9 @@
 /**
  * Performance Monitoring and Optimization Utility
- * 
+ *
  * PURPOSE: Provides comprehensive performance monitoring with metrics collection,
  * bottleneck detection, and automated optimization suggestions for scalable applications.
- * 
+ *
  * MONITORING FEATURES:
  * - Real-time performance metrics collection
  * - Memory usage tracking and leak detection
@@ -226,8 +226,10 @@ class PerformanceMonitor {
     // This reduces average search time from O(n) to O(1) for recent alerts
     for (let i = this.alerts.length - 1; i >= 0; i--) {
       const a = this.alerts[i];
-      if (a.timestamp < oneMinuteAgo) break; // Early exit - alerts are chronological
-      if (a.type === alert.type && 
+      if (a.timestamp < oneMinuteAgo) {
+        break;
+      } // Early exit - alerts are chronological
+      if (a.type === alert.type &&
           a.severity === alert.severity) {
         recentAlert = a;
         break;
@@ -237,7 +239,7 @@ class PerformanceMonitor {
     // Only add alert if no duplicate found in recent timeframe
     if (!recentAlert) {
       this.alerts.push(alert);
-      
+
       // Log alert for monitoring and debugging
       qerrors(
         new Error(alert.message),
@@ -262,7 +264,7 @@ class PerformanceMonitor {
     // Convert CPU time from microseconds to seconds for percentage calculation
     const totalMicrosec = cpuUsage.user + cpuUsage.system;
     const totalSec = totalMicrosec / 1000000;
-    
+
     // PERFORMANCE: Cap at 100% to prevent unrealistic values
     // Calculate percentage based on monitoring interval duration
     return Math.min(100, (totalSec / this.MONITORING_INTERVAL) * 100);
@@ -339,10 +341,10 @@ class PerformanceMonitor {
     currentMetrics: PerformanceMetrics | null;
     alerts: PerformanceAlert[];
     recommendations: string[];
-  } {
+    } {
     const activeAlerts = this.getActiveAlerts();
     const recommendations = this.getRecommendations();
-    
+
     let averageMemoryUsage = 0;
     let averageCpuUsage = 0;
 

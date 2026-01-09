@@ -1,10 +1,10 @@
 /**
  * URL Protocol Normalization Utility
- * 
+ *
  * PURPOSE: Ensures URLs have proper protocols with comprehensive validation
  * and normalization. This utility handles various URL formats and provides
  * consistent protocol enforcement for security and compatibility.
- * 
+ *
  * WHY: Protocol normalization is crucial for:
  * - Security: Preventing protocol-relative URLs that can be exploited
  * - Consistency: Ensuring all URLs use the same protocol scheme
@@ -28,10 +28,10 @@ type ProtocolResult = {
 
 /**
  * Normalizes URL while preserving trailing slash behavior
- * 
+ *
  * This helper function maintains the original URL's trailing slash
  * characteristics while ensuring proper protocol formatting.
- * 
+ *
  * @param input - Original input string
  * @param parsed - Parsed URL object
  * @returns Normalized URL string
@@ -55,39 +55,49 @@ const normalizePreservingNoTrailingSlash = (input: string, parsed: URL): string 
 
 /**
  * Normalizes protocol string to consistent format
- * 
+ *
  * This function cleans up protocol strings by removing trailing
  * characters and validating against protocol naming rules.
- * 
+ *
  * @param protocol - Protocol string to normalize
  * @param fallback - Fallback protocol if invalid
  * @returns Normalized protocol string
  */
 const normalizeProtocol = (protocol: any, fallback: string): string => {
   // Validate input type
-  if (typeof protocol !== 'string') return fallback;
-  
+  if (typeof protocol !== 'string') {
+    return fallback;
+  }
+
   // Clean up protocol string
   let normalized = protocol.trim().toLowerCase();
-  if (!normalized) return fallback;
-  
+  if (!normalized) {
+    return fallback;
+  }
+
   // Remove common protocol suffixes
-  if (normalized.endsWith('://')) normalized = normalized.slice(0, -3);
-  if (normalized.endsWith(':')) normalized = normalized.slice(0, -1);
-  
+  if (normalized.endsWith('://')) {
+    normalized = normalized.slice(0, -3);
+  }
+  if (normalized.endsWith(':')) {
+    normalized = normalized.slice(0, -1);
+  }
+
   // Validate against protocol naming rules (RFC 3986)
-  if (!/^[a-z][a-z0-9+.-]*$/.test(normalized)) return fallback;
-  
+  if (!/^[a-z][a-z0-9+.-]*$/.test(normalized)) {
+    return fallback;
+  }
+
   return normalized;
 };
 
 /**
  * Ensures URL has proper protocol with comprehensive validation
- * 
+ *
  * This function validates and normalizes URLs to ensure they have
  * appropriate protocols. It handles various edge cases including
  * protocol-relative URLs, malformed URLs, and unsupported protocols.
- * 
+ *
  * @param url - URL to validate and normalize
  * @param protocol - Protocol to enforce (default: 'https')
  * @returns ProtocolResult with processed URL and metadata
@@ -117,7 +127,7 @@ const ensureProtocol = (url: any, protocol: string = 'https'): ProtocolResult =>
     // Prepend https:// protocol for URLs without it to allow parsing
     const urlToParse = trimmedUrl.includes('://') ? trimmedUrl : `https://${trimmedUrl}`;
     const parsedUrl = new URL(urlToParse);
-    
+
     // Define allowed protocols for security
     const allowedProtocols = new Set(['http:', 'https:', 'ftp:', 'ftps:']);
 

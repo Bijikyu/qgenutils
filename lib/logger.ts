@@ -1,11 +1,11 @@
 /**
  * Winston logger configuration with async error handling and race condition prevention
- * 
+ *
  * This logger setup demonstrates several important patterns:
  * 1. Async module loading with graceful fallback for optional dependencies
  * 2. Race condition prevention between async directory creation and transport initialization
  * 3. Dual transport strategy (console + rotating file) with independent error handling
- * 
+ *
  * The async qerrors loading allows the logger to work even when the qerrors module
  * is not available, while the race condition handling ensures file transports
  * don't fail due to missing directories during initialization.
@@ -35,14 +35,16 @@ let logDirReady = false;
 
 /**
  * Async directory creation with idempotent protection
- * 
+ *
  * This function ensures the log directory exists while preventing race conditions:
  * - Uses a flag to prevent multiple concurrent directory creation attempts
  * - Handles errors gracefully using the async-loaded qerrors module
  * - Is called immediately but not awaited to avoid blocking logger initialization
  */
 const ensureLogDirectory = async (): Promise<void> => {
-  if (logDirReady) return;
+  if (logDirReady) {
+    return;
+  }
   try {
     await fs.promises.mkdir(logDir, { recursive: true });
     logDirReady = true;
@@ -74,7 +76,7 @@ if (winstonAny.transports?.Console) {
 
 /**
  * Race condition prevention for file transport initialization
- * 
+ *
  * Critical pattern: Since ensureLogDirectory() is async and not awaited,
  * we must synchronously ensure the directory exists before creating
  * the file transport. Without this, consumers can hit a race condition
@@ -104,7 +106,7 @@ try {
 
 /**
  * Main logger instance with comprehensive formatting
- * 
+ *
  * Format chain explanation:
  * - timestamp: Adds ISO timestamp to all log entries
  * - errors({ stack: true }): Ensures Error objects are serialized with stack traces

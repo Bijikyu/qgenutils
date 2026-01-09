@@ -19,12 +19,12 @@ function roundToDecimals(value, decimals = 2) {
  * @returns {Object} Memory usage data with percentages
  */
 function calculateMemoryMetrics(memoryUsage) {
-  const heapUsedPercent = memoryUsage.heapTotal > 0 
-    ? (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100 
+  const heapUsedPercent = memoryUsage.heapTotal > 0
+    ? (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100
     : 0;
 
-  const externalPercent = memoryUsage.total > 0 
-    ? (memoryUsage.external / memoryUsage.total) * 100 
+  const externalPercent = memoryUsage.total > 0
+    ? (memoryUsage.external / memoryUsage.total) * 100
     : 0;
 
   return {

@@ -15,7 +15,9 @@
 const maskString = (value: any, options: any = {}) => (!value || typeof value !== 'string') ? '[REDACTED]' : (() => {
   const visibleStart: any = options.visibleStart ?? 4, visibleEnd = options.visibleEnd ?? 4, maskChar = options.maskChar || '*';
   const minLength: any = visibleStart + visibleEnd + 1;
-  if (value.length <= minLength) return '[REDACTED]';
+  if (value.length <= minLength) {
+    return '[REDACTED]';
+  }
   const start: any = value.slice(0, visibleStart), end = value.slice(-visibleEnd);
   const maskedLength: any = value.length - visibleStart - visibleEnd;
   const masked: any = maskChar.repeat(Math.min(maskedLength, 12));

@@ -6,140 +6,97 @@ Analyze and address the following test failures:
 
 ### Output:
 ```
-  ● QGenUtils Integration Tests › Security Integration › should validate email format
-
-    TypeError: (0 , _validateEmail.validateEmail) is not a function
-
-      20 |   describe('Security Integration', () => {
-      21 |     it('should validate email format', () => {
-    > 22 |       const result = validateEmail('user@example.com');
-         |                                   ^
-      23 |       expect(result).toBe(true);
-      24 |     });
-      25 |
-
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:22:35)
-
   ● QGenUtils Integration Tests › Security Integration › should hash and verify passwords
 
-    TypeError: (0 , _hashPassword.hashPassword) is not a function
+    expect(received).toBe(expected) // Object.is equality
 
-      25 |
-      26 |     it('should hash and verify passwords', async () => {
-    > 27 |       const { hash, salt } = await hashPassword('testPassword123!');
-         |                                                ^
+    Expected: true
+    Received: false
+
+      27 |       const { hash, salt } = await hashPassword('testPassword123!');
       28 |       const isValid = await verifyPassword('testPassword123!', hash, salt);
-      29 |       expect(isValid).toBe(true);
+    > 29 |       expect(isValid).toBe(true);
+         |                       ^
       30 |     });
+      31 |   });
+      32 |
 
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:27:48)
-
-  ● QGenUtils Integration Tests › Performance Integration › should memoize expensive functions
-
-    TypeError: (0 , _memoize.memoize) is not a function
-
-      39 |       };
-      40 |       
-    > 41 |       const memoizedFn = memoize(expensiveFn);
-         |                                 ^
-      42 |       
-      43 |       // First call should execute function
-      44 |       expect(memoizedFn(5)).toBe(10);
-
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:41:33)
-
-  ● QGenUtils Integration Tests › Performance Integration › should debounce function calls
-
-    TypeError: (0 , _debounce.debounce) is not a function
-
-      52 |     it('should debounce function calls', (done) => {
-      53 |       let callCount = 0;
-    > 54 |       const debouncedFn = debounce(() => {
-         |                                   ^
-      55 |         callCount++;
-      56 |       }, 100);
-      57 |       
-
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:54:35)
-
-  ● QGenUtils Integration Tests › Utility Integration › should format date time properly
-
-    TypeError: (0 , _formatDateTime.formatDateTime) is not a function
-
-      69 |   describe('Utility Integration', () => {
-      70 |     it('should format date time properly', () => {
-    > 71 |       const result = formatDateTime('2023-12-25T10:30:00.000Z');
-         |                                    ^
-      72 |       expect(result).toHaveProperty('formatted');
-      73 |       expect(typeof result.formatted).toBe('string');
-      74 |     });
-
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:71:36)
-
-  ● QGenUtils Integration Tests › Utility Integration › should ensure protocol in URLs
-
-    TypeError: (0 , _ensureProtocol.ensureProtocol) is not a function
-
-      75 |
-      76 |     it('should ensure protocol in URLs', () => {
-    > 77 |       const result = ensureProtocol('example.com');
-         |                                    ^
-      78 |       expect(result).toHaveProperty('processed');
-      79 |       expect(result.processed).toBe('https://example.com');
-      80 |     });
-
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:77:36)
+      at Object.toBe (tests/integration/core-functionality.test.js:29:23)
 
   ● QGenUtils Integration Tests › Utility Integration › should format file sizes
 
-    TypeError: (0 , _formatFileSize.formatFileSize) is not a function
+    expect(received).toBe(expected) // Object.is equality
 
-      81 |
+    Expected: "1.00 KB"
+    Received: {"bytes": 1024, "formatted": "1.0 KB", "size": 1, "unit": "KB", "unitIndex": 1}
+
       82 |     it('should format file sizes', () => {
-    > 83 |       const result = formatFileSize(1024);
-         |                                    ^
-      84 |       expect(result).toBe('1.00 KB');
+      83 |       const result = formatFileSize(1024);
+    > 84 |       expect(result).toBe('1.00 KB');
+         |                      ^
       85 |     });
       86 |   });
+      87 |
 
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:83:36)
+      at Object.toBe (tests/integration/core-functionality.test.js:84:22)
 
   ● QGenUtils Integration Tests › Middleware Integration › should create API key validator
 
-    TypeError: (0 , _createApiKeyValidator.createApiKeyValidator) is not a function
+    createApiKeyValidator requires an apiKey in config
 
-      88 |   describe('Middleware Integration', () => {
-      89 |     it('should create API key validator', () => {
-    > 90 |       const validator = createApiKeyValidator({
-         |                                              ^
-      91 |         headerName: 'X-API-Key',
-      92 |         required: true
-      93 |       });
+      51 | function createApiKeyValidator(config: ApiKeyValidatorConfig) {
+      52 |   if (!config.apiKey) { // validate required configuration
+    > 53 |     throw new Error('createApiKeyValidator requires an apiKey in config');
+         |           ^
+      54 |   }
+      55 |
+      56 |   const {
 
+      at createApiKeyValidator (lib/utilities/middleware/createApiKeyValidator.ts:53:11)
       at Object.<anonymous> (tests/integration/core-functionality.test.js:90:46)
-
-  ● QGenUtils Integration Tests › Middleware Integration › should create rate limiter
-
-    TypeError: (0 , _createRateLimiter.createRateLimiter) is not a function
-
-       97 |
-       98 |     it('should create rate limiter', () => {
-    >  99 |       const limiter = createRateLimiter({
-          |                                        ^
-      100 |         windowMs: 60000,
-      101 |         max: 100
-      102 |       });
-
-      at Object.<anonymous> (tests/integration/core-functionality.test.js:99:40)
 
 ```
 
-### Duration: 3031ms
+### Duration: 3618ms
+
+---
+
+## Failed Test 2: /home/runner/workspace/lib/logger.test.js
+
+### Output:
+```
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module qtests/setup mapped as:
+    /home/runner/workspace/node_modules/qtests/dist/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^qtests\/(.*)$/": "/home/runner/workspace/node_modules/qtests/dist/$1"
+      },
+      "resolver": undefined
+    }
+
+    > 1 | require('qtests/setup');
+        | ^
+      2 | const qtests = require('qtests');
+      3 | const winston = require('winston');
+      4 | const DailyRotateFile = require('winston-daily-rotate-file');
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/resolver.js:759:17)
+      at Object.require (lib/logger.test.js:1:1)
+
+```
+
+### Duration: 0ms
 
 ---
 
 ## Summary
 
-- Total failed tests: 1
-- Failed test files: /home/runner/workspace/tests/integration/core-functionality.test.js
-- Generated: 2026-01-09T11:13:16.881Z
+- Total failed tests: 2
+- Failed test files: /home/runner/workspace/tests/integration/core-functionality.test.js, /home/runner/workspace/lib/logger.test.js
+- Generated: 2026-01-09T17:50:46.667Z

@@ -1,11 +1,11 @@
 /**
  * Convert Milliseconds to Cron Expression
- * 
+ *
  * Converts a millisecond interval to a cron expression.
  * Supports intervals from seconds to days.
- * 
+ *
  * Cron format: second minute hour day month weekday
- * 
+ *
  * @param {number} ms - Milliseconds to convert (must be positive)
  * @returns {string} Cron expression
  * @throws {Error} If ms is not a positive number

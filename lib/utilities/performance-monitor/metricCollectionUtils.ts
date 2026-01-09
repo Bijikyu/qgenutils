@@ -18,17 +18,25 @@ function createPerformanceState(initialState: any = {}) {
 
   return {
     getState: () => ({ ...state }),
-    setState: (newState: any) => { state = { ...state, ...newState }; },
+    setState: (newState: any) => {
+      state = { ...state, ...newState };
+    },
     updateResponseTime: (time: number) => {
       state.responseTimes.push(time);
       if (state.responseTimes.length > 100) {
         state.responseTimes = state.responseTimes.slice(-100);
       }
     },
-    incrementRequestCount: () => { state.requestCount++; },
-    updateCpuUsage: () => { state.lastCpuUsage = process.cpuUsage(); },
+    incrementRequestCount: () => {
+      state.requestCount++;
+    },
+    updateCpuUsage: () => {
+      state.lastCpuUsage = process.cpuUsage();
+    },
     getAverageResponseTime: () => {
-      if (state.responseTimes.length === 0) return 0;
+      if (state.responseTimes.length === 0) {
+        return 0;
+      }
       const sum = state.responseTimes.reduce((a, b) => a + b, 0);
       return sum / state.responseTimes.length;
     },

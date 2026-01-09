@@ -1,6 +1,6 @@
 /**
  * QGenUtils - Focused Tree-Shakable Exports
- * 
+ *
  * This version enables tree-shaking by using named exports only
  * and avoiding barrel exports that bundle the entire library.
  */
@@ -9,7 +9,7 @@
 export { default as logger } from './lib/logger.js';
 
 // Validation utilities - most important
-export { 
+export {
   validateEmail,
   validateUrl,
   validateNumber,
@@ -71,7 +71,7 @@ export { default as formatFileSize } from './lib/utilities/file/formatFileSize.j
 export { default as createMinHeap } from './lib/utilities/data-structures/MinHeap.js';
 
 // Legacy functions (for compatibility)
-export { 
+export {
   requireFields,
   checkPassportAuth,
   hasGithubStrategy,

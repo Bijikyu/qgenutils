@@ -1,10 +1,10 @@
 /**
  * Security Headers Middleware Factory
- * 
+ *
  * Creates Express-compatible middleware for comprehensive security headers
  * using the helmet npm module which provides 15+ security middleware
  * functions with sensible defaults and extensive customization.
- * 
+ *
  * @param {object} [config] - Helmet configuration options
  * @param {boolean} [config.contentSecurityPolicy=true] - Enable CSP
  * @param {boolean} [config.crossOriginEmbedderPolicy=true] - Enable COEP
@@ -32,65 +32,65 @@ function createSecurityHeaders(config: any = {}) {
     // Content Security Policy - Prevent XSS and data injection
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for compatibility
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"],
-        fontSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        mediaSrc: ["'self'"],
-        frameSrc: ["'none'"],
-        workerSrc: ["'self'"],
-        childSrc: ["'none'"],
-        formAction: ["'self'"],
-        frameAncestors: ["'none'"],
-        baseUri: ["'self'"],
-        manifestSrc: ["'self'"],
+        defaultSrc: ['\'self\''],
+        styleSrc: ['\'self\'', '\'unsafe-inline\''], // Allow inline styles for compatibility
+        scriptSrc: ['\'self\''],
+        imgSrc: ['\'self\'', 'data:', 'https:'],
+        connectSrc: ['\'self\''],
+        fontSrc: ['\'self\''],
+        objectSrc: ['\'none\''],
+        mediaSrc: ['\'self\''],
+        frameSrc: ['\'none\''],
+        workerSrc: ['\'self\''],
+        childSrc: ['\'none\''],
+        formAction: ['\'self\''],
+        frameAncestors: ['\'none\''],
+        baseUri: ['\'self\''],
+        manifestSrc: ['\'self\''],
         upgradeInsecureRequests: []
       }
     },
-    
+
     // Cross-Origin Embedder Policy - Control cross-origin embeds
     crossOriginEmbedderPolicy: true,
-    
+
     // Cross-Origin Opener Policy - Control cross-origin window access
     crossOriginOpenerPolicy: true,
-    
+
     // Cross-Origin Resource Policy - Control cross-origin resource sharing
-    crossOriginResourcePolicy: { policy: "same-site" },
-    
+    crossOriginResourcePolicy: { policy: 'same-site' },
+
     // DNS Prefetch Control - Control browser DNS prefetching
     dnsPrefetchControl: true,
-    
+
     // Frameguard - Prevent clickjacking
     frameguard: { action: 'deny' },
-    
+
     // Hide Powered By - Remove Express signature
     hidePoweredBy: true,
-    
+
     // HSTS - Force HTTPS connections
     hsts: {
       maxAge: 31536000, // 1 year
       includeSubDomains: true,
       preload: true
     },
-    
+
     // IE No Open - Prevent IE from executing downloads in context of site
     ieNoOpen: true,
-    
+
     // No Sniff - Prevent MIME-type sniffing
     noSniff: true,
-    
+
     // Origin Agent Cluster - Restrict origin isolation
     originAgentCluster: true,
-    
+
     // Permitted Cross Domain Policies - Restrict Adobe Flash cross-domain policies
     permittedCrossDomainPolicies: false,
-    
+
     // Referrer Policy - Control referrer information leakage
-    referrerPolicy: { policy: "no-referrer" },
-    
+    referrerPolicy: { policy: 'no-referrer' },
+
     // XSS Filter - Enable XSS filter (deprecated but kept for legacy browser support)
     xssFilter: true
   };

@@ -18,13 +18,13 @@ function createJsonUtils(defaults: Record<string, any> = {}) {
     stringifyDefault = '{}',
     cloneDefault = null
   }: Record<string, any> = defaults;
-  
+
   return {
-    parse: (jsonString: string, defaultValue = parseDefault) => 
+    parse: (jsonString: string, defaultValue = parseDefault) =>
       jsonParsing.safeJsonParse(jsonString, defaultValue),
-    stringify: (value: any, defaultValue = stringifyDefault, options = {}) => 
+    stringify: (value: any, defaultValue = stringifyDefault, options = {}) =>
       jsonStringification.safeJsonStringify(value, defaultValue, options),
-    clone: (value: any, defaultValue = cloneDefault) => 
+    clone: (value: any, defaultValue = cloneDefault) =>
       jsonManipulation.safeDeepClone(value, defaultValue),
     isValid: jsonParsing.isValidJson,
     getSize: jsonSizeUtils.getJsonSize

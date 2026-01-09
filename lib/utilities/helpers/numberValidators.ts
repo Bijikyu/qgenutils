@@ -12,19 +12,19 @@
  */
 function isNumber(value: any, options: Record<string, any> = {}) {
   const { allowNaN = false, allowInfinity = false }: any = options;
-  
-  if (typeof value !== `number`) {
+
+  if (typeof value !== 'number') {
     return false;
   }
-  
+
   if (!allowNaN && isNaN(value)) {
     return false;
   }
-  
+
   if (!allowInfinity && (value === Infinity || value === -Infinity)) {
     return false;
   }
-  
+
   return true;
 }
 

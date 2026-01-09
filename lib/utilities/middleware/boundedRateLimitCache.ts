@@ -51,7 +51,7 @@ class BoundedRateLimitCache<K, V> {
   // Efficient cleanup with batched operations
   cleanup(predicate: (key: K, value: V) => boolean): number {
     const toDelete: K[] = [];
-    
+
     for (const [key, value] of this.cache) {
       if (predicate(key, value)) {
         toDelete.push(key);

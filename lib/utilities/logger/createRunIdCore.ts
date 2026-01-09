@@ -22,7 +22,7 @@ function createRunIdCore(prefix, executionId, timestampProvider) {
   }
 
   const ts: any = timestampProvider ? timestampProvider() : Date.now();
-  
+
   if (timestampProvider) {
     return `${safePrefix}-${ts}`;
   }

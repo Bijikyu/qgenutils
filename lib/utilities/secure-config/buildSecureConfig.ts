@@ -16,22 +16,26 @@ import convict from 'convict'; // robust config validation
  *   NODE_ENV: { format: ['development', 'production'], default: 'development' }
  * });
  */
-const buildSecureConfig = (schema: any, env: any, overrides: any = {}): any => { 
+const buildSecureConfig = (schema: any, env: any, overrides: any = {}): any => {
   // SECURITY: Input validation to prevent schema injection attacks
   // Ensures schema is a proper object and not maliciously crafted
-  if (!schema || typeof schema !== 'object') throw new Error('Schema is required and must be an object');
+  if (!schema || typeof schema !== 'object') {
+    throw new Error('Schema is required and must be an object');
+  }
 
   // Initialize convict with schema for type-safe configuration
   const config: any = convict(schema), envOverrides = {};
-  
+
   // SECURITY: Safe environment variable extraction
   // Only loads environment variables that are defined in the schema
   // This prevents arbitrary environment variable injection
-  for (const key of Object.keys(schema)) env[key] !== undefined && (envOverrides[key] = env[key]);
+  for (const key of Object.keys(schema)) {
+    env[key] !== undefined && (envOverrides[key] = env[key]);
+  }
 
   // Load configuration in priority order:
   // 1. Schema defaults (lowest priority)
-  // 2. Environment variables (medium priority) 
+  // 2. Environment variables (medium priority)
   // 3. Explicit overrides (highest priority)
   config.load(envOverrides);
   config.load(overrides);

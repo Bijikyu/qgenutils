@@ -17,34 +17,34 @@ import { qerrors } from 'qerrors';
  */
 function sendErrorResponse(res, options: any = {}) {
   try {
-  const {
-    status = 400,
-    type = 'ERROR',
-    message = 'Request failed',
-    field = null,
-    metadata = null
-  } = options;
+    const {
+      status = 400,
+      type = 'ERROR',
+      message = 'Request failed',
+      field = null,
+      metadata = null
+    } = options;
 
-  const payload = {
-    success: false,
-    error: {
-      type,
-      message,
-      ...(field && { field }),
-      ...(metadata && { metadata })
-    }
-  };
+    const payload = {
+      success: false,
+      error: {
+        type,
+        message,
+        ...(field && { field }),
+        ...(metadata && { metadata })
+      }
+    };
 
-  return res.status(status).json(payload);
+    return res.status(status).json(payload);
   } catch (error) {
     qerrors(error instanceof Error ? error : new Error(String(error)), 'sendErrorResponse', `Error response creation failed for status: ${(options as any)?.status || 400}`);
-  return res.status(500).json({
-    success: false,
-    error: {
-      type: 'INTERNAL_ERROR',
-      message: 'Internal server error'
-    }
-  });
+    return res.status(500).json({
+      success: false,
+      error: {
+        type: 'INTERNAL_ERROR',
+        message: 'Internal server error'
+      }
+    });
   }
 }
 

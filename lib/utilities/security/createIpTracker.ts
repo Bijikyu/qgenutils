@@ -112,7 +112,9 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
 
   function isBlocked(ip: string): boolean { // check if IP is blocked
     const blockUntil: any = blockedIps.get(ip);
-    if (!blockUntil) return false;
+    if (!blockUntil) {
+      return false;
+    }
 
     if (Date.now() >= blockUntil) { // block expired
       blockedIps.delete(ip);
@@ -132,9 +134,13 @@ function createIpTracker(config: IpTrackerConfig = {}): IpTracker { // factory f
   }
 
   function startPeriodicCleanup() { // start automatic cleanup
-    if (cleanupTimer) return;
+    if (cleanupTimer) {
+      return;
+    }
     cleanupTimer = setInterval(cleanup, cleanupIntervalMs);
-    if (cleanupTimer.unref) cleanupTimer.unref(); // don't prevent process exit
+    if (cleanupTimer.unref) {
+      cleanupTimer.unref();
+    } // don't prevent process exit
   }
 
   function stopPeriodicCleanup() { // stop automatic cleanup

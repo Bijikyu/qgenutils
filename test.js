@@ -67,7 +67,7 @@ const mockRes = { //(captures status and JSON output for tests)
     return this; // enable chaining
   }, // end status
   json: function(data) { // stub json sender
-    console.log(`Response JSON:`, data); // output payload
+    console.log('Response JSON:', data); // output payload
     return this; // enable chaining
   } // end json
 }; // end mockRes
@@ -148,7 +148,7 @@ const mockResForRender = { //(mock response used for successful render)
     return this; // enable chaining
   }, // end status
   send: function(html) { // mimic Express send
-    console.log(`Response HTML sent (truncated):`, html.substring(0, 100) + '...'); // log partial HTML
+    console.log('Response HTML sent (truncated):', html.substring(0, 100) + '...'); // log partial HTML
     return this; // enable chaining
   } // end send
 }; // end mockResForRender
@@ -166,7 +166,7 @@ const mockResWithError = { //(mock response that simulates a rendering error)
     return this; // enable chaining
   }, // end status
   send: function(html) { // mimic Express send
-    console.log(`Error page sent (truncated):`, html.substring(0, 100) + '...'); // log partial error page
+    console.log('Error page sent (truncated):', html.substring(0, 100) + '...'); // log partial error page
     return this; // enable chaining
   } // end send
 }; // end mockResWithError
@@ -177,13 +177,13 @@ renderView(mockResWithError, 'nonexistent', 'Template Error'); // triggers error
 // Test registerViewRoute function
 console.log('\nRoute registration function:'); // test express route helper
 // Mock app object for testing
-  global.app = { //(simulated Express app with GET)
-    get: function(path, handler) { // mimic app.get
-      console.log(`Route registered: GET ${path}`); // confirm route added
-      // Test the handler
-      handler(mockReq, mockResForRender); // invoke handler immediately
-    } // end get
-  }; // end mock app
+global.app = { //(simulated Express app with GET)
+  get: function(path, handler) { // mimic app.get
+    console.log(`Route registered: GET ${path}`); // confirm route added
+    // Test the handler
+    handler(mockReq, mockResForRender); // invoke handler immediately
+  } // end get
+}; // end mock app
 
 registerViewRoute('/dashboard', 'dashboard', 'Dashboard Error'); //(registers route and renders view)
 

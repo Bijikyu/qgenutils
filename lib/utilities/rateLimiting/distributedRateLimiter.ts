@@ -26,27 +26,27 @@ interface DistributedRateLimitConfig {
 
 /**
  * Distributed Rate Limiter Implementation
- * 
+ *
  * This class provides distributed rate limiting capabilities using Redis for
  * synchronization across multiple server instances. It implements a sliding
  * window algorithm with memory-efficient caching and automatic cleanup.
- * 
+ *
  * ## Architecture Overview
- * 
+ *
  * The distributed rate limiter uses a hybrid approach:
  * 1. **Local Caching**: BoundedLRUCache for fast local lookups
  * 2. **Redis Backend**: Optional Redis for cross-instance synchronization
  * 3. **Sliding Window**: Time-based rate limiting with configurable windows
  * 4. **Memory Management**: Bounded caches prevent memory leaks
- * 
+ *
  * ## Redis Configuration Requirements
- * 
+ *
  * When using Redis for distributed rate limiting:
  * - Redis server must be accessible from all application instances
  * - Recommended Redis version: 6.0+ for atomic operations
  * - Connection pooling should be configured for high throughput
  * - Redis persistence should be enabled for durability
- * 
+ *
  * Example Redis configuration:
  * ```javascript
  * const limiter = new DistributedRateLimiter({
@@ -60,41 +60,41 @@ interface DistributedRateLimitConfig {
  *   }
  * });
  * ```
- * 
+ *
  * ## Failure Scenarios and Handling
- * 
+ *
  * ### Redis Connection Failure
  * - Falls back to local-only rate limiting
  * - Continues operation with reduced accuracy
  * - Emits 'redis-error' events for monitoring
- * 
+ *
  * ### High Load Conditions
  * - Local cache provides fast fallback
  * - Bounded caches prevent memory exhaustion
  * - Automatic cleanup of expired entries
- * 
+ *
  * ### Network Partitions
  * - Each partition operates independently
  * - Rate limits may be temporarily inconsistent
  * - Automatic resynchronization when connectivity restored
- * 
+ *
  * ## Performance Characteristics
- * 
+ *
  * - **Local Cache Hit**: ~0.1ms response time
  * - **Redis Lookup**: ~1-5ms response time (depending on network)
  * - **Memory Usage**: ~1KB per 1000 active keys
  * - **Throughput**: 10K+ requests/second per instance
  * - **Scalability**: Linear scaling with additional instances
- * 
+ *
  * @example
  * // Basic usage with local caching only
  * const limiter = new DistributedRateLimiter({
  *   windowMs: 60000,
  *   maxRequests: 100
  * });
- * 
+ *
  * app.use(limiter.middleware());
- * 
+ *
  * @example
  * // Distributed usage with Redis
  * const limiter = new DistributedRateLimiter({
@@ -102,8 +102,8 @@ interface DistributedRateLimitConfig {
  *   maxRequests: 100,
  *   keyGenerator: (req) => req.user?.id || req.ip,
  *   onLimitReached: (req, res, result) => {
- *     logger.warn('Rate limit exceeded', { 
- *       ip: req.ip, 
+ *     logger.warn('Rate limit exceeded', {
+ *       ip: req.ip,
  *       userId: req.user?.id,
  *       userAgent: req.get('User-Agent')
  *     });
@@ -114,7 +114,7 @@ interface DistributedRateLimitConfig {
  *     password: process.env.REDIS_PASSWORD
  *   }
  * });
- * 
+ *
  * @extends EventEmitter
  * @emits 'rate-limit' - When a rate limit is reached
  * @emits 'redis-error' - When Redis encounters an error
@@ -128,7 +128,7 @@ export class DistributedRateLimiter extends EventEmitter {
 
   constructor(config: DistributedRateLimitConfig) {
     super();
-this.config = {
+    this.config = {
       windowMs: config.windowMs,
       maxRequests: config.maxRequests,
       keyGenerator: config.keyGenerator || ((req: any) => req.ip || req.socket?.remoteAddress || 'unknown'),
@@ -145,7 +145,7 @@ this.config = {
       10000, // Maximum 10K keys tracked - balances memory usage with accuracy
       config.windowMs // TTL matches window duration - ensures stale data auto-expires
     );
-    
+
     // Separate cache for blocked keys to optimize memory usage
     // Blocked keys typically have longer retention but lower volume
     this.blockedKeys = new BoundedLRUCache<string, number>(
@@ -162,7 +162,7 @@ this.config = {
     // 1. Consume CPU cycles for scanning expired entries
     // 2. Create potential race conditions with concurrent access
     // 3. Add complexity to the rate limiting logic
-    // 
+    //
     // The bounded cache automatically removes expired items on access,
     // providing lazy cleanup that's both memory-efficient and performant
   }
@@ -173,17 +173,17 @@ this.config = {
     // 1. TTL-based expiration removes stale data automatically
     // 2. LRU eviction prevents cache overflow
     // 3. Access-time cleanup is more efficient than time-based cleanup
-    // 
+    //
     // This method is kept for compatibility but performs no operations
   }
 
-/**
+  /**
  * Check if a request exceeds the rate limit
- * 
+ *
  * This method implements the core rate limiting algorithm using a sliding
  * window approach. It first checks if the key is currently blocked, then
  * updates the request counter and applies the limit.
- * 
+ *
  * Algorithm steps:
  * 1. Generate unique key for the request
  * 2. Check if key is currently blocked (fast path)
@@ -191,21 +191,21 @@ this.config = {
  * 4. Increment counter and check against limit
  * 5. Block key if limit exceeded
  * 6. Return appropriate result
- * 
+ *
  * @param {any} req - The request object (Express, Fastify, etc.)
  * @param {any} res - The response object (for callback usage)
  * @returns {Promise<RateLimitResult>} Rate limit check result
- * 
+ *
  * @example
  * const result = await limiter.checkLimit(req, res);
  * if (!result.allowed) {
  *   console.log(`Rate limited. Retry after ${result.retryAfter}s`);
  * }
- * 
+ *
  * @performance This method completes in ~0.1ms for cache hits,
  * ~1-5ms for Redis lookups, making it suitable for high-traffic APIs.
  */
-async checkLimit(req: any, res: any): Promise<RateLimitResult> {
+  async checkLimit(req: any, res: any): Promise<RateLimitResult> {
     const key = this.config.keyGenerator?.(req) || req.ip || req.socket?.remoteAddress || 'unknown';
     const now = Date.now();
 
@@ -255,19 +255,19 @@ async checkLimit(req: any, res: any): Promise<RateLimitResult> {
     };
   }
 
-/**
+  /**
  * Express/Fastify middleware for rate limiting
- * 
+ *
  * This middleware integrates with popular web frameworks to provide
  * automatic rate limiting. It sets appropriate HTTP headers and
  * handles rate limit exceeded responses.
- * 
+ *
  * HTTP Headers Set:
  * - `X-RateLimit-Limit`: Maximum requests per window
  * - `X-RateLimit-Remaining`: Remaining requests in current window
  * - `X-RateLimit-Reset`: Time when window resets (ISO 8601)
  * - `Retry-After`: Seconds until request can be retried (when limited)
- * 
+ *
  * Response Format (429 Too Many Requests):
  * ```json
  * {
@@ -276,21 +276,21 @@ async checkLimit(req: any, res: any): Promise<RateLimitResult> {
  *   "retryAfter": 60
  * }
  * ```
- * 
+ *
  * @returns {Function} Middleware function for framework integration
- * 
+ *
  * @example
  * // Express usage
  * app.use('/api/', limiter.middleware());
- * 
+ *
  * @example
  * // Fastify usage
  * app.addHook('preHandler', limiter.middleware());
- * 
+ *
  * @security This middleware fails open - if rate limiting encounters
  * an error, it allows the request to proceed to avoid service disruption.
  */
-middleware() {
+  middleware() {
     return async (req: any, res: any, next: any) => {
       try {
         const result = await this.checkLimit(req, res);
@@ -329,36 +329,36 @@ middleware() {
     };
   }
 
-/**
+  /**
  * Clean up resources and destroy the rate limiter
- * 
+ *
  * This method should be called when the rate limiter is no longer
  * needed to prevent memory leaks and clean up Redis connections.
  * It clears all caches, stops cleanup intervals, and closes connections.
- * 
+ *
  * Cleanup operations performed:
  * - Stops automatic cleanup intervals
  * - Clears all local caches
  * - Closes Redis connections (if configured)
  * - Removes all event listeners
- * 
+ *
  * @example
  * // Graceful shutdown
  * process.on('SIGTERM', async () => {
  *   limiter.destroy();
  *   await server.close();
  * });
- * 
+ *
  * @example
  * // Test cleanup
  * afterEach(() => {
  *   limiter.destroy();
  * });
- * 
+ *
  * @important This method should be called to prevent memory leaks
  * in long-running applications or during testing.
  */
-destroy(): void {
+  destroy(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
@@ -368,14 +368,14 @@ destroy(): void {
     this.blockedKeys.destroy();
   }
 
-/**
+  /**
  * Get current rate limiter statistics and performance metrics
- * 
+ *
  * This method provides insights into the rate limiter's performance
  * and current state, useful for monitoring and debugging.
- * 
+ *
  * @returns {RateLimiterStats} Current statistics including cache metrics
- * 
+ *
  * @example
  * // Monitor rate limiter performance
  * setInterval(() => {
@@ -384,7 +384,7 @@ destroy(): void {
  *   console.log('Blocked IPs:', stats.blockedCount);
  *   console.log('Hit rate:', stats.cacheStats.hitRate);
  * }, 60000);
- * 
+ *
  * @example
  * // Health check endpoint
  * app.get('/health/rate-limiter', (req, res) => {
@@ -397,7 +397,7 @@ destroy(): void {
  *   });
  * });
  */
-getStats() {
+  getStats() {
     return {
       cacheStats: this.requestCounts.getStats(),
       blockedCount: this.blockedKeys.size

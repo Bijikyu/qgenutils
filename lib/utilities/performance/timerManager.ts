@@ -1,9 +1,9 @@
 /**
  * Centralized Timer Management Utility
- * 
+ *
  * PURPOSE: Prevent timer leaks and provide resource management
  * for all setInterval/setTimeout operations across the application.
- * 
+ *
  * FEATURES:
  * - Automatic timer tracking and cleanup
  * - Memory leak prevention
@@ -95,7 +95,7 @@ export class TimerManager {
    */
   private forceCleanup(): void {
     const beforeCount = this.timers.size + this.intervals.size;
-    
+
     // Clear timers that have likely completed (simple heuristic)
     for (const timer of this.timers) {
       if ((timer as any)._onTimeout) {
@@ -125,7 +125,7 @@ export class TimerManager {
    */
   private checkResourceUsage(): void {
     const stats = this.getStats();
-    
+
     if (stats.total > this.maxTimers * 0.8) {
       console.warn(`High timer usage detected: ${stats.total} active timers`);
     }
@@ -140,7 +140,9 @@ export class TimerManager {
    * Destroy all timers and cleanup
    */
   destroy(): void {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed) {
+      return;
+    }
 
     this.isDestroyed = true;
 

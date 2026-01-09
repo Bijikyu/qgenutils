@@ -1,11 +1,11 @@
 /**
  * HTTP Request Security Pattern Detection Utility
- * 
+ *
  * PURPOSE: Analyzes HTTP requests for common attack patterns and suspicious
  * characteristics. This utility provides early detection of potential security
  * threats including SQL injection, XSS attacks, path traversal, and oversized
  * requests that could indicate denial of service attempts.
- * 
+ *
  * SECURITY THREATS DETECTED:
  * - Oversized Requests: Extremely large content-Length headers for DoS protection
  * - URL Length Attacks: Excessively long URLs that could overwhelm servers
@@ -13,42 +13,42 @@
  * - XSS Injection: Cross-site scripting attack patterns in URLs
  * - SQL Injection: Common SQL injection attack patterns
  * - Command Injection: System command execution attempts
- * 
+ *
  * IMPLEMENTATION STRATEGY:
  * - Multi-Pattern Detection: Simultaneous checking for multiple attack vectors
  * - Configurable Thresholds: Adjustable limits for different environments
  * - Non-Blocking: Returns detected patterns without throwing exceptions
  * - Performance Optimized: Simple string operations for minimal overhead
  * - False Positive Reduction: Careful regex patterns to minimize noise
- * 
+ *
  * INTEGRATION POINTS:
  * - Express middleware: Pre-request validation
  * - API Gateway: Request screening before routing
  * - Load Balancer: Request analysis before forwarding
  * - Security Monitoring: Logging and alerting systems
  * - Rate Limiting: Enhanced detection when combined with rate limiting
- * 
+ *
  * @param {any} req - Express request object containing headers, URL, and other request data
  * @param {DetectSuspiciousPatternsOptions} [config] - Optional configuration overrides for thresholds
  * @returns {string[]} Array of detected suspicious pattern names for logging/alerting
- * 
+ *
  * @example
  * ```typescript
  * // Basic usage in Express middleware
  * app.use((req, res, next) => {
  *   const suspiciousPatterns = detectSuspiciousPatterns(req);
  *   if (suspiciousPatterns.length > 0) {
- *     logger.warn('Suspicious request detected', { 
- *       ip: req.ip, 
- *       url: req.url, 
- *       patterns: suspiciousPatterns 
+ *     logger.warn('Suspicious request detected', {
+ *       ip: req.ip,
+ *       url: req.url,
+ *       patterns: suspiciousPatterns
  *     });
  *     // Take action: block, log, or monitor
  *   }
  *   next();
  * });
  * ```
- * 
+ *
  * @example
  * ```typescript
  * // Custom configuration for stricter security
@@ -94,9 +94,9 @@ function detectSuspiciousPatterns(req: any, config: DetectSuspiciousPatternsOpti
   }
 
   const urlLower = url.toLowerCase(); // XSS patterns
-  if (/<script/i.test(url) || 
-      urlLower.includes('javascript:') || 
-      urlLower.includes('data:text/html') || 
+  if (/<script/i.test(url) ||
+      urlLower.includes('javascript:') ||
+      urlLower.includes('data:text/html') ||
       urlLower.includes('vbscript:')) {
     patterns.push('potential_xss');
   }

@@ -11,8 +11,8 @@
 import { nanoid } from 'nanoid';
 
 const createRunId = (prefix: any): any => {
-  const safePrefix = typeof prefix === 'string' && prefix.trim() 
-    ? prefix.trim().replace(/\s+/g, '_') 
+  const safePrefix = typeof prefix === 'string' && prefix.trim()
+    ? prefix.trim().replace(/\s+/g, '_')
     : 'run';
   const id: any = nanoid(8);
   return `${safePrefix}_${id}`;

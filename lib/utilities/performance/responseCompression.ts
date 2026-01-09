@@ -1,9 +1,9 @@
 /**
  * Request/Response Compression Utility
- * 
+ *
  * PURPOSE: Provides compression optimization for API requests and responses
  * to reduce bandwidth usage and improve transfer speeds for scalable systems.
- * 
+ *
  * COMPRESSION FEATURES:
  * - Gzip/Brotli compression support
  * - Configurable compression thresholds
@@ -96,16 +96,16 @@ class ResponseCompressor {
     try {
       const inputData = typeof data === 'string' ? Buffer.from(data) : data;
       const originalSize = inputData.length;
-      
+
       // Choose best compression algorithm
       const algorithm = this.selectAlgorithm(acceptEncoding);
       const compressedData = await this.compressWithAlgorithm(inputData, algorithm);
-      
+
       const compressionTime = Date.now() - startTime;
-      
+
       // Update metrics
       this.updateMetrics(originalSize, compressedData.length, compressionTime);
-      
+
       return {
         compressed: true,
         data: compressedData,
@@ -114,7 +114,7 @@ class ResponseCompressor {
         compressedSize: compressedData.length,
         compressionTime
       };
-      
+
     } catch (error) {
       // Return uncompressed data on compression error
       return {
@@ -140,15 +140,15 @@ class ResponseCompressor {
 
     try {
       switch (contentEncoding.toLowerCase()) {
-        case 'gzip':
-          return await this.decompressGzip(data);
-        case 'br':
-        case 'brotli':
-          return await this.decompressBrotli(data);
-        case 'deflate':
-          return await this.decompressDeflate(data);
-        default:
-          return data;
+      case 'gzip':
+        return await this.decompressGzip(data);
+      case 'br':
+      case 'brotli':
+        return await this.decompressBrotli(data);
+      case 'deflate':
+        return await this.decompressDeflate(data);
+      default:
+        return data;
       }
     } catch (error) {
       // Return original data on decompression error
@@ -197,17 +197,17 @@ class ResponseCompressor {
     }
 
     const encodings = acceptEncoding.split(',').map(e => e.trim().split(';')[0]);
-    
+
     // Check for Brotli support (preferred)
     if (encodings.includes('br') || encodings.includes('brotli')) {
       return 'brotli';
     }
-    
+
     // Check for Gzip support
     if (encodings.includes('gzip') || encodings.includes('deflate')) {
       return 'gzip';
     }
-    
+
     // Default based on configuration
     return this.options.algorithm === 'auto' ? 'gzip' : this.options.algorithm;
   }
@@ -217,10 +217,10 @@ class ResponseCompressor {
    */
   private supportsCompression(acceptEncoding: string): boolean {
     const encodings = acceptEncoding.toLowerCase().split(',').map(e => e.trim());
-    return encodings.some(encoding => 
-      encoding === 'gzip' || 
-      encoding === 'deflate' || 
-      encoding === 'br' || 
+    return encodings.some(encoding =>
+      encoding === 'gzip' ||
+      encoding === 'deflate' ||
+      encoding === 'br' ||
       encoding === 'brotli' ||
       encoding === '*'
     );
@@ -230,15 +230,15 @@ class ResponseCompressor {
    * Compress data with specified algorithm
    */
   private async compressWithAlgorithm(
-    data: Buffer, 
+    data: Buffer,
     algorithm: 'gzip' | 'brotli'
   ): Promise<Buffer> {
     switch (algorithm) {
-      case 'brotli':
-        return this.compressBrotli(data);
-      case 'gzip':
-      default:
-        return this.compressGzip(data);
+    case 'brotli':
+      return this.compressBrotli(data);
+    case 'gzip':
+    default:
+      return this.compressGzip(data);
     }
   }
 
@@ -248,7 +248,7 @@ class ResponseCompressor {
   private async compressBrotli(data: Buffer): Promise<Buffer> {
     const { brotliCompress } = await import('zlib');
     const brotliCompressAsync = promisify(brotliCompress);
-    
+
     try {
       return await brotliCompressAsync(data, {
         params: {
@@ -266,7 +266,7 @@ class ResponseCompressor {
   private async compressGzip(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const gzip = createGzip({ level: this.options.level });
-      
+
       const chunks: Buffer[] = [];
       gzip.on('data', (chunk) => chunks.push(chunk));
       gzip.on('end', () => resolve(Buffer.concat(chunks)));
@@ -281,7 +281,7 @@ class ResponseCompressor {
   private async decompressGzip(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const gunzip = createGunzip();
-      
+
       const chunks: Buffer[] = [];
       gunzip.on('data', (chunk) => chunks.push(chunk));
       gunzip.on('end', () => resolve(Buffer.concat(chunks)));
@@ -297,7 +297,7 @@ class ResponseCompressor {
   private async decompressBrotli(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const brotli = createBrotliDecompress();
-      
+
       const chunks: Buffer[] = [];
       brotli.on('data', (chunk) => chunks.push(chunk));
       brotli.on('end', () => resolve(Buffer.concat(chunks)));
@@ -313,7 +313,7 @@ class ResponseCompressor {
   private async decompressDeflate(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const inflate = createInflate();
-      
+
       const chunks: Buffer[] = [];
       inflate.on('data', (chunk) => chunks.push(chunk));
       inflate.on('end', () => resolve(Buffer.concat(chunks)));
@@ -330,14 +330,14 @@ class ResponseCompressor {
     this.metrics.compressedResponses++;
     this.metrics.originalSize += originalSize;
     this.metrics.compressedSize += compressedSize;
-    
+
     // Update compression ratio
-    this.metrics.compressionRatio = this.metrics.originalSize > 0 
-      ? (this.metrics.originalSize - this.metrics.compressedSize) / this.metrics.originalSize 
+    this.metrics.compressionRatio = this.metrics.originalSize > 0
+      ? (this.metrics.originalSize - this.metrics.compressedSize) / this.metrics.originalSize
       : 0;
-    
+
     // Update average latency
-    this.metrics.averageLatency = 
+    this.metrics.averageLatency =
       (this.metrics.averageLatency * (this.metrics.compressedResponses - 1) + latency) / this.metrics.compressedResponses;
   }
 
@@ -367,12 +367,12 @@ class ResponseCompressor {
    */
   getContentEncoding(algorithm?: string): string {
     switch (algorithm) {
-      case 'brotli':
-        return 'br';
-      case 'gzip':
-        return 'gzip';
-      default:
-        return 'gzip'; // Default to gzip
+    case 'brotli':
+      return 'br';
+    case 'gzip':
+      return 'gzip';
+    default:
+      return 'gzip'; // Default to gzip
     }
   }
 }
@@ -381,8 +381,8 @@ class ResponseCompressor {
 const responseCompressor = new ResponseCompressor();
 
 export default responseCompressor;
-export type { 
-  CompressionOptions, 
-  CompressionMetrics, 
-  CompressionResult 
+export type {
+  CompressionOptions,
+  CompressionMetrics,
+  CompressionResult
 };

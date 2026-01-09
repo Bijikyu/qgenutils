@@ -34,7 +34,9 @@ const testArrayForGrouping = Array.from({ length: 1000 }, (_, i) => ({ id: i, gr
 for (let i = 0; i < 1000; i++) {
   const grouped = testArrayForGrouping.reduce((acc, item) => {
     const key = item.group;
-    if (!acc[key]) acc[key] = [];
+    if (!acc[key]) {
+      acc[key] = [];
+    }
     acc[key].push(item);
     return acc;
   }, {});

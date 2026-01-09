@@ -2,19 +2,19 @@
 
 /**
  * CI/CD Pipeline Script
- * 
+ *
  * This script orchestrates the continuous integration and deployment process.
  * It manages version control, building, testing, and deployment operations.
- * 
+ *
  * Usage:
  *   node scripts/ci-cd.js [command] [options]
- * 
+ *
  * Commands:
  *   build      - Build the project
  *   test       - Run tests
  *   deploy     - Deploy to production
  *   release    - Create a new release
- * 
+ *
  * @author Development Team
  * @version 1.0.0
  */
@@ -38,7 +38,7 @@ const PipelineStage = {
 
 /**
  * CI/CD Pipeline Manager
- * 
+ *
  * Coordinates all stages of the CI/CD process including version management,
  * building, testing, deployment, and release creation.
  */
@@ -58,7 +58,7 @@ class CICDPipeline {
     try {
       // Load manager modules dynamically
       const managersPath = path.join(process.cwd(), 'lib/utilities/manager');
-      
+
       if (fs.existsSync(managersPath)) {
         // TODO: Implement manager loading when modules are available
         console.log('Managers directory found, loading modules...');
@@ -76,20 +76,20 @@ class CICDPipeline {
    */
   async executeStage(stage, options = {}) {
     console.log(`Executing pipeline stage: ${stage}`);
-    
+
     switch (stage) {
-      case PipelineStage.VERSION:
-        return this.handleVersion(options);
-      case PipelineStage.BUILD:
-        return this.handleBuild(options);
-      case PipelineStage.TEST:
-        return this.handleTest(options);
-      case PipelineStage.DEPLOY:
-        return this.handleDeploy(options);
-      case PipelineStage.RELEASE:
-        return this.handleRelease(options);
-      default:
-        throw new Error(`Unknown pipeline stage: ${stage}`);
+    case PipelineStage.VERSION:
+      return this.handleVersion(options);
+    case PipelineStage.BUILD:
+      return this.handleBuild(options);
+    case PipelineStage.TEST:
+      return this.handleTest(options);
+    case PipelineStage.DEPLOY:
+      return this.handleDeploy(options);
+    case PipelineStage.RELEASE:
+      return this.handleRelease(options);
+    default:
+      throw new Error(`Unknown pipeline stage: ${stage}`);
     }
   }
 
@@ -145,31 +145,31 @@ class CICDPipeline {
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0] || 'help';
-  
+
   const pipeline = new CICDPipeline();
-  
+
   try {
     await pipeline.initialize();
-    
+
     switch (command) {
-      case 'build':
-        await pipeline.executeStage(PipelineStage.BUILD);
-        break;
-      case 'test':
-        await pipeline.executeStage(PipelineStage.TEST);
-        break;
-      case 'deploy':
-        await pipeline.executeStage(PipelineStage.DEPLOY);
-        break;
-      case 'release':
-        await pipeline.executeStage(PipelineStage.RELEASE);
-        break;
-      case 'version':
-        await pipeline.executeStage(PipelineStage.VERSION);
-        break;
-      case 'help':
-      default:
-        console.log(`
+    case 'build':
+      await pipeline.executeStage(PipelineStage.BUILD);
+      break;
+    case 'test':
+      await pipeline.executeStage(PipelineStage.TEST);
+      break;
+    case 'deploy':
+      await pipeline.executeStage(PipelineStage.DEPLOY);
+      break;
+    case 'release':
+      await pipeline.executeStage(PipelineStage.RELEASE);
+      break;
+    case 'version':
+      await pipeline.executeStage(PipelineStage.VERSION);
+      break;
+    case 'help':
+    default:
+      console.log(`
 CI/CD Pipeline Tool
 
 Usage: node ci-cd.js <command> [options]
@@ -187,7 +187,7 @@ Examples:
   node ci-cd.js test
   node ci-cd.js deploy --env=production
         `);
-        break;
+      break;
     }
   } catch (error) {
     console.error('Pipeline execution failed:', error);

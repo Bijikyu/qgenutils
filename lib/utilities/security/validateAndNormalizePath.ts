@@ -24,7 +24,7 @@ function validateAndNormalizePath(inputPath: string, options: { maxLength?: numb
 
   // Remove control characters BEFORE decoding to prevent malformed decoding
   const cleanPath: string = inputPath.replace(/[\x00-\x1F\x7F]/g, '');
-  
+
   // Decode URL-encoded variants to catch encoded traversal attempts
   let decodedPath: string;
   try {
@@ -59,7 +59,7 @@ function validateAndNormalizePath(inputPath: string, options: { maxLength?: numb
       }
     }
   };
-  
+
   checkPath(sanitizedPath);
   checkPath(sanitizedPath.toLowerCase());
   checkPath(sanitizedPath.toUpperCase());
@@ -76,8 +76,8 @@ function validateAndNormalizePath(inputPath: string, options: { maxLength?: numb
   }
 
   // Enhanced post-normalization checks
-  if (normalizedPath.includes('..') || 
-      normalizedPath.includes('\\') || 
+  if (normalizedPath.includes('..') ||
+      normalizedPath.includes('\\') ||
       normalizedPath.includes('\0') ||
       normalizedPath.includes('%2e') ||
       normalizedPath.includes('%2E')) {

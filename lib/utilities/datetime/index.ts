@@ -1,28 +1,28 @@
 /**
  * Date and Time Utilities Module - Comprehensive DateTime Processing
- * 
+ *
  * PURPOSE: This module provides a comprehensive suite of date and time manipulation
  * utilities designed for production applications. These utilities handle common
  * DateTime operations with proper timezone awareness, formatting, and validation.
- * 
+ *
  * ARCHITECTURE: The module is organized into several categories:
  * - Basic operations (addDays, formatDate)
  * - Advanced formatting (formatDateTime, formatDuration)
  * - Provider pattern for testability (createTimeProvider)
  * - Relative time formatting (formatRelativeTime)
- * 
+ *
  * TIMEZONE CONSIDERATIONS: All utilities are designed to work consistently
  * across different timezone configurations. The provider pattern enables
  * deterministic time handling for testing and timezone-sensitive operations.
- * 
+ *
  * INTERNATIONALIZATION: Supports multiple date formats and can be extended
  * for locale-specific requirements. The formatting utilities follow common
  * international standards while maintaining flexibility for custom formats.
- * 
+ *
  * TESTING SUPPORT: The provider pattern enables dependency injection of
  * time sources, making DateTime operations deterministic and testable.
  * This is essential for unit testing and CI/CD pipeline reliability.
- * 
+ *
  * PERFORMANCE CONSIDERATIONS: Utilities are optimized for common use cases
  * while maintaining readability and correctness. They avoid unnecessary
  * object creation and use efficient date manipulation algorithms.

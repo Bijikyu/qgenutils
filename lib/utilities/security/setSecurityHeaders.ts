@@ -54,8 +54,8 @@ function setSecurityHeaders(options: SecurityHeadersOptions = {}) { // factory f
     }
 
     if (contentSecurityPolicy) { // CSP header
-      res.setHeader('Content-Security-Policy', 
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'");
+      res.setHeader('Content-Security-Policy',
+        'default-src \'self\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data:; font-src \'self\'');
     }
 
     res.setHeader('X-Permitted-Cross-Domain-Policies', 'none'); // Adobe cross-domain

@@ -1,6 +1,6 @@
 /**
  * Advanced Error Handling System
- * 
+ *
  * Provides structured error handling with:
  * - Error classification and categorization
  * - Detailed error context and metadata
@@ -50,7 +50,7 @@ export interface EnhancedError extends Error {
   name: string;
   message: string;
   stack?: string;
-  
+
   // Enhanced error properties
   code: string;
   category: ErrorCategory;
@@ -123,17 +123,17 @@ export interface ErrorHandlingConfig {
   logLevel: ErrorSeverity;
   enableStackTrace: boolean;
   enableContextCapture: boolean;
-  
+
   // Retry configuration
   defaultMaxRetries: number;
   retryDelayMs: number;
   enableExponentialBackoff: boolean;
-  
+
   // Circuit breaker configuration
   enableCircuitBreaker: boolean;
   circuitBreakerThreshold: number;
   circuitBreakerTimeoutMs: number;
-  
+
   // Performance configuration
   enablePerformanceTracking: boolean;
   enableSlowQueryLogging: boolean;
@@ -188,14 +188,14 @@ export class AdvancedErrorHandler extends EventEmitter {
     } = {}
   ): EnhancedError {
     const error = new Error(message) as EnhancedError;
-    
+
     // Standard error properties
     error.name = this.generateErrorName(code, category);
     error.message = message;
     error.code = code;
     error.category = category;
     error.severity = severity;
-    
+
     // Enhanced properties
     error.context = options.context;
     error.recovery = options.recovery;
@@ -206,21 +206,21 @@ export class AdvancedErrorHandler extends EventEmitter {
     error.suggestion = options.suggestion || this.generateSuggestion(category, code);
     error.isOperational = options.isOperational ?? this.isOperationalError(category);
     error.isTransient = options.isTransient ?? this.isTransientError(category);
-    
+
     // Metadata
     error.metadata = {
       timestamp: new Date().toISOString(),
       requestId: this.generateRequestId(),
       ...options.metadata
     };
-    
+
     // Stack trace
     if (options.cause) {
       error.stack = options.cause.stack;
     } else if (this.config.enableStackTrace) {
       Error.captureStackTrace(error, this.createError);
     }
-    
+
     return error;
   }
 
@@ -235,31 +235,31 @@ export class AdvancedErrorHandler extends EventEmitter {
     metrics: any;
   }> {
     const startTime = Date.now();
-    
+
     try {
       // Add context to error
       if (context) {
         error.context = { ...error.context, ...context };
       }
-      
+
       // Update error counts
       this.updateErrorCounts(error);
-      
+
       // Log error
       if (this.config.enableLogging) {
         await this.logError(error);
       }
-      
+
       // Update performance metrics
       if (this.config.enablePerformanceTracking) {
         this.updatePerformanceMetrics(error);
       }
-      
+
       // Determine recovery actions
       const shouldRetry = error.canRetry && (error.retryCount || 0) < (error.maxRetries || 0);
       const shouldFallback = !shouldRetry && error.recovery === RecoveryStrategy.FALLBACK;
       const shouldCircuitBreak = this.shouldTriggerCircuitBreaker(error);
-      
+
       // Emit error event
       this.emit('error', {
         error,
@@ -268,7 +268,7 @@ export class AdvancedErrorHandler extends EventEmitter {
         shouldCircuitBreak,
         metrics: this.getErrorMetrics(error)
       });
-      
+
       return {
         handled: true,
         shouldRetry: shouldRetry || false,
@@ -276,7 +276,7 @@ export class AdvancedErrorHandler extends EventEmitter {
         shouldCircuitBreak,
         metrics: this.getErrorMetrics(error)
       };
-      
+
     } catch (handlingError) {
       // Fallback error handling
       console.error('Error in error handler:', handlingError);
@@ -308,14 +308,14 @@ export class AdvancedErrorHandler extends EventEmitter {
     } = {}
   ): Promise<R> {
     const { name, category = ErrorCategory.UNKNOWN, recovery, maxRetries, timeoutMs, context } = options;
-    
+
     let lastError: EnhancedError | null = null;
     let attempt = 0;
     const maxAttempts = maxRetries || this.config.defaultMaxRetries;
-    
+
     while (attempt <= maxAttempts) {
       attempt++;
-      
+
       try {
         // Check circuit breaker
         const circuitKey = `${category}:${name || 'anonymous'}`;
@@ -333,38 +333,38 @@ export class AdvancedErrorHandler extends EventEmitter {
             }
           );
         }
-        
+
         // Execute function with timeout
-        const result = timeoutMs 
+        const result = timeoutMs
           ? await Promise.race([
-              fn(...(arguments as any)),
-              new Promise<never>((_, reject) => 
-                setTimeout(() => reject(new Error('Function timeout')), timeoutMs)
-              )
-            ])
+            fn(...(arguments as any)),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('Function timeout')), timeoutMs)
+            )
+          ])
           : await fn(...(arguments as any));
-        
+
         // Circuit breaker success
         if (this.config.enableCircuitBreaker) {
           this.recordCircuitBreakerSuccess(circuitKey);
         }
-        
+
         return result;
-        
+
       } catch (error) {
         lastError = error instanceof Error ? this.convertToEnhancedError(error, category, options) : error as EnhancedError;
-        
+
         if (!lastError.canRetry || attempt > maxAttempts) {
           await this.handleError(lastError, { ...context, attempt, fnName: name });
           throw lastError;
         }
-        
+
         // Wait before retry
         const delay = this.calculateRetryDelay(attempt, lastError);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
-    
+
     // This should not be reached, but TypeScript requires it
     throw lastError || new Error('Unknown error in wrapped function');
   }
@@ -380,7 +380,7 @@ export class AdvancedErrorHandler extends EventEmitter {
     if (error instanceof EnhancedErrorImpl) {
       return error;
     }
-    
+
     return this.createError(
       error.name || 'UNKNOWN_ERROR',
       error.message,
@@ -402,27 +402,27 @@ export class AdvancedErrorHandler extends EventEmitter {
     if (category === ErrorCategory.SECURITY || category === ErrorCategory.AUTHENTICATION) {
       return ErrorSeverity.HIGH;
     }
-    
+
     // Network and rate limit errors are typically medium
     if (category === ErrorCategory.NETWORK || category === ErrorCategory.RATE_LIMIT) {
       return ErrorSeverity.MEDIUM;
     }
-    
+
     // Configuration and validation errors are medium
     if (category === ErrorCategory.CONFIGURATION || category === ErrorCategory.VALIDATION) {
       return ErrorSeverity.MEDIUM;
     }
-    
+
     // Performance and file system errors are high
     if (category === ErrorCategory.PERFORMANCE || category === ErrorCategory.FILE_SYSTEM) {
       return ErrorSeverity.HIGH;
     }
-    
+
     // Business logic errors depend on context
     if (category === ErrorCategory.BUSINESS_LOGIC) {
       return ErrorSeverity.LOW;
     }
-    
+
     return ErrorSeverity.MEDIUM;
   }
 
@@ -454,7 +454,7 @@ export class AdvancedErrorHandler extends EventEmitter {
       userMessage: error.userMessage,
       suggestion: error.suggestion
     };
-    
+
     // In a real implementation, this would use the actual logger
     console.error('[QGenUtils Error]', JSON.stringify(logData, null, 2));
   }
@@ -465,11 +465,11 @@ export class AdvancedErrorHandler extends EventEmitter {
   private updatePerformanceMetrics(error: EnhancedError): void {
     const key = `${error.category}:${error.code}`;
     const current = this.performanceMetrics.get(key) || { count: 0, totalTime: 0, avgTime: 0 };
-    
+
     current.count++;
     current.totalTime += 0; // Would track actual processing time
     current.avgTime = current.totalTime / current.count;
-    
+
     this.performanceMetrics.set(key, current);
   }
 
@@ -478,11 +478,15 @@ export class AdvancedErrorHandler extends EventEmitter {
    */
   private shouldAllowRetry(category: ErrorCategory, severity: ErrorSeverity, options: any): boolean {
     // Don't retry critical errors
-    if (severity === ErrorSeverity.CRITICAL) return false;
-    
+    if (severity === ErrorSeverity.CRITICAL) {
+      return false;
+    }
+
     // Don't retry validation or authentication errors
-    if (category === ErrorCategory.VALIDATION || category === ErrorCategory.AUTHENTICATION) return false;
-    
+    if (category === ErrorCategory.VALIDATION || category === ErrorCategory.AUTHENTICATION) {
+      return false;
+    }
+
     // Allow retry for transient errors
     return options.isTransient !== false && (category === ErrorCategory.NETWORK || category === ErrorCategory.RATE_LIMIT);
   }
@@ -525,7 +529,7 @@ export class AdvancedErrorHandler extends EventEmitter {
       [ErrorCategory.BUSINESS_LOGIC]: 'Operation failed due to business rules.',
       [ErrorCategory.UNKNOWN]: 'An unexpected error occurred. Please try again.'
     };
-    
+
     return messages[category] || 'An error occurred. Please try again.';
   }
 
@@ -546,7 +550,7 @@ export class AdvancedErrorHandler extends EventEmitter {
       [ErrorCategory.BUSINESS_LOGIC]: 'Review business rules and constraints.',
       [ErrorCategory.UNKNOWN]: 'Contact support if the problem persists.'
     };
-    
+
     return suggestions[category] || 'Contact support if the problem persists.';
   }
 
@@ -564,7 +568,7 @@ export class AdvancedErrorHandler extends EventEmitter {
     if (!this.config.enableExponentialBackoff) {
       return this.config.retryDelayMs;
     }
-    
+
     return this.config.retryDelayMs * Math.pow(2, attempt - 1);
   }
 
@@ -572,8 +576,10 @@ export class AdvancedErrorHandler extends EventEmitter {
    * Checks if circuit breaker should trigger
    */
   private shouldTriggerCircuitBreaker(error: EnhancedError): boolean {
-    if (!this.config.enableCircuitBreaker) return false;
-    
+    if (!this.config.enableCircuitBreaker) {
+      return false;
+    }
+
     const key = `${error.category}:${error.code}`;
     const count = this.errorCounts.get(key) || 0;
     return count >= this.config.circuitBreakerThreshold;
@@ -583,16 +589,20 @@ export class AdvancedErrorHandler extends EventEmitter {
    * Checks if circuit breaker is open
    */
   private isCircuitBreakerOpen(key: string): boolean {
-    if (!this.config.enableCircuitBreaker) return false;
-    
+    if (!this.config.enableCircuitBreaker) {
+      return false;
+    }
+
     const breaker = this.circuitBreakers.get(key);
-    if (!breaker) return false;
-    
+    if (!breaker) {
+      return false;
+    }
+
     if (breaker.isOpen) {
       const timeSinceOpen = Date.now() - breaker.lastOpenTime;
       return timeSinceOpen < this.config.circuitBreakerTimeoutMs;
     }
-    
+
     return false;
   }
 
@@ -600,8 +610,10 @@ export class AdvancedErrorHandler extends EventEmitter {
    * Records circuit breaker success
    */
   private recordCircuitBreakerSuccess(key: string): void {
-    if (!this.config.enableCircuitBreaker) return;
-    
+    if (!this.config.enableCircuitBreaker) {
+      return;
+    }
+
     const breaker = this.circuitBreakers.get(key) || { isOpen: false, lastOpenTime: 0, failureCount: 0 };
     breaker.failureCount = 0;
     breaker.isOpen = false;
@@ -612,8 +624,10 @@ export class AdvancedErrorHandler extends EventEmitter {
    * Triggers circuit breaker
    */
   private triggerCircuitBreaker(key: string): void {
-    if (!this.config.enableCircuitBreaker) return;
-    
+    if (!this.config.enableCircuitBreaker) {
+      return;
+    }
+
     const breaker = this.circuitBreakers.get(key) || { isOpen: false, lastOpenTime: 0, failureCount: 0 };
     breaker.failureCount++;
     breaker.lastOpenTime = Date.now();
@@ -649,7 +663,7 @@ export class AdvancedErrorHandler extends EventEmitter {
   getErrorStatistics(): any {
     const totalErrors = Array.from(this.errorCounts.values()).reduce((sum, count) => sum + count, 0);
     const categoryBreakdown = new Map<ErrorCategory, number>();
-    
+
     for (const [key, count] of this.errorCounts.entries()) {
       const [category] = key.split(':');
       categoryBreakdown.set(
@@ -657,7 +671,7 @@ export class AdvancedErrorHandler extends EventEmitter {
         (categoryBreakdown.get(category as ErrorCategory) || 0) + count
       );
     }
-    
+
     return {
       totalErrors,
       categoryBreakdown: Object.fromEntries(categoryBreakdown),

@@ -66,11 +66,11 @@ function createAlert(message, severity = 'warning', metadata = null, timestamp =
     timestamp,
     createdAt: new Date(timestamp).toISOString()
   };
-  
+
   if (metadata && typeof metadata === 'object') {
     alert.metadata = metadata;
   }
-  
+
   return alert;
 }
 
@@ -131,7 +131,7 @@ function getAlertsInTimeRange(alerts, startTime, endTime = Date.now()) {
     return [];
   }
 
-  return alerts.filter(alert => 
+  return alerts.filter(alert =>
     alert.timestamp >= startTime && alert.timestamp <= endTime
   );
 }
@@ -172,15 +172,15 @@ function getAlertStatistics(alerts) {
   for (const alert of alerts) {
     // Count by severity
     switch (alert.severity) {
-      case 'critical':
-        stats.critical++;
-        break;
-      case 'warning':
-        stats.warning++;
-        break;
-      case 'info':
-        stats.info++;
-        break;
+    case 'critical':
+      stats.critical++;
+      break;
+    case 'warning':
+      stats.warning++;
+      break;
+    case 'info':
+      stats.info++;
+      break;
     }
 
     // Track oldest and newest

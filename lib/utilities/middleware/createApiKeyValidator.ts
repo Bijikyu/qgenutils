@@ -2,11 +2,11 @@ import { qerrors } from 'qerrors';
 
 /**
  * API Key Validation Middleware Factory
- * 
+ *
  * Creates Express-compatible middleware for validating API keys.
  * Uses constant-time comparison to prevent timing attacks and supports
  * configurable key sources and logging.
- * 
+ *
  * @param {object} config - Validator configuration
  * @param {string|Function} config.apiKey - Expected API key or function returning it
  * @param {object} [config.extractOptions] - Options for extractApiKey
@@ -82,9 +82,9 @@ function createApiKeyValidator(config: ApiKeyValidatorConfig) {
   const missingResponse: any = { ...defaultResponses.missing, ...responses.missing }; // merge custom responses
   const invalidResponse: any = { ...defaultResponses.invalid, ...responses.invalid };
 
-return function apiKeyValidator(req: Request, res: Response, next: NextFunction) { // return middleware function
+  return function apiKeyValidator(req: Request, res: Response, next: NextFunction) { // return middleware function
     let providedKey: string | null = null;
-    
+
     try {
       providedKey = extractApiKey(req, extractOptions); // extract key from request
     } catch (error) {

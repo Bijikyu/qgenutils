@@ -23,8 +23,8 @@ function truncateJson(jsonString: string, maxSize: number): string {
   if (getJsonSize(jsonString) <= maxSize) {
     return jsonString;
   }
-  
-try {
+
+  try {
     // Try to parse and truncate object
     const parsed: any = JSON.parse(jsonString);
     return truncateObject(parsed, maxSize);
@@ -66,7 +66,7 @@ function truncateObject(obj: unknown, maxSize: number): string {
     }
     return false;
   };
-  
+
   try {
     if (hasCircularRef(obj)) {
       return JSON.stringify({ error: 'circular_reference_detected', truncated: true })
@@ -77,11 +77,11 @@ function truncateObject(obj: unknown, maxSize: number): string {
     return JSON.stringify({ error: 'truncation_failed', truncated: true })
       .substring(0, Math.max(0, maxSize - 3)) + '...';
   }
-  
+
   // Simple truncation: remove properties until it fits
   let truncated: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
   const keys: string[] = Object.keys(truncated).reverse();
-  
+
   try {
     for (const key of keys) {
       if (getJsonSize(JSON.stringify(truncated)) <= maxSize) {
@@ -89,12 +89,12 @@ function truncateObject(obj: unknown, maxSize: number): string {
       }
       delete truncated[key];
     }
-    
+
     const jsonString: any = JSON.stringify(truncated);
     if (getJsonSize(jsonString) <= maxSize) {
       return jsonString;
     }
-    
+
     // If still too big, return truncated string representation
     return JSON.stringify({ truncated: true, size: getJsonSize(JSON.stringify(obj)) })
       .substring(0, Math.max(0, maxSize - 3)) + '...';

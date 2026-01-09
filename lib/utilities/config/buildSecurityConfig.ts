@@ -1,10 +1,10 @@
 /**
  * Security Configuration Builder - Production-Ready Security Settings
- * 
+ *
  * PURPOSE: Creates a comprehensive, validated security configuration that covers
  * all major security concerns for web applications and APIs. This utility follows
  * defense-in-depth principles by providing multiple layers of security controls.
- * 
+ *
  * SECURITY DOMAINS COVERED:
  * - Encryption: Data-at-rest and in-transit protection with configurable algorithms
  * - Authentication: Session management, password policies, and login protection
@@ -12,25 +12,25 @@
  * - Network Security: CORS policies, security headers, and HTTPS enforcement
  * - Rate Limiting: Protection against brute force and DoS attacks
  * - Session Security: Timeout policies and secure session management
- * 
+ *
  * DEFAULT SECURITY POLICIES: Follows industry best practices and OWASP guidelines:
  * - AES-256-GCM encryption for strong symmetric encryption
  * - SHA-256 hashing with 100,000 iterations for password storage
  * - 30-minute session timeout for balanced security and usability
  * - 5 failed login attempts with 15-minute lockout to prevent brute force
  * - Security headers (XSS protection, clickjacking prevention, content type protection)
- * 
+ *
  * CONFIGURATION VALIDATION: Includes comprehensive validation to prevent
  * misconfigurations that could create security vulnerabilities.
  * All time values are in milliseconds for consistency across the codebase.
- * 
+ *
  * @param {object} [options] - Security configuration options with sensible defaults
  * @returns {object} Validated and normalized security configuration object
- * 
+ *
  * @example
  * // Basic security configuration with defaults
  * const securityConfig = buildSecurityConfig();
- * 
+ *
  * @example
  * // Custom security configuration
  * const customConfig = buildSecurityConfig({
@@ -39,7 +39,7 @@
  *   corsOrigins: ['https://app.example.com'],
  *   rateLimitMax: 50
  * });
- * 
+ *
  * @example
  * // High-security configuration
  * const highSecurityConfig = buildSecurityConfig({
@@ -155,7 +155,7 @@ function buildSecurityConfig(options: SecurityConfigOptions = {}) {
       audience: options.jwtAudience || null
     },
     cors: {
-      origins: Array.isArray(corsOrigins) 
+      origins: Array.isArray(corsOrigins)
         ? corsOrigins.filter(origin => typeof origin === 'string').map(String)
         : (typeof corsOrigins === 'string' ? [corsOrigins] : []),
       credentials: options.corsCredentials || false,

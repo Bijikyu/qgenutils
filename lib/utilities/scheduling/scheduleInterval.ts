@@ -1,11 +1,11 @@
 /**
  * Interval Scheduler with Advanced Job Tracking and Control
- * 
+ *
  * PURPOSE: Provides a robust mechanism for scheduling recurring jobs with
  * comprehensive lifecycle management, execution tracking, and graceful error handling.
  * This utility is designed for production systems requiring precise control over
  * background tasks, periodic maintenance, and repeated operations.
- * 
+ *
  * SCHEDULING FEATURES:
  * - Native Performance: Uses setInterval for optimal CPU and memory efficiency
  * - Execution Tracking: Monitors job execution count and status
@@ -13,21 +13,21 @@
  * - Immediate Execution: Optional immediate execution on scheduler start
  * - Race Condition Prevention: Atomic operations prevent concurrent state issues
  * - Comprehensive Error Handling: Isolates job errors from scheduler stability
- * 
+ *
  * PRODUCTION USE CASES:
  * - Periodic data cleanup and maintenance tasks
  * - Health check monitoring and status reporting
  * - Batch processing with controlled execution limits
  * - Caching and data synchronization operations
  * - Backup and archival processes with scheduling
- * 
+ *
  * ARCHITECTURAL BENEFITS:
  * - Memory Efficient: Single timer instance per job
  * - CPU Optimized: Native setInterval for timing accuracy
  * - Error Isolated: Job failures don't affect scheduler
  * - State Consistent: Atomic state transitions prevent race conditions
  * - Debugging Ready: Unique job identifiers enable tracing
- * 
+ *
  * @param {Function} callback - Function to execute periodically (supports async/await)
  * @param {number} intervalMs - Interval in milliseconds (must be positive)
  * @param {object} [options] - Scheduling options with intelligent defaults
@@ -36,14 +36,14 @@
  * @param {number} [options.maxExecutions] - Maximum number of executions before auto-stop (null for unlimited)
  * @param {Function} [options.onError] - Error handler called when job execution fails
  * @returns {object} Job control object with cancel, isRunning, getExecutionCount methods
- * 
+ *
  * @example
  * // Basic interval scheduling
  * const heartbeat = scheduleInterval(
  *   () => console.log('Heartbeat'),
  *   5000 // Every 5 seconds
  * );
- * 
+ *
  * @example
  * // Interval with execution limit
  * const limitedJob = scheduleInterval(
@@ -51,7 +51,7 @@
  *   60000, // Every minute
  *   { maxExecutions: 100 } // Stop after 100 executions
  * );
- * 
+ *
  * @example
  * // Immediate execution with error handling
  * const robustJob = scheduleInterval(
@@ -69,13 +69,13 @@
  *     }
  *   }
  * );
- * 
+ *
  * @example
  * // Job control and monitoring
  * const job = scheduleInterval(myCallback, 10000);
  * console.log('Job running:', job.isRunning());
  * console.log('Execution count:', job.getExecutionCount());
- * 
+ *
  * // Later, if needed:
  * if (job.getExecutionCount() > 50) {
  *   const wasCancelled = job.cancel();
@@ -89,7 +89,7 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
   if (typeof callback !== 'function') {
     throw new Error('Callback must be a function');
   }
-  
+
   // Validate interval to ensure it's a positive number (prevents invalid timers)
   if (typeof intervalMs !== 'number' || intervalMs <= 0) {
     throw new Error('Interval must be a positive number');
@@ -114,11 +114,13 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
 
   const executeCallback = async (): Promise<any> => { // async execution wrapper with comprehensive error handling and state management
     // Early return if job has been cancelled to prevent further executions
-    if (cancelled) return;
+    if (cancelled) {
+      return;
+    }
 
     // Atomically check and increment execution count to prevent race conditions
     const currentExecutionCount = ++executionCount;
-    
+
     // Check if this execution exceeds the max limit and should stop
     if (maxExecutions !== null && currentExecutionCount > maxExecutions) {
       if (intervalId) {
@@ -146,10 +148,10 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
     } catch (error) {
       // Log the error for monitoring and debugging with full context
       qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleInterval', `Job execution failed for: ${jobId} (execution: ${currentExecutionCount})`);
-      
+
       // Log error details for immediate debugging visibility
       console.error(`[scheduleInterval] Error in job ${jobId} (execution ${currentExecutionCount}):`, error instanceof Error ? error.message : String(error));
-      
+
       // Call custom error handler if provided (allows application-specific error handling)
       if (onError && typeof onError === 'function') {
         try {
