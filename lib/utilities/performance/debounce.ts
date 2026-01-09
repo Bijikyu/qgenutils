@@ -41,7 +41,9 @@ const debounce = (
   fn: (...args: any[]) => any, 
   delay: number, 
   options?: DebounceOptions
-): ((...args: any[]) => any) => _.debounce(fn, delay, options);
+): ((...args: any[]) => any) => {
+  return _.debounce(fn, delay, options);
+};
 
 export default debounce;
 export type { DebounceOptions };

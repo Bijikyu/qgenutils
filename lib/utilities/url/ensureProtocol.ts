@@ -114,7 +114,9 @@ const ensureProtocol = (url: any, protocol: string = 'https'): ProtocolResult =>
 
   try {
     // Parse URL to validate structure and extract protocol
-    const parsedUrl = new URL(trimmedUrl);
+    // Prepend https:// protocol for URLs without it to allow parsing
+    const urlToParse = trimmedUrl.includes('://') ? trimmedUrl : `https://${trimmedUrl}`;
+    const parsedUrl = new URL(urlToParse);
     
     // Define allowed protocols for security
     const allowedProtocols = new Set(['http:', 'https:', 'ftp:', 'ftps:']);

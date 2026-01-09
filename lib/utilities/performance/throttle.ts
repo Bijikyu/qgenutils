@@ -40,7 +40,9 @@ const throttle = (
   fn: (...args: any[]) => any, 
   delay: number, 
   options?: ThrottleOptions
-): ((...args: any[]) => any) => _.throttle(fn, delay, options);
+): ((...args: any[]) => any) => {
+  return _.throttle(fn, delay, options);
+};
 
 export default throttle;
 export type { ThrottleOptions };
