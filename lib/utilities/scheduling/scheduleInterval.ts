@@ -116,9 +116,11 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
     // Early return if job has been cancelled to prevent further executions
     if (cancelled) return;
 
-    // Check max executions limit BEFORE incrementing to prevent race conditions
-    // This atomic check ensures we don't exceed the limit in concurrent scenarios
-    if (maxExecutions !== null && executionCount >= maxExecutions) {
+    // Atomically check and increment execution count to prevent race conditions
+    const currentExecutionCount = ++executionCount;
+    
+    // Check if this execution exceeds the max limit and should stop
+    if (maxExecutions !== null && currentExecutionCount > maxExecutions) {
       if (intervalId) {
         clearInterval(intervalId);    // Clear the interval timer
         intervalId = null;           // Mark as cleaned up
@@ -126,10 +128,6 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
       cancelled = true;           // Mark job as cancelled
       return;                    // Exit without executing
     }
-
-    // Atomically increment execution count AFTER the limit check
-    // This prevents race conditions where multiple executions could increment simultaneously
-    const currentExecutionCount = ++executionCount;
 
     // Check if this execution reaches the max limit and we should stop after it
     // This allows the final execution to complete before stopping

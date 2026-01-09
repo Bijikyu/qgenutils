@@ -136,7 +136,7 @@ function safeJsonParse(jsonString: string, defaultValue: any = null): any {
       if (hasDangerousProps) {
         const prototypeError = new Error('Prototype pollution detected in JSON');
         // Fix: Use correct 2-parameter qerrors API
-        qerrors(prototypeError, 'safeJsonParse');
+        qerrors(prototypeError, 'safeJsonParse', 'Prototype pollution detected in JSON');
         return defaultValue;
       }
     }

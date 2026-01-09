@@ -34,13 +34,14 @@ import { qerrors } from 'qerrors';
  */
 const maskApiKey = (apiKey: any, visibleChars: number = 4): string => {
   try {
-    // Validate input and handle null/undefined cases
-    if (apiKey == null || typeof apiKey !== 'string' || apiKey.length === 0) {
+    // Convert to string and handle null/undefined cases
+    const apiKeyStr = String(apiKey || '');
+    if (apiKeyStr.length === 0) {
       return '***';
     }
     
     // If key is too short to mask properly, return full mask
-    if (apiKey.length <= visibleChars) {
+    if (apiKeyStr.length <= visibleChars) {
       return '***';
     }
     
@@ -48,7 +49,7 @@ const maskApiKey = (apiKey: any, visibleChars: number = 4): string => {
     const safeVisibleChars = Math.min(Math.max(visibleChars, 1), 8);
     
     // Extract visible portion and create masked result
-    const visible: string = apiKey.substring(0, safeVisibleChars);
+    const visible: string = apiKeyStr.substring(0, safeVisibleChars);
     return `${visible}***`;
     
   } catch (error) {

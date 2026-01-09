@@ -349,34 +349,7 @@ class DynamicImportCache {
       this.lruTail = key;
     }
 
-    // Remove from current position
-    if (cached.next) {
-      const nextModule = this.cache.get(cached.next);
-      if (nextModule) {
-        nextModule.prev = cached.prev;
-      }
-    } else {
-      // This was the tail
-      this.lruTail = cached.prev || null;
-    }
 
-    // Add to head
-    cached.prev = undefined;
-    cached.next = this.lruHead || undefined;
-    
-    if (this.lruHead) {
-      const headModule = this.cache.get(this.lruHead);
-      if (headModule) {
-        headModule.prev = key;
-      }
-    }
-    
-    this.lruHead = key;
-    
-    // Set tail if this is the first item
-    if (!this.lruTail) {
-      this.lruTail = key;
-    }
   }
 
   private addToHead(key: string): void {

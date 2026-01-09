@@ -60,14 +60,13 @@ this.config = {
   }
 
   private startCleanupInterval(): void {
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupExpiredData();
-    }, 60000); // Cleanup every minute
+    // BoundedLRUCache handles automatic cleanup via TTL
+    // No cleanup interval needed to avoid unnecessary overhead
   }
 
   private cleanupExpiredData(): void {
     // BoundedLRUCache handles automatic cleanup via TTL
-    // No manual cleanup needed
+    // No manual cleanup needed - expired items are removed on access
   }
 
   /**
