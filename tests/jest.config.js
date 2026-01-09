@@ -5,16 +5,27 @@ export default {
   // Test environment
   testEnvironment: 'node',
   
-  // Test file patterns - now co-located with source files
+  // Test file patterns - only test compiled JavaScript files, exclude TypeScript
   testMatch: [
     '**/tests/**/*.test.js',
     '**/tests/**/*.spec.js',
-    '**/*.test.js',
-    '**/*.spec.js'
+    'lib/**/*.test.js',
+    'lib/**/*.spec.js'
   ],
   
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+
+  // Transform TypeScript files using babel
+  transform: {
+    '^.+\\.(ts|tsx)$': 'babel-jest'
+  },
+
+  // Ignore node_modules and dist folders from transformation
+  transformIgnorePatterns: [
+    'node_modules/(?!(qgenutils)/',
+    'dist/'
+  ],
   
   // Coverage configuration
   collectCoverage: true,
@@ -35,6 +46,8 @@ export default {
   collectCoverageFrom: [
     'lib/**/*.js',
     'index.js',
+    'index-core.js',
+    'index-tree-shakable.js',
     '!**/node_modules/**',
     '!**/tests/**',
     '!**/coverage/**',

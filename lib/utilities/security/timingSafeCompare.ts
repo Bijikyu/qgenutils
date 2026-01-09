@@ -48,7 +48,7 @@ import { qerrors } from 'qerrors'; // Centralized error handling system
  * @ts-ignore - safe-compare doesn't have TypeScript definitions but is battle-tested
  */
 // @ts-ignore
-import safeCompare from'safe-compare';
+const safeCompare = require('safe-compare');
 
 /**
  * Performs constant-time string comparison to prevent timing attacks.

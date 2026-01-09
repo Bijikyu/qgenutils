@@ -60,11 +60,10 @@ Admin dashboard (served by the demo server):
 ```javascript
 // CommonJS
 const utils = require('qgenutils');
-const { formatDateTime, ensureProtocol, groupBy, chunk } = require('qgenutils');
+const { formatDateTime, ensureProtocol, validateEmailFormat, memoize } = require('qgenutils');
 
 // ES Modules
-import { formatDateTime, ensureProtocol, groupBy, chunk } from 'qgenutils';
-import { logger } from 'qgenutils'; // Winston logger instance
+import { formatDateTime, ensureProtocol, validateEmailFormat, memoize } from 'qgenutils';
 ```
 
 ## Usage
@@ -72,29 +71,24 @@ import { logger } from 'qgenutils'; // Winston logger instance
 ### Basic Examples
 
 ```javascript
-// DateTime formatting
-const formatted = formatDateTime('2023-12-25T10:30:00.000Z');
-console.log(formatted); // "12/25/2023, 10:30:00 AM"
+// DateTime formatting - returns object with formatted property
+const result = formatDateTime('2023-12-25T10:30:00.000Z');
+console.log(result.formatted); // "12/25/2023, 10:30:00 AM"
 
-// URL handling
-const secureUrl = ensureProtocol('example.com');
-console.log(secureUrl); // "https://example.com"
+// URL handling - returns object with processed property
+const urlResult = ensureProtocol('example.com');
+console.log(urlResult.processed); // "https://example.com"
 
 // Input validation
 const isValid = validateEmailFormat('user@example.com');
 console.log(isValid); // true
 
-// Collection utilities
-const users = [
-  { name: 'Alice', role: 'admin' },
-  { name: 'Bob', role: 'user' },
-  { name: 'Charlie', role: 'user' }
-];
-
-const grouped = groupBy(users, user => user.role);
-console.log(grouped);
-// { admin: [{ name: 'Alice', role: 'admin' }], 
-//   user: [{ name: 'Bob', role: 'user' }, { name: 'Charlie', role: 'user' }] }
+// Performance optimization
+const expensiveFn = memoize((n) => {
+  // Simulate heavy computation
+  return n * n;
+});
+console.log(expensiveFn(5)); // 25 (cached result)
 ```
 
 ### Advanced Examples
@@ -105,15 +99,6 @@ import { hashPassword, verifyPassword } from 'qgenutils';
 
 const { hash, salt } = await hashPassword('securePassword123!');
 const isValid = await verifyPassword('securePassword123!', hash, salt);
-
-// API configuration
-import { createHttpConfig, createBasicAuth } from 'qgenutils';
-
-const config = createHttpConfig({
-  method: 'POST',
-  headers: createJsonHeaders({ 'Authorization': createBasicAuth('user', 'pass') }),
-  timeout: 5000
-});
 
 // Performance optimization
 import { memoize, throttle, debounce } from 'qgenutils';
@@ -129,27 +114,23 @@ The library includes comprehensive examples for various use cases:
 
 ### Web Development
 - Input validation and sanitization
-- API request configuration
 - URL processing and validation
 - Error handling and logging
 
 ### Security
 - Password hashing and verification
 - Input sanitization against XSS
-- API key validation
-- Rate limiting middleware
+- API key masking and validation
 
 ### Performance
 - Memoization for expensive operations
 - Throttling and debouncing
-- Batch processing with concurrency control
 - Event loop monitoring
 
 ### Data Processing
-- Array and object manipulation
 - Date and time formatting
-- Collection utilities
-- Deep cloning and merging
+- File size formatting
+- Basic data structures (Min-heap)
 
 ## Features
 
@@ -169,21 +150,15 @@ The library includes comprehensive examples for various use cases:
 - **Duration Calculation** - Precise time interval formatting
 - **Relative Time** - Human-friendly time display
 
-### 📊 Collections & Data Structures
-- **Array Manipulation** - groupBy, chunk, partition, unique, shuffle
-- **Object Utilities** - deepMerge, pick, omit, nested value access
+### 📊 Data Structures
 - **Data Structures** - Min-heap implementation for priority queues
 
 ### ⚡ Performance & Concurrency
-- **Batch Processing** - Semaphore-based concurrency control
-- **Retry Logic** - Exponential backoff with jitter
 - **Performance Monitoring** - Event loop lag, metrics collection
 - **Optimization** - Memoize, throttle, debounce utilities
 
-### 🛠️ Configuration & Module Management
-- **Secure Configuration** - Sensitive value masking and validation
-- **Module Loading** - Dynamic imports with caching
-- **ID Generation** - Cryptographically secure identifiers
+### 🛠️ Configuration & Security
+- **Security Configuration** - Sensitive value masking and validation
 
 ### 📝 Logging & Monitoring
 - **Structured Logging** - Winston-based with daily rotation
@@ -194,15 +169,17 @@ The library includes comprehensive examples for various use cases:
 ### DateTime Utilities
 
 #### `formatDateTime(dateString)`
-Converts ISO date string to locale-specific display format.
+Converts ISO date string to locale-specific display format. Returns an object with formatted result.
 
 ```javascript
 const { formatDateTime } = require('qgenutils');
 
-console.log(formatDateTime('2023-12-25T10:30:00.000Z'));
+const result = formatDateTime('2023-12-25T10:30:00.000Z');
+console.log(result.formatted);
 // Output: "12/25/2023, 10:30:00 AM" (locale-dependent)
 
-console.log(formatDateTime(''));
+const empty = formatDateTime('');
+console.log(empty.formatted);
 // Output: "N/A"
 ```
 
@@ -240,13 +217,16 @@ const future = addDays(new Date(), 7); // 7 days from now
 ### URL Utilities
 
 #### `ensureProtocol(url)`
-Adds HTTPS protocol if missing.
+Adds HTTPS protocol if missing. Returns an object with processed result.
 
 ```javascript
 const { ensureProtocol } = require('qgenutils');
 
-console.log(ensureProtocol('example.com')); // "https://example.com"
-console.log(ensureProtocol('http://example.com')); // "http://example.com"
+const result1 = ensureProtocol('example.com');
+console.log(result1.processed); // "https://example.com"
+
+const result2 = ensureProtocol('http://example.com');
+console.log(result2.processed); // "http://example.com"
 ```
 
 #### `normalizeUrlOrigin(url)`
@@ -278,74 +258,19 @@ console.log(parseUrlParts('example.com/api/users?id=123'));
 // Output: { baseUrl: "https://example.com", endpoint: "/api/users?id=123" }
 ```
 
-### Collection Utilities
+### Available Utilities
 
-#### Array Utilities
-
-```javascript
-const { groupBy, partition, unique, chunk, flatten, sortBy, shuffle, take, skip } = require('qgenutils');
-
-// Group by key
-groupBy([{type: 'a', v: 1}, {type: 'b', v: 2}], x => x.type);
-// { a: [{type: 'a', v: 1}], b: [{type: 'b', v: 2}] }
-
-// Partition by predicate
-partition([1, 2, 3, 4], x => x % 2 === 0); // [[2, 4], [1, 3]]
-
-// Unique values
-unique([1, 2, 2, 3]); // [1, 2, 3]
-
-// Chunk array
-chunk([1, 2, 3, 4, 5], 2); // [[1, 2], [3, 4], [5]]
-
-// Flatten nested arrays
-flatten([[1, 2], [3, [4, 5]]]); // [1, 2, 3, 4, 5]
-```
-
-#### Object Utilities
+#### Data Structures
 
 ```javascript
-const { pick, omit, deepMerge, deepClone, getNestedValue, setNestedValue, isEqual } = require('qgenutils');
+const { createMinHeap } = require('qgenutils');
 
-// Pick specific keys
-pick({ a: 1, b: 2, c: 3 }, ['a', 'b']); // { a: 1, b: 2 }
-
-// Omit specific keys
-omit({ a: 1, b: 2, c: 3 }, ['c']); // { a: 1, b: 2 }
-
-// Deep merge objects
-deepMerge({ a: { b: 1 } }, { a: { c: 2 } }); // { a: { b: 1, c: 2 } }
-
-// Deep clone
-const clone = deepClone({ nested: { value: 1 } });
-
-// Get nested value safely
-getNestedValue({ a: { b: { c: 1 } } }, 'a.b.c'); // 1
-
-// Deep equality check
-isEqual({ a: 1 }, { a: 1 }); // true
-```
-
-### Batch Processing
-
-```javascript
-const { createSemaphore, retryWithBackoff, processBatch } = require('qgenutils');
-
-// Concurrency control
-const semaphore = createSemaphore(3); // max 3 concurrent
-await semaphore.acquire();
-// ... do work
-semaphore.release();
-
-// Retry with exponential backoff
-const result = await retryWithBackoff(async () => {
-  return await fetchData();
-}, { maxRetries: 3, initialDelay: 100 });
-
-// Process array with concurrency and progress tracking
-await processBatch(items, async (item) => {
-  return await processItem(item);
-}, { concurrency: 5, onProgress: (done, total) => console.log(`${done}/${total}`) });
+// Create a min-heap for priority queue operations
+const heap = createMinHeap();
+heap.insert(5);
+heap.insert(2);
+heap.insert(8);
+console.log(heap.extractMin()); // 2 (smallest element)
 ```
 
 ### Performance Utilities
@@ -363,38 +288,37 @@ const throttled = throttle(() => saveData(), 1000);
 const debounced = debounce(() => search(query), 300);
 ```
 
-### HTTP Configuration
+### Password Security
 
 ```javascript
-const { createJsonHeaders, createBasicAuth, createHttpConfig, getContextualTimeout } = require('qgenutils');
+const { hashPassword, verifyPassword, generateSecurePassword } = require('qgenutils');
 
-// Create JSON headers
-const headers = createJsonHeaders({ 'X-Custom': 'value' });
+// Hash password with OWASP-compliant method
+const { hash, salt } = await hashPassword('securePassword123!');
 
-// Create basic auth
-const auth = createBasicAuth('user', 'pass');
+// Verify password
+const isValid = await verifyPassword('securePassword123!', hash, salt);
 
-// Get contextual timeout
-const timeout = getContextualTimeout('payment'); // returns appropriate timeout for payment operations
-
-// Create complete HTTP config
-const config = createHttpConfig({
-  method: 'POST',
-  headers: { 'X-Api-Key': 'key' },
-  timeout: 5000
-});
+// Generate secure random password
+const securePassword = generateSecurePassword(16); // 16-character password
 ```
 
-### ID Generation
+### Validation
 
 ```javascript
-const { generateExecutionId, makeIdempotencyKey } = require('qgenutils');
+const { validateEmailFormat, validateUrl, validateNumber, validateString, validateArray, validateObject } = require('qgenutils');
 
-// Generate unique execution ID
-const execId = generateExecutionId(); // e.g., "exec_a1b2c3d4"
+// Email validation
+const emailValid = validateEmailFormat('user@example.com'); // true/false
 
-// Create idempotency key from parts
-const key = makeIdempotencyKey('user_123', 'payment', Date.now());
+// URL validation  
+const urlValid = validateUrl('https://example.com'); // true/false
+
+// Number validation
+const numValid = validateNumber(42); // true/false
+
+// String validation
+const strValid = validateString('hello'); // true/false
 ```
 
 ## Error Handling
@@ -448,37 +372,25 @@ import { formatDateTime, ensureProtocol, validateEmailFormat } from 'qgenutils';
 
 ## Module Architecture
 
-The library is organized into security-focused modules under `lib/utilities/`:
+The library is organized into focused modules under `lib/utilities/`:
 
-### 🔐 Security Modules
-- `security/` - Authentication, API key handling, timing-safe comparisons
-- `validation/` - Comprehensive input validation with Zod schemas
+### 🔐 Security & Validation
+- `security/` - API key handling, timing-safe comparisons, input sanitization
 - `password/` - OWASP-compliant password hashing and verification
-- `middleware/` - Express security middleware (rate limiting, API validation)
+- `validation/` - Input validation for common data types
 
-### 📡 Network & HTTP Modules  
-- `http/` - HTTP configuration, timeouts, retry logic
+### 📡 Network & URL Processing  
 - `url/` - URL processing, validation, and normalization
 
-### 📊 Data Processing Modules
-- `collections/` - Array and object manipulation utilities
-- `batch/` - Concurrent batch processing with semaphore control
+### 📊 Data Processing & Performance
 - `performance/` - Optimization utilities (memoize, throttle, debounce)
-- `data-structures/` - Efficient algorithms (Min-heap, etc.)
+- `data-structures/` - Efficient algorithms (Min-heap implementation)
 
-### ⚙️ Configuration & System Modules
-- `config/` - Application configuration builders
-- `secure-config/` - Sensitive configuration value handling
-- `module-loader/` - Dynamic module loading with caching
-- `scheduling/` - Job scheduling and interval management
+### 📅 Core Utilities
+- `datetime/` - Date and time manipulation and formatting
+- `file/` - File size formatting utilities
 
-### 📅 Utility Modules
-- `datetime/` - Date and time manipulation
-- `string/` - Secure string processing and sanitization
-- `file/` - File size and path utilities
-- `id-generation/` - Cryptographically secure identifier generation
-
-### 📊 Monitoring Modules
+### 📊 Monitoring & Logging
 - `performance-monitor/` - Event loop lag and system metrics
 - `logger/` - Structured logging with Winston integration
 

@@ -1,0 +1,11 @@
+f2f93f46ea8ea51c6e2224ff0019f388
+// No-op Jest setup for environments without a full src/app implementation.
+// This prevents test runners from attempting to start an application server
+// during unit tests that only exercise library code.
+beforeAll(() => {
+  // Intentionally empty: avoid starting servers in test environment
+});
+afterAll(() => {
+  // Intentionally empty: cleanup is not required here
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJiZWZvcmVBbGwiLCJhZnRlckFsbCJdLCJzb3VyY2VzIjpbInNldHVwLmpzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIE5vLW9wIEplc3Qgc2V0dXAgZm9yIGVudmlyb25tZW50cyB3aXRob3V0IGEgZnVsbCBzcmMvYXBwIGltcGxlbWVudGF0aW9uLlxuLy8gVGhpcyBwcmV2ZW50cyB0ZXN0IHJ1bm5lcnMgZnJvbSBhdHRlbXB0aW5nIHRvIHN0YXJ0IGFuIGFwcGxpY2F0aW9uIHNlcnZlclxuLy8gZHVyaW5nIHVuaXQgdGVzdHMgdGhhdCBvbmx5IGV4ZXJjaXNlIGxpYnJhcnkgY29kZS5cbmJlZm9yZUFsbCgoKSA9PiB7XG4gIC8vIEludGVudGlvbmFsbHkgZW1wdHk6IGF2b2lkIHN0YXJ0aW5nIHNlcnZlcnMgaW4gdGVzdCBlbnZpcm9ubWVudFxufSk7XG5cbmFmdGVyQWxsKCgpID0+IHtcbiAgLy8gSW50ZW50aW9uYWxseSBlbXB0eTogY2xlYW51cCBpcyBub3QgcmVxdWlyZWQgaGVyZVxufSk7Il0sIm1hcHBpbmdzIjoiQUFBQTtBQUNBO0FBQ0E7QUFDQUEsU0FBUyxDQUFDLE1BQU07RUFDZDtBQUFBLENBQ0QsQ0FBQztBQUVGQyxRQUFRLENBQUMsTUFBTTtFQUNiO0FBQUEsQ0FDRCxDQUFDIiwiaWdub3JlTGlzdCI6W119

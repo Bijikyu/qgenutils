@@ -35,7 +35,7 @@ import {
 const SANITIZE_OPTIONS = { 
   allowedTags: [], 
   allowedAttributes: {}, 
-  textFilter: (text: any) => text, 
+  textFilter: (text: string): string => text, 
   disallowedTagsMode: 'discard' as const, 
   enforceHtmlBoundary: false 
 };

@@ -2,36 +2,71 @@
 
 Analyze and address the following test failures:
 
-## Failed Test 1: /home/runner/workspace/tests/integration/core-functionality.test.js
+## Failed Test 1: /home/runner/workspace/lib/utilities/datetime/datetime.test.js
 
 ### Output:
 ```
-  ● QGenUtils Integration Tests › Middleware Integration › should create and test rate limiter
+  ● DateTime Utilities › addDays › should add days to date
 
-    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+    expect(received).toBe(expected) // Object.is equality
 
-    Expected: 429
+    Expected: 8
+    Received: 9
 
-    Number of calls: 0
+      45 |       const result = addDays(testDate, 7);
+      46 |       expect(result instanceof Date).toBe(true);
+    > 47 |       expect(result.getDate()).toBe(8);
+         |                                ^
+      48 |     });
+      49 |   });
+      50 | });
 
-      216 |       // 6th request should be rate limited
-      217 |       await limiter(req, res, next);
-    > 218 |       expect(res.status).toHaveBeenCalledWith(429);
-          |                          ^
-      219 |       expect(next).not.toHaveBeenCalled();
-      220 |     }, 5000);
-      221 |   });
-
-      at Object.toHaveBeenCalledWith (tests/integration/core-functionality.test.js:218:26)
+      at Object.toBe (lib/utilities/datetime/datetime.test.js:47:32)
 
 ```
 
-### Duration: 6145ms
+### Duration: 2906ms
+
+---
+
+## Failed Test 2: /home/runner/workspace/tests/integration/core-functionality.test.js
+
+### Output:
+```
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module ../../lib/utilities/validation/validateEmail.js mapped as:
+    $1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^(\.{1,2}\/.*)\.js$/": "$1"
+      },
+      "resolver": undefined
+    }
+
+       6 |
+       7 | // Import utilities individually to avoid ES module issues
+    >  8 | import { validateEmail } from '../../lib/utilities/validation/validateEmail.js';
+         | ^
+       9 | import { hashPassword } from '../../lib/utilities/password/hashPassword.js';
+      10 | import { verifyPassword } from '../../lib/utilities/password/verifyPassword.js';
+      11 | import { memoize } from '../../lib/utilities/performance/memoize.js';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/resolver.js:759:17)
+      at Object.require (tests/integration/core-functionality.test.js:8:1)
+
+```
+
+### Duration: 0ms
 
 ---
 
 ## Summary
 
-- Total failed tests: 1
-- Failed test files: /home/runner/workspace/tests/integration/core-functionality.test.js
-- Generated: 2026-01-08T22:49:53.372Z
+- Total failed tests: 2
+- Failed test files: /home/runner/workspace/lib/utilities/datetime/datetime.test.js, /home/runner/workspace/tests/integration/core-functionality.test.js
+- Generated: 2026-01-09T02:51:44.955Z
