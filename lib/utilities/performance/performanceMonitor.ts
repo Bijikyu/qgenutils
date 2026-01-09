@@ -215,15 +215,18 @@ class PerformanceMonitor {
    * Create performance alert
    */
   private createAlert(alert: PerformanceAlert): void {
-    // Avoid duplicate alerts with optimized search
+    // PERFORMANCE: Alert deduplication to prevent spam
+    // Only create new alert if no similar alert exists in the last minute
     const now = Date.now();
     const oneMinuteAgo = now - 60000;
     let recentAlert: PerformanceAlert | undefined;
 
-    // Use reverse iteration for faster finding recent alerts
+    // PERFORMANCE: Reverse iteration optimization
+    // Search from newest to oldest since recent alerts are more likely matches
+    // This reduces average search time from O(n) to O(1) for recent alerts
     for (let i = this.alerts.length - 1; i >= 0; i--) {
       const a = this.alerts[i];
-      if (a.timestamp < oneMinuteAgo) break; // Stop if too old
+      if (a.timestamp < oneMinuteAgo) break; // Early exit - alerts are chronological
       if (a.type === alert.type && 
           a.severity === alert.severity) {
         recentAlert = a;
@@ -231,10 +234,11 @@ class PerformanceMonitor {
       }
     }
 
+    // Only add alert if no duplicate found in recent timeframe
     if (!recentAlert) {
       this.alerts.push(alert);
       
-      // Log alert
+      // Log alert for monitoring and debugging
       qerrors(
         new Error(alert.message),
         'PerformanceMonitor',
@@ -254,8 +258,13 @@ class PerformanceMonitor {
    * Calculate CPU usage percentage
    */
   private calculateCpuPercentage(cpuUsage: NodeJS.CpuUsage): number {
+    // PERFORMANCE: Optimized CPU calculation using microsecond precision
+    // Convert CPU time from microseconds to seconds for percentage calculation
     const totalMicrosec = cpuUsage.user + cpuUsage.system;
     const totalSec = totalMicrosec / 1000000;
+    
+    // PERFORMANCE: Cap at 100% to prevent unrealistic values
+    // Calculate percentage based on monitoring interval duration
     return Math.min(100, (totalSec / this.MONITORING_INTERVAL) * 100);
   }
 

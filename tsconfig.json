@@ -1,49 +1,74 @@
 {
   "compilerOptions": {
+    // Modern JavaScript target for latest features and performance
     "target": "ES2022",
+    // ESNext for tree-shaking and modern module support
     "module": "ESNext",
     "moduleResolution": "node",
+    
+    // STRICTNESS CONFIGURATION
+    // Disabled strict mode for gradual migration and compatibility
+    // This allows mixing JavaScript and TypeScript during transition
     "strict": false,
     "noImplicitAny": false,
+    // Enabled specific strict checks that provide high value with low migration cost
     "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    // Disabled function-level strictness to avoid breaking existing code patterns
     "strictFunctionTypes": false,
     "strictBindCallApply": false,
     "strictPropertyInitialization": false,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
+    
+    // CODE QUALITY CHECKS
+    // Enabled safety checks that catch common bugs without major refactoring
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    // Disabled advanced strictness that requires significant code changes
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
+    
+    // MODULE AND INTEROP SETTINGS
+    // Essential for modern TypeScript/JavaScript ecosystem
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    
+    // OUTPUT CONFIGURATION
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
+    
+    // ADVANCED CONFIGURATION
     "suppressImplicitAnyIndexErrors": false,
     "allowImportingTsExtensions": false,
     "allowArbitraryExtensions": true,
     "rootDir": "./",
-"incremental": true,
-"tsBuildInfoFile": "./dist/.tsbuildinfo",
-"composite": false,
-"assumeChangesOnlyAffectDirectDependencies": true
+    
+    // PERFORMANCE OPTIMIZATIONS
+    // Incremental compilation for faster rebuilds
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "composite": false,
+    "assumeChangesOnlyAffectDirectDependencies": true
   },
+  // Include all TypeScript and JavaScript files for compilation
   "include": [
     "**/*.ts",
     "**/*.js"
   ],
+  // Exclude files that should not be compiled or are problematic
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
     "**/*.test.js",
+    // Removed: connectionPool.ts was empty and has been deleted
     "lib/utilities/database/connectionPool.ts",
+    // apiGateway.ts has compilation issues that need resolution
     "lib/utilities/gateway/apiGateway.ts",
     ".cache",
     "agentRecords"

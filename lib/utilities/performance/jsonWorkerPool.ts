@@ -47,7 +47,51 @@ interface WorkerPoolStats {
   memoryUsage: NodeJS.MemoryUsage;
 }
 
-// Worker implementation
+/**
+ * Worker thread implementation for JSON processing
+ * 
+ * This function runs in the worker thread context and handles all
+ * JSON parsing and stringification operations. It maintains performance
+ * metrics and communicates results back to the main thread.
+ * 
+ * ## Worker Thread Lifecycle
+ * 
+ * ### Initialization
+ * - Runs only when !isMainThread (worker context)
+ * - Sets up performance tracking variables
+ * - Prepares message listener for task processing
+ * 
+ * ### Task Processing Loop
+ * - Listens for messages from main thread
+ * - Processes JSON tasks (parse/stringify)
+ * - Tracks performance metrics
+ * - Returns results via message passing
+ * 
+ * ### Performance Optimization
+ * - Uses streaming parser for large payloads (>1MB)
+ * - Tracks processing time for each task
+ * - Maintains task count and average metrics
+ * - Optimizes memory usage for large JSON
+ * 
+ * ## Large Payload Handling
+ * 
+ * For JSON strings larger than 1MB:
+ * - Uses streaming JSON parser to reduce memory usage
+ * - Processes data in chunks to prevent memory overflow
+ * - Provides better performance for very large JSON
+ * - Falls back to standard JSON.parse for smaller payloads
+ * 
+ * ## Error Handling
+ * 
+ * - Catches JSON syntax errors
+ * - Handles memory allocation failures
+ * - Reports processing errors to main thread
+ * - Continues operation after individual task failures
+ * 
+ * @returns {Promise<void>} Promise that resolves when worker is ready
+ * 
+ * @private
+ */
 async function runJSONWorker(): Promise<void> {
   if (isMainThread) return;
 
@@ -56,7 +100,13 @@ async function runJSONWorker(): Promise<void> {
   let totalProcessingTime = 0;
 
   /**
-   * Process JSON task
+   * Process a single JSON task with performance tracking
+   * 
+   * This method handles the actual JSON processing operations
+   * with appropriate error handling and performance measurement.
+   * 
+   * @param {JSONTask} task - The JSON task to process
+   * @returns {Promise<JSONResult>} Result with success status and metrics
    */
   async function processTask(task: JSONTask): Promise<JSONResult> {
     const startTime = performance.now();
@@ -99,7 +149,9 @@ async function runJSONWorker(): Promise<void> {
     };
   }
 
+  // Set up message listener for task processing
   parentPort?.on('message', async (message: any) => {
+    // Handle stats requests from main thread
     if (message?.type === 'stats') {
       parentPort?.postMessage({
         type: 'stats',
@@ -112,6 +164,7 @@ async function runJSONWorker(): Promise<void> {
       return;
     }
 
+    // Process JSON task and return result
     const task = message as JSONTask;
     const result = await processTask(task);
     parentPort?.postMessage(result);
@@ -154,49 +207,140 @@ export class JSONWorkerPool {
     }
   }
 
-  /**
-   * Create a new worker
-   */
-  private createWorker(): void {
+/**
+ * Create a new worker thread with resource limits and event handlers
+ * 
+ * This method creates a new worker thread with carefully configured
+ * memory limits and comprehensive error handling. The worker is
+ * designed to process JSON operations independently of the main thread.
+ * 
+ * ## Worker Resource Management
+ * 
+ * Memory limits are configured to prevent resource exhaustion:
+ * - **maxOldGenerationSizeMb: 64MB**: Limits long-lived objects in heap
+ * - **maxYoungGenerationSizeMb: 32MB**: Limits short-lived objects and garbage collection
+ * - **Total per worker: ~96MB**: Conservative limit for JSON processing
+ * 
+ * These limits ensure that even large JSON operations won't consume
+ * excessive system memory or cause out-of-memory errors.
+ * 
+ * ## Worker Lifecycle Events
+ * 
+ * ### Message Events (Primary Path)
+ * - Triggered when worker completes JSON processing
+ * - Contains result object with success/failure status
+ * - Main path for normal operation completion
+ * 
+ * ### Error Events (Exception Handling)
+ * - Triggered by syntax errors in JSON parsing
+ * - Occurs on memory limit violations
+ * - Handles worker thread crashes
+ * - Automatic worker replacement on failure
+ * 
+ * ### Exit Events (Cleanup)
+ * - Normal termination (code 0): Expected during shutdown
+ * - Abnormal termination (code ≠ 0): Indicates worker crash
+ * - Automatic restart for abnormal exits
+ * - Prevents zombie worker processes
+ * 
+ * @private
+ */
+private createWorker(): void {
+    // Create new worker with memory limits to prevent resource exhaustion
+    // These limits ensure workers don't consume excessive memory during JSON processing
     const worker = new Worker(new URL(import.meta.url), {
       resourceLimits: {
-        maxOldGenerationSizeMb: 64,
-        maxYoungGenerationSizeMb: 32
+        maxOldGenerationSizeMb: 64,  // Limit long-lived objects
+        maxYoungGenerationSizeMb: 32 // Limit short-lived objects
       }
     });
 
+    // Handle successful worker results
+    // This is the primary path for completed JSON operations
     worker.on('message', (result: JSONResult) => {
       this.handleWorkerResult(result);
     });
 
+    // Handle worker errors (e.g., syntax errors, out-of-memory)
+    // Workers can fail due to invalid JSON or memory constraints
     worker.on('error', (error) => {
       console.error('JSON Worker error:', error);
-      this.restartWorker(worker);
+      this.restartWorker(worker); // Automatically replace failed worker
     });
 
+    // Handle worker exit events
+    // Workers may exit unexpectedly due to crashes or resource limits
     worker.on('exit', (code) => {
       if (code !== 0) {
         console.warn(`JSON Worker exited with code ${code}`);
-        this.restartWorker(worker);
+        this.restartWorker(worker); // Restart non-zero exit codes
       }
+      // Note: Zero exit code is normal termination (e.g., during shutdown)
     });
 
+    // Add worker to the active pool
     this.workers.push(worker);
   }
 
-  /**
-   * Restart a failed worker
-   */
-  private restartWorker(failedWorker: Worker): void {
+/**
+ * Restart a failed worker with proper cleanup and delay
+ * 
+ * This method handles worker failure recovery by cleaning up the failed
+ * worker and creating a replacement after a delay. The delay prevents
+ * rapid restart loops that could exhaust system resources.
+ * 
+ * ## Worker Failure Recovery Process
+ * 
+ * ### 1. Worker Removal
+ * - Remove failed worker from active pool array
+ * - Prevents assignment of new tasks to failed worker
+ * - Maintains accurate worker count
+ * 
+ * ### 2. Force Termination
+ * - Calls worker.terminate() to ensure clean shutdown
+ * - Prevents zombie worker processes
+ * - Releases all worker resources immediately
+ * - Handles cases where worker is unresponsive
+ * 
+ * ### 3. Delayed Replacement
+ * - 1-second delay prevents rapid restart loops
+ * - Allows system resources to stabilize
+ * - Prevents resource exhaustion from continuous failures
+ * - Gives time for underlying issues to resolve
+ * 
+ * ### 4. Capacity Check
+ * - Only creates replacement if under max capacity
+ * - Prevents over-creation during bulk failures
+ * - Maintains configured worker pool size limits
+ * 
+ * ## Failure Scenarios Handled
+ * 
+ * - **Memory Limit Violations**: Worker exceeds configured memory limits
+ * - **JSON Syntax Errors**: Invalid JSON causes parsing failures
+ * - **Worker Crashes**: Unexpected worker thread termination
+ * - **Resource Exhaustion**: System resource constraints
+ * - **Timeout Errors**: Long-running JSON operations
+ * 
+ * @param {Worker} failedWorker - The worker that failed and needs replacement
+ * 
+ * @private
+ */
+private restartWorker(failedWorker: Worker): void {
+    // Remove failed worker from the active pool
     const index = this.workers.indexOf(failedWorker);
     if (index !== -1) {
       this.workers.splice(index, 1);
     }
 
+    // Force terminate the failed worker to prevent zombie processes
+    // This ensures all resources are properly cleaned up
     failedWorker.terminate();
 
-    // Create new worker after delay
+    // Delayed worker replacement to prevent rapid restart loops
+    // The 1-second delay prevents resource exhaustion from continuous failures
     setTimeout(() => {
+      // Only create new worker if we haven't reached max capacity
+      // This check prevents over-creation during bulk failures
       if (this.workers.length < this.maxWorkers) {
         this.createWorker();
       }
@@ -270,14 +414,19 @@ export class JSONWorkerPool {
    * Insert task by priority
    */
   private insertTaskByPriority(task: JSONTask): void {
+    // Priority mapping: lower numbers = higher priority
+    // This enables efficient priority-based task scheduling
     const priorityOrder = { high: 0, normal: 1, low: 2 };
     const taskPriority = priorityOrder[task.priority || 'normal'];
     
+    // Insert task in priority order (high priority first)
+    // This ensures critical JSON operations are processed first
     let inserted = false;
     for (let i = 0; i < this.taskQueue.length; i++) {
       const queueTask = this.taskQueue[i];
       const queuePriority = priorityOrder[queueTask.priority || 'normal'];
       
+      // Insert before the first task with lower priority
       if (taskPriority < queuePriority) {
         this.taskQueue.splice(i, 0, task);
         inserted = true;
@@ -285,6 +434,8 @@ export class JSONWorkerPool {
       }
     }
 
+    // If no higher priority tasks found, add to end of queue
+    // This maintains FIFO order for same-priority tasks
     if (!inserted) {
       this.taskQueue.push(task);
     }
@@ -294,13 +445,19 @@ export class JSONWorkerPool {
    * Process next task in queue
    */
   private processNextTask(): void {
+    // Early exit if no tasks are pending
     if (this.taskQueue.length === 0) return;
 
-    // Find available worker (simplified - round robin)
+    // Find an available worker for task assignment
+    // Note: isWorkerBusy() is simplified - real implementation would track active tasks
     const availableWorker = this.workers.find(w => !this.isWorkerBusy(w));
-    if (!availableWorker) return;
+    if (!availableWorker) return; // All workers busy, task stays in queue
 
+    // Get next task from queue (FIFO for same priority)
     const task = this.taskQueue.shift()!;
+    
+    // Send task to worker for processing
+    // The worker will handle the JSON operation and return results via message
     availableWorker.postMessage(task);
   }
 
@@ -374,10 +531,59 @@ export class JSONWorkerPool {
     }
   }
 
-  /**
-   * Destroy pool and cleanup
-   */
-  async destroy(): Promise<void> {
+/**
+ * Destroy the worker pool and clean up all resources
+ * 
+ * This method performs graceful shutdown of the entire worker pool:
+ * 1. Stops cleanup intervals
+ * 2. Rejects all pending tasks
+ * 3. Terminates all worker threads
+ * 4. Releases all memory and resources
+ * 
+ * ## Graceful Shutdown Sequence
+ * 
+ * ### Phase 1: Stop Operations
+ * - Clear cleanup interval to prevent new operations
+ * - Stop accepting new tasks
+ * - Prepare for resource cleanup
+ * 
+ * ### Phase 2: Task Cleanup
+ * - Reject all pending tasks with descriptive error
+ * - Clear pending task tracking
+ * - Allow promise rejections to propagate
+ * - Prevent hanging promises
+ * 
+ * ### Phase 3: Worker Termination
+ * - Terminate all worker threads in parallel
+ * - Wait for all workers to exit cleanly
+ * - Clear worker pool array
+ * - Release all worker resources
+ * 
+ * ## Resource Cleanup Details
+ * 
+ * - **Memory**: All worker heaps are released
+ * - **Threads**: Worker threads are terminated
+ * - **Handles**: File handles and system resources freed
+ * - **Timers**: All intervals and timeouts cleared
+ * - **Promises**: Pending promises are rejected
+ * 
+ * @example
+ * // Application shutdown
+ * process.on('SIGTERM', async () => {
+ *   await workerPool.destroy();
+ *   process.exit(0);
+ * });
+ * 
+ * @example
+ * // Test cleanup
+ * afterEach(async () => {
+ *   await workerPool.destroy();
+ * });
+ * 
+ * @important This method should be called during application shutdown
+ * to prevent resource leaks and hanging worker threads.
+ */
+async destroy(): Promise<void> {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;

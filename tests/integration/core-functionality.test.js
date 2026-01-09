@@ -5,16 +5,16 @@
  */
 
 // Import utilities individually to avoid ES module issues
-import { validateEmail } from '../../lib/utilities/validation/validateEmail.js';
-import { hashPassword } from '../../lib/utilities/password/hashPassword.js';
-import { verifyPassword } from '../../lib/utilities/password/verifyPassword.js';
-import { memoize } from '../../lib/utilities/performance/memoize.js';
-import { debounce } from '../../lib/utilities/performance/debounce.js';
-import { formatDateTime } from '../../lib/utilities/datetime/formatDateTime.js';
-import { ensureProtocol } from '../../lib/utilities/url/ensureProtocol.js';
-import { formatFileSize } from '../../lib/utilities/file/formatFileSize.js';
-import { createApiKeyValidator } from '../../lib/utilities/middleware/createApiKeyValidator.js';
-import { createRateLimiter } from '../../lib/utilities/middleware/createRateLimiter.js';
+import validateEmail from '../../lib/utilities/validation/validateEmail.js';
+import hashPassword from '../../lib/utilities/password/hashPassword.js';
+import verifyPassword from '../../lib/utilities/password/verifyPassword.js';
+import memoize from '../../lib/utilities/performance/memoize.js';
+import debounce from '../../lib/utilities/performance/debounce.js';
+import formatDateTime from '../../lib/utilities/datetime/formatDateTime.js';
+import ensureProtocol from '../../lib/utilities/url/ensureProtocol.js';
+import formatFileSize from '../../lib/utilities/file/formatFileSize.js';
+import createApiKeyValidator from '../../lib/utilities/middleware/createApiKeyValidator.js';
+import createRateLimiter from '../../lib/utilities/middleware/createRateLimiter.js';
 
 describe('QGenUtils Integration Tests', () => {
   describe('Security Integration', () => {

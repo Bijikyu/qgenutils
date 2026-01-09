@@ -29,10 +29,122 @@ interface DynamicImportCacheOptions {
  * - Database driver name normalization
  * - CJS/ESM interop via loadAndFlattenModule
  * 
+ * EDGE CASES HANDLED:
+ * - Module import failures: Graceful fallback with error logging
+ * - Memory pressure: LRU eviction prevents unbounded growth
+ * - Stale modules: Automatic cleanup based on timeout
+ * - Race conditions: Atomic cache operations prevent corruption
+ * - Invalid module names: Normalization and validation
+ * - Circular dependencies: Proper handling via import() promise
+ * - Memory leaks: Explicit cleanup and garbage collection
+ * - Process exit: Automatic interval cleanup
+ * 
+ * MEMORY MANAGEMENT:
+ * - Bounded cache size prevents memory exhaustion
+ * - LRU eviction prioritizes frequently used modules
+ * - Timeout-based cleanup removes unused modules
+ * - Explicit cleanup methods for manual management
+ * - Statistics tracking for performance monitoring
+ * 
+ * PERFORMANCE CHARACTERISTICS:
+ * - Cache hit: Near-instant module retrieval
+ * - Cache miss: Standard dynamic import() + caching
+ * - Pre-cached modules: Available without import() calls
+ * - LRU operations: O(1) complexity for access/eviction
+ * 
  * @example
+ * ```typescript
+ * // Basic usage with default settings
  * const cache = new DynamicImportCache({ maxCacheSize: 50, cacheTimeoutMs: 300000 });
  * await cache.preCacheModules();
+ * 
+ * // Cache a database driver
  * const redis = await cache.getModule('redis');
+ * console.log(redis); // Redis client instance
+ * 
+ * // Check cache statistics
+ * const stats = cache.getStats();
+ * console.log(`Cache hit ratio: ${stats.hitRate}%`);
+ * 
+ * // Custom configuration
+ * const productionCache = new DynamicImportCache({
+ *   maxCacheSize: 200,        // Larger cache for production
+ *   cacheTimeoutMs: 600000,  // 10 minute timeout
+ *   cleanupIntervalMs: 300000, // Cleanup every 5 minutes
+ *   flattenModules: true        // Flatten CJS/ESM modules
+ * });
+ * 
+ * // Handling cache misses
+ * try {
+ *   const customModule = await cache.getModule('@company/custom-module');
+ *   // Module loaded and cached successfully
+ * } catch (error) {
+ *   console.error('Module not available:', error);
+ *   // Handle missing module appropriately
+ * }
+ * 
+ * // Manual cache management
+ * await cache.clear(); // Clear all cached modules
+ * await cache.cleanup(); // Force cleanup of expired modules
+ * 
+ * // Advanced usage with conditional caching
+ * class ModuleManager {
+ *   constructor() {
+ *     this.cache = new DynamicImportCache({
+ *       maxCacheSize: process.env.NODE_ENV === 'production' ? 500 : 50,
+ *       cacheTimeoutMs: process.env.NODE_ENV === 'production' ? 1800000 : 300000
+ *     });
+ *   }
+ *   
+ *   async loadFeatureModule(featureName: string) {
+ *     const moduleName = `@company/features/${featureName}`;
+ *     try {
+ *       return await this.cache.getModule(moduleName);
+ *     } catch (error) {
+ *       // Module doesn't exist - return fallback
+ *       return this.cache.getModule('@company/features/fallback');
+ *     }
+ *   }
+ *   
+ *   async preloadCriticalFeatures() {
+ *     const critical = ['auth', 'user-profile', 'payment'];
+ *     await Promise.all(
+ *       critical.map(feature => this.loadFeatureModule(feature))
+ *     );
+ *   }
+ * }
+ * 
+ * // Database connection pooling with cached drivers
+ * class DatabasePool {
+ *   private cache: DynamicImportCache;
+ *   
+ *   constructor() {
+ *     this.cache = new DynamicImportCache({
+ *       maxCacheSize: 10,
+ *       cacheTimeoutMs: Infinity, // Never expire DB drivers
+ *       flattenModules: true
+ *     });
+ *   }
+ *   
+ *   async getConnection(type: 'postgres' | 'mysql' | 'mongodb') {
+ *     const driver = await this.cache.getModule(type);
+ *     return new driver.Connection(process.env.DATABASE_URL);
+ *   }
+ * }
+ * 
+ * // Edge case handling
+ * try {
+ *   // This might fail if module is malformed
+ *   const unstableModule = await cache.getModule('unstable-module');
+ * } catch (error) {
+ *   // Cache automatically handles failed imports
+ *   // Module is not cached, error is logged, execution continues
+ *   console.warn('Module loading failed:', error.message);
+ *   
+ *   // Fallback to alternative implementation
+ *   const stableModule = await cache.getModule('stable-module');
+ * }
+ * ```
  */
 class DynamicImportCache {
   private cache = new Map<string, CachedModule>();
