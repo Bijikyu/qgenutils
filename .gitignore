@@ -131,3 +131,6 @@ dist
 
 # Replit debugger
 .breakpoints
+
+# Large security report files
+security-reports/*.txt
