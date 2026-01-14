@@ -1,0 +1,182 @@
+/**
+ * Date and Time Utilities
+ */
+
+const formatDateTime = (date) => new Date(date).toLocaleString();
+const formatDuration = (start, end) => {
+  const diff = new Date(end || Date.now()) - new Date(start);
+  const hours = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return `${hours}h ${mins}m`;
+};
+const addDays = (date, days) => new Date(new Date(date).getTime() + days * 86400000);
+const formatDate = (date) => new Date(date).toLocaleDateString();
+const formatDateWithPrefix = (date, prefix) => `${prefix} ${formatDate(date)}`;
+
+/**
+ * Formats email date for list view with relative time
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date string
+ */
+const formatEmailDate = (date) => {
+  const now = new Date();
+  const emailDate = new Date(date);
+  const diffTime = Math.abs(now - emailDate);
+  const diffDays = Math.ceil(diffTime / 86400000);
+
+  if (diffDays === 0) {
+    return 'Today';
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays <= 7) {
+    return emailDate.toLocaleDateString('en-US', { weekday: 'short' });
+  } else {
+    return emailDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+};
+
+/**
+ * Formats detailed email date for email detail view
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date string with full details
+ */
+const formatEmailDetailDate = (date) => {
+  return formatDateTime(date) || new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+/**
+ * Formats date for reply/forward headers
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date string for email headers
+ */
+const formatDateForHeader = (date) => {
+  return new Date(date).toLocaleString();
+};
+
+/**
+ * Calculates snooze end date from hours
+ * @param {number} hours - Number of hours to snooze
+ * @returns {Date} Snooze end date
+ */
+const calculateSnoozeDate = (hours) => {
+  return new Date(Date.now() + hours * 3600000);
+};
+
+/**
+ * Gets minimum date for date inputs (today)
+ * @returns {string} ISO date string for min attribute
+ */
+const getMinDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
+
+/**
+ * Gets minimum time for time inputs (1 hour from now if today)
+ * @param {string} selectedDate - Selected date string
+ * @returns {string} Time string for min attribute
+ */
+const getMinTime = (selectedDate) => {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  
+  if (selectedDate === today) {
+    return new Date(now.getTime() + 3600000).toTimeString().slice(0, 5);
+  }
+  
+  return '00:00';
+};
+
+/**
+ * Validates that a date is in the future
+ * @param {string|Date} date - Date to validate
+ * @returns {boolean} True if date is in the future
+ */
+const isFutureDate = (date) => {
+  if (!date) return false;
+  const testDate = new Date(date);
+  if (isNaN(testDate.getTime())) return false;
+  return testDate > new Date();
+};
+
+/**
+ * Formats duration between two dates
+ * @param {string|Date} startDate - Start date
+ * @param {string|Date} [endDate] - End date (defaults to now)
+ * @returns {string} Formatted duration
+ */
+const formatEmailDuration = (startDate, endDate) => {
+  return formatDuration(startDate, endDate);
+};
+
+/**
+ * Adds days to a date
+ * @param {string|Date} date - Base date
+ * @param {number} days - Number of days to add
+ * @returns {Date} New date with days added
+ */
+const addDaysToDate = (date, days) => {
+  return addDays(date, days);
+};
+
+/**
+ * Formats date with prefix for context
+ * @param {string|Date} date - Date to format
+ * @param {string} prefix - Prefix to add
+ * @returns {string} Formatted date with prefix
+ */
+const formatDateWithContext = (date, prefix) => {
+  return formatDateWithPrefix(date, prefix);
+};
+
+/**
+ * Gets relative time description
+ * @param {string|Date} date - Date to compare
+ * @returns {string} Relative time description
+ */
+const getRelativeTime = (date) => {
+  const now = new Date();
+  const emailDate = new Date(date);
+  const diffMs = now - emailDate;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) {
+    return 'just now';
+  } else if (diffMins < 60) {
+    return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+  } else if (diffDays < 7) {
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+  } else {
+    return formatEmailDate(date);
+  }
+};
+
+export {
+  formatDateTime,
+  formatDuration,
+  addDays,
+  formatDate,
+  formatDateWithPrefix,
+  formatEmailDate,
+  formatEmailDetailDate,
+  formatDateForHeader,
+  calculateSnoozeDate,
+  getMinDate,
+  getMinTime,
+  isFutureDate,
+  formatEmailDuration,
+  addDaysToDate,
+  formatDateWithContext,
+  getRelativeTime
+};

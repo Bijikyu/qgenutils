@@ -449,40 +449,46 @@ export function getRelativeTime(date: Date, baseDate: Date = new Date()): string
   // Future dates
   if (diffMs > 0) {
     if (diff.years > 0) {
-      return `in ${diff.years} years`;
+      return `in ${diff.years} year${diff.years !== 1 ? 's' : ''}`;
     }
     if (diff.months > 0) {
-      return `in ${diff.months} months`;
+      return `in ${diff.months} month${diff.months !== 1 ? 's' : ''}`;
     }
     if (diff.days > 0) {
-      return `in ${diff.days} days`;
+      return `in ${diff.days} day${diff.days !== 1 ? 's' : ''}`;
     }
     if (diff.hours > 0) {
-      return `in ${diff.hours} hours`;
+      return `in ${diff.hours} hour${diff.hours !== 1 ? 's' : ''}`;
     }
     if (diff.minutes > 0) {
-      return `in ${diff.minutes} minutes`;
+      return `in ${diff.minutes} minute${diff.minutes !== 1 ? 's' : ''}`;
+    }
+    if (diff.seconds < 60) {
+      return 'in a moment';
     }
     return `in ${diff.seconds} seconds`;
   }
 
-  // Past dates
+  // Past dates - handle "just now" for very recent
+  if (diff.minutes < 1 && diff.hours === 0 && diff.days === 0) {
+    return 'just now';
+  }
   if (diff.years > 0) {
-    return `${diff.years} years ago`;
+    return `${diff.years} year${diff.years !== 1 ? 's' : ''} ago`;
   }
   if (diff.months > 0) {
-    return `${diff.months} months ago`;
+    return `${diff.months} month${diff.months !== 1 ? 's' : ''} ago`;
   }
   if (diff.days > 0) {
-    return `${diff.days} days ago`;
+    return `${diff.days} day${diff.days !== 1 ? 's' : ''} ago`;
   }
   if (diff.hours > 0) {
-    return `${diff.hours} hours ago`;
+    return `${diff.hours} hour${diff.hours !== 1 ? 's' : ''} ago`;
   }
   if (diff.minutes > 0) {
-    return `${diff.minutes} minutes ago`;
+    return `${diff.minutes} minute${diff.minutes !== 1 ? 's' : ''} ago`;
   }
-  return `${diff.seconds} seconds ago`;
+  return 'just now';
 }
 
 /**
@@ -547,6 +553,63 @@ export const DateValidation = {
   isWithinNextDays: (date: Date, days: number, referenceDate: Date = new Date()) => {
     const cutoffDate = new Date(referenceDate.getTime() + (days * 24 * 60 * 60 * 1000));
     return date <= cutoffDate;
+  }
+};
+
+/**
+ * Form input helpers for date/time inputs
+ */
+export const DateInputHelpers = {
+  /**
+   * Gets minimum date for date inputs (today)
+   * @returns ISO date string for min attribute (YYYY-MM-DD)
+   */
+  getMinDate: (): string => {
+    return new Date().toISOString().split('T')[0];
+  },
+
+  /**
+   * Gets minimum time for time inputs
+   * If selected date is today, returns 1 hour from now; otherwise returns '00:00'
+   * @param selectedDate - Selected date string (YYYY-MM-DD format)
+   * @returns Time string for min attribute (HH:mm)
+   */
+  getMinTime: (selectedDate?: string): string => {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+
+    if (selectedDate === today) {
+      const oneHourLater = new Date(now.getTime() + 3600000);
+      return oneHourLater.toTimeString().slice(0, 5);
+    }
+
+    return '00:00';
+  },
+
+  /**
+   * Calculates a future date from hours
+   * Useful for snooze functionality or delayed actions
+   * @param hours - Number of hours to add
+   * @returns Future Date object
+   */
+  calculateFutureFromHours: (hours: number): Date => {
+    return new Date(Date.now() + hours * 3600000);
+  },
+
+  /**
+   * Gets current date as ISO date string
+   * @returns ISO date string (YYYY-MM-DD)
+   */
+  getTodayISO: (): string => {
+    return new Date().toISOString().split('T')[0];
+  },
+
+  /**
+   * Gets current time as time string
+   * @returns Time string (HH:mm)
+   */
+  getCurrentTime: (): string => {
+    return new Date().toTimeString().slice(0, 5);
   }
 };
 
