@@ -6,6 +6,59 @@
  * including formatting, parsing, validation, and calculations.
  */
 
+// Cache for high-frequency timestamp generation
+let lastTimestamp = '';
+let lastTimestampTime = 0;
+const CACHE_DURATION_MS = 1;
+
+/**
+ * Gets current timestamp in ISO 8601 format
+ * @returns Current timestamp in ISO 8601 format
+ */
+export function getIsoTimestamp(): string {
+  return new Date().toISOString();
+}
+
+/**
+ * Gets cached timestamp for high-frequency usage
+ * Optimized for scenarios where multiple timestamps are needed in quick succession
+ * @returns Cached timestamp in ISO 8601 format
+ */
+export function getTimestampCached(): string {
+  const now = Date.now();
+  if (now - lastTimestampTime < CACHE_DURATION_MS) {
+    return lastTimestamp;
+  }
+  lastTimestamp = new Date(now).toISOString();
+  lastTimestampTime = now;
+  return lastTimestamp;
+}
+
+/**
+ * Gets Unix timestamp (seconds since epoch)
+ * @returns Unix timestamp in seconds
+ */
+export function getUnixTimestamp(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Validates if a string is a valid ISO 8601 timestamp
+ * @param timestamp - Timestamp to validate
+ * @returns True if valid ISO 8601 timestamp
+ */
+export function isValidIsoTimestamp(timestamp: unknown): boolean {
+  if (typeof timestamp !== 'string') {
+    return false;
+  }
+  const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+  if (!isoRegex.test(timestamp)) {
+    return false;
+  }
+  const date = new Date(timestamp);
+  return !isNaN(date.getTime());
+}
+
 /**
  * Date formatting options
  */

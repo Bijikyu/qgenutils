@@ -1,0 +1,182 @@
+// Exact current implementation copied from the codebase
+/**
+ * Timestamp Utility
+ * 
+ * SINGLE RESPONSIBILITY: Provide standardized timestamp generation
+ * 
+ * CONSOLIDATION RATIONALE:
+ * This module centralizes timestamp generation to replace the widespread duplication
+ * of `new Date().toISOString()` patterns across 15+ files in the codebase.
+ * 
+ * DESIGN PRINCIPLES:
+ * - Single source of truth for timestamp generation
+ * - Consistent ISO 8601 format
+ * - Optional timezone support
+ * - Performance optimized for high-frequency usage
+ * - Testable with mock support
+ * 
+ * USAGE PATTERNS:
+ * - Standard timestamp generation (getIsoTimestamp)
+ * - Timestamp with optional offset (getTimestampWithOffset)
+ * - Human-readable format (getFormattedTimestamp)
+ * - High-frequency optimized version (getTimestampCached)
+ */
+
+// Cache for high-frequency timestamp generation
+let lastTimestamp = ``;
+let lastTimestampTime = 0;
+const CACHE_DURATION_MS = 1; // Cache for 1ms to avoid repeated Date.now() calls
+
+/**
+ * Gets current timestamp in ISO 8601 format
+ * @returns {string} Current timestamp in ISO 8601 format
+ */
+function getIsoTimestamp(): string {
+   return new Date().toISOString();
+}
+
+/**
+ * Gets timestamp with optional timezone offset
+ * @param {number} [offsetHours=0] - Timezone offset in hours
+ * @returns {string} Timestamp with timezone adjustment
+ */
+function getTimestampWithOffset(offsetHours = 0): string {
+   const now = new Date();
+   if (offsetHours !== 0) {
+     now.setHours(now.getHours() + offsetHours);
+   }
+   return now.toISOString();
+}
+
+/**
+ * Gets timestamp in human-readable format
+ * @param {Date|string} [date=new Date()] - Date to format (defaults to now)
+ * @param {string} [locale=`en-US`] - Locale for formatting
+ * @returns {string} Human-readable timestamp
+ */
+function getFormattedTimestamp(date: Date | string = new Date(), locale = `en-US`): string {
+   const dateObj = typeof date === `string` ? new Date(date) : date;
+   return dateObj.toLocaleString(locale, {
+     year: `numeric`,
+     month: `2-digit`,
+     day: `2-digit`,
+     hour: `2-digit`,
+     minute: `2-digit`,
+     second: `2-digit`,
+     timeZoneName: `short`
+   });
+}
+
+/**
+ * Gets cached timestamp for high-frequency usage
+ * Optimized for scenarios where multiple timestamps are needed in quick succession
+ * @returns {string} Cached timestamp in ISO 8601 format
+ */
+function getTimestampCached(): string {
+   const now = Date.now();
+   
+   // Use cached timestamp if within cache duration
+   if (now - lastTimestampTime < CACHE_DURATION_MS) {
+     return lastTimestamp;
+   }
+   
+   // Generate new timestamp and cache it
+   lastTimestamp = new Date(now).toISOString();
+   lastTimestampTime = now;
+   return lastTimestamp;
+}
+
+/**
+ * Gets timestamp with milliseconds precision
+ * @returns {string} Timestamp with milliseconds included
+ */
+function getTimestampWithMs(): string {
+   const now = new Date();
+   return now.toISOString().replace(`T`, ` `).replace(`Z`, ``);
+}
+
+/**
+ * Gets Unix timestamp (seconds since epoch)
+ * @returns {number} Unix timestamp in seconds
+ */
+function getUnixTimestamp(): number {
+   return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Gets millisecond timestamp (milliseconds since epoch)
+ * @returns {number} Millisecond timestamp
+ */
+function getMillisecondTimestamp(): number {
+   return Date.now();
+}
+
+/**
+ * Validates if a string is a valid ISO 8601 timestamp
+ * @param {string} timestamp - Timestamp to validate
+ * @returns {boolean} True if valid ISO 8601 timestamp
+ */
+function isValidIsoTimestamp(timestamp: unknown): boolean {
+   if (typeof timestamp !== `string`) {
+     return false;
+   }
+   
+   const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+   if (!isoRegex.test(timestamp)) {
+     return false;
+   }
+   
+   const date = new Date(timestamp);
+   return !isNaN(date.getTime());
+}
+
+/**
+ * Converts timestamp to relative time description
+ * @param {Date|string|number} timestamp - Timestamp to convert
+ * @param {Date|string|number} [reference=new Date()] - Reference time
+ * @returns {string} Relative time description
+ */
+function getRelativeTime(
+   timestamp: Date | string | number,
+   reference: Date | string | number = new Date()
+): string {
+   const past = new Date(timestamp);
+   const now = new Date(reference);
+   const diffMs = now.getTime() - past.getTime();
+   
+   if (diffMs < 0) {
+     return `in the future`;
+   }
+   
+   const seconds = Math.floor(diffMs / 1000);
+   const minutes = Math.floor(seconds / 60);
+   const hours = Math.floor(minutes / 60);
+   const days = Math.floor(hours / 24);
+   
+   if (days > 0) {
+     return `${days} day${days > 1 ? `s` : ``} ago`;
+   }
+   if (hours > 0) {
+     return `${hours} hour${hours > 1 ? `s` : ``} ago`;
+   }
+   if (minutes > 0) {
+     return `${minutes} minute${minutes > 1 ? `s` : ``} ago`;
+   }
+   if (seconds > 0) {
+     return `${seconds} second${seconds > 1 ? `s` : ``} ago`;
+   }
+   
+   return `just now`;
+}
+
+export {
+   getIsoTimestamp,
+   getTimestampWithOffset,
+   getFormattedTimestamp,
+   getTimestampCached,
+   getTimestampWithMs,
+   getUnixTimestamp,
+   getMillisecondTimestamp,
+   isValidIsoTimestamp,
+   getRelativeTime
+};
