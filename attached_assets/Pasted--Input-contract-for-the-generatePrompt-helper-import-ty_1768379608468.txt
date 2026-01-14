@@ -1,0 +1,55 @@
+/** Input contract for the generatePrompt helper. */
+import type { OutreachContext } from "./sharedTypes.js";
+export interface GeneratePromptData extends OutreachContext {}
+
+/** Result payload produced by generatePrompt. */
+export interface GeneratePromptResult {
+  prompt: string; // Prompt string for LLM request
+  sanitizedExcerpt: string; // Sanitized excerpt used for prompt
+  error?: string; // Optional error to aid troubleshooting
+}
+
+import type { LogError, WithLogError } from "../types.js";
+import { safeErrorMessage } from "./safeError.js";
+
+/** Optional dependencies that keep generatePrompt pure. */
+export interface GeneratePromptDependencies extends WithLogError {}
+
+/**
+ * Generates a sanitized GPT prompt describing the outreach pitch context.
+ * @param data Input payload describing the outreach context.
+ * @param deps Optional error logger injection to decouple from logging libs.
+ * @returns Result object containing the sanitized prompt and excerpt.
+ */
+export function generatePrompt(
+  data: GeneratePromptData,
+  deps: GeneratePromptDependencies = {},
+): GeneratePromptResult {
+  const result: GeneratePromptResult = { prompt: "", sanitizedExcerpt: "" }; // fixed return envelope
+
+  try {
+    const rawExcerpt = data.content.slice(0, 2000).replace(/\s+/g, " ").trim(); // guard prompt injection by truncating + normalising whitespace
+    result.sanitizedExcerpt = rawExcerpt.substring(0, 500); // store short preview for audit trails
+
+    result.prompt = `Compose an SEO outreach email on behalf of ${data.senderName}, ${data.senderRole} at ${data.origin}.
+This email should be addressed to the author or webmaster of ${data.linkedUrl}.
+Context:
+- Our article (${data.publicationUrl}) referenced their content.
+- Our content includes: "${result.sanitizedExcerpt}..."
+
+Goals:
+- Politely request a backlink or guest post collaboration.
+- Mention the relevance of our content to theirs.
+- Be specific, sincere, and professional.
+- Use a neutral greeting if no name is known (e.g., "Hello").
+- Include an opt-out note at the bottom.`; // multi-line template keeps instructions explicit for the LLM
+  } catch (error) {
+    const message = safeErrorMessage(error, "Failed to generate prompt"); // fallback message for unknown cases
+    result.prompt = ""; // ensure deterministic output on failure
+    result.sanitizedExcerpt = "";
+    result.error = message; // expose failure cause without throwing
+    deps.logError?.(error, "generatePrompt:failed", { linkedUrl: data.linkedUrl }); // structured log to preserve context
+  }
+
+  return result; // universal return structure
+}
