@@ -45,6 +45,7 @@ export {
 };
 
 export type { GetDomainData, GetDomainResult, GetDomainDependencies } from './getDomain.js';
+export type { EnsureProtocolData } from './ensureProtocolUrl.js';
 
 /**
  * Default export for CommonJS compatibility and convenience imports

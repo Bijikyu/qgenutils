@@ -10,20 +10,33 @@
  * - Handles protocol-relative URLs (//example.com)
  * - Preserves existing valid protocols (http://, https://)
  *
- * @param {object} data - Input data object
- * @param {string} data.url - URL to normalize
- * @param {boolean} [data.allowEmpty] - When true, return empty string for empty input
- * @returns {string} Normalized URL with protocol
+ * @module url/ensureProtocolUrl
  */
 
 import ensureProtocol from './ensureProtocol.js';
 
-function ensureProtocolUrl(data) {
+export interface EnsureProtocolData {
+  url: string;
+  allowEmpty?: boolean;
+}
+
+/**
+ * Normalize URL with protocol, with configurable empty input handling.
+ *
+ * @param data - Input data with url and optional allowEmpty flag
+ * @returns Normalized URL with protocol
+ *
+ * @example
+ * ensureProtocolUrl({ url: 'example.com' }); // 'https://example.com'
+ * ensureProtocolUrl({ url: '', allowEmpty: true }); // ''
+ * ensureProtocolUrl({ url: '' }); // 'https://'
+ */
+function ensureProtocolUrl(data: EnsureProtocolData): string {
   if (!data || typeof data !== 'object') {
     return 'https://';
   }
 
-  const input: any = (data.url ?? '').trim();
+  const input = (data.url ?? '').trim();
 
   if (!input) {
     return data.allowEmpty ? '' : 'https://';
@@ -33,3 +46,4 @@ function ensureProtocolUrl(data) {
 }
 
 export default ensureProtocolUrl;
+export { ensureProtocolUrl };
