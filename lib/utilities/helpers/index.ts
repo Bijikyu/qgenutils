@@ -129,6 +129,15 @@ import {
 } from './jsdocTemplates.js';
 
 // ============================================================================
+// USER ID EXTRACTION UTILITIES
+// ============================================================================
+
+import {
+  extractUserId,
+  extractUserIdOrDefault
+} from './userIdHelpers.js';
+
+// ============================================================================
 // NAMED EXPORTS - Tree-Shaking Optimized
 // ============================================================================
 
@@ -192,7 +201,11 @@ export {
   transformationFunctionTemplate,
   formatFunctionTemplate,
   generatorFunctionTemplate,
-  configFunctionTemplate
+  configFunctionTemplate,
+
+  // User ID Extraction Utilities
+  extractUserId,
+  extractUserIdOrDefault
 };
 
 // ============================================================================
