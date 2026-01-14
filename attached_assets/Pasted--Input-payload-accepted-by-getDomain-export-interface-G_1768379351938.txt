@@ -1,0 +1,61 @@
+/** Input payload accepted by getDomain. */
+export interface GetDomainData {
+  url: string; // Raw URL string that requires normalization
+}
+
+/** Result envelope returned by getDomain. */
+export interface GetDomainResult {
+  domain: string | null; // Apex domain or null when parsing fails
+  error?: string; // Optional parsing error for observability
+}
+
+import type { LogError, WithLogError } from "../types.js";
+import { safeErrorMessage } from "./safeError.js";
+
+/** Optional dependencies that keep getDomain pure. */
+export interface GetDomainDependencies extends WithLogError {}
+
+/**
+ * Normalises a full URL into its apex domain for consistent downstream usage.
+ * @param data Incoming payload with the url that needs normalizing.
+ * @param deps Optional logger injection to avoid direct logging imports.
+ * @returns Object containing the normalized domain or null when parsing fails.
+ */
+import { ensureProtocolUrl } from "./ensureProtocol.js";
+
+export function getDomain(
+  data: GetDomainData,
+  deps: GetDomainDependencies = {},
+): GetDomainResult {
+  const result: GetDomainResult = { domain: null }; // result object mandated by architecture
+  try {
+    const trimmedUrl = (data.url || "").trim(); // guard whitespace-only values
+    if (!trimmedUrl) {
+      result.error = "Missing URL input";
+      deps.logError?.(new Error(result.error), "getDomain:normalize_failed", { url: data.url });
+      return result;
+    }
+
+    const normalizedUrl = ensureProtocolUrl({ url: trimmedUrl }); // default to HTTPS when scheme absent
+
+    const parsedUrl = new URL(normalizedUrl); // built-in URL parser prevents malformed hostnames
+    const hostname = parsedUrl.hostname.replace(/^www\./, ""); // strip trivial subdomain noise
+
+    if (!hostname || !hostname.includes(".")) { // ensure hostname resembles a public domain
+      result.error = "Hostname lacks a valid domain segment";
+      deps.logError?.(
+        new Error(result.error),
+        "getDomain:invalid_hostname",
+        { url: data.url, normalizedUrl },
+      );
+      return result;
+    }
+
+    result.domain = hostname; // propagate normalized domain for downstream calls
+  } catch (error) {
+    const message = safeErrorMessage(error, "Unknown URL parsing error"); // defensive stringification
+    result.error = message; // surface issue to caller for observability
+    deps.logError?.(error, "getDomain:failed", { url: data.url }); // structured logging through qerrors
+  }
+  return result; // universal return object
+}

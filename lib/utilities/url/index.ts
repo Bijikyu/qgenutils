@@ -25,6 +25,7 @@
 // Import individual URL utilities for modular composition and re-export
 import ensureProtocol from './ensureProtocol.js';
 import ensureProtocolUrl from './ensureProtocolUrl.js';
+import getDomain from './getDomain.js';
 import normalizeUrlOrigin from './normalizeUrlOrigin.js';
 import parseUrlParts from './parseUrlParts.js';
 import stripProtocol from './stripProtocol.js';
@@ -37,10 +38,13 @@ import stripProtocol from './stripProtocol.js';
 export {
   ensureProtocol,
   ensureProtocolUrl,
+  getDomain,
   normalizeUrlOrigin,
   parseUrlParts,
   stripProtocol
 };
+
+export type { GetDomainData, GetDomainResult, GetDomainDependencies } from './getDomain.js';
 
 /**
  * Default export for CommonJS compatibility and convenience imports
@@ -50,6 +54,7 @@ export {
 export default {
   ensureProtocol,
   ensureProtocolUrl,
+  getDomain,
   normalizeUrlOrigin,
   parseUrlParts,
   stripProtocol
