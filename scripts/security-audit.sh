@@ -191,17 +191,17 @@ network_security_scan() {
     
     # Check for HTTP-only endpoints (no HTTPS)
     echo "=== HTTP vs HTTPS Usage ===" >> "$report_file"
-    grep -r -i -n "http://" --include="*.js" --include="*.ts" --include="*.json" --exclude-dir=node_modules . 2>/dev/null >> "$report_file" || echo "No HTTP URLs found" >> "$report_file"
+    grep -r -i -n "http://" --include="*.js" --include="*.ts" --include="*.json" --exclude-dir=node_modules . 2>/dev/null | head -1000 >> "$report_file" || echo "No HTTP URLs found" >> "$report_file"
     echo "" >> "$report_file"
     
     # Check for open ports in configuration
     echo "=== Port Configuration ===" >> "$report_file"
-    grep -r -i -n "port" --include="*.js" --include="*.ts" --include="*.json" --include="*.yml" --include="*.yaml" --exclude-dir=node_modules . 2>/dev/null | grep -E "[0-9]{4,5}" >> "$report_file" || echo "No explicit port configurations found" >> "$report_file"
+    grep -r -i -n "port" --include="*.js" --include="*.ts" --include="*.json" --include="*.yml" --include="*.yaml" --exclude-dir=node_modules . 2>/dev/null | grep -E "[0-9]{4,5}" | head -1000 >> "$report_file" || echo "No explicit port configurations found" >> "$report_file"
     echo "" >> "$report_file"
     
     # Check for CORS configuration
     echo "=== CORS Configuration ===" >> "$report_file"
-    grep -r -i -n "cors" --include="*.js" --include="*.ts" --exclude-dir=node_modules . 2>/dev/null >> "$report_file" || echo "No CORS configuration found" >> "$report_file"
+    grep -r -i -n "cors" --include="*.js" --include="*.ts" --exclude-dir=node_modules . 2>/dev/null | head -1000 >> "$report_file" || echo "No CORS configuration found" >> "$report_file"
     echo "" >> "$report_file"
     
     success "Network security scan completed: $report_file"
@@ -221,17 +221,17 @@ config_security_check() {
     
     # Check for environment variables
     echo "=== Environment Variable Usage ===" >> "$report_file"
-    grep -r -n "process\.env\." --include="*.js" --include="*.ts" --exclude-dir=node_modules . 2>/dev/null >> "$report_file" || echo "No environment variables found" >> "$report_file"
+    grep -r -n "process\.env\." --include="*.js" --include="*.ts" --exclude-dir=node_modules . 2>/dev/null | head -1000 >> "$report_file" || echo "No environment variables found" >> "$report_file"
     echo "" >> "$report_file"
     
     # Check for development/production flags
     echo "=== Environment Configuration ===" >> "$report_file"
-    grep -r -i -n "node_env\|development\|production" --include="*.js" --include="*.ts" --include="*.json" --exclude-dir=node_modules . 2>/dev/null >> "$report_file" || echo "No environment configurations found" >> "$report_file"
+    grep -r -i -n "node_env\|development\|production" --include="*.js" --include="*.ts" --include="*.json" --exclude-dir=node_modules . 2>/dev/null | head -1000 >> "$report_file" || echo "No environment configurations found" >> "$report_file"
     echo "" >> "$report_file"
     
     # Check for debugging enabled
     echo "=== Debug Configuration ===" >> "$report_file"
-    grep -r -i -n "debug.*true\|console\.(log|warn|error)" --include="*.js" --include="*.ts" --exclude-dir=node_modules . 2>/dev/null | head -20 >> "$report_file" || echo "No debug configurations found" >> "$report_file"
+    grep -r -i -n "debug.*true\|console\.(log|warn|error)" --include="*.js" --include="*.ts" --exclude-dir=node_modules . 2>/dev/null | head -1000 >> "$report_file" || echo "No debug configurations found" >> "$report_file"
     echo "" >> "$report_file"
     
     success "Configuration security check completed: $report_file"
