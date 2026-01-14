@@ -454,6 +454,190 @@ export const TypeGuards = {
 };
 
 /**
+ * Entity manipulation utilities for items with ID properties
+ * Handles common patterns for finding, updating, and removing items by ID
+ */
+export const EntityUtils = {
+  /**
+   * Finds an item in an array by ID or _id property
+   * @param items - Array of items
+   * @param id - ID to search for
+   * @returns Found item or null
+   */
+  findById: <T extends { id?: any; _id?: any }>(items: T[], id: any): T | null => {
+    if (!Array.isArray(items) || id === undefined || id === null) return null;
+    return items.find(item => item.id === id || item._id === id) || null;
+  },
+
+  /**
+   * Updates an item in an array by matching on ID or _id property
+   * @param items - Array of items
+   * @param id - ID of the item to update
+   * @param updates - Updates to apply to the item
+   * @returns New array with updated item
+   */
+  updateById: <T extends { id?: any; _id?: any }>(items: T[], id: any, updates: Partial<T>): T[] => {
+    if (!Array.isArray(items) || id === undefined || id === null) return [];
+    return items.map(item =>
+      (item.id === id || item._id === id)
+        ? { ...item, ...updates }
+        : item
+    );
+  },
+
+  /**
+   * Removes item(s) from an array by matching on ID or _id property
+   * @param items - Array of items
+   * @param idsToRemove - ID(s) of the item(s) to remove
+   * @returns New array without the specified item(s)
+   */
+  removeById: <T extends { id?: any; _id?: any }>(items: T[], idsToRemove: any | any[]): T[] => {
+    if (!Array.isArray(items)) return [];
+    const idsArray = Array.isArray(idsToRemove) ? idsToRemove : [idsToRemove];
+    return items.filter(item =>
+      !idsArray.some(id => item.id === id || item._id === id)
+    );
+  },
+
+  /**
+   * Checks if an array contains an item with specific ID
+   * @param items - Array of items
+   * @param id - ID to check for
+   * @returns True if item with ID exists
+   */
+  hasId: <T extends { id?: any; _id?: any }>(items: T[], id: any): boolean => {
+    if (!Array.isArray(items) || id === undefined || id === null) return false;
+    return items.some(item => item.id === id || item._id === id);
+  },
+
+  /**
+   * Filters array to include only active items (items with isActive: true)
+   * @param items - Array of items with isActive property
+   * @returns Array of active items
+   */
+  filterActive: <T extends { isActive?: boolean }>(items: T[]): T[] => {
+    if (!Array.isArray(items)) return [];
+    return items.filter(item => item.isActive === true);
+  },
+
+  /**
+   * Filters array to include only inactive items (items with isActive: false)
+   * @param items - Array of items with isActive property
+   * @returns Array of inactive items
+   */
+  filterInactive: <T extends { isActive?: boolean }>(items: T[]): T[] => {
+    if (!Array.isArray(items)) return [];
+    return items.filter(item => item.isActive === false);
+  }
+};
+
+/**
+ * Safe array operations with null/undefined checks
+ */
+export const SafeArrayOps = {
+  /**
+   * Safely filters an array with null/undefined checks
+   * @param items - Array to filter
+   * @param predicate - Filter function
+   * @returns Filtered array
+   */
+  filter: <T>(items: T[] | null | undefined, predicate: (item: T, index: number) => boolean): T[] => {
+    if (!Array.isArray(items) || typeof predicate !== 'function') return [];
+    return items.filter(predicate);
+  },
+
+  /**
+   * Safely maps an array with null/undefined checks
+   * @param items - Array to map
+   * @param mapper - Map function
+   * @returns Mapped array
+   */
+  map: <T, U>(items: T[] | null | undefined, mapper: (item: T, index: number) => U): U[] => {
+    if (!Array.isArray(items) || typeof mapper !== 'function') return [];
+    return items.map(mapper);
+  },
+
+  /**
+   * Safely reduces an array with null/undefined checks
+   * @param items - Array to reduce
+   * @param reducer - Reducer function
+   * @param initialValue - Initial value
+   * @returns Reduced value
+   */
+  reduce: <T, U>(items: T[] | null | undefined, reducer: (acc: U, item: T, index: number) => U, initialValue: U): U => {
+    if (!Array.isArray(items) || typeof reducer !== 'function') return initialValue;
+    return items.reduce(reducer, initialValue);
+  }
+};
+
+/**
+ * Grouping and counting utilities
+ */
+export const GroupingUtils = {
+  /**
+   * Groups items by a specific property
+   * @param items - Array of items
+   * @param property - Property to group by
+   * @returns Object with grouped items
+   */
+  groupBy: <T extends Record<string, any>>(items: T[], property: keyof T): Record<string, T[]> => {
+    if (!Array.isArray(items)) return {};
+    return items.reduce((groups, item) => {
+      const key = item && typeof item === 'object' ? String(item[property] ?? 'unknown') : 'unknown';
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+      return groups;
+    }, {} as Record<string, T[]>);
+  },
+
+  /**
+   * Counts items by a boolean property
+   * @param items - Array of items
+   * @param property - Property name to count by
+   * @returns Count object with true, false, and total counts
+   */
+  countByBoolean: <T extends Record<string, any>>(items: T[], property: keyof T): { true: number; false: number; total: number } => {
+    if (!Array.isArray(items)) return { true: 0, false: 0, total: 0 };
+    const trueCount = items.filter(item => item[property] === true).length;
+    const falseCount = items.filter(item => item[property] === false).length;
+    return { true: trueCount, false: falseCount, total: items.length };
+  },
+
+  /**
+   * Counts items by a specific property value
+   * @param items - Array of items
+   * @param property - Property to count by
+   * @returns Object with value counts
+   */
+  countBy: <T extends Record<string, any>>(items: T[], property: keyof T): Record<string, number> => {
+    if (!Array.isArray(items)) return {};
+    return items.reduce((counts, item) => {
+      const key = String(item[property] ?? 'unknown');
+      counts[key] = (counts[key] || 0) + 1;
+      return counts;
+    }, {} as Record<string, number>);
+  }
+};
+
+/**
+ * Validation utilities
+ */
+export const ValidationUtils = {
+  /**
+   * Validates if a value is in an array of valid options
+   * @param value - Value to check
+   * @param validOptions - Array of valid options
+   * @returns True if value is in valid options
+   */
+  isValidOption: <T>(value: T, validOptions: T[]): boolean => {
+    if (!Array.isArray(validOptions)) return false;
+    return validOptions.includes(value);
+  }
+};
+
+/**
  * Conversion utilities
  */
 export const ConversionUtils = {

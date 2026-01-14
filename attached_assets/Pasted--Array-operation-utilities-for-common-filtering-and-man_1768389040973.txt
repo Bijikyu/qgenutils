@@ -1,0 +1,268 @@
+/**
+ * Array operation utilities for common filtering and manipulation patterns
+ * Reduces code duplication across the codebase
+ */
+
+/**
+ * Filters array to include only active items (items with isActive: true)
+ * @param {Array} items - Array of items with isActive property
+ * @returns {Array} - Array of active items
+ */
+export const filterActive = (items) => {
+  if (!Array.isArray(items)) return [];
+  return items.filter(item => item.isActive === true);
+};
+
+/**
+ * Filters array to include only inactive items (items with isActive: false)
+ * @param {Array} items - Array of items with isActive property
+ * @returns {Array} - Array of inactive items
+ */
+export const filterInactive = (items) => {
+  if (!Array.isArray(items)) return [];
+  return items.filter(item => item.isActive === false);
+};
+
+/**
+ * Filters array to include only items that require action
+ * @param {Array} items - Array of items with actionRequired property
+ * @returns {Array} - Array of items requiring action
+ */
+export const filterActionRequired = (items) => {
+  if (!Array.isArray(items)) return [];
+  return items.filter(item => item.actionRequired === true);
+};
+
+/**
+ * Filters emails by UID (removes emails with specific UID)
+ * @param {Array} emails - Array of email objects
+ * @param {string|Array} uidsToRemove - UID(s) to remove, can be single UID or array of UIDs
+ * @returns {Array} - Array without the specified emails
+ */
+export const filterEmailsByUid = (emails, uidsToRemove) => {
+  if (!Array.isArray(emails)) return [];
+  
+  const uidsArray = Array.isArray(uidsToRemove) ? [...uidsToRemove] : [uidsToRemove];
+  return emails.filter(email => !uidsArray.includes(email.uid));
+};
+
+/**
+ * Filters emails that are in a list of selected UIDs
+ * @param {Array} emails - Array of email objects
+ * @param {Array} selectedUids - Array of selected UIDs
+ * @returns {Array} - Array of emails that are selected
+ */
+export const filterSelectedEmails = (emails, selectedUids) => {
+  if (!Array.isArray(emails) || !Array.isArray(selectedUids)) return [];
+  return emails.filter(email => selectedUids.includes(email.uid));
+};
+
+/**
+ * Updates an item in an array by matching on ID or _id property
+ * @param {Array} items - Array of items
+ * @param {string|number} id - ID of the item to update
+ * @param {Object} updates - Updates to apply to the item
+ * @returns {Array} - New array with updated item
+ */
+export const updateItemById = (items, id, updates) => {
+  if (!Array.isArray(items) || id === undefined || id === null) return [];
+  return items.map(item => 
+    (item.id === id || item._id === id) 
+      ? { ...item, ...updates } 
+      : item
+  );
+};
+
+/**
+ * Removes an item from an array by matching on ID or _id property
+ * @param {Array} items - Array of items
+ * @param {string|number|Array} idsToRemove - ID(s) of the item(s) to remove
+ * @returns {Array} - New array without the specified item(s)
+ */
+export const removeItemById = (items, idsToRemove) => {
+  if (!Array.isArray(items)) return [];
+  
+  const idsArray = Array.isArray(idsToRemove) ? [...idsToRemove] : [idsToRemove];
+  return items.filter(item => 
+    !idsArray.some(id => item.id === id || item._id === id)
+  );
+};
+
+/**
+ * Updates an item in an array by matching on UID property (for emails)
+ * @param {Array} emails - Array of email objects
+ * @param {string} uid - UID of the email to update
+ * @param {Object} updates - Updates to apply to the email
+ * @returns {Array} - New array with updated email
+ */
+export const updateEmailByUid = (emails, uid, updates) => {
+  if (!Array.isArray(emails) || uid === undefined || uid === null) return [];
+  return emails.map(email => 
+    email.uid === uid 
+      ? { ...email, ...updates } 
+      : email
+  );
+};
+
+/**
+ * Removes emails from an array by matching on UID property
+ * @param {Array} emails - Array of email objects
+ * @param {string|Array} uidsToRemove - UID(s) of the email(s) to remove
+ * @returns {Array} - New array without the specified email(s)
+ */
+export const removeEmailByUid = (emails, uidsToRemove) => {
+  if (!Array.isArray(emails)) return [];
+  
+  const uidsArray = Array.isArray(uidsToRemove) ? [...uidsToRemove] : [uidsToRemove];
+  return [...emails].filter(email => !uidsArray.includes(email.uid));
+};
+
+/**
+ * Counts active vs inactive items in an array
+ * @param {Array} items - Array of items with isActive property
+ * @returns {Object} - Count object { active: number, inactive: number, total: number }
+ */
+export const countActiveInactive = (items) => {
+  if (!Array.isArray(items)) return { active: 0, inactive: 0, total: 0 };
+  
+  const active = items.filter(item => item && typeof item === 'object' && item.isActive === true).length;
+  const inactive = items.filter(item => item && typeof item === 'object' && (item.isActive === false || item.isActive !== true)).length;
+  
+  return { active, inactive, total: items.length };
+};
+
+/**
+ * Groups items by a specific property
+ * @param {Array} items - Array of items
+ * @param {string} property - Property to group by
+ * @returns {Object} - Object with grouped items
+ */
+export const groupByProperty = (items, property) => {
+  if (!Array.isArray(items)) return {};
+  
+  return items.reduce((groups, item) => {
+    let key = 'unknown';
+    
+    if (item && typeof item === 'object') {
+      key = item[property] || 'unknown';
+    }
+    
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push(item);
+    return groups;
+  }, {});
+};
+
+/**
+ * Creates a category count from items (useful for templates, rules, etc.)
+ * @param {Array} items - Array of items with category property
+ * @returns {Object} - Object with category counts
+ */
+export const createCategoryCounts = (items) => {
+  if (!Array.isArray(items)) return {};
+  
+  return items.reduce((categories, item) => {
+    const category = item.category || 'uncategorized';
+    categories[category] = (categories[category] || 0) + 1;
+    return categories;
+  }, {});
+};
+
+/**
+ * Finds an item in an array by ID or _id property
+ * @param {Array} items - Array of items
+ * @param {string|number} id - ID to search for
+ * @returns {Object|null} - Found item or null
+ */
+export const findItemById = (items, id) => {
+  if (!Array.isArray(items)) return null;
+  const found = items.find(item => item.id === id || item._id === id);
+  return found || null;
+};
+
+/**
+ * Finds an email in an array by UID property
+ * @param {Array} emails - Array of email objects
+ * @param {string} uid - UID to search for
+ * @returns {Object|null} - Found email or null
+ */
+export const findEmailByUid = (emails, uid) => {
+  if (!Array.isArray(emails)) return null;
+  return emails.find(email => email.uid === uid) || null;
+};
+
+/**
+ * Safely filters an array with null/undefined checks
+ * @param {Array} items - Array to filter
+ * @param {Function} predicate - Filter function
+ * @returns {Array} - Filtered array
+ */
+export const safeFilter = (items, predicate) => {
+  if (!Array.isArray(items) || typeof predicate !== 'function') return [];
+  return items.filter(predicate);
+};
+
+/**
+ * Safely maps an array with null/undefined checks
+ * @param {Array} items - Array to map
+ * @param {Function} mapper - Map function
+ * @returns {Array} - Mapped array
+ */
+export const safeMap = (items, mapper) => {
+  if (!Array.isArray(items) || typeof mapper !== 'function') return [];
+  return items.map(mapper);
+};
+
+/**
+ * Checks if an array contains an item with specific ID
+ * @param {Array} items - Array of items
+ * @param {string|number} id - ID to check for
+ * @returns {boolean} - True if item with ID exists
+ */
+export const hasItemWithId = (items, id) => {
+  if (!Array.isArray(items) || id === undefined || id === null) return false;
+  return items.some(item => item.id === id || item._id === id);
+};
+
+/**
+ * Checks if an array contains an email with specific UID
+ * @param {Array} emails - Array of email objects
+ * @param {string} uid - UID to check for
+ * @returns {boolean} - True if email with UID exists
+ */
+export const hasEmailWithUid = (emails, uid) => {
+  if (!Array.isArray(emails) || uid === undefined || uid === null) return false;
+  return emails.some(email => email.uid === uid);
+};
+
+/**
+ * Counts items by a boolean property (success, active, etc.)
+ * @param {Array} items - Array of items with boolean property
+ * @param {string} property - Property name to count by
+ * @returns {Object} - Count object { true: number, false: number, total: number }
+ */
+export const countByBooleanProperty = (items, property) => {
+  if (!Array.isArray(items)) return { true: 0, false: 0, total: 0 };
+  
+  const trueCount = items.filter(item => item[property] === true).length;
+  const falseCount = items.filter(item => item[property] === false).length;
+  
+  return { 
+    true: trueCount, 
+    false: falseCount, 
+    total: items.length 
+  };
+};
+
+/**
+ * Validates if a value is in an array of valid options
+ * @param {string|number} value - Value to check
+ * @param {Array} validOptions - Array of valid options
+ * @returns {boolean} - True if value is in valid options
+ */
+export const isValidOption = (value, validOptions) => {
+  if (!Array.isArray(validOptions)) return false;
+  return validOptions.includes(value);
+};
