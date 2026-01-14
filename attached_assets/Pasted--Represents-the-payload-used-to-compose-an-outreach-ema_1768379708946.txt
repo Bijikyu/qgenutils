@@ -1,0 +1,79 @@
+/** Represents the payload used to compose an outreach email. */
+import type { SenderEnvelope } from "./sharedTypes.js";
+export interface ComposeEmailData extends SenderEnvelope {
+  prompt: string; // LLM instructions for composing the outreach email
+  to: string; // Recipient email address
+}
+
+/** Describes the outcome of composing (and optionally sending) an email. */
+export interface ComposeEmailResult {
+  email: string; // Recipient address targeted by the workflow
+  sent: boolean; // Indicates whether delivery succeeded
+  dryRun: boolean; // Mirrors the dry-run state for downstream routing
+  error?: string; // Carries a human-readable failure reason when present
+  messageSnippet?: string; // Provides a short preview of the composed content
+}
+
+/** Context describing precomputed message content and delivery outcome. */
+export interface ComposeEmailContext {
+  composedMessage?: string; // Final email body produced upstream
+  deliveryAttempted: boolean; // Whether a send attempt occurred
+  deliverySucceeded: boolean; // Whether the email was actually delivered
+  deliveryError?: string; // Optional reason supplied by the transport layer
+}
+
+/**
+ * Deterministically maps compose-email inputs and context into a result object.
+ * @param data Payload containing prompt, recipient, sender, and optional dry-run flag.
+ * @param context Precomputed message content and delivery outcome supplied by the caller.
+ * @returns Result object reflecting delivery status, errors, and audit snippet.
+ */
+export function composeEmail(
+  data: ComposeEmailData,
+  context?: ComposeEmailContext,
+): ComposeEmailResult {
+  const result: ComposeEmailResult = {
+    email: data.to,
+    sent: false,
+    dryRun: Boolean(data.dryRun),
+  }; // unified return shape per architecture guidance
+
+  const trimmedPrompt = data.prompt?.trim() ?? ""; // strip whitespace before validation
+  if (!trimmedPrompt) {
+    result.error = "Missing prompt for composeEmail"; // fail fast when prompt absent
+    return result;
+  }
+
+  const composedMessage = context?.composedMessage?.trim() ?? "";
+  
+  if (result.dryRun) {
+    // In dry run mode, show full composed message if available
+    if (composedMessage) {
+      result.messageSnippet = `[DRY RUN - Preview]\n\n${composedMessage}`;
+    } else {
+      result.messageSnippet = `[DRY RUN] ${trimmedPrompt.slice(0, 120)}`;
+    }
+    return result; // bypass delivery when dry run is requested
+  }
+
+  if (!composedMessage) {
+    // Preserve upstream cause (e.g., OpenAI generation failure) when provided.
+    result.error = context?.deliveryError || "Missing composed email content"; // cannot proceed without message body
+    return result;
+  }
+
+  result.messageSnippet = composedMessage.slice(0, 120); // store small snippet for logging/QA
+
+  if (!context?.deliveryAttempted) {
+    result.error = context?.deliveryError || "Email delivery was not attempted"; // highlight orchestration gap
+    return result;
+  }
+
+  if (context.deliverySucceeded) {
+    result.sent = true; // mark delivery success
+    return result;
+  }
+
+  result.error = context.deliveryError || "Email delivery failed"; // expose provided failure reason
+  return result; // consistent result object
+}
