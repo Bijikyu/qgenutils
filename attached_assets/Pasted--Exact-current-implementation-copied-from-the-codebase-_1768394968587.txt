@@ -1,0 +1,234 @@
+// Exact current implementation copied from the codebase
+/**
+ * Core Image Compression Module
+ * 
+ * This module provides the core image compression functionality using
+ * Canvas API. It handles the actual compression process with
+ * proper error handling and resource cleanup.
+ */
+
+const{logFunctionEntry}=require('../logging'),utils=require('./utils'),{calculateResizedDimensions,createCompressedFile,logCompressionResults}=utils;
+
+class GlobalCanvasPoolManager {
+  constructor() {
+    this.pools = new Map();
+    this.globalLimit = 6;
+    this.maxMemoryUsageMB = 25;
+    this.totalCanvases = 0;
+    this.stats = {
+      totalGets: 0,
+      totalHits: 0,
+      memoryEvictions: 0
+    };
+  }
+
+  registerPool(instanceId, config = {}) {
+    const pool = {
+      pool: [],
+      minSize: 1, // Reduced minimum size
+      maxSize: 4, // Reduced maximum size
+      currentSize: 2, // Reduced current size
+      // Simplified stats - reduced memory overhead
+      usageStats: {
+        gets: 0,
+        hits: 0,
+        lastResize: Date.now()
+      },
+      instanceId
+    };
+    
+    this.pools.set(instanceId, pool);
+    return pool;
+  }
+  
+  unregisterPool(instanceId){const pool=this.pools.get(instanceId);if(pool){const cleanupPromises=pool.pool.map(canvas=>this.cleanupCanvas(canvas));this.totalCanvases-=pool.pool.length;pool.pool=[];this.pools.delete(instanceId);return Promise.all(cleanupPromises).catch(e=>{console.warn('Canvas cleanup during unregister failed:',e);});}return Promise.resolve();}
+  
+  get(instanceId){if(typeof document==='undefined')return null;let pool=this.pools.get(instanceId);if(!pool)pool=this.registerPool(instanceId);pool.usageStats.gets++;this.stats.totalGets++;if(this.totalCanvases>=this.globalLimit)this.evictOldestCanvas();const canvas=pool.pool.pop();if(canvas){pool.usageStats.hits++;this.stats.totalHits++;return canvas;}else{const newCanvas=document.createElement('canvas');this.totalCanvases++;return newCanvas;}}
+  
+
+  release(instanceId, canvas) {
+    if (!canvas) return;
+    const pool = this.pools.get(instanceId);
+    if (!pool) return;
+    if (pool.pool.length >= pool.currentSize) {
+      this.cleanupCanvasSync(canvas);
+      this.totalCanvases--;
+      return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pool.pool.push(canvas);
+  }
+   
+  checkAndResize(pool) {
+    const now = Date.now();
+    if (now - pool.usageStats.lastResize < 300000) return;
+    const totalRequests = pool.usageStats.gets;
+    const hitRate = totalRequests > 0 ? pool.usageStats.hits / totalRequests : 0;
+    if (hitRate > 0.9 && pool.currentSize > pool.minSize) {
+      pool.currentSize = pool.minSize;
+      console.log(`Canvas pool ${pool.instanceId} resized to ${pool.currentSize} (hit rate: ${(hitRate * 100).toFixed(1)}%)`);
+    }
+    if (totalRequests > 200) {
+      pool.usageStats = {
+        gets: 0,
+        hits: 0,
+        lastResize: Date.now()
+      };
+    }
+    pool.usageStats.lastResize = now;
+  }
+   
+  resetPoolStats(pool) {
+    pool.usageStats = {
+      gets: 0,
+      releases: 0,
+      hits: 0,
+      misses: 0,
+      lastResize: Date.now()
+    };
+  }
+  
+  isMemoryPressureHigh() {
+    try {
+      const globalUtilization = this.totalCanvases / this.globalLimit;
+      return globalUtilization > 0.8;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  estimateMemoryUsage() {
+    try {
+      return this.totalCanvases * 4;
+    } catch (e) {
+      return 0;
+    }
+  }
+   
+  async evictOldestCanvas() {
+    for (const pool of this.pools.values()) {
+      if (pool.pool.length > 0) {
+        const canvas = pool.pool.shift();
+        try {
+          await this.cleanupCanvas(canvas);
+          this.totalCanvases--;
+          this.stats.memoryEvictions++;
+          console.log(`Evicted oldest canvas from pool ${pool.instanceId}`);
+          return;
+        } catch (e) {
+          console.warn(`Canvas cleanup failed during eviction:`, e);
+          this.totalCanvases--;
+          return;
+        }
+      }
+    }
+  }
+   
+  aggressiveCleanup() {
+    const toDelete = [];
+    for (const pool of this.pools.values()) {
+      while (pool.pool.length > pool.minSize) {
+        const canvas = pool.pool.pop();
+        toDelete.push(canvas);
+      }
+    }
+    toDelete.forEach(canvas => {
+      this.cleanupCanvasSync(canvas);
+      this.totalCanvases--;
+      this.stats.memoryEvictions++;
+    });
+    if (toDelete.length > 0) {
+      console.log(`Aggressive canvas cleanup: removed ${toDelete.length} canvases`);
+    }
+  }
+   
+  cleanupCanvasSync(canvas) {
+    if (!canvas) return;
+    try {
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      canvas.width = 0;
+      canvas.height = 0;
+    } catch (e) {
+      console.warn('Canvas cleanup failed:', e);
+    }
+  }
+   
+  getGlobalStats() {
+    const hitRate = this.stats.totalGets > 0 ? (this.stats.totalHits / this.stats.totalGets) * 100 : 0;
+    return {
+      totalCanvases: this.totalCanvases,
+      globalLimit: this.globalLimit,
+      utilization: Math.round((this.totalCanvases / this.globalLimit) * 100) + '%',
+      estimatedMemoryMB: this.estimateMemoryUsage(),
+      memoryLimitMB: this.maxMemoryUsageMB,
+      hitRate: Math.round(hitRate * 100) / 100 + '%',
+      totalGets: this.stats.totalGets,
+      totalHits: this.stats.totalHits,
+      memoryEvictions: this.stats.memoryEvictions,
+      poolCount: this.pools.size
+    };
+  }
+  
+  getPoolStats(instanceId) {
+    const pool = this.pools.get(instanceId);
+    if (!pool) return null;
+    const hitRate = pool.usageStats.gets > 0 ? (pool.usageStats.hits / pool.usageStats.gets) * 100 : 0;
+    return {
+      instanceId,
+      poolSize: pool.pool.length,
+      currentSize: pool.currentSize,
+      minSize: pool.minSize,
+      maxSize: pool.maxSize,
+      hitRate: Math.round(hitRate * 100) / 100 + '%',
+      gets: pool.usageStats.gets,
+      hits: pool.usageStats.hits,
+      misses: pool.usageStats.misses
+    };
+  }
+}
+
+const globalCanvasPoolManager=new GlobalCanvasPoolManager(),canvasPool={pool:[],minSize:1,maxSize:4,currentSize:2,instanceId:'legacy',get(){return globalCanvasPoolManager.get(this.instanceId);},release(canvas){return globalCanvasPoolManager.release(this.instanceId,canvas);},getStats(){return globalCanvasPoolManager.getPoolStats(this.instanceId);}};
+
+globalCanvasPoolManager.registerPool('legacy',{minSize:canvasPool.minSize,maxSize:canvasPool.maxSize,currentSize:canvasPool.currentSize});
+
+const processCanvasAsync=(canvas,img,newWidth,newHeight)=>new Promise((resolve,reject)=>{const performCanvasOperations=()=>{try{const ctx=canvas.getContext('2d');if(!ctx){reject(new Error('Canvas context not available'));return;}canvas.width=newWidth;canvas.height=newHeight;ctx.drawImage(img,0,0,newWidth,newHeight);resolve();}catch(e){reject(e);}};if(typeof requestIdleCallback!=='undefined'){requestIdleCallback(()=>{performCanvasOperations();},{timeout:100});}else{setTimeout(performCanvasOperations,0);}});
+
+/**
+ * Compresses an image file using the Canvas API with async processing
+ * 
+ * @param {File} file - Original image file
+ * @param {number} quality - Compression quality (0.1 - 1.0), default 0.8
+ * @param {number} maxWidth - Maximum width for resized image, default 1920
+ * @param {number} maxHeight - Maximum height for resized image, default 1080
+ * @returns {Promise<File>} Compressed image file
+ */
+async function compressImage(file,quality=0.8,maxWidth=1920,maxHeight=1080){return new Promise((resolve,reject)=>{if(file.size<1024*1024){logFunctionEntry('compressImage',{fileName:file.name,action:'skipping_small',size:`${(file.size/1024).toFixed(2)}KB`});resolve(file);return;}
+if(typeof document==='undefined'){console.log(`compressImage skipping: no document available (server-side)`);resolve(file);return;}
+const img=new Image(),canvas=canvasPool.get();if(!canvas){resolve(file);return;}
+let objectUrl=null,urlRevoked=false;const revokeUrl=()=>{if(objectUrl&&!urlRevoked){URL.revokeObjectURL(objectUrl);urlRevoked=true;}},cleanupAndReject=error=>{revokeUrl();canvasPool.release(canvas);reject(error);};
+img.onload=async()=>{try{let{width,height}=img,{width:newWidth,height:newHeight}=calculateResizedDimensions(width,height,maxWidth,maxHeight);await processCanvasAsync(canvas,img,newWidth,newHeight);canvas.toBlob(blob=>{if(!blob){cleanupAndReject(new Error('Failed to compress image'));return;}
+const compressedFile=createCompressedFile(blob,file);logCompressionResults(file,compressedFile);revokeUrl();canvasPool.release(canvas);resolve(compressedFile);},file.type,quality);}catch(error){cleanupAndReject(error);}};
+img.onerror=()=>cleanupAndReject(new Error('Failed to load image'));objectUrl=URL.createObjectURL(file);img.src=objectUrl;});}
+
+/**
+ * Auto-compress image with optimal settings
+ * 
+ * @param {File} file - Image file to compress
+ * @returns {Promise<File>} Compressed image file
+ */
+async function autoCompressImage(file){if(!isCompressionSupported()||file.size<1024*1024)return file;const isLarge=file.size>4*1024*1024,settings={quality:isLarge?0.7:0.8,maxWidth:isLarge?1600:1920,maxHeight:isLarge?900:1080};return compressImage(file,settings.quality,settings.maxWidth,settings.maxHeight);}
+
+/**
+ * Image compressor class for advanced usage
+ */
+class ImageCompressor{constructor(quality=0.8,maxWidth=1920,maxHeight=1080){this.defaultQuality=quality;this.defaultMaxWidth=maxWidth;this.defaultMaxHeight=maxHeight;this.instanceId=`compressor-${Date.now()}-${Math.random().toString(36).substring(2,11)}`;globalCanvasPoolManager.registerPool(this.instanceId,{minSize:2,maxSize:8,currentSize:4});}
+async compress(file,quality,maxWidth,maxHeight){return compressImage(file,quality??this.defaultQuality,maxWidth??this.defaultMaxWidth,maxHeight??this.defaultMaxHeight);}
+async autoCompress(file){return autoCompressImage(file);}
+isSupported(){return isCompressionSupported();}
+getStats(){return globalCanvasPoolManager.getPoolStats(this.instanceId);}
+destroy(){globalCanvasPoolManager.unregisterPool(this.instanceId);}}
+
+const imageUtils=require('./utils'),{isCompressionSupported}=imageUtils;module.exports={compressImage,autoCompressImage,ImageCompressor,isCompressionSupported:imageUtils.isCompressionSupported,canvasPool,globalCanvasPoolManager};
