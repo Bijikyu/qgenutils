@@ -29,6 +29,15 @@ import getDomain from './getDomain.js';
 import normalizeUrlOrigin from './normalizeUrlOrigin.js';
 import parseUrlParts from './parseUrlParts.js';
 import stripProtocol from './stripProtocol.js';
+import {
+  removeTrackingParams,
+  extractUrlsFromContent,
+  isSecureUrl,
+  isValidUrl,
+  getUrlMetadata,
+  joinUrlPaths,
+  TRACKING_PARAMS
+} from './urlHelpers.js';
 
 /**
  * Named exports for ES6 import syntax
@@ -41,7 +50,14 @@ export {
   getDomain,
   normalizeUrlOrigin,
   parseUrlParts,
-  stripProtocol
+  stripProtocol,
+  removeTrackingParams,
+  extractUrlsFromContent,
+  isSecureUrl,
+  isValidUrl,
+  getUrlMetadata,
+  joinUrlPaths,
+  TRACKING_PARAMS
 };
 
 export type { GetDomainData, GetDomainResult, GetDomainDependencies } from './getDomain.js';
@@ -58,5 +74,12 @@ export default {
   getDomain,
   normalizeUrlOrigin,
   parseUrlParts,
-  stripProtocol
+  stripProtocol,
+  removeTrackingParams,
+  extractUrlsFromContent,
+  isSecureUrl,
+  isValidUrl,
+  getUrlMetadata,
+  joinUrlPaths,
+  TRACKING_PARAMS
 };
