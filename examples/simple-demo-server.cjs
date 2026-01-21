@@ -458,13 +458,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Serve demo page
-  if (pathname === '/' || pathname === '/demo') {
-    serveDemoPage(res, startTime);
-    return;
-  }
-
-  // Serve static files
+  // Serve static files (demo.html is the default for root)
   serveStaticFile(req, res, pathname, startTime);
 });
 
