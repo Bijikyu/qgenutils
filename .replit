@@ -50,18 +50,27 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Test Runner"
+args = "Demo Server"
 
 [[workflows.workflow]]
-name = "Test Runner"
+name = "Demo Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm test"
+args = "node examples/simple-demo-server.cjs"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [agent]
 expertMode = true
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
+localPort = 5000
+externalPort = 80

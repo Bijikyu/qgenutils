@@ -12,7 +12,7 @@ const path = require('path');
 // Since this is an ESM module, we'll use demo utilities directly
 // Commenting out QGenUtils import for demo server simplicity
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // Simple request logging
 const logger = {
@@ -1127,7 +1127,7 @@ server.listen(port, () => {
   console.log('    POST /api/file/format-size - File size formatting');
   console.log('  ⚡ Performance:');
   console.log('    POST /api/performance/memoize - Function memoization demo');
-  console.log('\n🎯 Open http://localhost:3000 for interactive demo interface');
+  console.log('\n🎯 Open http://localhost:5000 for interactive demo interface');
   console.log('📖 Test endpoints with curl or the interactive interface');
   console.log('\n✅ Simplified demo server ready for utility testing\n');
 });

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGenUtils - Utility Library Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #e8e8e8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #00d9ff, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00d9ff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2 .icon {
+            font-size: 1.4rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+            color: #8892b0;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #e8e8e8;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.7rem;
+            background: linear-gradient(135deg, #00d9ff, #9b59b6);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            border-left: 3px solid #00d9ff;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.success {
+            border-left-color: #2ecc71;
+        }
+
+        .result.error {
+            border-left-color: #e74c3c;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00d9ff;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #8892b0;
+            margin-top: 0.3rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .badge.valid {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .badge.invalid {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .inline-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .inline-group input {
+            flex: 1;
+        }
+
+        .inline-group select {
+            width: auto;
+            min-width: 100px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>QGenUtils Demo</h1>
+            <p>Interactive showcase of QGenUtils utility functions</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="stat-requests">0</div>
+                <div class="stat-label">API Requests</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-response-time">0ms</div>
+                <div class="stat-label">Avg Response</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-cache-size">0</div>
+                <div class="stat-label">Cache Entries</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-uptime">0s</div>
+                <div class="stat-label">Server Uptime</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2><span class="icon">&#x2709;</span> Email Validation</h2>
+                <div class="form-group">
+                    <label for="email-input">Email Address</label>
+                    <input type="text" id="email-input" placeholder="user@example.com">
+                </div>
+                <button class="btn" onclick="validateEmail()">Validate Email</button>
+                <div class="result" id="email-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x1F512;</span> Password Strength</h2>
+                <div class="form-group">
+                    <label for="password-input">Password</label>
+                    <input type="password" id="password-input" placeholder="Enter password to check">
+                </div>
+                <button class="btn" onclick="validatePassword()">Check Strength</button>
+                <div class="result" id="password-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x1F5DD;</span> API Key Masking</h2>
+                <div class="form-group">
+                    <label for="apikey-input">API Key</label>
+                    <input type="text" id="apikey-input" placeholder="sk_live_abc123xyz789">
+                </div>
+                <button class="btn" onclick="maskApiKey()">Mask API Key</button>
+                <div class="result" id="apikey-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x1F9F9;</span> String Sanitization</h2>
+                <div class="form-group">
+                    <label for="sanitize-input">Input String (with HTML/JS)</label>
+                    <textarea id="sanitize-input" rows="3" placeholder="<script>alert('xss')</script>Hello World"></textarea>
+                </div>
+                <button class="btn" onclick="sanitizeString()">Sanitize</button>
+                <div class="result" id="sanitize-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x1F4C5;</span> DateTime Formatting</h2>
+                <div class="form-group">
+                    <label for="datetime-input">Date/Time</label>
+                    <div class="inline-group">
+                        <input type="text" id="datetime-input" placeholder="2024-01-21T12:30:00">
+                        <select id="datetime-format">
+                            <option value="default">Default</option>
+                            <option value="date">Date Only</option>
+                            <option value="time">Time Only</option>
+                            <option value="iso">ISO 8601</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="formatDateTime()">Format</button>
+                <div class="result" id="datetime-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x1F517;</span> URL Protocol</h2>
+                <div class="form-group">
+                    <label for="url-input">URL</label>
+                    <div class="inline-group">
+                        <input type="text" id="url-input" placeholder="example.com/path">
+                        <select id="url-protocol">
+                            <option value="https">https</option>
+                            <option value="http">http</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="ensureProtocol()">Ensure Protocol</button>
+                <div class="result" id="url-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x1F4BE;</span> File Size Formatting</h2>
+                <div class="form-group">
+                    <label for="filesize-input">Size in Bytes</label>
+                    <input type="number" id="filesize-input" placeholder="1048576" value="1048576">
+                </div>
+                <button class="btn" onclick="formatFileSize()">Format Size</button>
+                <div class="result" id="filesize-result"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">&#x26A1;</span> Memoization Demo</h2>
+                <div class="form-group">
+                    <label for="memo-demo">Demo Function</label>
+                    <select id="memo-demo">
+                        <option value="add">Addition (40 + 2)</option>
+                        <option value="uppercase">Uppercase ("hello")</option>
+                        <option value="filesize">File Size (1MB)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="testMemoization()">Run 3 Calls</button>
+                <div class="result" id="memo-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//' + 
+                         window.location.hostname + 
+                         (window.location.port ? ':' + window.location.port : '') + '/api';
+
+        function showResult(elementId, data, isError = false) {
+            const el = document.getElementById(elementId);
+            el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            el.classList.add('show');
+            el.classList.toggle('error', isError);
+            el.classList.toggle('success', !isError);
+        }
+
+        async function apiCall(endpoint, body = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                updateStats();
+                return data;
+            } catch (error) {
+                return { success: false, error: { message: error.message } };
+            }
+        }
+
+        async function validateEmail() {
+            const email = document.getElementById('email-input').value;
+            const result = await apiCall('/validate/email', { email });
+            showResult('email-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function validatePassword() {
+            const password = document.getElementById('password-input').value;
+            const result = await apiCall('/validate/password', { password });
+            showResult('password-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function maskApiKey() {
+            const apiKey = document.getElementById('apikey-input').value;
+            const result = await apiCall('/security/mask-api-key', { apiKey });
+            showResult('apikey-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function sanitizeString() {
+            const input = document.getElementById('sanitize-input').value;
+            const result = await apiCall('/security/sanitize-string', { input });
+            showResult('sanitize-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function formatDateTime() {
+            const date = document.getElementById('datetime-input').value || new Date().toISOString();
+            const format = document.getElementById('datetime-format').value;
+            const result = await apiCall('/datetime/format', { date, format });
+            showResult('datetime-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function ensureProtocol() {
+            const url = document.getElementById('url-input').value;
+            const protocol = document.getElementById('url-protocol').value;
+            const result = await apiCall('/url/ensure-protocol', { url, protocol });
+            showResult('url-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function formatFileSize() {
+            const bytes = parseInt(document.getElementById('filesize-input').value, 10);
+            const result = await apiCall('/file/format-size', { bytes });
+            showResult('filesize-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function testMemoization() {
+            const demo = document.getElementById('memo-demo').value;
+            const result = await apiCall('/performance/memoize', { demo });
+            showResult('memo-result', result.success ? result.data : result.error, !result.success);
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const data = await response.json();
+                if (data.success && data.data) {
+                    document.getElementById('stat-requests').textContent = data.data.requestCount || 0;
+                    document.getElementById('stat-response-time').textContent = 
+                        (data.data.avgResponseTimeMs || data.data.avgResponseTime || 0).toFixed(1) + 'ms';
+                    document.getElementById('stat-cache-size').textContent = 
+                        data.data.caching?.cacheSize || 0;
+                    const uptime = data.data.system?.uptime || 0;
+                    document.getElementById('stat-uptime').textContent = 
+                        uptime >= 60 ? Math.floor(uptime / 60) + 'm' : uptime + 's';
+                }
+            } catch (e) {
+                console.log('Stats update failed:', e.message);
+            }
+        }
+
+        document.getElementById('datetime-input').value = new Date().toISOString();
+        updateStats();
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>
