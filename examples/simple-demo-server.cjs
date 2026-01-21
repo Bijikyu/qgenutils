@@ -553,7 +553,7 @@ async function handleApiRequest(req, res, path, startTime) {
     
     const statusCode =
       result && result.success === false ? getStatusCodeForErrorCode(result.error?.code) : 200;
-    recordMetric('api', statusCode, Date.now() - startTime);
+    if (!isStats) recordMetric('api', statusCode, Date.now() - startTime);
 
     // Check if result is already a formatted response
     if (result && typeof result === 'object' && (result.success !== undefined || result.error)) {
