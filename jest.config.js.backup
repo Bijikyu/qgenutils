@@ -1,8 +1,0 @@
-// jest.config.js - CommonJS configuration
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  setupFilesAfterEnv: ['./tests/setup.ts'],
-  moduleFileExtensions: ['ts', 'js', 'json'],
-  roots: ['<rootDir>/lib', '<rootDir>/tests'],
-};
