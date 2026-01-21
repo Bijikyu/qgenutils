@@ -3,229 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QGenUtils - Utility Library Demo</title>
+    <title>QGenUtils - Complete Utility Library Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            padding: 2rem;
+            padding: 1.5rem;
             color: #e8e8e8;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2rem; }
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             margin-bottom: 0.5rem;
             background: linear-gradient(135deg, #00d9ff, #9b59b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
-        .header p {
-            color: #8892b0;
-            font-size: 1.1rem;
+        .header p { color: #8892b0; font-size: 1rem; }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
-
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #00d9ff; }
+        .stat-label { font-size: 0.75rem; color: #8892b0; margin-top: 0.2rem; }
+        .section { margin-bottom: 2rem; }
+        .section-title {
+            font-size: 1.3rem;
+            color: #9b59b6;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(155, 89, 182, 0.3);
+        }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
         }
-
         .card {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.5rem;
+            border-radius: 10px;
+            padding: 1.25rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
         }
-
-        .card h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+        .card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
             color: #00d9ff;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-
-        .card h2 .icon {
-            font-size: 1.4rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
+        .form-group { margin-bottom: 0.75rem; }
         .form-group label {
             display: block;
-            margin-bottom: 0.4rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.8rem;
             color: #8892b0;
         }
-
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 0.6rem;
+            padding: 0.5rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
+            border-radius: 5px;
             background: rgba(0, 0, 0, 0.3);
             color: #e8e8e8;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #00d9ff;
-        }
-
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #00d9ff; }
         .btn {
             width: 100%;
-            padding: 0.7rem;
+            padding: 0.6rem;
             background: linear-gradient(135deg, #00d9ff, #9b59b6);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
-            transition: opacity 0.3s ease, transform 0.2s ease;
+            transition: opacity 0.2s ease;
         }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
+        .btn:hover { opacity: 0.9; }
         .result {
-            margin-top: 1rem;
-            padding: 1rem;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
             background: rgba(0, 0, 0, 0.4);
-            border-radius: 6px;
+            border-radius: 5px;
             font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             white-space: pre-wrap;
             word-break: break-all;
             border-left: 3px solid #00d9ff;
             display: none;
+            max-height: 150px;
+            overflow-y: auto;
         }
-
-        .result.show {
-            display: block;
-        }
-
-        .result.success {
-            border-left-color: #2ecc71;
-        }
-
-        .result.error {
-            border-left-color: #e74c3c;
-        }
-
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #00d9ff;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: #8892b0;
-            margin-top: 0.3rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-
-        .badge.valid {
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-        }
-
-        .badge.invalid {
-            background: rgba(231, 76, 60, 0.2);
-            color: #e74c3c;
-        }
-
-        .inline-group {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .inline-group input {
-            flex: 1;
-        }
-
-        .inline-group select {
-            width: auto;
-            min-width: 100px;
-        }
-
+        .result.show { display: block; }
+        .result.success { border-left-color: #2ecc71; }
+        .result.error { border-left-color: #e74c3c; }
+        .inline-group { display: flex; gap: 0.5rem; }
+        .inline-group input { flex: 1; }
+        .inline-group select { width: auto; min-width: 80px; }
         @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-
-            .stats-bar {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 1.8rem;
-            }
+            body { padding: 1rem; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>QGenUtils Demo</h1>
-            <p>Interactive showcase of QGenUtils utility functions</p>
+            <h1>QGenUtils Complete Demo</h1>
+            <p>Interactive showcase of all QGenUtils utility functions</p>
         </div>
 
         <div class="stats-bar">
@@ -247,103 +147,287 @@
             </div>
         </div>
 
-        <div class="grid">
-            <div class="card">
-                <h2><span class="icon">&#x2709;</span> Email Validation</h2>
-                <div class="form-group">
-                    <label for="email-input">Email Address</label>
-                    <input type="text" id="email-input" placeholder="user@example.com">
+        <div class="section">
+            <h2 class="section-title">Validation Utilities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Email Validation</h3>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="text" id="email-input" placeholder="user@example.com">
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/email', {email: gv('email-input')}, 'email-result')">Validate</button>
+                    <div class="result" id="email-result"></div>
                 </div>
-                <button class="btn" onclick="validateEmail()">Validate Email</button>
-                <div class="result" id="email-result"></div>
-            </div>
-
-            <div class="card">
-                <h2><span class="icon">&#x1F512;</span> Password Strength</h2>
-                <div class="form-group">
-                    <label for="password-input">Password</label>
-                    <input type="password" id="password-input" placeholder="Enter password to check">
+                <div class="card">
+                    <h3>URL Validation</h3>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" id="url-validate-input" placeholder="https://example.com">
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/url', {url: gv('url-validate-input')}, 'url-validate-result')">Validate</button>
+                    <div class="result" id="url-validate-result"></div>
                 </div>
-                <button class="btn" onclick="validatePassword()">Check Strength</button>
-                <div class="result" id="password-result"></div>
-            </div>
-
-            <div class="card">
-                <h2><span class="icon">&#x1F5DD;</span> API Key Masking</h2>
-                <div class="form-group">
-                    <label for="apikey-input">API Key</label>
-                    <input type="text" id="apikey-input" placeholder="sk_live_abc123xyz789">
+                <div class="card">
+                    <h3>Number Validation</h3>
+                    <div class="form-group">
+                        <label>Value</label>
+                        <input type="text" id="number-input" placeholder="42">
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/number', {value: gv('number-input')}, 'number-result')">Validate</button>
+                    <div class="result" id="number-result"></div>
                 </div>
-                <button class="btn" onclick="maskApiKey()">Mask API Key</button>
-                <div class="result" id="apikey-result"></div>
-            </div>
-
-            <div class="card">
-                <h2><span class="icon">&#x1F9F9;</span> String Sanitization</h2>
-                <div class="form-group">
-                    <label for="sanitize-input">Input String (with HTML/JS)</label>
-                    <textarea id="sanitize-input" rows="3" placeholder="<script>alert('xss')</script>Hello World"></textarea>
+                <div class="card">
+                    <h3>Array Validation</h3>
+                    <div class="form-group">
+                        <label>Value (JSON)</label>
+                        <input type="text" id="array-input" placeholder='[1, 2, 3]' value='[1, 2, 3]'>
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/array', {value: parseJSON(gv('array-input'))}, 'array-result')">Validate</button>
+                    <div class="result" id="array-result"></div>
                 </div>
-                <button class="btn" onclick="sanitizeString()">Sanitize</button>
-                <div class="result" id="sanitize-result"></div>
+                <div class="card">
+                    <h3>Object Validation</h3>
+                    <div class="form-group">
+                        <label>Value (JSON)</label>
+                        <input type="text" id="object-input" placeholder='{"key": "value"}' value='{"name": "test"}'>
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/object', {value: parseJSON(gv('object-input'))}, 'object-result')">Validate</button>
+                    <div class="result" id="object-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Null/Empty Checks</h3>
+                    <div class="form-group">
+                        <label>Value</label>
+                        <input type="text" id="null-input" placeholder="Enter value or leave empty">
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/null-or-empty', {value: gv('null-input') || null}, 'null-result')">Check Null/Empty</button>
+                    <div class="result" id="null-result"></div>
+                </div>
             </div>
+        </div>
 
-            <div class="card">
-                <h2><span class="icon">&#x1F4C5;</span> DateTime Formatting</h2>
-                <div class="form-group">
-                    <label for="datetime-input">Date/Time</label>
-                    <div class="inline-group">
-                        <input type="text" id="datetime-input" placeholder="2024-01-21T12:30:00">
-                        <select id="datetime-format">
-                            <option value="default">Default</option>
-                            <option value="date">Date Only</option>
-                            <option value="time">Time Only</option>
-                            <option value="iso">ISO 8601</option>
+        <div class="section">
+            <h2 class="section-title">Security Utilities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Password Strength</h3>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password-input" placeholder="Enter password">
+                    </div>
+                    <button class="btn" onclick="callApi('/validate/password', {password: gv('password-input')}, 'password-result')">Check Strength</button>
+                    <div class="result" id="password-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Generate Password</h3>
+                    <div class="form-group">
+                        <label>Length</label>
+                        <input type="number" id="gen-password-length" value="16" min="8" max="64">
+                    </div>
+                    <button class="btn" onclick="callApi('/security/generate-password', {length: parseInt(gv('gen-password-length'))}, 'gen-password-result')">Generate</button>
+                    <div class="result" id="gen-password-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Hash Password</h3>
+                    <div class="form-group">
+                        <label>Password to Hash</label>
+                        <input type="password" id="hash-password-input" placeholder="Password">
+                    </div>
+                    <button class="btn" onclick="callApi('/security/hash-password', {password: gv('hash-password-input')}, 'hash-password-result')">Hash</button>
+                    <div class="result" id="hash-password-result"></div>
+                </div>
+                <div class="card">
+                    <h3>API Key Masking</h3>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="text" id="apikey-input" placeholder="sk_live_abc123xyz789">
+                    </div>
+                    <button class="btn" onclick="callApi('/security/mask-api-key', {apiKey: gv('apikey-input')}, 'apikey-result')">Mask</button>
+                    <div class="result" id="apikey-result"></div>
+                </div>
+                <div class="card">
+                    <h3>String Sanitization</h3>
+                    <div class="form-group">
+                        <label>Input (HTML/JS)</label>
+                        <textarea id="sanitize-input" rows="2" placeholder="<script>alert('xss')</script>"></textarea>
+                    </div>
+                    <button class="btn" onclick="callApi('/security/sanitize-string', {input: gv('sanitize-input')}, 'sanitize-result')">Sanitize</button>
+                    <div class="result" id="sanitize-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Rate Limiter Demo</h3>
+                    <div class="form-group">
+                        <label>Current Requests</label>
+                        <input type="number" id="rate-requests" value="5" min="0">
+                    </div>
+                    <button class="btn" onclick="callApi('/security/rate-limiter', {requests: parseInt(gv('rate-requests')), maxRequests: 10}, 'rate-result')">Check Limit</button>
+                    <div class="result" id="rate-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">DateTime Utilities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Format DateTime</h3>
+                    <div class="form-group">
+                        <label>Date/Time</label>
+                        <div class="inline-group">
+                            <input type="text" id="datetime-input">
+                            <select id="datetime-format">
+                                <option value="default">Default</option>
+                                <option value="date">Date</option>
+                                <option value="time">Time</option>
+                                <option value="iso">ISO</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="callApi('/datetime/format', {date: gv('datetime-input'), format: gv('datetime-format')}, 'datetime-result')">Format</button>
+                    <div class="result" id="datetime-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Format Duration</h3>
+                    <div class="form-group">
+                        <label>Milliseconds</label>
+                        <input type="number" id="duration-input" value="3661000" placeholder="3661000">
+                    </div>
+                    <button class="btn" onclick="callApi('/datetime/format-duration', {ms: parseInt(gv('duration-input'))}, 'duration-result')">Format</button>
+                    <div class="result" id="duration-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Add Days</h3>
+                    <div class="form-group">
+                        <label>Date & Days to Add</label>
+                        <div class="inline-group">
+                            <input type="text" id="adddays-date">
+                            <input type="number" id="adddays-num" value="7" style="width:60px">
+                        </div>
+                    </div>
+                    <button class="btn" onclick="callApi('/datetime/add-days', {date: gv('adddays-date'), days: parseInt(gv('adddays-num'))}, 'adddays-result')">Add Days</button>
+                    <div class="result" id="adddays-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Format Date with Prefix</h3>
+                    <div class="form-group">
+                        <label>Date & Prefix</label>
+                        <div class="inline-group">
+                            <input type="text" id="prefix-date">
+                            <input type="text" id="prefix-text" value="Created: " style="width:100px">
+                        </div>
+                    </div>
+                    <button class="btn" onclick="callApi('/datetime/format-date-with-prefix', {date: gv('prefix-date'), prefix: gv('prefix-text')}, 'prefix-result')">Format</button>
+                    <div class="result" id="prefix-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">URL Utilities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Ensure Protocol</h3>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <div class="inline-group">
+                            <input type="text" id="url-input" placeholder="example.com">
+                            <select id="url-protocol">
+                                <option value="https">https</option>
+                                <option value="http">http</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="callApi('/url/ensure-protocol', {url: gv('url-input'), protocol: gv('url-protocol')}, 'url-result')">Ensure</button>
+                    <div class="result" id="url-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Normalize Origin</h3>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" id="origin-input" placeholder="https://example.com/path?q=1">
+                    </div>
+                    <button class="btn" onclick="callApi('/url/normalize-origin', {url: gv('origin-input')}, 'origin-result')">Normalize</button>
+                    <div class="result" id="origin-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Strip Protocol</h3>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" id="strip-input" placeholder="https://example.com">
+                    </div>
+                    <button class="btn" onclick="callApi('/url/strip-protocol', {url: gv('strip-input')}, 'strip-result')">Strip</button>
+                    <div class="result" id="strip-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Parse URL Parts</h3>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" id="parse-input" placeholder="https://user:pass@example.com:8080/path?q=1#hash">
+                    </div>
+                    <button class="btn" onclick="callApi('/url/parse-parts', {url: gv('parse-input')}, 'parse-result')">Parse</button>
+                    <div class="result" id="parse-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">File, ID & Scheduling Utilities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Format File Size</h3>
+                    <div class="form-group">
+                        <label>Bytes</label>
+                        <input type="number" id="filesize-input" value="1048576">
+                    </div>
+                    <button class="btn" onclick="callApi('/file/format-size', {bytes: parseInt(gv('filesize-input'))}, 'filesize-result')">Format</button>
+                    <div class="result" id="filesize-result"></div>
+                </div>
+                <div class="card">
+                    <h3>Generate Execution ID</h3>
+                    <div class="form-group">
+                        <label>Click to generate a unique execution ID</label>
+                    </div>
+                    <button class="btn" onclick="callApi('/id/execution-id', {}, 'execid-result')">Generate ID</button>
+                    <div class="result" id="execid-result"></div>
+                </div>
+                <div class="card">
+                    <h3>MS to Cron</h3>
+                    <div class="form-group">
+                        <label>Interval (ms)</label>
+                        <input type="number" id="cron-input" value="60000" placeholder="60000">
+                    </div>
+                    <button class="btn" onclick="callApi('/scheduling/ms-to-cron', {ms: parseInt(gv('cron-input'))}, 'cron-result')">Convert</button>
+                    <div class="result" id="cron-result"></div>
+                </div>
+                <div class="card">
+                    <h3>MinHeap Demo</h3>
+                    <div class="form-group">
+                        <label>Numbers (comma-separated)</label>
+                        <input type="text" id="heap-input" value="5, 3, 8, 1, 9, 2">
+                    </div>
+                    <button class="btn" onclick="callApi('/data-structures/min-heap', {numbers: gv('heap-input').split(',').map(n=>parseInt(n.trim()))}, 'heap-result')">Demo Heap</button>
+                    <div class="result" id="heap-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Performance Utilities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Memoization Demo</h3>
+                    <div class="form-group">
+                        <label>Demo Function</label>
+                        <select id="memo-demo">
+                            <option value="add">Addition (40 + 2)</option>
+                            <option value="uppercase">Uppercase ("hello")</option>
+                            <option value="filesize">File Size (1MB)</option>
                         </select>
                     </div>
+                    <button class="btn" onclick="callApi('/performance/memoize', {demo: gv('memo-demo')}, 'memo-result')">Run 3 Calls</button>
+                    <div class="result" id="memo-result"></div>
                 </div>
-                <button class="btn" onclick="formatDateTime()">Format</button>
-                <div class="result" id="datetime-result"></div>
-            </div>
-
-            <div class="card">
-                <h2><span class="icon">&#x1F517;</span> URL Protocol</h2>
-                <div class="form-group">
-                    <label for="url-input">URL</label>
-                    <div class="inline-group">
-                        <input type="text" id="url-input" placeholder="example.com/path">
-                        <select id="url-protocol">
-                            <option value="https">https</option>
-                            <option value="http">http</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn" onclick="ensureProtocol()">Ensure Protocol</button>
-                <div class="result" id="url-result"></div>
-            </div>
-
-            <div class="card">
-                <h2><span class="icon">&#x1F4BE;</span> File Size Formatting</h2>
-                <div class="form-group">
-                    <label for="filesize-input">Size in Bytes</label>
-                    <input type="number" id="filesize-input" placeholder="1048576" value="1048576">
-                </div>
-                <button class="btn" onclick="formatFileSize()">Format Size</button>
-                <div class="result" id="filesize-result"></div>
-            </div>
-
-            <div class="card">
-                <h2><span class="icon">&#x26A1;</span> Memoization Demo</h2>
-                <div class="form-group">
-                    <label for="memo-demo">Demo Function</label>
-                    <select id="memo-demo">
-                        <option value="add">Addition (40 + 2)</option>
-                        <option value="uppercase">Uppercase ("hello")</option>
-                        <option value="filesize">File Size (1MB)</option>
-                    </select>
-                </div>
-                <button class="btn" onclick="testMemoization()">Run 3 Calls</button>
-                <div class="result" id="memo-result"></div>
             </div>
         </div>
     </div>
@@ -353,15 +437,18 @@
                          window.location.hostname + 
                          (window.location.port ? ':' + window.location.port : '') + '/api';
 
-        function showResult(elementId, data, isError = false) {
-            const el = document.getElementById(elementId);
+        function gv(id) { return document.getElementById(id).value; }
+        function parseJSON(str) { try { return JSON.parse(str); } catch { return str; } }
+
+        function showResult(id, data, isError = false) {
+            const el = document.getElementById(id);
             el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
             el.classList.add('show');
             el.classList.toggle('error', isError);
             el.classList.toggle('success', !isError);
         }
 
-        async function apiCall(endpoint, body = {}) {
+        async function callApi(endpoint, body, resultId) {
             try {
                 const response = await fetch(`${API_BASE}${endpoint}`, {
                     method: 'POST',
@@ -369,61 +456,11 @@
                     body: JSON.stringify(body)
                 });
                 const data = await response.json();
+                showResult(resultId, data.success ? data.data : data.error, !data.success);
                 updateStats();
-                return data;
             } catch (error) {
-                return { success: false, error: { message: error.message } };
+                showResult(resultId, { message: error.message }, true);
             }
-        }
-
-        async function validateEmail() {
-            const email = document.getElementById('email-input').value;
-            const result = await apiCall('/validate/email', { email });
-            showResult('email-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function validatePassword() {
-            const password = document.getElementById('password-input').value;
-            const result = await apiCall('/validate/password', { password });
-            showResult('password-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function maskApiKey() {
-            const apiKey = document.getElementById('apikey-input').value;
-            const result = await apiCall('/security/mask-api-key', { apiKey });
-            showResult('apikey-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function sanitizeString() {
-            const input = document.getElementById('sanitize-input').value;
-            const result = await apiCall('/security/sanitize-string', { input });
-            showResult('sanitize-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function formatDateTime() {
-            const date = document.getElementById('datetime-input').value || new Date().toISOString();
-            const format = document.getElementById('datetime-format').value;
-            const result = await apiCall('/datetime/format', { date, format });
-            showResult('datetime-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function ensureProtocol() {
-            const url = document.getElementById('url-input').value;
-            const protocol = document.getElementById('url-protocol').value;
-            const result = await apiCall('/url/ensure-protocol', { url, protocol });
-            showResult('url-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function formatFileSize() {
-            const bytes = parseInt(document.getElementById('filesize-input').value, 10);
-            const result = await apiCall('/file/format-size', { bytes });
-            showResult('filesize-result', result.success ? result.data : result.error, !result.success);
-        }
-
-        async function testMemoization() {
-            const demo = document.getElementById('memo-demo').value;
-            const result = await apiCall('/performance/memoize', { demo });
-            showResult('memo-result', result.success ? result.data : result.error, !result.success);
         }
 
         async function updateStats() {
@@ -434,18 +471,16 @@
                     document.getElementById('stat-requests').textContent = data.data.requestCount || 0;
                     document.getElementById('stat-response-time').textContent = 
                         (data.data.avgResponseTimeMs || data.data.avgResponseTime || 0).toFixed(1) + 'ms';
-                    document.getElementById('stat-cache-size').textContent = 
-                        data.data.caching?.cacheSize || 0;
+                    document.getElementById('stat-cache-size').textContent = data.data.caching?.cacheSize || 0;
                     const uptime = data.data.system?.uptime || 0;
-                    document.getElementById('stat-uptime').textContent = 
-                        uptime >= 60 ? Math.floor(uptime / 60) + 'm' : uptime + 's';
+                    document.getElementById('stat-uptime').textContent = uptime >= 60 ? Math.floor(uptime / 60) + 'm' : uptime + 's';
                 }
-            } catch (e) {
-                console.log('Stats update failed:', e.message);
-            }
+            } catch (e) {}
         }
 
         document.getElementById('datetime-input').value = new Date().toISOString();
+        document.getElementById('adddays-date').value = new Date().toISOString();
+        document.getElementById('prefix-date').value = new Date().toISOString();
         updateStats();
         setInterval(updateStats, 5000);
     </script>

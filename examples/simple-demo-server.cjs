@@ -430,6 +430,186 @@ const demoUtils = {
         cacheHits: cache.size
       };
     };
+  },
+
+  // Additional validation functions
+  validateUrl: (url) => {
+    if (!url || typeof url !== 'string') {
+      return { isValid: false, message: 'URL is required', input: url };
+    }
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+      return { isValid: true, message: 'Valid URL', input: url, parsed: { protocol: urlObj.protocol, host: urlObj.host, pathname: urlObj.pathname } };
+    } catch (e) {
+      return { isValid: false, message: 'Invalid URL format', input: url };
+    }
+  },
+
+  validateNumber: (value, options = {}) => {
+    const { min, max, allowFloat = true } = options;
+    const num = Number(value);
+    if (isNaN(num)) return { isValid: false, message: 'Not a valid number', input: value };
+    if (!allowFloat && !Number.isInteger(num)) return { isValid: false, message: 'Must be an integer', input: value };
+    if (min !== undefined && num < min) return { isValid: false, message: `Must be at least ${min}`, input: value };
+    if (max !== undefined && num > max) return { isValid: false, message: `Must be at most ${max}`, input: value };
+    return { isValid: true, message: 'Valid number', input: value, parsed: num };
+  },
+
+  validateArray: (arr) => {
+    const isValid = Array.isArray(arr);
+    return { isValid, message: isValid ? 'Valid array' : 'Not an array', input: arr, length: isValid ? arr.length : 0 };
+  },
+
+  validateObject: (obj) => {
+    const isValid = obj !== null && typeof obj === 'object' && !Array.isArray(obj);
+    return { isValid, message: isValid ? 'Valid object' : 'Not an object', input: obj, keys: isValid ? Object.keys(obj) : [] };
+  },
+
+  isNullOrUndefined: (value) => {
+    const result = value === null || value === undefined;
+    return { result, input: value, type: value === null ? 'null' : value === undefined ? 'undefined' : typeof value };
+  },
+
+  isNullOrEmpty: (value) => {
+    const result = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
+    return { result, input: value, reason: value === null ? 'null' : value === undefined ? 'undefined' : value === '' ? 'empty string' : Array.isArray(value) && value.length === 0 ? 'empty array' : 'has value' };
+  },
+
+  // Additional URL functions
+  normalizeUrlOrigin: (url) => {
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+      return { original: url, normalized: urlObj.origin, protocol: urlObj.protocol, host: urlObj.host };
+    } catch (e) {
+      return { error: 'Invalid URL', input: url };
+    }
+  },
+
+  stripProtocol: (url) => {
+    if (!url) return { error: 'URL is required', input: url };
+    const stripped = String(url).replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, '');
+    return { original: url, stripped, hadProtocol: stripped !== url };
+  },
+
+  parseUrlParts: (url) => {
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+      return { original: url, parts: { protocol: urlObj.protocol, host: urlObj.host, hostname: urlObj.hostname, port: urlObj.port, pathname: urlObj.pathname, search: urlObj.search, hash: urlObj.hash } };
+    } catch (e) {
+      return { error: 'Invalid URL', input: url };
+    }
+  },
+
+  // Additional DateTime functions
+  formatDuration: (ms) => {
+    if (typeof ms !== 'number' || isNaN(ms)) return { error: 'Invalid duration', input: ms };
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    return { ms, formatted: days > 0 ? `${days}d ${hours % 24}h ${minutes % 60}m` : hours > 0 ? `${hours}h ${minutes % 60}m ${seconds % 60}s` : minutes > 0 ? `${minutes}m ${seconds % 60}s` : `${seconds}s`, parts: { days, hours: hours % 24, minutes: minutes % 60, seconds: seconds % 60 } };
+  },
+
+  addDays: (dateString, days) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return { error: 'Invalid date', input: dateString };
+      date.setDate(date.getDate() + Number(days));
+      return { original: dateString, daysAdded: Number(days), result: date.toISOString(), formatted: date.toLocaleDateString() };
+    } catch (e) {
+      return { error: e.message, input: dateString };
+    }
+  },
+
+  formatDate: (dateString) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return { error: 'Invalid date', input: dateString };
+      return { original: dateString, formatted: date.toLocaleDateString(), iso: date.toISOString().split('T')[0] };
+    } catch (e) {
+      return { error: e.message, input: dateString };
+    }
+  },
+
+  formatDateWithPrefix: (dateString, prefix = '') => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return { error: 'Invalid date', input: dateString };
+      return { original: dateString, prefix, formatted: `${prefix}${date.toLocaleDateString()}` };
+    } catch (e) {
+      return { error: e.message, input: dateString };
+    }
+  },
+
+  // Password/Security functions
+  generateSecurePassword: (length = 16, options = {}) => {
+    const { includeSymbols = true, includeNumbers = true, includeUppercase = true, includeLowercase = true } = options;
+    let chars = '';
+    if (includeLowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
+    if (includeUppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (includeNumbers) chars += '0123456789';
+    if (includeSymbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    if (!chars) chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return { password, length: password.length, options: { includeSymbols, includeNumbers, includeUppercase, includeLowercase } };
+  },
+
+  hashPassword: (password) => {
+    const crypto = require('crypto');
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return { hash: hash.substring(0, 32) + '...', salt: salt.substring(0, 8) + '...', algorithm: 'PBKDF2-SHA512', iterations: 10000, note: 'Hash truncated for display' };
+  },
+
+  verifyPassword: (password, providedHash) => {
+    return { message: 'Password verification demo - in production, compare with stored hash', passwordLength: password?.length || 0, hashProvided: !!providedHash, wouldVerify: password?.length >= 8 };
+  },
+
+  // ID Generation
+  generateExecutionId: () => {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 10);
+    const id = `exec_${timestamp}_${random}`;
+    return { id, timestamp: Date.now(), components: { timestampPart: timestamp, randomPart: random } };
+  },
+
+  // Scheduling
+  msToCron: (ms) => {
+    if (typeof ms !== 'number' || ms < 1000) return { error: 'Invalid interval (min 1000ms)', input: ms };
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return { ms, cron: `*/${seconds} * * * * *`, description: `Every ${seconds} seconds`, note: 'Second-level cron (non-standard)' };
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return { ms, cron: `*/${minutes} * * * *`, description: `Every ${minutes} minutes` };
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return { ms, cron: `0 */${hours} * * *`, description: `Every ${hours} hours` };
+    const days = Math.floor(hours / 24);
+    return { ms, cron: `0 0 */${days} * *`, description: `Every ${days} days` };
+  },
+
+  // MinHeap demo
+  minHeapDemo: (numbers) => {
+    if (!Array.isArray(numbers)) return { error: 'Input must be an array of numbers' };
+    const nums = numbers.map(Number).filter(n => !isNaN(n));
+    const sorted = [...nums].sort((a, b) => a - b);
+    return { input: nums, heapOperations: { insert: nums, extractMin: sorted, peek: sorted[0] || null }, sorted, size: nums.length, description: 'MinHeap always returns smallest element first' };
+  },
+
+  // Rate Limiter demo
+  rateLimiterDemo: (requests, windowMs = 60000, maxRequests = 10) => {
+    const current = Number(requests) || 0;
+    const remaining = Math.max(0, maxRequests - current);
+    const isLimited = current >= maxRequests;
+    return { currentRequests: current, maxRequests, windowMs, remaining, isLimited, message: isLimited ? 'Rate limit exceeded' : `${remaining} requests remaining` };
+  },
+
+  // API Key Validator demo
+  apiKeyValidatorDemo: (apiKey, validKeys = ['demo-key-123', 'test-key-456']) => {
+    if (!apiKey) return { isValid: false, message: 'API key is required' };
+    const isValid = validKeys.includes(apiKey);
+    return { isValid, message: isValid ? 'Valid API key' : 'Invalid API key', keyProvided: apiKey.substring(0, 4) + '****' };
   }
 };
 
@@ -542,6 +722,15 @@ async function handleApiRequest(req, res, path, startTime) {
         break;
       case 'cache':
         result = handleCache(action);
+        break;
+      case 'scheduling':
+        result = handleScheduling(action, body);
+        break;
+      case 'id':
+        result = handleIdGeneration(action, body);
+        break;
+      case 'data-structures':
+        result = handleDataStructures(action, body);
         break;
       default:
         result = createErrorResponse(
@@ -667,11 +856,23 @@ function handleValidation(action, body) {
       return passwordResult.error ? 
         createErrorResponse(passwordResult.message, 'VALIDATION_ERROR', { input: '***' }) :
         createSuccessResponse(passwordResult);
+    case 'url':
+      return createSuccessResponse(demoUtils.validateUrl(body.url));
+    case 'number':
+      return createSuccessResponse(demoUtils.validateNumber(body.value, body.options || {}));
+    case 'array':
+      return createSuccessResponse(demoUtils.validateArray(body.value));
+    case 'object':
+      return createSuccessResponse(demoUtils.validateObject(body.value));
+    case 'null-or-undefined':
+      return createSuccessResponse(demoUtils.isNullOrUndefined(body.value));
+    case 'null-or-empty':
+      return createSuccessResponse(demoUtils.isNullOrEmpty(body.value));
     default:
       return createErrorResponse(
         'Unknown validation action',
         'UNKNOWN_ACTION',
-        { action, availableActions: ['email', 'password'] }
+        { action, availableActions: ['email', 'password', 'url', 'number', 'array', 'object', 'null-or-undefined', 'null-or-empty'] }
       );
   }
 }
@@ -688,11 +889,22 @@ function handleSecurity(action, body) {
       return sanitizeResult.error ? 
         createErrorResponse(sanitizeResult.error, 'SECURITY_ERROR', { input: body.input }) :
         createSuccessResponse(sanitizeResult);
+    case 'generate-password':
+      return createSuccessResponse(demoUtils.generateSecurePassword(body.length || 16, body.options || {}));
+    case 'hash-password':
+      if (!body.password) return createErrorResponse('Password is required', 'SECURITY_ERROR');
+      return createSuccessResponse(demoUtils.hashPassword(body.password));
+    case 'verify-password':
+      return createSuccessResponse(demoUtils.verifyPassword(body.password, body.hash));
+    case 'validate-api-key':
+      return createSuccessResponse(demoUtils.apiKeyValidatorDemo(body.apiKey, body.validKeys));
+    case 'rate-limiter':
+      return createSuccessResponse(demoUtils.rateLimiterDemo(body.requests, body.windowMs, body.maxRequests));
     default:
       return createErrorResponse(
         'Unknown security action',
         'UNKNOWN_ACTION',
-        { action, availableActions: ['mask-api-key', 'sanitize-string'] }
+        { action, availableActions: ['mask-api-key', 'sanitize-string', 'generate-password', 'hash-password', 'verify-password', 'validate-api-key', 'rate-limiter'] }
       );
   }
 }
@@ -704,11 +916,31 @@ function handleDateTime(action, body) {
       return dateTimeResult.error ? 
         createErrorResponse(dateTimeResult.error, 'DATETIME_ERROR', { input: body.date }) :
         createSuccessResponse(dateTimeResult);
+    case 'format-duration':
+      const durationResult = demoUtils.formatDuration(body.ms);
+      return durationResult.error ? 
+        createErrorResponse(durationResult.error, 'DATETIME_ERROR', { input: body.ms }) :
+        createSuccessResponse(durationResult);
+    case 'add-days':
+      const addDaysResult = demoUtils.addDays(body.date, body.days);
+      return addDaysResult.error ? 
+        createErrorResponse(addDaysResult.error, 'DATETIME_ERROR', { input: body.date }) :
+        createSuccessResponse(addDaysResult);
+    case 'format-date':
+      const formatDateResult = demoUtils.formatDate(body.date);
+      return formatDateResult.error ? 
+        createErrorResponse(formatDateResult.error, 'DATETIME_ERROR', { input: body.date }) :
+        createSuccessResponse(formatDateResult);
+    case 'format-date-with-prefix':
+      const prefixResult = demoUtils.formatDateWithPrefix(body.date, body.prefix);
+      return prefixResult.error ? 
+        createErrorResponse(prefixResult.error, 'DATETIME_ERROR', { input: body.date }) :
+        createSuccessResponse(prefixResult);
     default:
       return createErrorResponse(
         'Unknown datetime action',
         'UNKNOWN_ACTION',
-        { action, availableActions: ['format'] }
+        { action, availableActions: ['format', 'format-duration', 'add-days', 'format-date', 'format-date-with-prefix'] }
       );
   }
 }
@@ -720,11 +952,26 @@ function handleUrl(action, body) {
       return urlResult.error ? 
         createErrorResponse(urlResult.error, 'URL_ERROR', { input: body.url }) :
         createSuccessResponse(urlResult);
+    case 'normalize-origin':
+      const normalizeResult = demoUtils.normalizeUrlOrigin(body.url);
+      return normalizeResult.error ? 
+        createErrorResponse(normalizeResult.error, 'URL_ERROR', { input: body.url }) :
+        createSuccessResponse(normalizeResult);
+    case 'strip-protocol':
+      const stripResult = demoUtils.stripProtocol(body.url);
+      return stripResult.error ? 
+        createErrorResponse(stripResult.error, 'URL_ERROR', { input: body.url }) :
+        createSuccessResponse(stripResult);
+    case 'parse-parts':
+      const parseResult = demoUtils.parseUrlParts(body.url);
+      return parseResult.error ? 
+        createErrorResponse(parseResult.error, 'URL_ERROR', { input: body.url }) :
+        createSuccessResponse(parseResult);
     default:
       return createErrorResponse(
         'Unknown URL action',
         'UNKNOWN_ACTION',
-        { action, availableActions: ['ensure-protocol'] }
+        { action, availableActions: ['ensure-protocol', 'normalize-origin', 'strip-protocol', 'parse-parts'] }
       );
   }
 }
@@ -805,6 +1052,51 @@ function handlePerformance(action, body) {
         'Unknown performance action',
         'UNKNOWN_ACTION',
         { action, availableActions: ['memoize'] }
+      );
+  }
+}
+
+function handleScheduling(action, body) {
+  switch (action) {
+    case 'ms-to-cron':
+      const cronResult = demoUtils.msToCron(body.ms);
+      return cronResult.error ? 
+        createErrorResponse(cronResult.error, 'SCHEDULING_ERROR', { input: body.ms }) :
+        createSuccessResponse(cronResult);
+    default:
+      return createErrorResponse(
+        'Unknown scheduling action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['ms-to-cron'] }
+      );
+  }
+}
+
+function handleIdGeneration(action, body) {
+  switch (action) {
+    case 'execution-id':
+      return createSuccessResponse(demoUtils.generateExecutionId());
+    default:
+      return createErrorResponse(
+        'Unknown ID generation action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['execution-id'] }
+      );
+  }
+}
+
+function handleDataStructures(action, body) {
+  switch (action) {
+    case 'min-heap':
+      const heapResult = demoUtils.minHeapDemo(body.numbers || [5, 3, 8, 1, 9, 2]);
+      return heapResult.error ? 
+        createErrorResponse(heapResult.error, 'DATA_STRUCTURE_ERROR') :
+        createSuccessResponse(heapResult);
+    default:
+      return createErrorResponse(
+        'Unknown data structure action',
+        'UNKNOWN_ACTION',
+        { action, availableActions: ['min-heap'] }
       );
   }
 }
