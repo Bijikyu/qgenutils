@@ -2,7 +2,7 @@
  * Core error response functionality
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 /**
  * Sends standardized error responses for HTTP requests

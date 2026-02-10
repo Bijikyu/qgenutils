@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 interface RateLimitResult {

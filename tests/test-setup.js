@@ -1,8 +1,8 @@
 // Test setup file to handle qerrors dependency issues during testing
 // This file provides fallbacks for problematic dependencies
 
-// Mock qerrors if it causes Winston transport issues
-jest.mock('qerrors', () => ({
+// Mock @bijikyu/qerrors if it causes Winston transport issues
+jest.mock('@bijikyu/qerrors', () => ({
   qerrors: jest.fn(() => {}),
   default: jest.fn(() => {})
 }));

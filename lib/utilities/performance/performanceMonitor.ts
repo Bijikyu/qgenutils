@@ -13,7 +13,7 @@
  * - Resource utilization patterns
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 import { BoundedLRUCache } from './boundedCache.js';
 import { loadavg } from 'os';
 

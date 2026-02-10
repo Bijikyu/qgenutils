@@ -98,7 +98,7 @@ export default {
   // Map qtests subpath imports to built dist files (setup.js lives under dist)
   "^qtests/(.*)$": "<rootDir>/node_modules/qtests/dist/$1",
   "^qtests$": "<rootDir>/node_modules/qtests/dist/index.js",
-  "^qerrors$": "<rootDir>/config/jest-qerrors-proxy.cjs",
+  "^@bijikyu/qerrors$": "<rootDir>/config/jest-qerrors-proxy.cjs",
   "^(\\.{1,2}/.*)\\.js$": "$1"
 }
 };

@@ -1,6 +1,6 @@
 'use strict';
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 import sanitizeLogValue from './sanitizeLogValue.js';
 

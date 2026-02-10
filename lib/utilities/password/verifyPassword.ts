@@ -46,7 +46,7 @@
  * }
  */
 import * as bcrypt from 'bcrypt'; // bcrypt for constant-time comparison and secure password hashing
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 const verifyPassword = async (password: string, hash: string): Promise<boolean> => { // verify password against hash with security-first approach
   // Input validation - ensure both parameters are provided and are strings

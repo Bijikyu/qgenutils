@@ -1,4 +1,4 @@
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 /**
  * Measures event loop lag asynchronously

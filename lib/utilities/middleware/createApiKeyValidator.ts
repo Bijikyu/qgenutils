@@ -1,4 +1,4 @@
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 /**
  * API Key Validation Middleware Factory

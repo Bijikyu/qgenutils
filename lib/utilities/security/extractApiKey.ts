@@ -88,7 +88,7 @@
  * ```
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 export interface ExtractApiKeyOptions {
   /** Custom header names to check for API keys */

@@ -1,4 +1,4 @@
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 import contextualTimeouts from './contextualTimeouts.js';
 
 /**

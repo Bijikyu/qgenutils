@@ -15,7 +15,7 @@ find . -name "*.ts" -not -name "*.test.ts" -exec sed -i "s/const logger = requir
 find . -name "*.ts" -not -name "*.test.ts" -exec sed -i "s/const logger = require('\.\.\/\.\.\/\.\.\/\.\.\/logger');/import logger from '..\/..\/..\/..\/logger.js';/g" {} \;
 
 # Fix qerrors import
-find . -name "*.ts" -not -name "*.test.ts" -exec sed -i "s/const { qerrors } = require('qerrors');/import { qerrors } from 'qerrors';/g" {} \;
+find . -name "*.ts" -not -name "*.test.ts" -exec sed -i "s/const { qerrors } = require('@bijikyu/qerrors');/import { qerrors } from '@bijikyu/qerrors';/g" {} \;
 
 # Fix helper imports
 find . -name "*.ts" -not -name "*.test.ts" -exec sed -i "s/const \([^=]*\) = require('\.\.\/\.\.\/helpers\/\([^']*\)');/import \1 from '..\/..\/helpers\/\2.js';/g" {} \;

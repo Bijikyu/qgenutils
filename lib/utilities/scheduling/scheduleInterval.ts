@@ -82,7 +82,7 @@
  *   console.log('Job cancelled:', wasCancelled);
  * }
  */
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { // robust interval scheduler with comprehensive job management
   // Validate callback function to ensure it's executable

@@ -77,7 +77,7 @@ let qerrors = null;
 // Fix: Wrap in async function to avoid top-level await issues
 async function initializeQerrors() {
   try {
-    const qerrorsModule = await import('qerrors');
+    const qerrorsModule = await import('@bijikyu/qerrors');
     qerrors = qerrorsModule.qerrors;
   } catch {
     // qerrors not available, continue without it

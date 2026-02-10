@@ -18,7 +18,7 @@ convert_file() {
     
     # Basic conversions using sed
     sed -i "s/const { \([^}]*\) } = require('\([^']*\)');/import { \1 } from '\2';/g" "$ts_file"
-    sed -i "s/const { qerrors } = require('qerrors');/import { qerrors } from 'qerrors';/g" "$ts_file"
+    sed -i "s/const { qerrors } = require('@bijikyu/qerrors');/import { qerrors } from '@bijikyu/qerrors';/g" "$ts_file"
     sed -i "s/const logger = require('\.\./\.\./logger');/import logger from '..\/..\/logger.js';/g" "$ts_file"
     sed -i "s/const logger = require('\.\./\.\./\.\./logger');/import logger from '..\/..\/..\/logger.js';/g" "$ts_file"
     sed -i "s/const logger = require('\.\./\.\./\.\./\.\./logger');/import logger from '..\/..\/..\/..\/logger.js';/g" "$ts_file"

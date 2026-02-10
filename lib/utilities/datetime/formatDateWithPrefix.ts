@@ -19,7 +19,7 @@
  * @throws Never throws - returns fallback on any error
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 import isValidDate from '../helpers/isValidDate.js';
 import formatDate from './formatDate.js';

@@ -42,7 +42,7 @@
 'use strict';
 
 import * as crypto from 'crypto'; // use crypto for secure randomness and cryptographically secure random number generation
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 const DEFAULT_LENGTH = 12; // default password length - OWASP recommended minimum for user-facing passwords
 const MIN_LENGTH = 8; // minimum secure length - NIST SP 800-63B minimum for memorized secrets

@@ -1,6 +1,6 @@
 
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 /**
  * Dynamic Module Loader with CommonJS/ESM Interop Normalization

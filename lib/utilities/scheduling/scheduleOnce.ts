@@ -64,7 +64,7 @@
  *   console.log('Job cancelled:', wasCancelled);
  * }, 1000);
  */
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 function scheduleOnce(callback: any, when: any, options: any = {}) {
   if (typeof callback !== 'function') {
     throw new Error('Callback must be a function');

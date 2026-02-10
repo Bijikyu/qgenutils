@@ -34,7 +34,7 @@
  * @throws Never throws - returns original URL on any error
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 import isValidString from '../helpers/isValidString.js';
 

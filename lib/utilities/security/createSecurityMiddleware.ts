@@ -3,7 +3,7 @@
  * Provides security monitoring, rate limiting, and IP blocking functionality
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 // Note: These imports might not exist yet - using stubs for compatibility
 // import detectSuspiciousPatterns from './detectSuspiciousPatterns.js';
 // import createIpTracker from './createIpTracker.js';

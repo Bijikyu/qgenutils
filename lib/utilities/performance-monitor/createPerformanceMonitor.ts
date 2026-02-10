@@ -29,7 +29,7 @@
  * @since 1.0.0
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 import * as metricCollectionUtils from './metricCollectionUtils.js'; // unified metric collection utilities
 import getPerformanceHealthStatus from './getPerformanceHealthStatus.js'; // health status calculation
 import analyzePerformanceMetrics from './analyzePerformanceMetrics.js'; // metric analysis and alerting

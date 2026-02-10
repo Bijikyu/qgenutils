@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { Worker } from 'worker_threads';
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 const BCRYPT_SALT_ROUNDS = 12;
 

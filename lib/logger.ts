@@ -23,7 +23,7 @@ const winstonAny: any = winston as any;
 let qerrors: any = null;
 (async () => {
   try {
-    const qerrorsModule: any = await import('qerrors');
+    const qerrorsModule: any = await import('@bijikyu/qerrors');
     qerrors = qerrorsModule?.qerrors ?? null;
   } catch {
     // Silently fail - qerrors is optional for logging functionality

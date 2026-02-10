@@ -53,7 +53,7 @@
  */
 'use strict';
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 import loadAndFlattenModule from './loadAndFlattenModule.js'; // default flattening function
 

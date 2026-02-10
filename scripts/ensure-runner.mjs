@@ -10,7 +10,7 @@ const cwd = process.cwd();
 // Try to import qerrors for consistent error reporting
 let qerrors = null;
 try {
-  const qerrorsModule = await import('qerrors');
+  const qerrorsModule = await import('@bijikyu/qerrors');
   qerrors = qerrorsModule.qerrors;
 } catch {
   // qerrors not available, continue without it

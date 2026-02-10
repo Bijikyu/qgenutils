@@ -6,7 +6,7 @@
  * try-catch blocks, error logging, error creation, and standardized error responses.
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 /**
  * Standard error handler with qerrors logging

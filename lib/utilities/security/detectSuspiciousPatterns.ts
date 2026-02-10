@@ -59,7 +59,7 @@
  * ```
  */
 
-import { qerrors } from 'qerrors';
+import { qerrors } from '@bijikyu/qerrors';
 
 interface DetectSuspiciousPatternsOptions {
   /** Maximum allowed request body size in bytes (default from security config) */
