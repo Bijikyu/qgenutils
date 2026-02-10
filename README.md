@@ -5,8 +5,34 @@ A production-ready Node.js utility library providing comprehensive functionality
 
 ## Installation
 
+This package is published to [GitHub Packages](https://github.com/bijikyu/qgenutils/packages).
+
+1. Create or edit `.npmrc` in your project root:
+
+```
+@bijikyu:registry=https://npm.pkg.github.com
+```
+
+2. Authenticate with GitHub Packages (use a personal access token with `read:packages` scope):
+
 ```bash
-npm install qgenutils
+npm login --scope=@bijikyu --registry=https://npm.pkg.github.com
+```
+
+3. Install the package:
+
+```bash
+npm install @bijikyu/qgenutils
+```
+
+### Usage
+
+```js
+// Core utilities (lightweight)
+import { ... } from '@bijikyu/qgenutils';
+
+// Full utilities bundle
+import { ... } from '@bijikyu/qgenutils/full';
 ```
 
 ## Demo Server (Development & Testing)
@@ -59,11 +85,11 @@ Admin dashboard (served by the demo server):
 
 ```javascript
 // CommonJS
-const utils = require('qgenutils');
-const { formatDateTime, ensureProtocol, validateEmailFormat, memoize } = require('qgenutils');
+const utils = require('@bijikyu/qgenutils');
+const { formatDateTime, ensureProtocol, validateEmailFormat, memoize } = require('@bijikyu/qgenutils');
 
 // ES Modules
-import { formatDateTime, ensureProtocol, validateEmailFormat, memoize } from 'qgenutils';
+import { formatDateTime, ensureProtocol, validateEmailFormat, memoize } from '@bijikyu/qgenutils';
 ```
 
 ## Usage
@@ -95,13 +121,13 @@ console.log(expensiveFn(5)); // 25 (cached result)
 
 ```javascript
 // Password security
-import { hashPassword, verifyPassword } from 'qgenutils';
+import { hashPassword, verifyPassword } from '@bijikyu/qgenutils';
 
 const { hash, salt } = await hashPassword('securePassword123!');
 const isValid = await verifyPassword('securePassword123!', hash, salt);
 
 // Performance optimization
-import { memoize, throttle, debounce } from 'qgenutils';
+import { memoize, throttle, debounce } from '@bijikyu/qgenutils';
 
 const expensiveFn = memoize((n) => heavyComputation(n));
 const throttledSave = throttle(saveData, 1000);
@@ -172,7 +198,7 @@ The library includes comprehensive examples for various use cases:
 Converts ISO date string to locale-specific display format. Returns an object with formatted result.
 
 ```javascript
-const { formatDateTime } = require('qgenutils');
+const { formatDateTime } = require('@bijikyu/qgenutils');
 
 const result = formatDateTime('2023-12-25T10:30:00.000Z');
 console.log(result.formatted);
@@ -187,7 +213,7 @@ console.log(empty.formatted);
 Calculates elapsed time between dates in HH:MM:SS format.
 
 ```javascript
-const { formatDuration } = require('qgenutils');
+const { formatDuration } = require('@bijikyu/qgenutils');
 
 const start = '2023-12-25T10:00:00.000Z';
 const end = '2023-12-25T11:30:45.000Z';
@@ -200,7 +226,7 @@ console.log(formatDuration(start)); // Duration from start to now
 Returns human-friendly relative time (e.g., "5 minutes ago").
 
 ```javascript
-const { formatRelativeTime } = require('qgenutils');
+const { formatRelativeTime } = require('@bijikyu/qgenutils');
 
 console.log(formatRelativeTime(new Date(Date.now() - 60000))); // "1 minute ago"
 ```
@@ -209,7 +235,7 @@ console.log(formatRelativeTime(new Date(Date.now() - 60000))); // "1 minute ago"
 Adds days to a date.
 
 ```javascript
-const { addDays } = require('qgenutils');
+const { addDays } = require('@bijikyu/qgenutils');
 
 const future = addDays(new Date(), 7); // 7 days from now
 ```
@@ -220,7 +246,7 @@ const future = addDays(new Date(), 7); // 7 days from now
 Adds HTTPS protocol if missing. Returns an object with processed result.
 
 ```javascript
-const { ensureProtocol } = require('qgenutils');
+const { ensureProtocol } = require('@bijikyu/qgenutils');
 
 const result1 = ensureProtocol('example.com');
 console.log(result1.processed); // "https://example.com"
@@ -233,7 +259,7 @@ console.log(result2.processed); // "http://example.com"
 Normalizes URL to lowercase origin.
 
 ```javascript
-const { normalizeUrlOrigin } = require('qgenutils');
+const { normalizeUrlOrigin } = require('@bijikyu/qgenutils');
 
 console.log(normalizeUrlOrigin('HTTPS://Example.Com/path'));
 // Output: "https://example.com"
@@ -243,7 +269,7 @@ console.log(normalizeUrlOrigin('HTTPS://Example.Com/path'));
 Removes protocol from URL.
 
 ```javascript
-const { stripProtocol } = require('qgenutils');
+const { stripProtocol } = require('@bijikyu/qgenutils');
 
 console.log(stripProtocol('https://example.com')); // "example.com"
 ```
@@ -252,7 +278,7 @@ console.log(stripProtocol('https://example.com')); // "example.com"
 Parses URL into base and endpoint parts.
 
 ```javascript
-const { parseUrlParts } = require('qgenutils');
+const { parseUrlParts } = require('@bijikyu/qgenutils');
 
 console.log(parseUrlParts('example.com/api/users?id=123'));
 // Output: { baseUrl: "https://example.com", endpoint: "/api/users?id=123" }
@@ -263,7 +289,7 @@ console.log(parseUrlParts('example.com/api/users?id=123'));
 #### Data Structures
 
 ```javascript
-const { createMinHeap } = require('qgenutils');
+const { createMinHeap } = require('@bijikyu/qgenutils');
 
 // Create a min-heap for priority queue operations
 const heap = createMinHeap();
@@ -276,7 +302,7 @@ console.log(heap.extractMin()); // 2 (smallest element)
 ### Performance Utilities
 
 ```javascript
-const { memoize, throttle, debounce } = require('qgenutils');
+const { memoize, throttle, debounce } = require('@bijikyu/qgenutils');
 
 // Memoize expensive function
 const cachedFn = memoize((x) => expensiveCalculation(x));
@@ -291,7 +317,7 @@ const debounced = debounce(() => search(query), 300);
 ### Password Security
 
 ```javascript
-const { hashPassword, verifyPassword, generateSecurePassword } = require('qgenutils');
+const { hashPassword, verifyPassword, generateSecurePassword } = require('@bijikyu/qgenutils');
 
 // Hash password with OWASP-compliant method
 const { hash, salt } = await hashPassword('securePassword123!');
@@ -306,7 +332,7 @@ const securePassword = generateSecurePassword(16); // 16-character password
 ### Validation
 
 ```javascript
-const { validateEmailFormat, validateUrl, validateNumber, validateString, validateArray, validateObject } = require('qgenutils');
+const { validateEmailFormat, validateUrl, validateNumber, validateString, validateArray, validateObject } = require('@bijikyu/qgenutils');
 
 // Email validation
 const emailValid = validateEmailFormat('user@example.com'); // true/false
@@ -356,10 +382,10 @@ While legacy functions continue to work, new projects should use the modern API:
 
 ```javascript
 // Legacy (still supported)
-const { formatDateTime, ensureProtocol, validateEmail } = require('qgenutils');
+const { formatDateTime, ensureProtocol, validateEmail } = require('@bijikyu/qgenutils');
 
 // Modern (recommended)
-import { formatDateTime, ensureProtocol, validateEmailFormat } from 'qgenutils';
+import { formatDateTime, ensureProtocol, validateEmailFormat } from '@bijikyu/qgenutils';
 ```
 
 ### Compatibility Guarantees

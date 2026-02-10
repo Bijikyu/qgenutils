@@ -191,7 +191,7 @@ QGenUtils is a security-first Node.js utility library providing comprehensive fu
 
 ### **Basic Usage**
 ```javascript
-const { formatDateTime, validateEmail, sanitizeString } = require('qgenutils');
+const { formatDateTime, validateEmail, sanitizeString } = require('@bijikyu/qgenutils');
 
 // Date formatting
 const formatted = formatDateTime('2023-12-25T10:30:00.000Z');
@@ -205,7 +205,7 @@ const clean = sanitizeString(userInput);
 
 ### **Advanced Usage**
 ```javascript
-const { createAdvancedHttpClient, createSemaphore } = require('qgenutils');
+const { createAdvancedHttpClient, createSemaphore } = require('@bijikyu/qgenutils');
 
 // HTTP client with retries
 const client = createAdvancedHttpClient({

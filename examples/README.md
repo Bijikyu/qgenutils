@@ -401,5 +401,5 @@ The demo server is part of QGenUtils and licensed under ISC.
 **Remember:** This is a development tool. For production use, import the library directly into your application:
 
 ```javascript
-import { validateEmailFormat, hashPassword } from 'qgenutils';
+import { validateEmailFormat, hashPassword } from '@bijikyu/qgenutils';
 ```

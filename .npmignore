@@ -30,6 +30,14 @@ tsconfig.json
 .local/
 .state/
 .upm/
+replit.md
+.jest-cache/
+.github/
+opencode.json
+runner-jest-args.json
+qtests-runner.mjs
+eslint.config.js
+logs/
 
 # Scripts and tools
 scripts/
@@ -43,8 +51,7 @@ CURRENTPLAN.md
 DEBUG_TESTS.md
 FILE_FLOWS.md
 
-# Build artifacts before publish
-dist/
+# Source TypeScript files (dist has compiled output)
 lib/utilities/**/*.js
 lib/**/*.js
 !lib/dist/

@@ -4,7 +4,7 @@
  * This is the main entry point focused on tree-shaking.
  * Import only what you need:
  *
- * import { validateEmail, hashPassword } from 'qgenutils';
+ * import { validateEmail, hashPassword } from '@bijikyu/qgenutils';
  */
 
 // Most commonly used utilities

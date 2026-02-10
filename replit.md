@@ -1,6 +1,12 @@
 # Overview
 
-QGenUtils is a utilities-focused Node.js library providing DateTime formatting, HTTP configuration, URL processing, collections manipulation, batch processing, and performance utilities. This instance focuses purely on utility functions - security, system, and validation modules have been split into separate repositories.
+QGenUtils (`@bijikyu/qgenutils`) is a utilities-focused Node.js library published as a GitHub Package. It provides DateTime formatting, HTTP configuration, URL processing, collections manipulation, batch processing, and performance utilities. This instance focuses purely on utility functions - security, system, and validation modules have been split into separate repositories.
+
+## Publishing
+- Package is scoped as `@bijikyu/qgenutils` on GitHub Packages
+- Automated publishing via GitHub Actions on release creation (`.github/workflows/publish.yml`)
+- `package.json` has `files` field to explicitly include only `dist/`, `README.md`, and `LICENSE`
+- Build before publish: `npm run build` compiles TypeScript to `dist/`
 
 # User Preferences
 
