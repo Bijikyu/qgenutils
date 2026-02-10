@@ -81,13 +81,20 @@ describe('QGenUtils Integration Tests', () => {
 
     it('should format file sizes', () => {
       const result = formatFileSize(1024);
-      expect(result).toBe('1.00 KB');
+      expect(result).toEqual({
+        bytes: 1024,
+        formatted: '1.0 KB',
+        unit: 'KB',
+        size: 1,
+        unitIndex: 1
+      });
     });
   });
 
   describe('Middleware Integration', () => {
     it('should create API key validator', () => {
       const validator = createApiKeyValidator({
+        apiKey: 'test-api-key-12345',
         headerName: 'X-API-Key',
         required: true
       });
