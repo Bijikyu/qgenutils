@@ -11,16 +11,7 @@ import loggerImport from '../../logger.js';
 
 const getAppLoggerCore = async (): Promise<any> => {
   try {
-    const qgenutils: any = await import('@bijikyu/qgenutils');
-    const logger: any = qgenutils?.logger;
-    if (logger && typeof logger.info === 'function') {
-      return logger;
-    }
-  } catch {
-  }
-
-  try {
-    if (loggerImport && typeof loggerImport.info === 'function') {
+    if (loggerImport && typeof loggerImport.info === 'function') { // prefer the package's own logger via relative import
       return loggerImport;
     }
   } catch {
