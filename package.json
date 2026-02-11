@@ -20,11 +20,15 @@
   "exports": {
     ".": {
       "types": "./dist/index-core.d.ts",
-      "import": "./dist/index-core.js"
+      "require": "./dist/index-core.js",
+      "import": "./dist/index-core.js",
+      "default": "./dist/index-core.js"
     },
     "./full": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
