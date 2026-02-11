@@ -115,7 +115,8 @@
  * ```
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import logger from '../../logger.js';
 import ensureProtocol from './ensureProtocol.js';
 

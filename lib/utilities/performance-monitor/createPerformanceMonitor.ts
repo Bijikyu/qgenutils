@@ -29,7 +29,8 @@
  * @since 1.0.0
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import * as metricCollectionUtils from './metricCollectionUtils.js'; // unified metric collection utilities
 import getPerformanceHealthStatus from './getPerformanceHealthStatus.js'; // health status calculation
 import analyzePerformanceMetrics from './analyzePerformanceMetrics.js'; // metric analysis and alerting
@@ -197,7 +198,7 @@ function createPerformanceMonitor(options: PerformanceMonitorOptions = {}) { // 
           onAlert(alert);
         } catch (err) {
           // Use qerrors for consistent error reporting and prevent callback crashes
-          qerrors(err instanceof Error ? err : new Error(String(err)), 'createPerformanceMonitor', 'Performance alert callback failed');
+          qerrors(err instanceof Error ? err : new Error(String(err)), 'createPerformanceMonitor', { message: 'Performance alert callback failed' });
           logger.error('[performance] Alert callback error:', err);
         }
       }

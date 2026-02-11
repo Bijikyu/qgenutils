@@ -61,7 +61,8 @@
  *   }
  * });
  */
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 interface FeatureConfigOptions {
   name?: string;
@@ -118,7 +119,7 @@ function buildFeatureConfig(options: FeatureConfigOptions = {}) {
       updatedAt: timestamp
     };
   } catch (err) {
-    qerrors(err instanceof Error ? err : new Error(String(err)), 'buildFeatureConfig', `Feature config serialization failed for: ${name}`);
+    qerrors(err instanceof Error ? err : new Error(String(err)), 'buildFeatureConfig', { message: `Feature config serialization failed for: ${name}` });
     throw new Error(`Failed to build feature configuration for ${name}`);
   }
 }

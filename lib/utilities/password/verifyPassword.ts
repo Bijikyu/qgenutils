@@ -46,7 +46,8 @@
  * }
  */
 import * as bcrypt from 'bcrypt'; // bcrypt for constant-time comparison and secure password hashing
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 const verifyPassword = async (password: string, hash: string): Promise<boolean> => { // verify password against hash with security-first approach
   // Input validation - ensure both parameters are provided and are strings
@@ -62,7 +63,7 @@ const verifyPassword = async (password: string, hash: string): Promise<boolean> 
     return await bcrypt.compare(password, hash);
   } catch (error) {
     // Log error for monitoring without exposing sensitive details
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', 'Password verification operation failed');
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', { message: 'Password verification operation failed' });
 
     // Security: Always return false on errors to prevent information disclosure
     // Don't log error details in production for security reasons

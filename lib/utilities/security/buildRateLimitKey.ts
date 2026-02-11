@@ -17,7 +17,8 @@ interface RequestObject {
 }
 
 import { createHash } from 'crypto';
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Builds rate limit keys from requests with configurable strategies
@@ -94,7 +95,7 @@ function hashKey(key: string): string { // secure hash for privacy using crypto
     const hash = createHash('sha256').update(key).digest('hex');
     return `key_${hash.substring(0, 16)}`;
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashKey', `Secure hash generation failed for key length: ${key.length}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashKey', { message: `Secure hash generation failed for key length: ${key.length}` });
     // Fallback to simple hash if crypto fails
     let hash = 0;
     for (let i = 0; i < key.length; i++) {

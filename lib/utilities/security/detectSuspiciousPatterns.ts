@@ -59,7 +59,8 @@
  * ```
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 interface DetectSuspiciousPatternsOptions {
   /** Maximum allowed request body size in bytes (default from security config) */

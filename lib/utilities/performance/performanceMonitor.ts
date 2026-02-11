@@ -13,7 +13,8 @@
  * - Resource utilization patterns
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import { BoundedLRUCache } from './boundedCache.js';
 import { loadavg } from 'os';
 
@@ -244,7 +245,7 @@ class PerformanceMonitor {
       qerrors(
         new Error(alert.message),
         'PerformanceMonitor',
-        `Performance Alert: ${alert.type} - ${alert.severity}`
+        { message: `Performance Alert: ${alert.type} - ${alert.severity}` }
       );
 
       // Limit alerts history to prevent memory leaks

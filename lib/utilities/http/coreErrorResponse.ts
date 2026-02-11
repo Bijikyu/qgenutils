@@ -2,7 +2,8 @@
  * Core error response functionality
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Sends standardized error responses for HTTP requests
@@ -37,7 +38,7 @@ function sendErrorResponse(res, options: any = {}) {
 
     return res.status(status).json(payload);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'sendErrorResponse', `Error response creation failed for status: ${(options as any)?.status || 400}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'sendErrorResponse', { message: `Error response creation failed for status: ${(options as any)?.status || 400}` });
     return res.status(500).json({
       success: false,
       error: {

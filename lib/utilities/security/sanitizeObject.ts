@@ -1,6 +1,7 @@
 'use strict';
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 import sanitizeLogValue from './sanitizeLogValue.js';
 
@@ -83,7 +84,7 @@ function sanitizeObject(obj: any, options: SanitizeOptions = {}, depth: number =
 
     return sanitizeLogValue(obj);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'sanitizeObject', `Object sanitization failed at depth: ${depth}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'sanitizeObject', { message: `Object sanitization failed at depth: ${depth}` });
     return '[SANITIZATION_ERROR]';
   }
 }

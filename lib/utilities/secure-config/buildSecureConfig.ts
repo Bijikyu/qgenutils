@@ -1,6 +1,7 @@
 'use strict';
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 import convict from 'convict'; // robust config validation
 
@@ -49,7 +50,7 @@ const buildSecureConfig = (schema: any, env: any, overrides: any = {}): any => {
     // SECURITY: Sanitized error reporting to prevent information leakage
     // Only reports validation failure, not sensitive configuration details
     const errorMessage = error instanceof Error ? error.message : String(error);
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'buildSecureConfig', `Configuration validation failed for schema keys: ${Object.keys(schema).length}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'buildSecureConfig', { message: `Configuration validation failed for schema keys: ${Object.keys(schema).length}` });
     throw new Error(`Configuration validation failed: ${errorMessage}`);
   }
 

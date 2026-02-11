@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import { ValidationConfigOptions, ValidationConfig } from '../../../types/config-interfaces.js';
 
 /**
@@ -47,7 +48,7 @@ function buildValidationConfig(options: ValidationConfigOptions = {}): Validatio
         try {
           return JSON.parse(JSON.stringify(allowedAttributes));
         } catch (err) {
-          qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Allowed attributes serialization failed');
+          qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', { message: 'Allowed attributes serialization failed' });
           return {};
         }
       })(),
@@ -58,7 +59,7 @@ function buildValidationConfig(options: ValidationConfigOptions = {}): Validatio
       try {
         return JSON.parse(JSON.stringify(customValidators));
       } catch (err) {
-        qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Custom validators serialization failed');
+        qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', { message: 'Custom validators serialization failed' });
         return {};
       }
     })(),
@@ -66,7 +67,7 @@ function buildValidationConfig(options: ValidationConfigOptions = {}): Validatio
       try {
         return JSON.parse(JSON.stringify(errorMessages));
       } catch (err) {
-        qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Error messages serialization failed');
+        qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', { message: 'Error messages serialization failed' });
         return {};
       }
     })(),

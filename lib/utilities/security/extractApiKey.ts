@@ -88,7 +88,8 @@
  * ```
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 export interface ExtractApiKeyOptions {
   /** Custom header names to check for API keys */
@@ -197,7 +198,7 @@ const extractApiKey = (req: Request, options: ExtractApiKeyOptions = {}): string
 
     return null;
   } catch (err) {
-    qerrors(err instanceof Error ? err : new Error(String(err)), 'extractApiKey', 'API key extraction failed unexpectedly');
+    qerrors(err instanceof Error ? err : new Error(String(err)), 'extractApiKey', { message: 'API key extraction failed unexpectedly' });
     return null;
   }
 };

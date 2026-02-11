@@ -3,7 +3,8 @@
  * Creates implementations for functions referenced in tests but not yet implemented
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import logger from '../../logger.js';
 import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../../../config/localVars.js';
 

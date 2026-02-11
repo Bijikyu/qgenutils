@@ -64,7 +64,8 @@
  *   console.log('Job cancelled:', wasCancelled);
  * }, 1000);
  */
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 function scheduleOnce(callback: any, when: any, options: any = {}) {
   if (typeof callback !== 'function') {
     throw new Error('Callback must be a function');
@@ -104,13 +105,13 @@ function scheduleOnce(callback: any, when: any, options: any = {}) {
     try {
       await callback();
     } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleOnce', `One-time job execution failed for: ${jobId}`);
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleOnce', { message: `One-time job execution failed for: ${jobId}` });
 
       if (onError && typeof onError === 'function') {
         try {
           onError(error, { identifier: jobId, scheduledFor: executionDate });
         } catch (handlerError) {
-          qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleOnce', `Error handler failed for job: ${jobId}`);
+          qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleOnce', { message: `Error handler failed for job: ${jobId}` });
           console.error('[scheduleOnce] Error handler threw:', handlerError);
         }
       }

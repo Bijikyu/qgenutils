@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Measures event loop lag asynchronously
@@ -24,7 +25,7 @@ const measureEventLoopLag = (callback: any) => {
       const safeLagMs = Math.min(Math.max(lagMs, 0), 60000);
       callback(Math.round(safeLagMs * 100) / 100);
     } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'measureEventLoopLag', 'Event loop lag measurement failed');
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'measureEventLoopLag', { message: 'Event loop lag measurement failed' });
       callback(0.00);
     }
   });

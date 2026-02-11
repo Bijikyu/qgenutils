@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import { BoundedLRUCache } from '../performance/boundedCache.js';
 
 interface RateLimitResult {
@@ -321,7 +322,7 @@ export class DistributedRateLimiter extends EventEmitter {
         qerrors(
           error instanceof Error ? error : new Error(String(error)),
           'DistributedRateLimiter.middleware',
-          'Rate limiting failed'
+          { message: 'Rate limiting failed' }
         );
         // Fail open - allow request if rate limiting fails
         next();

@@ -36,7 +36,8 @@
  * - Acceptable overhead for security-critical operations
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors'; // Centralized error handling system
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod; // Centralized error handling system
 
 /**
  * @ts-ignore - safe-compare doesn't have TypeScript definitions but is battle-tested
@@ -107,7 +108,7 @@ const timingSafeCompare = (a: string, b: string): boolean => {
     qerrors(
       error instanceof Error ? error : new Error(String(error)),
       'timingSafeCompare',
-      `Constant-time comparison library failed for string lengths: ${a.length}, ${b.length}`
+      { message: `Constant-time comparison library failed for string lengths: ${a.length}, ${b.length}` }
     );
 
     // SECURE DEFAULT: Return false rather than risk timing attack vulnerability

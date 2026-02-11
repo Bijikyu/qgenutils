@@ -33,7 +33,8 @@
  * - Detailed success/failure reporting with item-level results
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors'; // Centralized error handling system
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod; // Centralized error handling system
 import createSemaphore from './createSemaphore.js'; // Concurrency control
 import retryWithBackoff from './retryWithBackoff.js'; // Retry logic with backoff
 
@@ -288,7 +289,7 @@ async function processBatch<T, R>(
 
         // LOG UNEXPECTED ERRORS: Use centralized error handling
         const error = processorError instanceof Error ? processorError : new Error(String(processorError));
-        qerrors(error, 'processBatch', `Batch item processing failed for index: ${globalIndex}`);
+        qerrors(error, 'processBatch', { message: `Batch item processing failed for index: ${globalIndex}` });
 
         return {
           success: false,

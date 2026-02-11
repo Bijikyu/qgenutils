@@ -13,7 +13,8 @@
  */
 
 import bcrypt from 'bcrypt';
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 interface PasswordHashResult {
   hash: string;
@@ -44,7 +45,7 @@ async function hashPassword(
       salt
     };
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashPassword', 'Password hashing failed');
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'hashPassword', { message: 'Password hashing failed' });
     throw new Error('Password hashing failed');
   }
 }
@@ -68,7 +69,7 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
 
     return await bcrypt.compare(password, hash);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', 'Password verification failed');
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', { message: 'Password verification failed' });
     return false;
   }
 }
@@ -83,7 +84,7 @@ async function generateSalt(saltRounds: number = 10): Promise<string> {
   try {
     return await bcrypt.genSalt(saltRounds);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'generateSalt', 'Salt generation failed');
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'generateSalt', { message: 'Salt generation failed' });
     throw new Error('Salt generation failed');
   }
 }

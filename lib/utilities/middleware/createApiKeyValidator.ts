@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * API Key Validation Middleware Factory
@@ -88,7 +89,7 @@ function createApiKeyValidator(config: ApiKeyValidatorConfig) {
     try {
       providedKey = extractApiKey(req, extractOptions); // extract key from request
     } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'createApiKeyValidator', 'API key extraction failed');
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'createApiKeyValidator', { message: 'API key extraction failed' });
       // Handle extraction errors gracefully
       if (onMissing) {
         onMissing({ req, res, error });
@@ -111,7 +112,7 @@ function createApiKeyValidator(config: ApiKeyValidatorConfig) {
     try {
       isValid = timingSafeCompare(providedKey, expectedKey); // constant-time comparison
     } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'createApiKeyValidator', 'API key timing comparison failed');
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'createApiKeyValidator', { message: 'API key timing comparison failed' });
       // Handle timingSafeCompare failure securely
       console.error('Security: timingSafeCompare failed in API key validation', {
         timestamp: new Date().toISOString(),

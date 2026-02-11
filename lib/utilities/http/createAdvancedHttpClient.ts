@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Advanced HTTP Client using Axios
@@ -86,7 +87,7 @@ function createAdvancedHttpClient(config: Config = {}) {
       return requestConfig;
     },
     (error: any): any => {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', 'HTTP request interceptor error');
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', { message: 'HTTP request interceptor error' });
       console.error('HTTP Request Error:', error);
       return Promise.reject(error);
     }
@@ -124,7 +125,7 @@ function createAdvancedHttpClient(config: Config = {}) {
 
           // Check if we've exceeded max retries before retrying
           if (originalRequest._retryCount >= maxRetries) {
-            qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP request max retries exceeded for: ${originalRequest.url}`);
+            qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', { message: `HTTP request max retries exceeded for: ${originalRequest.url}` });
             return Promise.reject(error);
           }
 
@@ -151,11 +152,11 @@ function createAdvancedHttpClient(config: Config = {}) {
         error.isServerError = error.response?.status >= 500;
         error.isClientError = error.response?.status >= 400 && error.response?.status < 500;
 
-        qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP response error for: ${originalRequest.url}`);
+        qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', { message: `HTTP response error for: ${originalRequest.url}` });
 
         return Promise.reject(error);
       } catch (handlerError) {
-        qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'createAdvancedHttpClient', 'HTTP response interceptor error');
+        qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'createAdvancedHttpClient', { message: 'HTTP response interceptor error' });
         return Promise.reject(error);
       }
     }
@@ -185,7 +186,7 @@ function createAdvancedHttpClient(config: Config = {}) {
       const response: any = await httpClient.head(url || '/', { ...config, timeout: 5000 });
       return { healthy: true, status: response.status, response };
     } catch (error) {
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'healthCheck', `HTTP health check failed for: ${url || '/'}`);
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'healthCheck', { message: `HTTP health check failed for: ${url || '/'}` });
       return { healthy: false, error: error.message };
     }
   };

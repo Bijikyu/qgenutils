@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Worker } from 'worker_threads';
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -53,7 +54,7 @@ export default async function hashPassword(password: string, options?: HashOptio
     qerrors(
       error instanceof Error ? error : new Error(String(error)),
       'hashPassword',
-      'Password hashing operation failed'
+      { message: 'Password hashing operation failed' }
     );
 
     // Generic Error Message - Prevents Information Disclosure
@@ -89,7 +90,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
     qerrors(
       error instanceof Error ? error : new Error(String(error)),
       'verifyPassword',
-      'Password verification failed'
+      { message: 'Password verification failed' }
     );
 
     throw new Error('Password verification failed');

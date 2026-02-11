@@ -3,7 +3,8 @@
  * Provides security monitoring, rate limiting, and IP blocking functionality
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 // Note: These imports might not exist yet - using stubs for compatibility
 // import detectSuspiciousPatterns from './detectSuspiciousPatterns.js';
 // import createIpTracker from './createIpTracker.js';
@@ -134,7 +135,7 @@ function createSecurityMiddleware(options: SecurityMiddlewareOptions = {}) {
         const blockExpiry = ipTracker.block(clientIp);
         const retryAfter = Math.ceil((blockExpiry - now) / 1000);
 
-        qerrors(new Error(`IP blocked: ${clientIp}`), 'createSecurityMiddleware', `Suspicious activity blocking for IP: ${clientIp}, patterns: ${suspiciousPatterns.length}`);
+        qerrors(new Error(`IP blocked: ${clientIp}`), 'createSecurityMiddleware', { message: `Suspicious activity blocking for IP: ${clientIp}, patterns: ${suspiciousPatterns.length}` });
         logger.warn(`IP ${clientIp} blocked due to repeated suspicious activity`);
 
         res.setHeader('Retry-After', retryAfter.toString());

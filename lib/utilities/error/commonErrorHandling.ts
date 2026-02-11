@@ -6,7 +6,8 @@
  * try-catch blocks, error logging, error creation, and standardized error responses.
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Standard error handler with qerrors logging
@@ -17,7 +18,7 @@ import { qerr as qerrors } from '@bijikyu/qerrors';
  */
 export function handleError(error: any, functionName: string, context?: string): Error {
   const normalizedError = error instanceof Error ? error : new Error(String(error));
-  qerrors(normalizedError, functionName, context);
+  qerrors(normalizedError, functionName, context ? { message: context } : undefined);
   return normalizedError;
 }
 

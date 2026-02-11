@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Creates dynamic timeout based on payload size.
@@ -33,7 +34,7 @@ function createDynamicTimeout(baseTimeout: number, payloadSize: number): number 
   } catch (error) {
     const safeBaseTimeout = typeof baseTimeout === 'number' && Number.isFinite(baseTimeout) ? baseTimeout : 'invalid';
     const safePayloadSize = typeof payloadSize === 'number' && Number.isFinite(payloadSize) ? payloadSize : 'invalid';
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'createDynamicTimeout', `Dynamic timeout calculation failed for baseTimeout: ${safeBaseTimeout}, payloadSize: ${safePayloadSize}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'createDynamicTimeout', { message: `Dynamic timeout calculation failed for baseTimeout: ${safeBaseTimeout}, payloadSize: ${safePayloadSize}` });
     return 30000; // Return safe default timeout
   }
 }

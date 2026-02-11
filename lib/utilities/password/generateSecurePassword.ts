@@ -42,7 +42,8 @@
 'use strict';
 
 import * as crypto from 'crypto'; // use crypto for secure randomness and cryptographically secure random number generation
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 const DEFAULT_LENGTH = 12; // default password length - OWASP recommended minimum for user-facing passwords
 const MIN_LENGTH = 8; // minimum secure length - NIST SP 800-63B minimum for memorized secrets
@@ -123,7 +124,7 @@ const secureRandomIndex = (max: number): number => { // generate secure random i
     } while (randomValue < min); // Reject values that would cause bias
   } catch (error) {
     // Log the error for security monitoring
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'secureRandomIndex', `Secure random generation failed for max: ${max}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'secureRandomIndex', { message: `Secure random generation failed for max: ${max}` });
 
     // Fallback to less secure Math.random() if crypto fails
     // This ensures the function remains available even in edge cases

@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * JSON size and truncation utilities
@@ -29,7 +30,7 @@ function truncateJson(jsonString: string, maxSize: number): string {
     const parsed: any = JSON.parse(jsonString);
     return truncateObject(parsed, maxSize);
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateJson', `JSON parsing failed for size: ${jsonString.length}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateJson', { message: `JSON parsing failed for size: ${jsonString.length}` });
     // If parsing fails, just truncate string
     return jsonString.substring(0, Math.max(0, maxSize - 3)) + '...';
   }
@@ -73,7 +74,7 @@ function truncateObject(obj: unknown, maxSize: number): string {
         .substring(0, Math.max(0, maxSize - 3)) + '...';
     }
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', 'Circular reference detection failed');
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', { message: 'Circular reference detection failed' });
     return JSON.stringify({ error: 'truncation_failed', truncated: true })
       .substring(0, Math.max(0, maxSize - 3)) + '...';
   }
@@ -99,7 +100,7 @@ function truncateObject(obj: unknown, maxSize: number): string {
     return JSON.stringify({ truncated: true, size: getJsonSize(JSON.stringify(obj)) })
       .substring(0, Math.max(0, maxSize - 3)) + '...';
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', 'Object truncation failed');
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', { message: 'Object truncation failed' });
     return JSON.stringify({ error: 'truncation_failed', truncated: true })
       .substring(0, Math.max(0, maxSize - 3)) + '...';
   }

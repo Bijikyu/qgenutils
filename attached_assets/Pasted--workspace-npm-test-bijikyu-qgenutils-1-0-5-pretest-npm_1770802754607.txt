@@ -1,0 +1,279 @@
+~/workspace$ npm test
+
+> @bijikyu/qgenutils@1.0.5 pretest
+> npm run build && node scripts/ensure-runner.mjs
+
+
+> @bijikyu/qgenutils@1.0.5 prebuild
+> rm -rf dist
+
+
+> @bijikyu/qgenutils@1.0.5 build
+> tsc && node scripts/copy-config.mjs
+
+lib/utilities/batch/processBatch.ts:291:40 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+291         qerrors(error, 'processBatch', `Batch item processing failed for index: ${globalIndex}`);
+                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/config/buildFeatureConfig.ts:121:88 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+121     qerrors(err instanceof Error ? err : new Error(String(err)), 'buildFeatureConfig', `Feature config serialization failed for: ${name}`);
+                                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/config/buildValidationConfig.ts:50:97 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+50           qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Allowed attributes serialization failed');
+                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/config/buildValidationConfig.ts:61:95 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+61         qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Custom validators serialization failed');
+                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/config/buildValidationConfig.ts:69:95 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+69         qerrors(err instanceof Error ? err : new Error(String(err)), 'buildValidationConfig', 'Error messages serialization failed');
+                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/error/commonErrorHandling.ts:20:42 - error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'Record<string, unknown> | undefined'.
+  Type 'string' is not assignable to type 'Record<string, unknown>'.
+
+20   qerrors(normalizedError, functionName, context);
+                                            ~~~~~~~
+
+lib/utilities/helpers/jsonSizeUtils.ts:32:88 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+32     qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateJson', `JSON parsing failed for size: ${jsonString.length}`);
+                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/helpers/jsonSizeUtils.ts:76:90 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+76     qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', 'Circular reference detection failed');
+                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/helpers/jsonSizeUtils.ts:102:90 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+102     qerrors(error instanceof Error ? error : new Error(String(error)), 'truncateObject', 'Object truncation failed');
+                                                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/helpers/safeJsonParse.ts:139:50 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+139         qerrors(prototypeError, 'safeJsonParse', 'Prototype pollution detected in JSON');
+                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/helpers/safeJsonParse.ts:145:89 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+145     qerrors(error instanceof Error ? error : new Error(String(error)), 'safeJsonParse', `JSON parsing failed for string length: ${jsonString.length}`);
+                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/coreErrorResponse.ts:40:93 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+40     qerrors(error instanceof Error ? error : new Error(String(error)), 'sendErrorResponse', `Error response creation failed for status: ${(options as any)?.status || 400}`);
+                                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createAdvancedHttpClient.ts:89:102 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+89       qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', 'HTTP request interceptor error');
+                                                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createAdvancedHttpClient.ts:127:108 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+127             qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP request max retries exceeded for: ${originalRequest.url}`);
+                                                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createAdvancedHttpClient.ts:154:104 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+154         qerrors(error instanceof Error ? error : new Error(String(error)), 'createAdvancedHttpClient', `HTTP response error for: ${originalRequest.url}`);
+                                                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createAdvancedHttpClient.ts:158:125 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+158         qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'createAdvancedHttpClient', 'HTTP response interceptor error');
+                                                                                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createAdvancedHttpClient.ts:188:89 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+188       qerrors(error instanceof Error ? error : new Error(String(error)), 'healthCheck', `HTTP health check failed for: ${url || '/'}`);
+                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createDynamicTimeout.ts:36:96 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+36     qerrors(error instanceof Error ? error : new Error(String(error)), 'createDynamicTimeout', `Dynamic timeout calculation failed for baseTimeout: ${safeBaseTimeout}, payloadSize: ${safePayloadSize}`);
+                                                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/createHttpConfig.ts:33:38 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+33     qerrors(err, 'createHttpConfig', 'HTTP config creation failed');
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/http/getContextualTimeout.ts:75:96 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+75     qerrors(error instanceof Error ? error : new Error(String(error)), 'getContextualTimeout', `Contextual timeout retrieval failed for operation: ${safeOperation}`);
+                                                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/middleware/createApiKeyValidator.ts:91:99 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+91       qerrors(error instanceof Error ? error : new Error(String(error)), 'createApiKeyValidator', 'API key extraction failed');
+                                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/middleware/createApiKeyValidator.ts:114:99 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+114       qerrors(error instanceof Error ? error : new Error(String(error)), 'createApiKeyValidator', 'API key timing comparison failed');
+                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/module-loader/createCachedLoader.ts:93:98 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+93         qerrors(error instanceof Error ? error : new Error(String(error)), 'createCachedLoader', `Cached module loading failed for: ${moduleName}`);
+                                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/module-loader/loadAndFlattenModule.ts:112:50 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+112     qerrors(moduleError, 'loadAndFlattenModule', `Module loading failed for: ${moduleName}`);
+                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/password/generateSecurePassword.ts:126:93 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+126     qerrors(error instanceof Error ? error : new Error(String(error)), 'secureRandomIndex', `Secure random generation failed for max: ${max}`);
+                                                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/password/hashPassword.ts:56:7 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+56       'Password hashing operation failed'
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/password/hashPassword.ts:92:7 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+92       'Password verification failed'
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/password/verifyPassword.ts:65:90 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+65     qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', 'Password verification operation failed');
+                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/performance-monitor/createPerformanceMonitor.ts:200:100 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+200           qerrors(err instanceof Error ? err : new Error(String(err)), 'createPerformanceMonitor', 'Performance alert callback failed');
+                                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/performance-monitor/measureEventLoopLag.ts:27:97 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+27       qerrors(error instanceof Error ? error : new Error(String(error)), 'measureEventLoopLag', 'Event loop lag measurement failed');
+                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/performance/performanceMonitor.ts:247:9 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+247         `Performance Alert: ${alert.type} - ${alert.severity}`
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/rateLimiting/distributedRateLimiter.ts:324:11 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+324           'Rate limiting failed'
+              ~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/scheduling/scheduleInterval.ts:150:94 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+150       qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleInterval', `Job execution failed for: ${jobId} (execution: ${currentExecutionCount})`);
+                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/scheduling/scheduleInterval.ts:161:119 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+161           qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleInterval', `Error handler failed for job: ${jobId}`);
+                                                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/scheduling/scheduleOnce.ts:107:90 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+107       qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleOnce', `One-time job execution failed for: ${jobId}`);
+                                                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/scheduling/scheduleOnce.ts:113:115 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+113           qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleOnce', `Error handler failed for job: ${jobId}`);
+                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/secure-config/buildSecureConfig.ts:52:93 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+52     qerrors(error instanceof Error ? error : new Error(String(error)), 'buildSecureConfig', `Configuration validation failed for schema keys: ${Object.keys(schema).length}`);
+                                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/buildRateLimitKey.ts:97:83 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+97     qerrors(error instanceof Error ? error : new Error(String(error)), 'hashKey', `Secure hash generation failed for key length: ${key.length}`);
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/createSecurityMiddleware.ts:137:83 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+137         qerrors(new Error(`IP blocked: ${clientIp}`), 'createSecurityMiddleware', `Suspicious activity blocking for IP: ${clientIp}, patterns: ${suspiciousPatterns.length}`);
+                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/extractApiKey.ts:200:83 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+200     qerrors(err instanceof Error ? err : new Error(String(err)), 'extractApiKey', 'API key extraction failed unexpectedly');
+                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/maskApiKey.ts:60:7 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+60       `API key masking failed unexpectedly for input type: ${typeof apiKey}`
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/sanitizeObject.ts:86:90 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+86     qerrors(error instanceof Error ? error : new Error(String(error)), 'sanitizeObject', `Object sanitization failed at depth: ${depth}`);
+                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/secureCrypto.ts:47:88 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+47     qerrors(error instanceof Error ? error : new Error(String(error)), 'hashPassword', 'Password hashing failed');
+                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/secureCrypto.ts:71:90 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+71     qerrors(error instanceof Error ? error : new Error(String(error)), 'verifyPassword', 'Password verification failed');
+                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/secureCrypto.ts:86:88 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+86     qerrors(error instanceof Error ? error : new Error(String(error)), 'generateSalt', 'Salt generation failed');
+                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~
+
+lib/utilities/security/timingSafeCompare.ts:110:7 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'Record<string, unknown>'.
+
+110       `Constant-time comparison library failed for string lengths: ${a.length}, ${b.length}`
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Found 46 errors in 31 files.
+
+Errors  Files
+     1  lib/utilities/batch/processBatch.ts:291
+     1  lib/utilities/config/buildFeatureConfig.ts:121
+     3  lib/utilities/config/buildValidationConfig.ts:50
+     1  lib/utilities/error/commonErrorHandling.ts:20
+     3  lib/utilities/helpers/jsonSizeUtils.ts:32
+     2  lib/utilities/helpers/safeJsonParse.ts:139
+     1  lib/utilities/http/coreErrorResponse.ts:40
+     5  lib/utilities/http/createAdvancedHttpClient.ts:89
+     1  lib/utilities/http/createDynamicTimeout.ts:36
+     1  lib/utilities/http/createHttpConfig.ts:33
+     1  lib/utilities/http/getContextualTimeout.ts:75
+     2  lib/utilities/middleware/createApiKeyValidator.ts:91
+     1  lib/utilities/module-loader/createCachedLoader.ts:93
+     1  lib/utilities/module-loader/loadAndFlattenModule.ts:112
+     1  lib/utilities/password/generateSecurePassword.ts:126
+     2  lib/utilities/password/hashPassword.ts:56
+     1  lib/utilities/password/verifyPassword.ts:65
+     1  lib/utilities/performance-monitor/createPerformanceMonitor.ts:200
+     1  lib/utilities/performance-monitor/measureEventLoopLag.ts:27
+     1  lib/utilities/performance/performanceMonitor.ts:247
+     1  lib/utilities/rateLimiting/distributedRateLimiter.ts:324
+     2  lib/utilities/scheduling/scheduleInterval.ts:150
+     2  lib/utilities/scheduling/scheduleOnce.ts:107
+     1  lib/utilities/secure-config/buildSecureConfig.ts:52
+     1  lib/utilities/security/buildRateLimitKey.ts:97
+     1  lib/utilities/security/createSecurityMiddleware.ts:137
+     1  lib/utilities/security/extractApiKey.ts:200
+     1  lib/utilities/security/maskApiKey.ts:60
+     1  lib/utilities/security/sanitizeObject.ts:86
+     3  lib/utilities/security/secureCrypto.ts:47
+     1  lib/utilities/security/timingSafeCompare.ts:110

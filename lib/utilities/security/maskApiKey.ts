@@ -23,7 +23,8 @@
  * @returns Masked API key string safe for logging and display
  */
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Masks an API key for safe logging and display
@@ -57,7 +58,7 @@ const maskApiKey = (apiKey: any, visibleChars: number = 4): string => {
     qerrors(
       error instanceof Error ? error : new Error(String(error)),
       'maskApiKey',
-      `API key masking failed unexpectedly for input type: ${typeof apiKey}`
+      { message: `API key masking failed unexpectedly for input type: ${typeof apiKey}` }
     );
     return '***';
   }

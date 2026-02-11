@@ -13,7 +13,8 @@
  * @param {number} [customTimeout] - Optional custom timeout override
  * @returns {{ headers?: Record<string, string>; auth?: { username: string; password: string }; timeout: number }}
  */
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import getContextualTimeout from './getContextualTimeout.js';
 
 function createHttpConfig(apiKey: string | null = null, additionalHeaders: Record<string, string> | null = null, customTimeout?: number) {
@@ -30,7 +31,7 @@ function createHttpConfig(apiKey: string | null = null, additionalHeaders: Recor
 
     return config;
   } catch (err) {
-    qerrors(err, 'createHttpConfig', 'HTTP config creation failed');
+    qerrors(err, 'createHttpConfig', { message: 'HTTP config creation failed' });
     throw err;
   }
 }

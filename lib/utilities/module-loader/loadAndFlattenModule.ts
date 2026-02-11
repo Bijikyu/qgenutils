@@ -1,6 +1,7 @@
 
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Dynamic Module Loader with CommonJS/ESM Interop Normalization
@@ -109,7 +110,7 @@ const loadAndFlattenModule = async (moduleName: string): Promise<any> => { // dy
     moduleError.originalError = error instanceof Error ? error : new Error(String(error));
 
     // Use qerrors for consistent error reporting across the application
-    qerrors(moduleError, 'loadAndFlattenModule', `Module loading failed for: ${moduleName}`);
+    qerrors(moduleError, 'loadAndFlattenModule', { message: `Module loading failed for: ${moduleName}` });
 
     // Return null for backward compatibility and graceful fallback handling
     // The error is logged with full context, but calling code can handle the null result

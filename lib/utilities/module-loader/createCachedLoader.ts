@@ -53,7 +53,8 @@
  */
 'use strict';
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 import loadAndFlattenModule from './loadAndFlattenModule.js'; // default flattening function
 
@@ -90,7 +91,7 @@ const createCachedLoader = (options: any = {}): any => { // factory for cached a
         return module;
       } catch (error) {
         // Log error for monitoring and debugging purposes
-        qerrors(error instanceof Error ? error : new Error(String(error)), 'createCachedLoader', `Cached module loading failed for: ${moduleName}`);
+        qerrors(error instanceof Error ? error : new Error(String(error)), 'createCachedLoader', { message: `Cached module loading failed for: ${moduleName}` });
 
         // Warn about module unavailability with custom or default message
         console.warn(finalUnavailableMessage, error);

@@ -1,4 +1,5 @@
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 import contextualTimeouts from './contextualTimeouts.js';
 
 /**
@@ -72,7 +73,7 @@ function getContextualTimeout(operation: string): number {
     return (contextualTimeouts as any)[operation] ?? (contextualTimeouts as any).default;
   } catch (error) {
     const safeOperation = typeof operation === 'string' ? operation : 'undefined';
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'getContextualTimeout', `Contextual timeout retrieval failed for operation: ${safeOperation}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'getContextualTimeout', { message: `Contextual timeout retrieval failed for operation: ${safeOperation}` });
     return (contextualTimeouts as any).default;
   }
 }

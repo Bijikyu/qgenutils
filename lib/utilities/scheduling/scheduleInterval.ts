@@ -82,7 +82,8 @@
  *   console.log('Job cancelled:', wasCancelled);
  * }
  */
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { // robust interval scheduler with comprehensive job management
   // Validate callback function to ensure it's executable
@@ -147,7 +148,7 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
       await callback();
     } catch (error) {
       // Log the error for monitoring and debugging with full context
-      qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleInterval', `Job execution failed for: ${jobId} (execution: ${currentExecutionCount})`);
+      qerrors(error instanceof Error ? error : new Error(String(error)), 'scheduleInterval', { message: `Job execution failed for: ${jobId} (execution: ${currentExecutionCount})` });
 
       // Log error details for immediate debugging visibility
       console.error(`[scheduleInterval] Error in job ${jobId} (execution ${currentExecutionCount}):`, error instanceof Error ? error.message : String(error));
@@ -158,7 +159,7 @@ function scheduleInterval(callback: any, intervalMs: any, options: any = {}) { /
           onError(error, { identifier: jobId, executionCount: currentExecutionCount, intervalMs });
         } catch (handlerError) {
           // Log handler errors separately to prevent masking original job errors
-          qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleInterval', `Error handler failed for job: ${jobId}`);
+          qerrors(handlerError instanceof Error ? handlerError : new Error(String(handlerError)), 'scheduleInterval', { message: `Error handler failed for job: ${jobId}` });
           console.error('[scheduleInterval] Error handler threw:', handlerError instanceof Error ? handlerError.message : String(handlerError));
           // Don't re-throw to prevent unhandled promise rejection in the job execution
         }

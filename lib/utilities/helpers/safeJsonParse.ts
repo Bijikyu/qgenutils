@@ -68,7 +68,8 @@ function checkPrototypePollution(obj: any, visited = new WeakSet()): boolean {
   return false;
 }
 
-import { qerr as qerrors } from '@bijikyu/qerrors';
+import qerrorsMod from '@bijikyu/qerrors';
+const qerrors = (qerrorsMod as any).qerr || (qerrorsMod as any).qerrors || qerrorsMod;
 
 /**
  * Secure JSON Parser with Prototype Pollution Protection
@@ -136,13 +137,13 @@ function safeJsonParse(jsonString: string, defaultValue: any = null): any {
       if (hasDangerousProps) {
         const prototypeError = new Error('Prototype pollution detected in JSON');
         // Fix: Use correct 2-parameter qerrors API
-        qerrors(prototypeError, 'safeJsonParse', 'Prototype pollution detected in JSON');
+        qerrors(prototypeError, 'safeJsonParse', { message: 'Prototype pollution detected in JSON' });
         return defaultValue;
       }
     }
     return parsed;
   } catch (error) {
-    qerrors(error instanceof Error ? error : new Error(String(error)), 'safeJsonParse', `JSON parsing failed for string length: ${jsonString.length}`);
+    qerrors(error instanceof Error ? error : new Error(String(error)), 'safeJsonParse', { message: `JSON parsing failed for string length: ${jsonString.length}` });
     return defaultValue;
   }
 }
