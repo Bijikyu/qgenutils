@@ -15,7 +15,7 @@
  * @module url/getDomain
  */
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 import ensureProtocolUrl from './ensureProtocolUrl.js';
 

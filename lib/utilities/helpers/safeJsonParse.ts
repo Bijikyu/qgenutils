@@ -68,7 +68,7 @@ function checkPrototypePollution(obj: any, visited = new WeakSet()): boolean {
   return false;
 }
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 
 /**
  * Secure JSON Parser with Prototype Pollution Protection

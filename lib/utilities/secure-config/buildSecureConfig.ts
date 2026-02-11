@@ -1,6 +1,6 @@
 'use strict';
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 
 import convict from 'convict'; // robust config validation
 

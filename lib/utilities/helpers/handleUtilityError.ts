@@ -26,7 +26,7 @@
  * @throws Never throws - always returns fallback value
  */
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 
 export function handleUtilityError(

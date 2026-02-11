@@ -31,7 +31,7 @@
  */
 
 import { differenceInMilliseconds, parseISO, isValid } from 'date-fns';
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 
 function formatDuration(startDateString: string, endDateString?: string): string {

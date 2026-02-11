@@ -33,7 +33,7 @@
  * - Detailed success/failure reporting with item-level results
  */
 
-import { qerrors } from '@bijikyu/qerrors'; // Centralized error handling system
+import { qerr as qerrors } from '@bijikyu/qerrors'; // Centralized error handling system
 import createSemaphore from './createSemaphore.js'; // Concurrency control
 import retryWithBackoff from './retryWithBackoff.js'; // Retry logic with backoff
 

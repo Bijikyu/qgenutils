@@ -13,7 +13,7 @@
  * @param {number} [customTimeout] - Optional custom timeout override
  * @returns {{ headers?: Record<string, string>; auth?: { username: string; password: string }; timeout: number }}
  */
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import getContextualTimeout from './getContextualTimeout.js';
 
 function createHttpConfig(apiKey: string | null = null, additionalHeaders: Record<string, string> | null = null, customTimeout?: number) {

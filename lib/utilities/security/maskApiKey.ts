@@ -23,7 +23,7 @@
  * @returns Masked API key string safe for logging and display
  */
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 
 /**
  * Masks an API key for safe logging and display

@@ -1,4 +1,4 @@
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import { ValidationConfigOptions, ValidationConfig } from '../../../types/config-interfaces.js';
 
 /**

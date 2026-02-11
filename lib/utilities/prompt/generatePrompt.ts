@@ -15,7 +15,7 @@
  * @module prompt/generatePrompt
  */
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 import type { OutreachContext } from './sharedTypes.js';
 

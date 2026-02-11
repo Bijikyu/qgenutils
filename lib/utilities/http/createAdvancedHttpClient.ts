@@ -1,4 +1,4 @@
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 
 /**
  * Advanced HTTP Client using Axios

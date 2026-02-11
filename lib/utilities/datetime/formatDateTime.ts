@@ -11,7 +11,7 @@
  */
 
 import { isValid, parseISO } from 'date-fns';
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 
 /**

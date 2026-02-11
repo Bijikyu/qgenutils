@@ -5,7 +5,7 @@
  * tracking parameter removal, URL extraction from text, and security checks.
  */
 
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 import logger from '../../logger.js';
 import isValidString from '../helpers/isValidString.js';
 import ensureProtocol from './ensureProtocol.js';

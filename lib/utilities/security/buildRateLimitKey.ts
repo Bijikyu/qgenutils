@@ -17,7 +17,7 @@ interface RequestObject {
 }
 
 import { createHash } from 'crypto';
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 
 /**
  * Builds rate limit keys from requests with configurable strategies

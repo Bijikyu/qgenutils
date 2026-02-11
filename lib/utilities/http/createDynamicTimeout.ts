@@ -1,4 +1,4 @@
-import { qerrors } from '@bijikyu/qerrors';
+import { qerr as qerrors } from '@bijikyu/qerrors';
 
 /**
  * Creates dynamic timeout based on payload size.

@@ -36,7 +36,7 @@
  * - Acceptable overhead for security-critical operations
  */
 
-import { qerrors } from '@bijikyu/qerrors'; // Centralized error handling system
+import { qerr as qerrors } from '@bijikyu/qerrors'; // Centralized error handling system
 
 /**
  * @ts-ignore - safe-compare doesn't have TypeScript definitions but is battle-tested
